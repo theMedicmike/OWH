@@ -7,7 +7,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 export type Site = {
   name: string;
   status: string;
-  geom: { type: string; coordinates: [number, number] } | null;
+  geom: string | null;
 };
 
 type CheckIn = {
@@ -40,6 +40,23 @@ function fmt(lat: number, lng: number) {
   return `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? "N" : "S"}, ${Math.abs(lng).toFixed(1)}°${lng >= 0 ? "E" : "W"}`;
 }
 
+// Supabase returns PostGIS geography as an EWKB hex string. Decode the
+// longitude/latitude of a 2D point from it (handles byte order + the SRID flag).
+function wkbToLngLat(hex: string | null): [number, number] | null {
+  if (typeof hex !== "string" || hex.length < 42) return null;
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  const view = new DataView(bytes.buffer);
+  const le = bytes[0] === 1;
+  const type = view.getUint32(1, le);
+  let offset = 5;
+  if (type & 0x20000000) offset += 4; // SRID present
+  const lng = view.getFloat64(offset, le);
+  const lat = view.getFloat64(offset + 8, le);
+  if (Number.isNaN(lng) || Number.isNaN(lat)) return null;
+  return [lng, lat];
+}
+
 export default function MapView({ sites }: { sites: Site[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -63,12 +80,12 @@ export default function MapView({ sites }: { sites: Site[] }) {
 
     map.on("load", () => {
       for (const s of sites) {
-        const c = s.geom?.coordinates;
-        if (!Array.isArray(c)) continue;
+        const ll = wkbToLngLat(s.geom);
+        if (!ll) continue;
         const el = document.createElement("div");
         el.style.cssText = `width:14px;height:14px;border-radius:50%;border:2px solid #fff;cursor:pointer;background:${STATUS_COLOR[s.status] ?? "#888780"};box-shadow:0 0 0 1px rgba(0,0,0,0.15)`;
         new maplibregl.Marker({ element: el })
-          .setLngLat([c[0], c[1]])
+          .setLngLat(ll)
           .setPopup(
             new maplibregl.Popup({ offset: 16 }).setHTML(
               `<div style="font:14px system-ui"><strong>${s.name}</strong><br><span style="color:${STATUS_COLOR[s.status] ?? "#888780"};text-transform:capitalize">${s.status}</span></div>`,
