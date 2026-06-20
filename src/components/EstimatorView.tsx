@@ -36,6 +36,52 @@ const EXPOSURE_METALS: Record<string, Partial<Score>> = {
   water_contamination: { as: 6, pb: 5 },
 };
 
+type Munition = { key: string; label: string; m: Partial<Score> };
+const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = [
+  {
+    group: "Small arms",
+    metals: "lead · copper",
+    items: [
+      { key: "m556", label: "5.56mm rifle", m: { pb: 18 } },
+      { key: "m762", label: "7.62mm", m: { pb: 18 } },
+      { key: "m9", label: "9mm pistol", m: { pb: 12 } },
+      { key: "m50", label: ".50 cal (M2)", m: { pb: 22 } },
+    ],
+  },
+  {
+    group: "Cannon & crew-served",
+    metals: "lead · propellant",
+    items: [
+      { key: "c2530", label: "25 / 30mm cannon", m: { pb: 15 } },
+      { key: "g40", label: "40mm grenade", m: { pb: 12, as: 4 } },
+    ],
+  },
+  {
+    group: "Tank & artillery",
+    metals: "lead · tungsten · blast",
+    items: [
+      { key: "t120", label: "120mm tank main gun", m: { w: 25, pb: 12 } },
+      { key: "a155", label: "155mm howitzer / mortars", m: { pb: 15, as: 6 } },
+    ],
+  },
+  {
+    group: "Ordnance & bombs",
+    metals: "heavy metals · blast",
+    items: [
+      { key: "demo", label: "Grenades / demolitions", m: { pb: 10, as: 8 } },
+      { key: "b500", label: "500 lb bombs", m: { pb: 8, as: 6 } },
+      { key: "b2000", label: "1,000–2,000 lb bombs", m: { pb: 10, as: 8 } },
+    ],
+  },
+  {
+    group: "Armor-piercing",
+    metals: "depleted uranium · tungsten",
+    items: [{ key: "du", label: "Depleted-uranium rounds", m: { du: 45, w: 15 } }],
+  },
+];
+const RATES = ["None", "Some", "A lot", "Constant"];
+const RATE_FACTOR = [0, 0.35, 0.7, 1.0];
+
 const ORGANS: Record<MetalKey, string[]> = {
   pb: ["bone", "brain", "kidney"],
   cd: ["kidney", "lungs", "bone"],
@@ -85,8 +131,8 @@ export default function EstimatorView() {
   const [ready, setReady] = useState(false);
   const [logged, setLogged] = useState<string[]>([]);
   const [role, setRole] = useState("Tank crew / armor");
-  const [rounds, setRounds] = useState(7000);
   const [years, setYears] = useState(10);
+  const [munRates, setMunRates] = useState<Record<string, number>>({});
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -101,18 +147,23 @@ export default function EstimatorView() {
 
   const idx = useMemo(() => {
     const s: Score = { pb: 0, cd: 0, du: 0, w: 0, as: 0 };
-    const add = (m?: Partial<Score>) => {
+    const add = (m?: Partial<Score>, factor = 1) => {
       if (!m) return;
-      for (const k of Object.keys(m) as MetalKey[]) s[k] += m[k] ?? 0;
+      for (const k of Object.keys(m) as MetalKey[]) s[k] += (m[k] ?? 0) * factor;
     };
     add(ROLES[role]);
-    s.pb += (rounds / 50000) * 40;
     for (const e of logged) add(EXPOSURE_METALS[e]);
+    for (const g of MUNITION_GROUPS) {
+      for (const it of g.items) {
+        const r = munRates[it.key] ?? 0;
+        if (r > 0) add(it.m, RATE_FACTOR[r]);
+      }
+    }
     const acc = 0.6 + (years / 30) * 0.8;
     const out = {} as Score;
     for (const m of METALS) out[m.key] = Math.max(0, Math.min(100, Math.round(s[m.key] * acc)));
     return out;
-  }, [role, rounds, years, logged]);
+  }, [role, years, logged, munRates]);
 
   const ranked = [...METALS].sort((a, b) => idx[b.key] - idx[a.key]);
   const high = METALS.filter((m) => idx[m.key] >= 45);
@@ -123,7 +174,8 @@ export default function EstimatorView() {
   if (idx.du >= 45) tests.push("Depleted-uranium urine test (VA surveillance program)");
   if (idx.cd >= 45) tests.push("Kidney function and cadmium panel");
   tests.push("A comprehensive panel, reviewed with a clinician");
-  const confidence = logged.length + 1 >= 4 ? "moderate" : "low";
+  const setCount = Object.values(munRates).filter((r) => r > 0).length + logged.length;
+  const confidence = setCount >= 4 ? "moderate" : "low";
 
   if (!ready) return <p className="text-sm text-zinc-500">Loading…</p>;
 
@@ -179,16 +231,59 @@ export default function EstimatorView() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <label className="w-28 text-xs text-zinc-500">Rounds fired</label>
-            <input type="range" min={0} max={50000} step={500} value={rounds} onChange={(e) => setRounds(+e.target.value)} className="flex-1" />
-            <span className="w-14 text-right text-sm font-medium">{rounds.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center gap-3">
             <label className="w-28 text-xs text-zinc-500">Years of service</label>
             <input type="range" min={0} max={30} step={1} value={years} onChange={(e) => setYears(+e.target.value)} className="flex-1" />
             <span className="w-14 text-right text-sm font-medium">{years}</span>
           </div>
         </div>
+      </div>
+
+      <div className={card}>
+        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Weapons &amp; munitions exposure</div>
+        <div className="mt-1 text-xs text-zinc-500">
+          Roughly how much were you around each, across your whole service? No exact numbers needed.
+        </div>
+
+        {MUNITION_GROUPS.map((g) => (
+          <div key={g.group} className="mt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{g.group}</span>
+              <span className="text-[11px] text-zinc-400">{g.metals}</span>
+            </div>
+            {g.items.map((it) => {
+              const cur = munRates[it.key] ?? 0;
+              return (
+                <div
+                  key={it.key}
+                  className="flex items-center justify-between gap-3 border-t border-zinc-100 py-2 dark:border-zinc-800"
+                >
+                  <span className="text-sm text-zinc-800 dark:text-zinc-200">{it.label}</span>
+                  <div className="flex flex-none overflow-hidden rounded-md border border-zinc-300 text-xs dark:border-zinc-700">
+                    {RATES.map((label, ri) => {
+                      const on = cur === ri;
+                      return (
+                        <button
+                          key={ri}
+                          type="button"
+                          onClick={() => setMunRates((p) => ({ ...p, [it.key]: ri }))}
+                          className={
+                            (on
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 "
+                              : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 ") +
+                            (ri > 0 ? "border-l border-zinc-300 dark:border-zinc-700 " : "") +
+                            "px-2.5 py-1"
+                          }
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       <div className={card}>

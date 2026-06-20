@@ -23,6 +23,7 @@ type CheckIn = {
 type Row = {
   geom: string | null;
   date_start: string | null;
+  place_name: string | null;
   exposures: { exposure_class: string }[] | null;
 };
 
@@ -54,6 +55,19 @@ function labelFor(value: string) {
   return EXPOSURES.find((e) => e.value === value)?.label ?? value;
 }
 
+async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  try {
+    const r = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
+    );
+    const j = await r.json();
+    const parts = [j.locality || j.city, j.principalSubdivision, j.countryName].filter(Boolean);
+    return Array.from(new Set(parts)).join(", ");
+  } catch {
+    return "";
+  }
+}
+
 function wkbToLngLat(hex: string | null): [number, number] | null {
   if (typeof hex !== "string" || hex.length < 42) return null;
   const bytes = new Uint8Array(hex.length / 2);
@@ -72,7 +86,7 @@ function wkbToLngLat(hex: string | null): [number, number] | null {
 async function fetchCheckins(supabase: ReturnType<typeof createClient>): Promise<CheckIn[]> {
   const { data } = await supabase
     .from("check_ins")
-    .select("geom, date_start, exposures(exposure_class)")
+    .select("geom, date_start, place_name, exposures(exposure_class)")
     .order("date_start", { ascending: false });
   const list: CheckIn[] = [];
   for (const row of (data ?? []) as Row[]) {
@@ -84,7 +98,7 @@ async function fetchCheckins(supabase: ReturnType<typeof createClient>): Promise
       lat: ll[1],
       year: row.date_start ? new Date(row.date_start).getUTCFullYear() : null,
       exposures: labels.length ? labels.join(", ") : "—",
-      place: fmt(ll[1], ll[0]),
+      place: row.place_name || fmt(ll[1], ll[0]),
     });
   }
   return list;
@@ -99,6 +113,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [draft, setDraft] = useState<{ lng: number; lat: number } | null>(null);
+  const [draftName, setDraftName] = useState("");
   const [year, setYear] = useState(2007);
   const [selected, setSelected] = useState<string[]>([]);
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
@@ -110,6 +125,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
   function closeDraft() {
     setDraft(null);
+    setDraftName("");
     setSelected([]);
   }
 
@@ -149,6 +165,22 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       mapRef.current = null;
     };
   }, [sites]);
+
+  // reverse-geocode the dropped pin to auto-fill a place name
+  useEffect(() => {
+    let active = true;
+    if (!draft) {
+      setDraftName("");
+      return;
+    }
+    setDraftName("");
+    reverseGeocode(draft.lat, draft.lng).then((name) => {
+      if (active) setDraftName(name);
+    });
+    return () => {
+      active = false;
+    };
+  }, [draft]);
 
   useEffect(() => {
     let active = true;
@@ -205,13 +237,16 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   async function addCheckin() {
     if (!draft || !user || selected.length === 0) return;
     setSaving(true);
-    const { error } = await supabase.rpc("log_check_in", {
+    const { data: newId, error } = await supabase.rpc("log_check_in", {
       p_lng: draft.lng,
       p_lat: draft.lat,
       p_year: year,
       p_conflict: null,
       p_exposures: selected,
     });
+    if (!error && newId && draftName.trim()) {
+      await supabase.from("check_ins").update({ place_name: draftName.trim() }).eq("id", newId);
+    }
     setSaving(false);
     if (error) {
       alert("Could not save: " + error.message);
@@ -242,7 +277,16 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         {draft && (
           <div className="absolute right-4 top-4 w-80 rounded-xl border border-zinc-200 bg-white p-4 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
             <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">New check-in</div>
-            <div className="mt-1 text-xs text-zinc-500">{fmt(draft.lat, draft.lng)}</div>
+
+            <label className="mt-2 block text-xs text-zinc-500">Place</label>
+            <input
+              type="text"
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              placeholder="Name this place"
+              className="mt-1 w-full rounded-md border border-zinc-300 bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700"
+            />
+            <div className="mt-1 text-xs text-zinc-400">{fmt(draft.lat, draft.lng)}</div>
 
             <label className="mt-3 block text-xs text-zinc-500">Service year: {year}</label>
             <input
