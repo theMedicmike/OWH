@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 
 export type Site = {
   name: string;
@@ -13,9 +15,15 @@ export type Site = {
 type CheckIn = {
   lng: number;
   lat: number;
-  year: number;
+  year: number | null;
   exposure: string;
   place: string;
+};
+
+type Row = {
+  geom: string | null;
+  date_start: string | null;
+  exposures: { exposure_class: string }[] | null;
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -25,23 +33,26 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const EXPOSURES = [
-  "Burn pits",
-  "Heavy metals",
-  "Depleted uranium",
-  "Chemical / solvent",
-  "Water contamination",
-  "Pesticide / herbicide",
-  "Asbestos / silica",
-  "Radiation",
-  "PFAS / AFFF",
+  { label: "Burn pits", value: "burn_pit" },
+  { label: "Heavy metals", value: "heavy_metal" },
+  { label: "Depleted uranium", value: "radiation" },
+  { label: "Chemical / solvent", value: "chemical_solvent" },
+  { label: "Water contamination", value: "water_contamination" },
+  { label: "Pesticide / herbicide", value: "pesticide" },
+  { label: "Asbestos / silica", value: "asbestos_silica" },
+  { label: "Radiation", value: "radiation" },
+  { label: "PFAS / AFFF", value: "pfas_afff" },
 ];
 
 function fmt(lat: number, lng: number) {
   return `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? "N" : "S"}, ${Math.abs(lng).toFixed(1)}°${lng >= 0 ? "E" : "W"}`;
 }
 
-// Supabase returns PostGIS geography as an EWKB hex string. Decode the
-// longitude/latitude of a 2D point from it (handles byte order + the SRID flag).
+function labelFor(value: string) {
+  return EXPOSURES.find((e) => e.value === value)?.label ?? value;
+}
+
+// Supabase returns PostGIS geography as an EWKB hex string. Decode a 2D point.
 function wkbToLngLat(hex: string | null): [number, number] | null {
   if (typeof hex !== "string" || hex.length < 42) return null;
   const bytes = new Uint8Array(hex.length / 2);
@@ -50,22 +61,47 @@ function wkbToLngLat(hex: string | null): [number, number] | null {
   const le = bytes[0] === 1;
   const type = view.getUint32(1, le);
   let offset = 5;
-  if (type & 0x20000000) offset += 4; // SRID present
+  if (type & 0x20000000) offset += 4;
   const lng = view.getFloat64(offset, le);
   const lat = view.getFloat64(offset + 8, le);
   if (Number.isNaN(lng) || Number.isNaN(lat)) return null;
   return [lng, lat];
 }
 
-export default function MapView({ sites }: { sites: Site[] }) {
+async function fetchCheckins(supabase: ReturnType<typeof createClient>): Promise<CheckIn[]> {
+  const { data } = await supabase
+    .from("check_ins")
+    .select("geom, date_start, exposures(exposure_class)")
+    .order("date_start", { ascending: false });
+  const list: CheckIn[] = [];
+  for (const row of (data ?? []) as Row[]) {
+    const ll = wkbToLngLat(row.geom);
+    if (!ll) continue;
+    const ex = row.exposures?.[0]?.exposure_class;
+    list.push({
+      lng: ll[0],
+      lat: ll[1],
+      year: row.date_start ? new Date(row.date_start).getUTCFullYear() : null,
+      exposure: ex ? labelFor(ex) : "—",
+      place: fmt(ll[1], ll[0]),
+    });
+  }
+  return list;
+}
+
+export default function MapView({ sites, user }: { sites: Site[]; user: User | null }) {
+  const [supabase] = useState(() => createClient());
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const draftMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const userMarkersRef = useRef<maplibregl.Marker[]>([]);
 
+  const [mapLoaded, setMapLoaded] = useState(false);
   const [draft, setDraft] = useState<{ lng: number; lat: number } | null>(null);
   const [year, setYear] = useState(2007);
-  const [exposure, setExposure] = useState(EXPOSURES[0]);
+  const [exposure, setExposure] = useState(EXPOSURES[0].value);
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return;
@@ -93,17 +129,30 @@ export default function MapView({ sites }: { sites: Site[] }) {
           )
           .addTo(map);
       }
+      setMapLoaded(true);
     });
 
-    map.on("click", (e) => {
-      setDraft({ lng: e.lngLat.lng, lat: e.lngLat.lat });
-    });
+    map.on("click", (e) => setDraft({ lng: e.lngLat.lng, lat: e.lngLat.lat }));
 
     return () => {
       map.remove();
       mapRef.current = null;
     };
   }, [sites]);
+
+  useEffect(() => {
+    let active = true;
+    if (!user) {
+      setCheckins([]);
+      return;
+    }
+    fetchCheckins(supabase).then((list) => {
+      if (active) setCheckins(list);
+    });
+    return () => {
+      active = false;
+    };
+  }, [user, supabase]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -122,18 +171,45 @@ export default function MapView({ sites }: { sites: Site[] }) {
     }
   }, [draft]);
 
-  function addCheckin() {
-    if (!draft) return;
-    const place = fmt(draft.lat, draft.lng);
-    setCheckins((prev) => [{ ...draft, year, exposure, place }, ...prev]);
+  useEffect(() => {
     const map = mapRef.current;
-    if (map) {
+    if (!map || !mapLoaded) return;
+    for (const m of userMarkersRef.current) m.remove();
+    userMarkersRef.current = [];
+    for (const c of checkins) {
       const el = document.createElement("div");
       el.style.cssText =
         "width:14px;height:14px;border-radius:50%;border:2px solid #fff;background:#185FA5;box-shadow:0 0 0 1px rgba(0,0,0,0.2)";
-      new maplibregl.Marker({ element: el }).setLngLat([draft.lng, draft.lat]).addTo(map);
+      const m = new maplibregl.Marker({ element: el })
+        .setLngLat([c.lng, c.lat])
+        .setPopup(
+          new maplibregl.Popup({ offset: 16 }).setHTML(
+            `<div style="font:14px system-ui"><strong>${c.year ?? ""} · ${c.exposure}</strong><br>${c.place}</div>`,
+          ),
+        )
+        .addTo(map);
+      userMarkersRef.current.push(m);
+    }
+  }, [checkins, mapLoaded]);
+
+  async function addCheckin() {
+    if (!draft || !user) return;
+    setSaving(true);
+    const { error } = await supabase.rpc("log_check_in", {
+      p_lng: draft.lng,
+      p_lat: draft.lat,
+      p_year: year,
+      p_conflict: null,
+      p_exposure: exposure,
+      p_detail: labelFor(exposure),
+    });
+    setSaving(false);
+    if (error) {
+      alert("Could not save: " + error.message);
+      return;
     }
     setDraft(null);
+    setCheckins(await fetchCheckins(supabase));
   }
 
   return (
@@ -150,6 +226,7 @@ export default function MapView({ sites }: { sites: Site[] }) {
             <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />recognized</span>
             <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#BA7517" }} />documented</span>
             <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#E24B4A" }} />emerging</span>
+            <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#185FA5" }} />your check-ins</span>
           </div>
         </div>
 
@@ -175,17 +252,24 @@ export default function MapView({ sites }: { sites: Site[] }) {
               className="mt-1 w-full rounded-md border border-zinc-300 bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700"
             >
               {EXPOSURES.map((x) => (
-                <option key={x}>{x}</option>
+                <option key={x.label} value={x.value}>
+                  {x.label}
+                </option>
               ))}
             </select>
 
             <div className="mt-4 flex gap-2">
-              <button
-                onClick={addCheckin}
-                className="flex-1 rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:opacity-90 dark:bg-white dark:text-zinc-900"
-              >
-                Add to timeline
-              </button>
+              {user ? (
+                <button
+                  onClick={addCheckin}
+                  disabled={saving}
+                  className="flex-1 rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+                >
+                  {saving ? "Saving…" : "Save check-in"}
+                </button>
+              ) : (
+                <div className="flex-1 text-xs text-zinc-500">Sign in above to save this pin to your record.</div>
+              )}
               <button
                 onClick={() => setDraft(null)}
                 className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
@@ -197,7 +281,7 @@ export default function MapView({ sites }: { sites: Site[] }) {
         )}
       </div>
 
-      {checkins.length > 0 && (
+      {user && checkins.length > 0 && (
         <div className="mt-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
           <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
             Your timeline ({checkins.length})
@@ -206,15 +290,13 @@ export default function MapView({ sites }: { sites: Site[] }) {
             {checkins.map((c, i) => (
               <li key={i} className="flex items-center justify-between py-2 text-sm">
                 <span className="text-zinc-800 dark:text-zinc-200">
-                  {c.year} · {c.place}
+                  {c.year ?? "—"} · {c.place}
                 </span>
                 <span className="text-zinc-500">{c.exposure}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-zinc-400">
-            Held in this session. Accounts and permanent saving come next.
-          </p>
+          <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">Saved to your private record.</p>
         </div>
       )}
     </div>
