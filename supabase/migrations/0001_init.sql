@@ -262,6 +262,6 @@ create policy corro_insert on corroborations for insert
   with check (confirming_member_id in (select id from members where auth_id = auth.uid()));
 
 -- reference tables: any signed-in user may read; writes happen via the admin role only.
-create policy sites_read   on known_exposure_sites for select using (auth.uid() is not null);
-create policy weapons_read on weapons_ordnance      for select using (auth.uid() is not null);
+create policy sites_read   on known_exposure_sites for select using (true);
+create policy weapons_read on weapons_ordnance      for select using (true);
 create policy config_read  on estimator_config      for select using (auth.uid() is not null and active);
