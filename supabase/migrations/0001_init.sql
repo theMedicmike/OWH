@@ -4,7 +4,8 @@
 -- Designed to hold the full vision (layered cohorts, evidence tiers, the multi-class exposure
 -- engine, corroboration, documented need) so later phases do not require a rebuild.
 
-create extension if not exists postgis;
+create extension if not exists postgis with schema extensions;
+set search_path = public, extensions;
 
 -- ----------------------------------------------------------------------------
 -- enums
@@ -261,6 +262,6 @@ create policy corro_insert on corroborations for insert
   with check (confirming_member_id in (select id from members where auth_id = auth.uid()));
 
 -- reference tables: any signed-in user may read; writes happen via the admin role only.
-create policy sites_read   on known_exposure_sites for select using (auth.role() = 'authenticated');
-create policy weapons_read on weapons_ordnance      for select using (auth.role() = 'authenticated');
-create policy config_read  on estimator_config      for select using (auth.role() = 'authenticated' and active);
+create policy sites_read   on known_exposure_sites for select using (auth.uid() is not null);
+create policy weapons_read on weapons_ordnance      for select using (auth.uid() is not null);
+create policy config_read  on estimator_config      for select using (auth.uid() is not null and active);
