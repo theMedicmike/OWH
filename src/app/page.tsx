@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import MapPanel from "@/components/MapPanel";
+import Link from "next/link";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -16,6 +17,13 @@ export default async function Home() {
         {sites?.length ?? 0} known exposure sites loaded. Click anywhere on the map to drop a pin and
         log where you served.
       </p>
+
+      <Link
+        href="/estimator"
+        className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+      >
+        Your exposure burden estimate →
+      </Link>
 
       <div className="mt-6">
         <MapPanel sites={sites ?? []} />
