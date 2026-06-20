@@ -57,7 +57,7 @@ create table members (
 create table check_ins (
   id          uuid primary key default gen_random_uuid(),
   member_id   uuid not null references members(id) on delete cascade,
-  geom        extensions.geography(Point,4326),
+  geom        geography(Point,4326),
   place_name  text,
   conflict    text,
   date_start  date,
@@ -110,7 +110,7 @@ create index conditions_member_idx on conditions (member_id);
 create table known_exposure_sites (
   id               uuid primary key default gen_random_uuid(),
   name             text not null,
-  geom             extensions.geography(Point,4326),
+  geom             geography(Point,4326),
   date_from        date,
   date_to          date,
   exposure_classes exposure_class[] not null default '{}',
