@@ -16,7 +16,7 @@ type CheckIn = {
   lng: number;
   lat: number;
   year: number | null;
-  exposure: string;
+  exposures: string;
   place: string;
 };
 
@@ -35,13 +35,15 @@ const STATUS_COLOR: Record<string, string> = {
 const EXPOSURES = [
   { label: "Burn pits", value: "burn_pit" },
   { label: "Heavy metals", value: "heavy_metal" },
-  { label: "Depleted uranium", value: "radiation" },
   { label: "Chemical / solvent", value: "chemical_solvent" },
   { label: "Water contamination", value: "water_contamination" },
   { label: "Pesticide / herbicide", value: "pesticide" },
   { label: "Asbestos / silica", value: "asbestos_silica" },
-  { label: "Radiation", value: "radiation" },
+  { label: "Nerve agent", value: "nerve_agent" },
+  { label: "Particulate / dust", value: "particulate" },
+  { label: "Radiation / depleted uranium", value: "radiation" },
   { label: "PFAS / AFFF", value: "pfas_afff" },
+  { label: "Gulf War agent", value: "gulf_war_agent" },
 ];
 
 function fmt(lat: number, lng: number) {
@@ -52,7 +54,6 @@ function labelFor(value: string) {
   return EXPOSURES.find((e) => e.value === value)?.label ?? value;
 }
 
-// Supabase returns PostGIS geography as an EWKB hex string. Decode a 2D point.
 function wkbToLngLat(hex: string | null): [number, number] | null {
   if (typeof hex !== "string" || hex.length < 42) return null;
   const bytes = new Uint8Array(hex.length / 2);
@@ -77,12 +78,12 @@ async function fetchCheckins(supabase: ReturnType<typeof createClient>): Promise
   for (const row of (data ?? []) as Row[]) {
     const ll = wkbToLngLat(row.geom);
     if (!ll) continue;
-    const ex = row.exposures?.[0]?.exposure_class;
+    const labels = (row.exposures ?? []).map((e) => labelFor(e.exposure_class));
     list.push({
       lng: ll[0],
       lat: ll[1],
       year: row.date_start ? new Date(row.date_start).getUTCFullYear() : null,
-      exposure: ex ? labelFor(ex) : "—",
+      exposures: labels.length ? labels.join(", ") : "—",
       place: fmt(ll[1], ll[0]),
     });
   }
@@ -99,9 +100,18 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [mapLoaded, setMapLoaded] = useState(false);
   const [draft, setDraft] = useState<{ lng: number; lat: number } | null>(null);
   const [year, setYear] = useState(2007);
-  const [exposure, setExposure] = useState(EXPOSURES[0].value);
+  const [selected, setSelected] = useState<string[]>([]);
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [saving, setSaving] = useState(false);
+
+  function toggle(value: string) {
+    setSelected((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+  }
+
+  function closeDraft() {
+    setDraft(null);
+    setSelected([]);
+  }
 
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return;
@@ -184,7 +194,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         .setLngLat([c.lng, c.lat])
         .setPopup(
           new maplibregl.Popup({ offset: 16 }).setHTML(
-            `<div style="font:14px system-ui"><strong>${c.year ?? ""} · ${c.exposure}</strong><br>${c.place}</div>`,
+            `<div style="font:14px system-ui"><strong>${c.year ?? ""} · ${c.exposures}</strong><br>${c.place}</div>`,
           ),
         )
         .addTo(map);
@@ -193,22 +203,21 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   }, [checkins, mapLoaded]);
 
   async function addCheckin() {
-    if (!draft || !user) return;
+    if (!draft || !user || selected.length === 0) return;
     setSaving(true);
     const { error } = await supabase.rpc("log_check_in", {
       p_lng: draft.lng,
       p_lat: draft.lat,
       p_year: year,
       p_conflict: null,
-      p_exposure: exposure,
-      p_detail: labelFor(exposure),
+      p_exposures: selected,
     });
     setSaving(false);
     if (error) {
       alert("Could not save: " + error.message);
       return;
     }
-    setDraft(null);
+    closeDraft();
     setCheckins(await fetchCheckins(supabase));
   }
 
@@ -231,7 +240,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         </div>
 
         {draft && (
-          <div className="absolute right-4 top-4 w-72 rounded-xl border border-zinc-200 bg-white p-4 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+          <div className="absolute right-4 top-4 w-80 rounded-xl border border-zinc-200 bg-white p-4 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
             <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">New check-in</div>
             <div className="mt-1 text-xs text-zinc-500">{fmt(draft.lat, draft.lng)}</div>
 
@@ -245,33 +254,46 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               className="w-full"
             />
 
-            <label className="mt-3 block text-xs text-zinc-500">Exposure</label>
-            <select
-              value={exposure}
-              onChange={(e) => setExposure(e.target.value)}
-              className="mt-1 w-full rounded-md border border-zinc-300 bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700"
-            >
-              {EXPOSURES.map((x) => (
-                <option key={x.label} value={x.value}>
-                  {x.label}
-                </option>
-              ))}
-            </select>
+            <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              What were you exposed to here?
+            </div>
+            <div className="mb-2 text-xs text-zinc-500">
+              Select all that apply. Everything you pick is tagged to this check-in.
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {EXPOSURES.map((x) => {
+                const on = selected.includes(x.value);
+                return (
+                  <button
+                    key={x.label}
+                    type="button"
+                    onClick={() => toggle(x.value)}
+                    className={
+                      on
+                        ? "rounded-full border border-blue-500 bg-blue-50 px-2.5 py-1 text-xs text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300"
+                        : "rounded-full border border-zinc-300 px-2.5 py-1 text-xs text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    }
+                  >
+                    {x.label}
+                  </button>
+                );
+              })}
+            </div>
 
             <div className="mt-4 flex gap-2">
               {user ? (
                 <button
                   onClick={addCheckin}
-                  disabled={saving}
-                  className="flex-1 rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+                  disabled={saving || selected.length === 0}
+                  className="flex-1 rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50 dark:bg-white dark:text-zinc-900"
                 >
-                  {saving ? "Saving…" : "Save check-in"}
+                  {saving ? "Saving…" : selected.length ? `Save check-in (${selected.length})` : "Pick at least one"}
                 </button>
               ) : (
                 <div className="flex-1 text-xs text-zinc-500">Sign in above to save this pin to your record.</div>
               )}
               <button
-                onClick={() => setDraft(null)}
+                onClick={closeDraft}
                 className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
               >
                 Cancel
@@ -288,11 +310,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           </div>
           <ul className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
             {checkins.map((c, i) => (
-              <li key={i} className="flex items-center justify-between py-2 text-sm">
+              <li key={i} className="flex items-center justify-between gap-4 py-2 text-sm">
                 <span className="text-zinc-800 dark:text-zinc-200">
                   {c.year ?? "—"} · {c.place}
                 </span>
-                <span className="text-zinc-500">{c.exposure}</span>
+                <span className="shrink-0 text-zinc-500">{c.exposures}</span>
               </li>
             ))}
           </ul>
