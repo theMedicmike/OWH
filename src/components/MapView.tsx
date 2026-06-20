@@ -112,7 +112,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       zoom: 1.3,
     });
     mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
+    map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
     map.on("load", () => {
       for (const s of sites) {
