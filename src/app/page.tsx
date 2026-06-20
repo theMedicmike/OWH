@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import MapView from "@/components/MapView";
+import MapPanel from "@/components/MapPanel";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -18,7 +18,7 @@ export default async function Home() {
       </p>
 
       <div className="mt-6">
-        <MapView sites={sites ?? []} />
+        <MapPanel sites={sites ?? []} />
       </div>
 
       <p className="mt-6 text-xs text-zinc-400 dark:text-zinc-600">

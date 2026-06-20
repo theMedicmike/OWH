@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-type Site = {
+export type Site = {
   name: string;
   status: string;
   geom: { type: string; coordinates: [number, number] } | null;
