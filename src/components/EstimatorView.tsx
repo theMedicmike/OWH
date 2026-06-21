@@ -5,70 +5,88 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
-const METALS = [
-  { key: "pb", name: "Lead" },
-  { key: "cd", name: "Cadmium" },
-  { key: "du", name: "Depleted uranium" },
-  { key: "w", name: "Tungsten" },
-  { key: "as", name: "Arsenic" },
-] as const;
+// Every service-relevant heavy metal / metalloid, with where it stores and the
+// vital trace minerals/nutrients it displaces or depletes. Heuristic, for the
+// scientific advisory board to validate and calibrate.
+const METALS: { key: string; name: string; organs: string[]; minerals: string[] }[] = [
+  { key: "pb", name: "Lead", organs: ["bone", "brain", "kidney"], minerals: ["calcium", "iron", "zinc"] },
+  { key: "cd", name: "Cadmium", organs: ["kidney", "lungs", "bone"], minerals: ["zinc", "copper", "selenium", "calcium"] },
+  { key: "hg", name: "Mercury", organs: ["brain", "kidney", "nervous system"], minerals: ["selenium", "zinc"] },
+  { key: "as", name: "Arsenic", organs: ["skin", "liver", "peripheral nerves"], minerals: ["selenium", "zinc", "phosphate"] },
+  { key: "u", name: "Depleted uranium", organs: ["kidney", "bone"], minerals: ["calcium", "phosphate"] },
+  { key: "w", name: "Tungsten", organs: ["fragment sites", "bone"], minerals: ["molybdenum", "cobalt"] },
+  { key: "co", name: "Cobalt", organs: ["heart", "thyroid", "lungs"], minerals: ["iron", "iodine"] },
+  { key: "cr", name: "Chromium (VI)", organs: ["lungs", "sinuses", "kidney"], minerals: ["iron", "zinc"] },
+  { key: "mn", name: "Manganese", organs: ["brain (basal ganglia)", "liver"], minerals: ["iron"] },
+  { key: "ni", name: "Nickel", organs: ["lungs", "skin", "sinuses"], minerals: ["zinc", "magnesium", "iron"] },
+  { key: "al", name: "Aluminum", organs: ["brain", "bone"], minerals: ["calcium", "magnesium", "iron", "phosphate"] },
+  { key: "sb", name: "Antimony", organs: ["lungs", "heart"], minerals: ["selenium"] },
+  { key: "be", name: "Beryllium", organs: ["lungs"], minerals: ["magnesium"] },
+  { key: "v", name: "Vanadium", organs: ["lungs", "kidney"], minerals: ["chromium"] },
+  { key: "tl", name: "Thallium", organs: ["nerves", "kidney"], minerals: ["potassium"] },
+  { key: "ba", name: "Barium", organs: ["heart", "bone", "muscle"], minerals: ["potassium", "calcium"] },
+];
 
-type MetalKey = (typeof METALS)[number]["key"];
-type Score = Record<MetalKey, number>;
+type Contribution = Record<string, number>;
 
-const ROLES: Record<string, Partial<Score>> = {
-  "Infantry / small arms": { pb: 20 },
-  "Tank crew / armor": { du: 30, w: 20, pb: 15 },
-  "Artillery / mortars": { pb: 25, as: 8 },
-  "Aviation door gunner": { pb: 25 },
-  "Range cadre / weapons instructor": { pb: 45 },
-  "EOD / ordnance disposal": { pb: 20, as: 18, cd: 10 },
-  "Mechanic / motor pool": { cd: 15, pb: 10 },
+const ROLES: Record<string, Contribution> = {
+  "Infantry / small arms": { pb: 20, sb: 6 },
+  "Tank crew / armor": { u: 30, w: 20, pb: 15, co: 8 },
+  "Artillery / mortars": { pb: 25, as: 8, ba: 6 },
+  "Aviation door gunner": { pb: 25, v: 6, ni: 4 },
+  "Range cadre / weapons instructor": { pb: 45, sb: 10 },
+  "EOD / ordnance disposal": { pb: 20, as: 18, cd: 10, ba: 8 },
+  "Mechanic / motor pool": { mn: 18, cr: 12, ni: 10, co: 8, cd: 12, pb: 10 },
   "Support / other": { pb: 5 },
 };
 
-const EXPOSURE_METALS: Record<string, Partial<Score>> = {
-  burn_pit: { pb: 15, cd: 12, as: 10 },
-  heavy_metal: { pb: 20, cd: 15 },
-  radiation: { du: 30, pb: 8 },
-  pesticide: { as: 12 },
-  particulate: { pb: 8, cd: 6 },
-  water_contamination: { as: 6, pb: 5 },
+const EXPOSURE_METALS: Record<string, Contribution> = {
+  burn_pit: { pb: 15, cd: 12, as: 10, cr: 8, ni: 6 },
+  heavy_metal: { pb: 18, cd: 15, hg: 10, as: 10 },
+  radiation: { u: 30, pb: 6 },
+  pesticide: { as: 14 },
+  particulate: { pb: 8, cd: 6, mn: 6, v: 5 },
+  water_contamination: { as: 8, pb: 5, cr: 4 },
+  chemical_solvent: { cr: 6, ni: 4 },
+  nerve_agent: {},
+  asbestos_silica: {},
+  pfas_afff: {},
+  gulf_war_agent: { as: 5, al: 5 },
 };
 
-type Munition = { key: string; label: string; m: Partial<Score> };
+type Munition = { key: string; label: string; m: Contribution };
 const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = [
   {
     group: "Small arms",
-    metals: "lead · copper",
+    metals: "lead · antimony · copper",
     items: [
-      { key: "m556", label: "5.56mm rifle", m: { pb: 18 } },
-      { key: "m762", label: "7.62mm", m: { pb: 18 } },
-      { key: "m9", label: "9mm pistol", m: { pb: 12 } },
-      { key: "m50", label: ".50 cal (M2)", m: { pb: 22 } },
+      { key: "m556", label: "5.56mm rifle", m: { pb: 18, sb: 4 } },
+      { key: "m762", label: "7.62mm", m: { pb: 18, sb: 4 } },
+      { key: "m9", label: "9mm pistol", m: { pb: 12, sb: 3 } },
+      { key: "m50", label: ".50 cal (M2)", m: { pb: 22, sb: 5 } },
     ],
   },
   {
     group: "Cannon & crew-served",
-    metals: "lead · propellant",
+    metals: "lead · tungsten",
     items: [
-      { key: "c2530", label: "25 / 30mm cannon", m: { pb: 15 } },
+      { key: "c2530", label: "25 / 30mm cannon", m: { pb: 15, w: 6 } },
       { key: "g40", label: "40mm grenade", m: { pb: 12, as: 4 } },
     ],
   },
   {
     group: "Tank & artillery",
-    metals: "lead · tungsten · blast",
+    metals: "tungsten · cobalt · lead · blast",
     items: [
-      { key: "t120", label: "120mm tank main gun", m: { w: 25, pb: 12 } },
-      { key: "a155", label: "155mm howitzer / mortars", m: { pb: 15, as: 6 } },
+      { key: "t120", label: "120mm tank main gun", m: { w: 25, u: 15, pb: 12, co: 6 } },
+      { key: "a155", label: "155mm howitzer / mortars", m: { pb: 15, as: 6, ba: 5 } },
     ],
   },
   {
     group: "Ordnance & bombs",
-    metals: "heavy metals · blast",
+    metals: "heavy metals · barium · blast",
     items: [
-      { key: "demo", label: "Grenades / demolitions", m: { pb: 10, as: 8 } },
+      { key: "demo", label: "Grenades / demolitions", m: { pb: 10, as: 8, ba: 6 } },
       { key: "b500", label: "500 lb bombs", m: { pb: 8, as: 6 } },
       { key: "b2000", label: "1,000–2,000 lb bombs", m: { pb: 10, as: 8 } },
     ],
@@ -76,27 +94,11 @@ const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = 
   {
     group: "Armor-piercing",
     metals: "depleted uranium · tungsten",
-    items: [{ key: "du", label: "Depleted-uranium rounds", m: { du: 45, w: 15 } }],
+    items: [{ key: "du", label: "Depleted-uranium rounds", m: { u: 45, w: 15 } }],
   },
 ];
 const RATES = ["None", "Some", "A lot", "Constant"];
 const RATE_FACTOR = [0, 0.35, 0.7, 1.0];
-
-const ORGANS: Record<MetalKey, string[]> = {
-  pb: ["bone", "brain", "kidney"],
-  cd: ["kidney", "lungs", "bone"],
-  du: ["kidney", "bone"],
-  w: ["fragment sites", "bone"],
-  as: ["skin", "liver", "nerves"],
-};
-
-const MINERALS: Record<MetalKey, string[]> = {
-  pb: ["calcium", "iron", "zinc"],
-  cd: ["zinc", "selenium"],
-  du: ["calcium"],
-  w: [],
-  as: ["selenium", "zinc"],
-};
 
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
@@ -146,10 +148,11 @@ export default function EstimatorView() {
   }, [supabase]);
 
   const idx = useMemo(() => {
-    const s: Score = { pb: 0, cd: 0, du: 0, w: 0, as: 0 };
-    const add = (m?: Partial<Score>, factor = 1) => {
-      if (!m) return;
-      for (const k of Object.keys(m) as MetalKey[]) s[k] += (m[k] ?? 0) * factor;
+    const s: Contribution = {};
+    for (const m of METALS) s[m.key] = 0;
+    const add = (c?: Contribution, factor = 1) => {
+      if (!c) return;
+      for (const k of Object.keys(c)) s[k] = (s[k] ?? 0) + c[k] * factor;
     };
     add(ROLES[role]);
     for (const e of logged) add(EXPOSURE_METALS[e]);
@@ -160,20 +163,26 @@ export default function EstimatorView() {
       }
     }
     const acc = 0.6 + (years / 30) * 0.8;
-    const out = {} as Score;
-    for (const m of METALS) out[m.key] = Math.max(0, Math.min(100, Math.round(s[m.key] * acc)));
+    const out: Contribution = {};
+    for (const m of METALS) out[m.key] = Math.max(0, Math.min(100, Math.round((s[m.key] ?? 0) * acc)));
     return out;
   }, [role, years, logged, munRates]);
 
-  const ranked = [...METALS].sort((a, b) => idx[b.key] - idx[a.key]);
+  const present = METALS.filter((m) => idx[m.key] > 0).sort((a, b) => idx[b.key] - idx[a.key]);
   const high = METALS.filter((m) => idx[m.key] >= 45);
-  const organs = uniq(high.flatMap((m) => ORGANS[m.key]));
-  const minerals = uniq(high.flatMap((m) => MINERALS[m.key]));
+  const organs = uniq(high.flatMap((m) => m.organs));
+  const minerals = uniq(high.flatMap((m) => m.minerals));
+
   const tests: string[] = [];
   if (idx.pb >= 45) tests.push("Bone-lead scan (K-XRF) for stored lead");
-  if (idx.du >= 45) tests.push("Depleted-uranium urine test (VA surveillance program)");
+  if (idx.u >= 45) tests.push("Depleted-uranium urine test (VA surveillance program)");
   if (idx.cd >= 45) tests.push("Kidney function and cadmium panel");
-  tests.push("A comprehensive panel, reviewed with a clinician");
+  if (idx.hg >= 45) tests.push("Blood and urine mercury");
+  if (idx.as >= 45) tests.push("Speciated urine arsenic");
+  if (idx.mn >= 45) tests.push("Manganese panel and a neurological evaluation");
+  if (idx.cr >= 45) tests.push("Chromium panel");
+  tests.push("A comprehensive metals panel, reviewed with a clinician");
+
   const setCount = Object.values(munRates).filter((r) => r > 0).length + logged.length;
   const confidence = setCount >= 4 ? "moderate" : "low";
 
@@ -207,10 +216,7 @@ export default function EstimatorView() {
         {logged.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {logged.map((e) => (
-              <span
-                key={e}
-                className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-              >
+              <span key={e} className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                 {EXPOSURE_LABEL[e] ?? e}
               </span>
             ))}
@@ -220,11 +226,7 @@ export default function EstimatorView() {
         <div className="mt-4 grid gap-3">
           <div className="flex items-center gap-3">
             <label className="w-28 text-xs text-zinc-500">Primary role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="flex-1 rounded-md border border-zinc-300 bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700"
-            >
+            <select value={role} onChange={(e) => setRole(e.target.value)} className="flex-1 rounded-md border border-zinc-300 bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700">
               {Object.keys(ROLES).map((r) => (
                 <option key={r}>{r}</option>
               ))}
@@ -253,10 +255,7 @@ export default function EstimatorView() {
             {g.items.map((it) => {
               const cur = munRates[it.key] ?? 0;
               return (
-                <div
-                  key={it.key}
-                  className="flex items-center justify-between gap-3 border-t border-zinc-100 py-2 dark:border-zinc-800"
-                >
+                <div key={it.key} className="flex items-center justify-between gap-3 border-t border-zinc-100 py-2 dark:border-zinc-800">
                   <span className="text-sm text-zinc-800 dark:text-zinc-200">{it.label}</span>
                   <div className="flex flex-none overflow-hidden rounded-md border border-zinc-300 text-xs dark:border-zinc-700">
                     {RATES.map((label, ri) => {
@@ -267,9 +266,7 @@ export default function EstimatorView() {
                           type="button"
                           onClick={() => setMunRates((p) => ({ ...p, [it.key]: ri }))}
                           className={
-                            (on
-                              ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 "
-                              : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 ") +
+                            (on ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 " : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 ") +
                             (ri > 0 ? "border-l border-zinc-300 dark:border-zinc-700 " : "") +
                             "px-2.5 py-1"
                           }
@@ -292,7 +289,8 @@ export default function EstimatorView() {
           <span className="text-xs text-zinc-500">{confidence} confidence</span>
         </div>
         <div className="mt-3 space-y-2.5">
-          {ranked.map((m) => {
+          {present.length === 0 && <p className="text-sm text-zinc-500">Set your role, munitions, and exposures to see your estimate.</p>}
+          {present.map((m) => {
             const v = idx[m.key];
             const b = band(v);
             return (
@@ -308,6 +306,7 @@ export default function EstimatorView() {
             );
           })}
         </div>
+        <p className="mt-3 text-xs text-zinc-400">Tracking {METALS.length} metals; showing the ones your profile flags.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -316,9 +315,7 @@ export default function EstimatorView() {
           <div className="mt-2 flex flex-wrap gap-1.5">
             {organs.length ? (
               organs.map((o) => (
-                <span key={o} className="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                  {o}
-                </span>
+                <span key={o} className="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
               ))
             ) : (
               <span className="text-sm text-zinc-500">Nothing elevated enough to map yet.</span>
@@ -327,13 +324,11 @@ export default function EstimatorView() {
         </div>
 
         <div className={card}>
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Minerals you may be low in</div>
+          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Trace minerals it displaces</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {minerals.length ? (
               minerals.map((o) => (
-                <span key={o} className="rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                  {o}
-                </span>
+                <span key={o} className="rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
               ))
             ) : (
               <span className="text-sm text-zinc-500">No clear depletions to flag yet.</span>
@@ -356,8 +351,8 @@ export default function EstimatorView() {
 
       <p className="px-1 text-xs leading-relaxed text-zinc-400">
         This is an estimate, the lowest tier of evidence, meant to guide testing and a conversation with your
-        clinician. It is not a diagnosis and never replaces medical care. The weighting will be reviewed and
-        calibrated by the scientific advisory board.
+        clinician. It is not a diagnosis and never replaces medical care. The metal-to-mineral mapping and the
+        weighting will be reviewed and calibrated by the scientific advisory board.
       </p>
     </div>
   );
