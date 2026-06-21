@@ -6,7 +6,7 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: sites } = await supabase
     .from("known_exposure_sites")
-    .select("name, status, geom");
+    .select("name, status, geom, exposure_classes, date_from, date_to");
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10 font-sans">

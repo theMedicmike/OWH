@@ -10,12 +10,16 @@ export type Site = {
   name: string;
   status: string;
   geom: string | null;
+  exposure_classes: string[] | null;
+  date_from: string | null;
+  date_to: string | null;
 };
 
 type CheckIn = {
   lng: number;
   lat: number;
   year: number | null;
+  classes: string[];
   exposures: string;
   place: string;
 };
@@ -55,6 +59,10 @@ function labelFor(value: string) {
   return EXPOSURES.find((e) => e.value === value)?.label ?? value;
 }
 
+function yearOf(date: string | null): number | null {
+  return date ? new Date(date).getUTCFullYear() : null;
+}
+
 async function reverseGeocode(lat: number, lng: number): Promise<string> {
   try {
     const r = await fetch(
@@ -92,12 +100,13 @@ async function fetchCheckins(supabase: ReturnType<typeof createClient>): Promise
   for (const row of (data ?? []) as Row[]) {
     const ll = wkbToLngLat(row.geom);
     if (!ll) continue;
-    const labels = (row.exposures ?? []).map((e) => labelFor(e.exposure_class));
+    const classes = (row.exposures ?? []).map((e) => e.exposure_class);
     list.push({
       lng: ll[0],
       lat: ll[1],
       year: row.date_start ? new Date(row.date_start).getUTCFullYear() : null,
-      exposures: labels.length ? labels.join(", ") : "—",
+      classes,
+      exposures: classes.length ? classes.map(labelFor).join(", ") : "—",
       place: row.place_name || fmt(ll[1], ll[0]),
     });
   }
@@ -109,6 +118,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const draftMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const siteMarkersRef = useRef<maplibregl.Marker[]>([]);
   const userMarkersRef = useRef<maplibregl.Marker[]>([]);
 
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -119,14 +129,33 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [saving, setSaving] = useState(false);
 
+  // map filters
+  const [activeClasses, setActiveClasses] = useState<Set<string>>(new Set());
+  const [yearOn, setYearOn] = useState(false);
+  const [filterYear, setFilterYear] = useState(2007);
+
   function toggle(value: string) {
     setSelected((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+  }
+
+  function toggleClass(value: string) {
+    setActiveClasses((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
   }
 
   function closeDraft() {
     setDraft(null);
     setDraftName("");
     setSelected([]);
+  }
+
+  function classMatch(classes: string[]) {
+    if (activeClasses.size === 0) return true;
+    return classes.some((c) => activeClasses.has(c));
   }
 
   useEffect(() => {
@@ -139,34 +168,15 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     });
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl(), "bottom-right");
-
-    map.on("load", () => {
-      for (const s of sites) {
-        const ll = wkbToLngLat(s.geom);
-        if (!ll) continue;
-        const el = document.createElement("div");
-        el.style.cssText = `width:14px;height:14px;border-radius:50%;border:2px solid #fff;cursor:pointer;background:${STATUS_COLOR[s.status] ?? "#888780"};box-shadow:0 0 0 1px rgba(0,0,0,0.15)`;
-        new maplibregl.Marker({ element: el })
-          .setLngLat(ll)
-          .setPopup(
-            new maplibregl.Popup({ offset: 16 }).setHTML(
-              `<div style="font:14px system-ui"><strong>${s.name}</strong><br><span style="color:${STATUS_COLOR[s.status] ?? "#888780"};text-transform:capitalize">${s.status}</span></div>`,
-            ),
-          )
-          .addTo(map);
-      }
-      setMapLoaded(true);
-    });
-
+    map.on("load", () => setMapLoaded(true));
     map.on("click", (e) => setDraft({ lng: e.lngLat.lng, lat: e.lngLat.lat }));
-
     return () => {
       map.remove();
       mapRef.current = null;
     };
-  }, [sites]);
+  }, []);
 
-  // reverse-geocode the dropped pin to auto-fill a place name
+  // reverse-geocode the dropped pin
   useEffect(() => {
     let active = true;
     if (!draft) {
@@ -196,6 +206,36 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     };
   }, [user, supabase]);
 
+  // render known-site markers (filtered)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded) return;
+    for (const m of siteMarkersRef.current) m.remove();
+    siteMarkersRef.current = [];
+    for (const s of sites) {
+      const ll = wkbToLngLat(s.geom);
+      if (!ll) continue;
+      if (!classMatch(s.exposure_classes ?? [])) continue;
+      if (yearOn) {
+        const f = yearOf(s.date_from);
+        const t = yearOf(s.date_to);
+        if (f !== null && t !== null && !(f <= filterYear && filterYear <= t)) continue;
+      }
+      const el = document.createElement("div");
+      el.style.cssText = `width:14px;height:14px;border-radius:50%;border:2px solid #fff;cursor:pointer;background:${STATUS_COLOR[s.status] ?? "#888780"};box-shadow:0 0 0 1px rgba(0,0,0,0.15)`;
+      const m = new maplibregl.Marker({ element: el })
+        .setLngLat(ll)
+        .setPopup(
+          new maplibregl.Popup({ offset: 16 }).setHTML(
+            `<div style="font:14px system-ui"><strong>${s.name}</strong><br><span style="color:${STATUS_COLOR[s.status] ?? "#888780"};text-transform:capitalize">${s.status}</span></div>`,
+          ),
+        )
+        .addTo(map);
+      siteMarkersRef.current.push(m);
+    }
+  }, [sites, mapLoaded, activeClasses, yearOn, filterYear]);
+
+  // draft marker
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -207,18 +247,19 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       const el = document.createElement("div");
       el.style.cssText =
         "width:18px;height:18px;border-radius:50%;border:3px solid #fff;background:#185FA5;box-shadow:0 0 0 1px rgba(0,0,0,0.25)";
-      draftMarkerRef.current = new maplibregl.Marker({ element: el })
-        .setLngLat([draft.lng, draft.lat])
-        .addTo(map);
+      draftMarkerRef.current = new maplibregl.Marker({ element: el }).setLngLat([draft.lng, draft.lat]).addTo(map);
     }
   }, [draft]);
 
+  // render check-in markers (filtered)
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapLoaded) return;
     for (const m of userMarkersRef.current) m.remove();
     userMarkersRef.current = [];
     for (const c of checkins) {
+      if (!classMatch(c.classes)) continue;
+      if (yearOn && c.year !== filterYear) continue;
       const el = document.createElement("div");
       el.style.cssText =
         "width:14px;height:14px;border-radius:50%;border:2px solid #fff;background:#185FA5;box-shadow:0 0 0 1px rgba(0,0,0,0.2)";
@@ -232,7 +273,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         .addTo(map);
       userMarkersRef.current.push(m);
     }
-  }, [checkins, mapLoaded]);
+  }, [checkins, mapLoaded, activeClasses, yearOn, filterYear]);
 
   async function addCheckin() {
     if (!draft || !user || selected.length === 0) return;
@@ -256,13 +297,56 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setCheckins(await fetchCheckins(supabase));
   }
 
+  const chipBase = "rounded-full border px-2.5 py-1 text-xs";
+
   return (
     <div>
+      <div className="mb-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Filter the map</span>
+          <div className="flex items-center gap-3">
+            {activeClasses.size > 0 && (
+              <button onClick={() => setActiveClasses(new Set())} className="text-xs text-blue-600 hover:underline dark:text-blue-400">
+                clear categories
+              </button>
+            )}
+            <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-300">
+              <input type="checkbox" checked={yearOn} onChange={(e) => setYearOn(e.target.checked)} />
+              filter by year
+            </label>
+          </div>
+        </div>
+
+        {yearOn && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="w-10 text-xs font-medium">{filterYear}</span>
+            <input type="range" min={1955} max={2026} value={filterYear} onChange={(e) => setFilterYear(+e.target.value)} className="flex-1" />
+          </div>
+        )}
+
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {EXPOSURES.map((x) => {
+            const on = activeClasses.has(x.value);
+            return (
+              <button
+                key={x.value}
+                type="button"
+                onClick={() => toggleClass(x.value)}
+                className={
+                  on
+                    ? `${chipBase} border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300`
+                    : `${chipBase} border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800`
+                }
+              >
+                {x.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="relative">
-        <div
-          ref={containerRef}
-          className="h-[520px] w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800"
-        />
+        <div ref={containerRef} className="h-[520px] w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800" />
 
         <div className="pointer-events-none absolute left-4 top-4 rounded-lg bg-white/90 px-3 py-2 text-xs shadow-sm backdrop-blur dark:bg-zinc-900/90">
           <div className="font-medium text-zinc-700 dark:text-zinc-200">Known exposure sites</div>
@@ -289,21 +373,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <div className="mt-1 text-xs text-zinc-400">{fmt(draft.lat, draft.lng)}</div>
 
             <label className="mt-3 block text-xs text-zinc-500">Service year: {year}</label>
-            <input
-              type="range"
-              min={1955}
-              max={2026}
-              value={year}
-              onChange={(e) => setYear(+e.target.value)}
-              className="w-full"
-            />
+            <input type="range" min={1955} max={2026} value={year} onChange={(e) => setYear(+e.target.value)} className="w-full" />
 
-            <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              What were you exposed to here?
-            </div>
-            <div className="mb-2 text-xs text-zinc-500">
-              Select all that apply. Everything you pick is tagged to this check-in.
-            </div>
+            <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">What were you exposed to here?</div>
+            <div className="mb-2 text-xs text-zinc-500">Select all that apply. Everything you pick is tagged to this check-in.</div>
             <div className="flex flex-wrap gap-1.5">
               {EXPOSURES.map((x) => {
                 const on = selected.includes(x.value);
@@ -314,8 +387,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                     onClick={() => toggle(x.value)}
                     className={
                       on
-                        ? "rounded-full border border-blue-500 bg-blue-50 px-2.5 py-1 text-xs text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300"
-                        : "rounded-full border border-zinc-300 px-2.5 py-1 text-xs text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        ? `${chipBase} border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300`
+                        : `${chipBase} border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800`
                     }
                   >
                     {x.label}
@@ -336,10 +409,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               ) : (
                 <div className="flex-1 text-xs text-zinc-500">Sign in above to save this pin to your record.</div>
               )}
-              <button
-                onClick={closeDraft}
-                className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
-              >
+              <button onClick={closeDraft} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700">
                 Cancel
               </button>
             </div>
@@ -349,15 +419,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
       {user && checkins.length > 0 && (
         <div className="mt-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            Your timeline ({checkins.length})
-          </div>
+          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Your timeline ({checkins.length})</div>
           <ul className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
             {checkins.map((c, i) => (
               <li key={i} className="flex items-center justify-between gap-4 py-2 text-sm">
-                <span className="text-zinc-800 dark:text-zinc-200">
-                  {c.year ?? "—"} · {c.place}
-                </span>
+                <span className="text-zinc-800 dark:text-zinc-200">{c.year ?? "—"} · {c.place}</span>
                 <span className="shrink-0 text-zinc-500">{c.exposures}</span>
               </li>
             ))}
