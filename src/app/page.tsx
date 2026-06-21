@@ -31,6 +31,9 @@ export default async function Home() {
         <Link href="/report" className="text-blue-600 hover:underline dark:text-blue-400">
           Clinician &amp; VSO report →
         </Link>
+        <Link href="/buddies" className="text-blue-600 hover:underline dark:text-blue-400">
+          Battle buddies →
+        </Link>
       </div>
 
       <div className="mt-6">
