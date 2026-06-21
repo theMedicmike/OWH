@@ -100,6 +100,22 @@ const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = 
 const RATES = ["None", "Some", "A lot", "Constant"];
 const RATE_FACTOR = [0, 0.35, 0.7, 1.0];
 
+// Non-metal contaminants. These don't "store" like metals; they deplete antioxidants
+// and damage organs. Exposure load (not stored burden), driven by logged exposures + role.
+const CONTAMINANTS: { key: string; name: string; systems: string[]; depletes: string[]; from: Record<string, number> }[] = [
+  { key: "solv", name: "Solvents & fuels (benzene, TCE, JP-8)", systems: ["blood / bone marrow", "liver", "kidney", "nervous system"], depletes: ["glutathione", "antioxidants"], from: { chemical_solvent: 30, water_contamination: 20, burn_pit: 10 } },
+  { key: "diox", name: "Dioxins & furans (Agent Orange, burn-pit plastics)", systems: ["thyroid / endocrine", "liver", "immune"], depletes: ["thyroid hormone", "vitamin A"], from: { pesticide: 30, burn_pit: 18 } },
+  { key: "pfas", name: "PFAS / AFFF (forever chemicals)", systems: ["liver", "thyroid", "kidney", "immune"], depletes: ["thyroid function", "immune function"], from: { pfas_afff: 40, water_contamination: 15 } },
+  { key: "pm", name: "Fine particulate & silica", systems: ["lungs", "cardiovascular"], depletes: ["antioxidants"], from: { burn_pit: 20, particulate: 30, asbestos_silica: 10 } },
+  { key: "asb", name: "Asbestos fibers", systems: ["lungs (pleura)"], depletes: [], from: { asbestos_silica: 40 } },
+  { key: "rad", name: "Ionizing radiation", systems: ["bone marrow", "thyroid", "broad cancer risk"], depletes: ["antioxidants", "DNA repair capacity"], from: { radiation: 40 } },
+  { key: "op", name: "Nerve agents & organophosphates", systems: ["nervous system", "brain"], depletes: ["cholinesterase", "B-vitamins"], from: { nerve_agent: 35, pesticide: 12, gulf_war_agent: 10 } },
+];
+const CONTAMINANT_ROLE: Record<string, Record<string, number>> = {
+  "Mechanic / motor pool": { solv: 18 },
+  "Aviation door gunner": { solv: 12 },
+};
+
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
   heavy_metal: "Heavy metals",
@@ -168,6 +184,23 @@ export default function EstimatorView() {
     return out;
   }, [role, years, logged, munRates]);
 
+  const cload = useMemo(() => {
+    const s: Contribution = {};
+    for (const c of CONTAMINANTS) s[c.key] = 0;
+    for (const e of logged) for (const c of CONTAMINANTS) if (c.from[e]) s[c.key] += c.from[e];
+    const rb = CONTAMINANT_ROLE[role];
+    if (rb) for (const k of Object.keys(rb)) s[k] = (s[k] ?? 0) + rb[k];
+    const acc = 0.7 + (years / 30) * 0.4;
+    const out: Contribution = {};
+    for (const c of CONTAMINANTS) out[c.key] = Math.max(0, Math.min(100, Math.round((s[c.key] ?? 0) * acc)));
+    return out;
+  }, [logged, role, years]);
+
+  const cPresent = CONTAMINANTS.filter((c) => cload[c.key] > 0).sort((a, b) => cload[b.key] - cload[a.key]);
+  const cHigh = CONTAMINANTS.filter((c) => cload[c.key] >= 45);
+  const cSystems = uniq(cHigh.flatMap((c) => c.systems));
+  const cDepletes = uniq(cHigh.flatMap((c) => c.depletes));
+
   const present = METALS.filter((m) => idx[m.key] > 0).sort((a, b) => idx[b.key] - idx[a.key]);
   const high = METALS.filter((m) => idx[m.key] >= 45);
   const organs = uniq(high.flatMap((m) => m.organs));
@@ -181,6 +214,11 @@ export default function EstimatorView() {
   if (idx.as >= 45) tests.push("Speciated urine arsenic");
   if (idx.mn >= 45) tests.push("Manganese panel and a neurological evaluation");
   if (idx.cr >= 45) tests.push("Chromium panel");
+  if (cload.pfas >= 45) tests.push("Serum PFAS, a thyroid panel, and a lipid panel");
+  if (cload.solv >= 45) tests.push("CBC for blood and marrow effects (benzene / solvents)");
+  if (cload.rad >= 45) tests.push("Radiation dose review and cancer screening per guidance");
+  if (cload.op >= 45) tests.push("Cholinesterase test and a neurological evaluation");
+  if (cload.pm >= 45 || cload.asb >= 45) tests.push("Pulmonary function test and chest imaging");
   tests.push("A comprehensive metals panel, reviewed with a clinician");
 
   const setCount = Object.values(munRates).filter((r) => r > 0).length + logged.length;
@@ -307,6 +345,57 @@ export default function EstimatorView() {
           })}
         </div>
         <p className="mt-3 text-xs text-zinc-400">Tracking {METALS.length} metals; showing the ones your profile flags.</p>
+      </div>
+
+      <div className={card}>
+        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Chemical &amp; other contaminants</div>
+        <div className="mt-1 text-xs text-zinc-500">
+          Exposure load from what you logged. These deplete antioxidants and damage organs rather than storing like metals.
+        </div>
+        <div className="mt-3 space-y-2.5">
+          {cPresent.length === 0 && (
+            <p className="text-sm text-zinc-500">
+              Log chemical, water, PFAS, radiation, pesticide, or particulate exposures on the map to see these.
+            </p>
+          )}
+          {cPresent.map((c) => {
+            const v = cload[c.key];
+            const b = band(v);
+            return (
+              <div key={c.key}>
+                <div className="flex justify-between gap-3 text-sm">
+                  <span className="text-zinc-800 dark:text-zinc-200">{c.name}</span>
+                  <span className="shrink-0" style={{ color: b.text }}>{b.label}</span>
+                </div>
+                <div className="mt-1 h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                  <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {(cSystems.length > 0 || cDepletes.length > 0) && (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <div className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Systems at risk</div>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {cSystems.map((o) => (
+                  <span key={o} className="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
+                ))}
+              </div>
+            </div>
+            {cDepletes.length > 0 && (
+              <div>
+                <div className="text-xs font-medium text-zinc-700 dark:text-zinc-300">What it depletes</div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {cDepletes.map((o) => (
+                    <span key={o} className="rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
