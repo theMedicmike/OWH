@@ -18,12 +18,14 @@ export default async function Home() {
         log where you served.
       </p>
 
-      <Link
-        href="/estimator"
-        className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
-      >
-        Your exposure burden estimate →
-      </Link>
+      <div className="mt-2 flex flex-wrap gap-4 text-sm">
+        <Link href="/estimator" className="text-blue-600 hover:underline dark:text-blue-400">
+          Your exposure burden estimate →
+        </Link>
+        <Link href="/health" className="text-blue-600 hover:underline dark:text-blue-400">
+          Your health &amp; connections →
+        </Link>
+      </div>
 
       <div className="mt-6">
         <MapPanel sites={sites ?? []} />
