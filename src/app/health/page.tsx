@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HealthView from "@/components/HealthView";
+import DocumentsCard from "@/components/DocumentsCard";
 
 export default function HealthPage() {
   return (
@@ -13,8 +14,9 @@ export default function HealthPage() {
       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         List what you live with now, and see where it lines up with the exposures you logged on the map.
       </p>
-      <div className="mt-6">
+      <div className="mt-6 space-y-4">
         <HealthView />
+        <DocumentsCard />
       </div>
     </main>
   );
