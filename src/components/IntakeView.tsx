@@ -1,0 +1,212 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+
+const EXPOSURE_LABEL: Record<string, string> = {
+  burn_pit: "Burn pits",
+  heavy_metal: "Heavy metals",
+  chemical_solvent: "Chemical / solvent",
+  water_contamination: "Water contamination",
+  pesticide: "Pesticide / herbicide",
+  asbestos_silica: "Asbestos / silica",
+  nerve_agent: "Nerve agent",
+  particulate: "Particulate / dust",
+  radiation: "Radiation / depleted uranium",
+  pfas_afff: "PFAS / AFFF",
+  gulf_war_agent: "Gulf War agent",
+};
+
+type Proposal = {
+  place: string;
+  year: number;
+  exposures: string[];
+  status: "idle" | "saving" | "saved" | "error";
+};
+
+type Msg = { role: "user" | "assistant"; content: string; proposals?: Proposal[] };
+
+const GREETING =
+  "I'm your guide, and I'll help you build your service timeline at your pace. Nothing is shared without your say-so, and you can stop anytime. To start: which branch did you serve in, and roughly what years?";
+
+function parseProposals(text: string): { clean: string; proposals: Proposal[] } {
+  const proposals: Proposal[] = [];
+  const re = /<<checkin>>([\s\S]*?)<<\/checkin>>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) {
+    try {
+      const obj = JSON.parse(m[1].trim());
+      if (obj.place && obj.year && Array.isArray(obj.exposures)) {
+        proposals.push({ place: obj.place, year: obj.year, exposures: obj.exposures, status: "idle" });
+      }
+    } catch {
+      // ignore malformed proposals
+    }
+  }
+  const clean = text.replace(re, "").trim();
+  return { clean, proposals };
+}
+
+async function geocode(place: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(place)}`);
+    const j = await r.json();
+    if (j[0]) return { lat: parseFloat(j[0].lat), lng: parseFloat(j[0].lon) };
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+export default function IntakeView() {
+  const [supabase] = useState(() => createClient());
+  const [user, setUser] = useState<User | null>(null);
+  const [messages, setMessages] = useState<Msg[]>([{ role: "assistant", content: GREETING }]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+  }, [supabase]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, busy]);
+
+  async function send() {
+    const text = input.trim();
+    if (!text || busy) return;
+    const next = [...messages, { role: "user" as const, content: text }];
+    setMessages(next);
+    setInput("");
+    setBusy(true);
+    try {
+      const res = await fetch("/api/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+      });
+      const { text: reply } = await res.json();
+      const { clean, proposals } = parseProposals(reply ?? "");
+      setMessages((prev) => [...prev, { role: "assistant", content: clean, proposals }]);
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I couldn't reach the guide just now. Try again in a moment." }]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveProposal(mi: number, pi: number) {
+    setMessages((prev) => {
+      const copy = structuredClone(prev) as Msg[];
+      copy[mi].proposals![pi].status = "saving";
+      return copy;
+    });
+    const p = messages[mi].proposals![pi];
+    const loc = await geocode(p.place);
+    let status: Proposal["status"] = "error";
+    if (loc) {
+      const { data: newId, error } = await supabase.rpc("log_check_in", {
+        p_lng: loc.lng,
+        p_lat: loc.lat,
+        p_year: p.year,
+        p_conflict: null,
+        p_exposures: p.exposures,
+      });
+      if (!error && newId) {
+        await supabase.from("check_ins").update({ place_name: p.place }).eq("id", newId);
+        status = "saved";
+      }
+    }
+    setMessages((prev) => {
+      const copy = structuredClone(prev) as Msg[];
+      copy[mi].proposals![pi].status = status;
+      return copy;
+    });
+  }
+
+  return (
+    <div>
+      <div className="space-y-3">
+        {messages.map((msg, mi) => (
+          <div key={mi}>
+            <div className={msg.role === "user" ? "flex justify-end" : "flex gap-2"}>
+              {msg.role === "assistant" && (
+                <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
+                  <i className="ti ti-route" aria-hidden="true" />
+                </div>
+              )}
+              <div
+                className={
+                  msg.role === "user"
+                    ? "max-w-[80%] rounded-xl bg-blue-600 px-3.5 py-2 text-sm text-white"
+                    : "max-w-[85%] rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-sm leading-relaxed text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                }
+              >
+                {msg.content}
+              </div>
+            </div>
+
+            {msg.proposals?.map((p, pi) => (
+              <div key={pi} className="ml-9 mt-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
+                <div className="text-xs text-zinc-500">Proposed check-in</div>
+                <div className="mt-0.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">{p.place}</div>
+                <div className="text-xs text-zinc-500">Year {p.year}</div>
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {p.exposures.map((e) => (
+                    <span key={e} className="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                      {EXPOSURE_LABEL[e] ?? e}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-2">
+                  {!user ? (
+                    <span className="text-xs text-zinc-500">Sign in on the map to save this.</span>
+                  ) : p.status === "saved" ? (
+                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Saved to your timeline ✓</span>
+                  ) : p.status === "error" ? (
+                    <span className="text-xs text-rose-500">Couldn&apos;t locate that place. Add it on the map instead.</span>
+                  ) : (
+                    <button
+                      onClick={() => saveProposal(mi, pi)}
+                      disabled={p.status === "saving"}
+                      className="rounded-md bg-zinc-900 px-3 py-1 text-xs text-white hover:opacity-90 disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+                    >
+                      {p.status === "saving" ? "Saving…" : "Save to my timeline"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+        {busy && <div className="ml-9 text-sm text-zinc-400">typing…</div>}
+        <div ref={endRef} />
+      </div>
+
+      <div className="mt-4 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && send()}
+          placeholder="Type your answer…"
+          className="flex-1 bg-transparent text-sm outline-none"
+        />
+        <button
+          onClick={send}
+          disabled={busy || !input.trim()}
+          className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+        >
+          Send
+        </button>
+      </div>
+
+      <p className="mt-3 text-xs leading-relaxed text-zinc-400">
+        Your guide helps you remember and record; it does not diagnose. If anything feels heavy, the Veterans Crisis
+        Line is one tap away: dial 988, then press 1.
+      </p>
+    </div>
+  );
+}

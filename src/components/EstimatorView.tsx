@@ -178,7 +178,7 @@ export default function EstimatorView() {
         if (r > 0) add(it.m, RATE_FACTOR[r]);
       }
     }
-    const acc = 0.6 + (years / 30) * 0.8;
+    const acc = 0.6 + (years / 50) * 0.8;
     const out: Contribution = {};
     for (const m of METALS) out[m.key] = Math.max(0, Math.min(100, Math.round((s[m.key] ?? 0) * acc)));
     return out;
@@ -190,7 +190,7 @@ export default function EstimatorView() {
     for (const e of logged) for (const c of CONTAMINANTS) if (c.from[e]) s[c.key] += c.from[e];
     const rb = CONTAMINANT_ROLE[role];
     if (rb) for (const k of Object.keys(rb)) s[k] = (s[k] ?? 0) + rb[k];
-    const acc = 0.7 + (years / 30) * 0.4;
+    const acc = 0.7 + (years / 50) * 0.4;
     const out: Contribution = {};
     for (const c of CONTAMINANTS) out[c.key] = Math.max(0, Math.min(100, Math.round((s[c.key] ?? 0) * acc)));
     return out;
@@ -272,7 +272,7 @@ export default function EstimatorView() {
           </div>
           <div className="flex items-center gap-3">
             <label className="w-28 text-xs text-zinc-500">Years of service</label>
-            <input type="range" min={0} max={30} step={1} value={years} onChange={(e) => setYears(+e.target.value)} className="flex-1" />
+            <input type="range" min={0} max={50} step={1} value={years} onChange={(e) => setYears(+e.target.value)} className="flex-1" />
             <span className="w-14 text-right text-sm font-medium">{years}</span>
           </div>
         </div>

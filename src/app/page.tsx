@@ -19,6 +19,9 @@ export default async function Home() {
       </p>
 
       <div className="mt-2 flex flex-wrap gap-4 text-sm">
+        <Link href="/intake" className="text-blue-600 hover:underline dark:text-blue-400">
+          Build your timeline with the guide →
+        </Link>
         <Link href="/estimator" className="text-blue-600 hover:underline dark:text-blue-400">
           Your exposure burden estimate →
         </Link>
