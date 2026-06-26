@@ -252,6 +252,11 @@ export default function ReportView() {
             Your next step: bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to
             review the hand-off sheet on the last page.
           </p>
+          <p className="mt-2 text-xs leading-relaxed text-muted print:hidden">
+            If the VA denies a first claim — which is common, even for strong ones — it isn&apos;t the end. You can
+            appeal or file a supplemental claim, and this packet strengthens that too. If things feel heavy, the
+            Veterans Crisis Line is one tap away: dial 988, then press 1.
+          </p>
         </div>
 
         {/* 1. Service-exposure timeline */}

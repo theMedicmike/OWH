@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { rateLimit, clientKey } from "@/lib/ratelimit";
 
 const SYSTEM_PROMPT = `You are the intake guide for "Connecting the Dots of Service," an app that helps U.S. and allied veterans and military first responders build a record of where they served and what they were exposed to.
 
@@ -23,6 +24,9 @@ export async function POST(req: Request) {
     return Response.json({
       text: "The AI guide isn't connected yet. Add an Anthropic API key as ANTHROPIC_API_KEY in .env.local, then restart the app.",
     });
+  }
+  if (!rateLimit(`intake:${clientKey(req)}`, 40, 60_000)) {
+    return Response.json({ text: "You're sending messages a little fast — give it a few seconds and try again." }, { status: 429 });
   }
 
   try {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import AuthCard from "./AuthCard";
@@ -95,6 +96,12 @@ export default function Landing() {
           <p className="mt-6 text-center text-xs leading-relaxed text-faint">
             If you&apos;re struggling, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
           </p>
+          <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-faint">
+            <Link href="/trust" className="hover:text-brand hover:underline">What this is</Link>
+            <Link href="/privacy" className="hover:text-brand hover:underline">Privacy</Link>
+            <Link href="/terms" className="hover:text-brand hover:underline">Terms</Link>
+            <Link href="/support" className="hover:text-brand hover:underline">Support</Link>
+          </div>
         </div>
       </section>
     </main>

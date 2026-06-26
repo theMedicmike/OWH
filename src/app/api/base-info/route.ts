@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { rateLimit, clientKey } from "@/lib/ratelimit";
 
 const SYSTEM_PROMPT = `You are a military historian writing a short, vivid, honorable profile of a place where Americans served, for a veteran-facing app. Your reader may have served there. Write so they feel seen and proud — and so they learn something worth knowing about the ground they stood on.
 
@@ -20,6 +21,9 @@ Hard rules:
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ text: "" });
+  }
+  if (!rateLimit(`base-info:${clientKey(req)}`, 20, 60_000)) {
+    return Response.json({ text: "" }, { status: 429 });
   }
   try {
     const { name } = (await req.json()) as { name: string };

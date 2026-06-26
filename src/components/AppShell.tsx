@@ -161,6 +161,11 @@ export default function AppShell({ title, children }: { title: string; children:
         >
           Sign out
         </button>
+        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 px-2 text-[10px] text-white/30">
+          <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-white/60">Send feedback</a>
+          <Link href="/privacy" className="hover:text-white/60">Privacy</Link>
+          <Link href="/terms" className="hover:text-white/60">Terms</Link>
+        </div>
       </div>
     </div>
   );
@@ -194,8 +199,18 @@ export default function AppShell({ title, children }: { title: string; children:
           </button>
           <h1 className="text-base font-bold tracking-tight text-ink">{title}</h1>
 
+          <Link
+            href="/support"
+            className="ml-auto flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-canvas"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5 text-red-500" aria-hidden="true">
+              <path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" />
+            </svg>
+            Need support?
+          </Link>
+
           {/* Account menu (always visible) */}
-          <div className="relative ml-auto">
+          <div className="relative">
             <button
               onClick={() => setMenu((m) => !m)}
               className="flex items-center gap-2 rounded-full border border-line py-1 pl-1 pr-3 text-sm text-ink transition hover:bg-canvas"
