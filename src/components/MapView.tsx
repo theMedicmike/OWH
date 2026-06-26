@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { User } from "@supabase/supabase-js";
@@ -91,6 +91,15 @@ function wkbToLngLat(hex: string | null): [number, number] | null {
   return [lng, lat];
 }
 
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
 async function fetchCheckins(supabase: ReturnType<typeof createClient>): Promise<CheckIn[]> {
   const { data } = await supabase
     .from("check_ins")
@@ -157,6 +166,37 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     if (activeClasses.size === 0) return true;
     return classes.some((c) => activeClasses.has(c));
   }
+
+  // The flip: instead of asking the veteran to name the chemicals, read the
+  // documented exposures from recognized sites near the dropped pin in that year,
+  // and offer them to confirm. (~160km / one year window.)
+  const suggestions = useMemo(() => {
+    if (!draft) return { classes: [] as string[], sites: [] as string[] };
+    const within: { name: string; classes: string[] }[] = [];
+    for (const s of sites) {
+      const ll = wkbToLngLat(s.geom);
+      if (!ll) continue;
+      if (haversineKm(draft.lat, draft.lng, ll[1], ll[0]) > 160) continue;
+      const f = yearOf(s.date_from);
+      const t = yearOf(s.date_to);
+      if (f !== null && t !== null && !(f <= year && year <= t)) continue;
+      within.push({ name: s.name, classes: s.exposure_classes ?? [] });
+    }
+    return {
+      classes: Array.from(new Set(within.flatMap((w) => w.classes))),
+      sites: Array.from(new Set(within.map((w) => w.name))),
+    };
+  }, [draft, year, sites]);
+
+  // Seed the selection from suggestions when the pin is dropped, or when moving
+  // the year reveals a different documented set. Manual edits are preserved while
+  // the suggested set is unchanged.
+  const suggestionKey = suggestions.classes.join(",");
+  useEffect(() => {
+    if (!draft) return;
+    setSelected(suggestions.classes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, suggestionKey]);
 
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return;
@@ -375,8 +415,21 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <label className="mt-3 block text-xs text-zinc-500">Service year: {year}</label>
             <input type="range" min={1955} max={2026} value={year} onChange={(e) => setYear(+e.target.value)} className="w-full" />
 
-            <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">What were you exposed to here?</div>
-            <div className="mb-2 text-xs text-zinc-500">Select all that apply. Everything you pick is tagged to this check-in.</div>
+            {suggestions.sites.length > 0 ? (
+              <>
+                <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">Likely exposures here</div>
+                <div className="mb-2 text-xs text-zinc-500">
+                  Documented at {suggestions.sites.slice(0, 2).join(", ")}
+                  {suggestions.sites.length > 2 ? ` +${suggestions.sites.length - 2} more` : ""}. We&apos;ve checked the
+                  likely ones — confirm or adjust.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">What were you exposed to here?</div>
+                <div className="mb-2 text-xs text-zinc-500">Tap what applies — everything you pick is tagged to this check-in.</div>
+              </>
+            )}
             <div className="flex flex-wrap gap-1.5">
               {EXPOSURES.map((x) => {
                 const on = selected.includes(x.value);
@@ -387,7 +440,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                     onClick={() => toggle(x.value)}
                     className={
                       on
-                        ? `${chipBase} border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300`
+                        ? `${chipBase} border-brand bg-brand/10 font-medium text-brand`
                         : `${chipBase} border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800`
                     }
                   >
@@ -402,7 +455,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 <button
                   onClick={addCheckin}
                   disabled={saving || selected.length === 0}
-                  className="flex-1 rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+                  className="flex-1 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
                 >
                   {saving ? "Saving…" : selected.length ? `Save check-in (${selected.length})` : "Pick at least one"}
                 </button>
