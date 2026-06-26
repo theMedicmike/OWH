@@ -19,12 +19,12 @@ const STEPS = [
   },
   {
     title: "Map where you served",
-    body: 'Tap "Where you served." Click the map where you were stationed or deployed, set the year, and the app will show the likely exposures for that place and time. Just confirm the ones that apply and save. Repeat for every place you served.',
+    body: 'Tap "Where you served." Tap the map where you were stationed or deployed and set the year. If it\'s a known exposure site, the app turns the documented exposures green and marks them "Confirmed" — you just review them. Add anything else under "Other," then save. Repeat for every place you served.',
     tip: "Not sure what you were exposed to? That's okay — the app tells you. You just confirm.",
   },
   {
     title: "Or just talk it through",
-    body: 'Prefer talking to clicking? Tap "Guided intake" and answer the questions. It builds your timeline for you.',
+    body: 'Prefer talking to tapping? Tap "Voice guided intake" and answer the questions in plain language. It builds your timeline and saves each spot for you.',
     tip: null,
   },
   {
@@ -38,13 +38,28 @@ const STEPS = [
     tip: null,
   },
   {
+    title: "Tap your numbers to go deeper",
+    body: 'On your Dashboard, the boxes at the top — Locations, Exposures, Conditions — are buttons. Tap any one to open its own page. Locations lists every place you logged, with a "Learn about this place" button that tells you the history of each base — and a button to remove a spot if you added it by mistake. Exposures and Conditions explain, in plain language, what each one is and how they connect.',
+    tip: "This is where the app teaches you — no chemistry degree required.",
+  },
+  {
+    title: "Explore your Solutions",
+    body: 'Tap the "Solutions" box on your Dashboard. It pulls together your exposures and conditions and shows root-cause, whole-person ways to support your body and start healing — plus simple things you can begin this week. It\'s education to bring to your own doctor, never a prescription.',
+    tip: "Operation Whole Health is about the root cause — not just masking symptoms.",
+  },
+  {
+    title: "Read the book — it's free",
+    body: 'In the sidebar under "The mission," tap "Read the book" to read What Happened to Our Veterans — the science and the story behind this whole app — free, at your own pace.',
+    tip: null,
+  },
+  {
     title: "Find your battle buddies (optional)",
     body: 'Tap "Battle buddies" and turn on "open to reconnecting." If someone served where you did, you can confirm each other\'s exposures and ask to reconnect. Names are shared only if you both say yes. There\'s no public chat.',
     tip: null,
   },
   {
     title: "Get your Claim Packet",
-    body: 'Tap "Claim packet." The app assembles everything — your timeline, your exposures with their legal citations, your conditions, and a sheet for your doctor to sign. Tap Print / Save as PDF.',
+    body: 'Tap "Claim packet." The app assembles everything — your timeline, your exposures with their legal citations, your conditions, and a sheet for your doctor to sign. Tap "Download PDF" to save it as a file you can print or email.',
     tip: "Bring this to your VSO (DAV, VFW, American Legion) and ask your doctor to review the last page.",
   },
   {
@@ -71,9 +86,10 @@ export default function HelpPage() {
 
         <div className="mb-6 rounded-xl border border-line bg-surface px-5 py-4 text-sm text-ink">
           <span className="font-semibold">What this does:</span> It helps you map where you served,
-          document what you were exposed to, and build a one-stop packet that connects it to your
-          health — so the VA can finally see it. Work at your own pace; everything saves
-          automatically and stays private to you.
+          document what you were exposed to, learn what it means for your health, find root-cause ways
+          to start healing, read the book, and build a one-stop claim packet that connects it all — so
+          the VA can finally see it. Work at your own pace; everything saves automatically and stays
+          private to you.
         </div>
 
         <ol className="space-y-3">
