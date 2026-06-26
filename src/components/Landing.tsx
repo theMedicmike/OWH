@@ -84,6 +84,27 @@ export default function Landing() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/owh-logo.png" alt="Operation Whole Health" className="h-14 w-auto object-contain" />
             <ServiceRibbon className="mt-4 w-32 rounded-full opacity-90" />
+            <h1 className="mt-5 text-2xl font-bold leading-tight tracking-tight text-ink">
+              Connect your service to your health.
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              A free, private tool for veterans and military first responders. Map where you served,
+              see what you were likely exposed to, and build the documented proof that connects it to
+              your health — so the VA can finally see it.
+            </p>
+            <ul className="mt-4 space-y-3">
+              {POINTS.map((p, i) => (
+                <li key={p.title} className="flex gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <div className="text-sm font-semibold text-ink">{p.title}</div>
+                    <div className="text-xs leading-relaxed text-muted">{p.body}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <h2 className="text-xl font-semibold tracking-tight text-ink">Welcome</h2>
