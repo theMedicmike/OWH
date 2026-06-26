@@ -85,7 +85,7 @@ export default function Landing() {
             <img src="/owh-logo.png" alt="Operation Whole Health" className="h-14 w-auto object-contain" />
             <ServiceRibbon className="mt-4 w-32 rounded-full opacity-90" />
             <h1 className="mt-5 text-2xl font-bold leading-tight tracking-tight text-ink">
-              Connect your service to your health.
+              Prove where you served made you sick.
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               A free, private tool for veterans and military first responders. Map where you served,
