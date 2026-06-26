@@ -211,6 +211,9 @@ export default function ReportView() {
           in-app browser like Gmail&apos;s. On some phones the PDF opens in a viewer first; use the
           share icon there to save or print it. Print works best on a computer.
         </p>
+        <Link href="/reviewer" className="mt-2 inline-block text-xs font-medium text-brand hover:underline">
+          Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →
+        </Link>
       </div>
 
       <div className="rounded-xl border border-line bg-white p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">
