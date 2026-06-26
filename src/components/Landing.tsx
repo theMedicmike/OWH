@@ -69,7 +69,7 @@ export default function Landing() {
         </div>
 
         <div className="relative text-xs text-white/55">
-          Operation Whole Health, a veteran-founded 501(c)(3). An estimate and a record — not a diagnosis.
+          Operation Whole Health, a Patriot-founded 501(c)(3). An estimate and a record — not a diagnosis.
         </div>
       </section>
 

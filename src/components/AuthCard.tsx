@@ -98,7 +98,7 @@ export default function AuthCard() {
       <div className="mt-5 border-t border-line pt-4">
         <div className="flex items-center gap-2 text-xs text-muted">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-success" />
-          Free, private, and veteran-owned. Your record is yours.
+          Free, private, and built for veterans. Your record is yours.
         </div>
         <p className="mt-2 text-[11px] leading-relaxed text-faint">
           After you sign in, you&apos;ll confirm your service. Verified veteran status (ID.me) is coming soon.
