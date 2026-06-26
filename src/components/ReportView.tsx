@@ -144,11 +144,25 @@ export default function ReportView() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between print:hidden">
-        <span className="text-xs text-muted">A claim-support packet to bring to your VSO and clinician.</span>
-        <button onClick={() => window.print()} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-          Print / Save as PDF
-        </button>
+      <div className="mb-4 print:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-muted">A claim-support packet to bring to your VSO and clinician.</span>
+          <button onClick={() => window.print()} className="flex-none rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+            Print / Save as PDF
+          </button>
+        </div>
+        <div className="mt-2 flex items-start gap-2 rounded-lg border border-warn/30 bg-warn-soft px-3 py-2 text-xs leading-relaxed text-warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none">
+            <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
+          </svg>
+          <span>
+            <strong>Nothing happens when you tap it?</strong> You&apos;re likely viewing this inside
+            another app (like Gmail&apos;s built-in browser), which blocks printing. Tap the{" "}
+            <strong>share</strong> or <strong>⋯</strong> icon near the address bar and choose{" "}
+            <strong>&ldquo;Open in browser&rdquo;</strong> (Safari or Chrome) — then this button will
+            let you save a PDF or send it to a printer.
+          </span>
+        </div>
       </div>
 
       <div className="rounded-xl border border-line bg-white p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">

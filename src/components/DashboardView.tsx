@@ -20,7 +20,7 @@ const EXPOSURE_LABEL: Record<string, string> = {
   gulf_war_agent: "Gulf War agent",
 };
 
-type CheckRow = { place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
+type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
 type Conn = { status: string; other_name: string | null; place: string | null; ev_year: number | null };
 
 const QUICK = [
@@ -38,6 +38,7 @@ export default function DashboardView() {
   const [counts, setCounts] = useState({ exposures: 0, conditions: 0, corroborations: 0 });
   const [buddies, setBuddies] = useState<Conn[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [confirmDel, setConfirmDel] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -51,7 +52,7 @@ export default function DashboardView() {
       setYears(ss || se ? `${ss ?? "?"}–${se ?? "?"}` : null);
 
       const [ci, ex, co, exprows, conns] = await Promise.all([
-        supabase.from("check_ins").select("place_name, date_start, exposures(exposure_class)").order("date_start", { ascending: false }),
+        supabase.from("check_ins").select("id, place_name, date_start, exposures(exposure_class)").order("date_start", { ascending: false }),
         supabase.from("exposures").select("id", { count: "exact", head: true }),
         supabase.from("conditions").select("id", { count: "exact", head: true }),
         supabase.from("exposures").select("id"),
@@ -74,12 +75,19 @@ export default function DashboardView() {
   const initial = (name || user?.email || "V").trim().charAt(0).toUpperCase();
   const checkins = rows.length;
 
+  async function removeCheckin(id: string) {
+    await supabase.from("check_ins").delete().eq("id", id);
+    setRows((prev) => prev.filter((r) => r.id !== id));
+    setConfirmDel(null);
+  }
+
   const stats = [
-    { label: "Locations", value: checkins },
-    { label: "Exposures", value: counts.exposures },
-    { label: "Conditions", value: counts.conditions },
-    { label: "Corroborations", value: counts.corroborations },
-    { label: "Battle buddies", value: buddies.length },
+    { label: "Locations", value: checkins, href: "/locations" },
+    { label: "Exposures", value: counts.exposures, href: "/exposures" },
+    { label: "Conditions", value: counts.conditions, href: "/conditions" },
+    { label: "Corroborations", value: counts.corroborations, href: "/buddies" },
+    { label: "Battle buddies", value: buddies.length, href: "/buddies" },
+    { label: "Solutions", value: counts.exposures + counts.conditions, href: "/solutions" },
   ];
 
   const nextStep =
@@ -111,15 +119,22 @@ export default function DashboardView() {
       <VerifyCard />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {stats.map((s) => (
-          <div key={s.label} className="overflow-hidden rounded-xl border border-line bg-surface">
+          <Link
+            key={s.label}
+            href={s.href}
+            className="group overflow-hidden rounded-xl border border-line bg-surface transition hover:border-brand/40 hover:shadow-sm"
+          >
             <div className="h-1 bg-accent" />
             <div className="p-4">
               <div className="text-2xl font-bold text-ink">{loaded ? s.value : "—"}</div>
-              <div className="mt-0.5 text-xs leading-snug text-muted">{s.label}</div>
+              <div className="mt-0.5 flex items-center gap-1 text-xs leading-snug text-muted">
+                {s.label}
+                <span className="opacity-0 transition group-hover:opacity-100">→</span>
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -145,18 +160,34 @@ export default function DashboardView() {
             <p className="mt-3 text-sm text-muted">No check-ins yet. Drop your first pin on the map.</p>
           ) : (
             <ul className="mt-3 space-y-2">
-              {rows.slice(0, 6).map((r, i) => (
-                <li key={i} className="border-t border-line pt-2 text-sm first:border-0 first:pt-0">
+              {rows.slice(0, 6).map((r) => (
+                <li key={r.id} className="border-t border-line pt-2 text-sm first:border-0 first:pt-0">
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="font-medium text-ink">{r.place_name || "A logged location"}</span>
                     <span className="flex-none text-xs text-muted">{r.date_start ? new Date(r.date_start).getUTCFullYear() : "—"}</span>
                   </div>
-                  <div className="text-xs text-muted">
-                    {(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", ") || "—"}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-xs text-muted">
+                      {(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", ") || "—"}
+                    </div>
+                    {confirmDel === r.id ? (
+                      <span className="flex flex-none items-center gap-2 text-xs">
+                        <button onClick={() => removeCheckin(r.id)} className="font-semibold text-red-600 hover:underline">Remove</button>
+                        <button onClick={() => setConfirmDel(null)} className="text-muted hover:underline">Cancel</button>
+                      </span>
+                    ) : (
+                      <button onClick={() => setConfirmDel(r.id)} className="flex-none text-xs text-faint transition hover:text-red-600" aria-label="Remove location">
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}
-              {checkins > 6 && <li className="pt-1 text-xs text-muted">+{checkins - 6} more on the map</li>}
+              {checkins > 6 && (
+                <li className="pt-1 text-xs">
+                  <Link href="/locations" className="font-medium text-brand hover:underline">Manage all {checkins} locations →</Link>
+                </li>
+              )}
             </ul>
           )}
         </div>
