@@ -43,6 +43,7 @@ const RECOGNIZED = new Set(["burn_pit", "particulate", "pesticide", "radiation",
 type ExpoRow = { id: string; exposure_class: string };
 type CheckRow = { place_name: string | null; date_start: string | null; exposures: ExpoRow[] | null };
 type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null };
+type RecordFile = { name: string; url: string; isImage: boolean };
 
 export default function ReportView() {
   const [supabase] = useState(() => createClient());
@@ -53,6 +54,7 @@ export default function ReportView() {
   const [conditions, setConditions] = useState<{ label: string; claim_status: string }[]>([]);
   const [expoPlaces, setExpoPlaces] = useState<Record<string, string[]>>({});
   const [corroByClass, setCorroByClass] = useState<Record<string, number>>({});
+  const [records, setRecords] = useState<RecordFile[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -92,6 +94,20 @@ export default function ReportView() {
         }
         setCorroByClass(byClass);
       }
+
+      const { data: fileList } = await supabase.storage
+        .from("records")
+        .list(data.user.id, { sortBy: { column: "created_at", order: "desc" } });
+      const recs: RecordFile[] = [];
+      for (const f of fileList ?? []) {
+        if (f.name === ".emptyFolderPlaceholder") continue;
+        const isImage = /\.(jpe?g|png|webp|gif)$/i.test(f.name);
+        const { data: signed } = await supabase.storage
+          .from("records")
+          .createSignedUrl(`${data.user.id}/${f.name}`, 3600);
+        recs.push({ name: f.name.replace(/^\d+-/, ""), url: signed?.signedUrl ?? "", isImage });
+      }
+      setRecords(recs);
     });
   }, [supabase]);
 
@@ -312,11 +328,38 @@ export default function ReportView() {
 
         {/* 6. Attachments */}
         <section className={sectionWrap}>
-          <h3 className={sectionTitle}>6 · Attachments</h3>
-          <p className="text-sm text-muted">
-            Attach your DD-214 and any uploaded service or medical records (stored under Account) when you submit this
-            packet to your VSO.
-          </p>
+          <h3 className={sectionTitle}>6 · Attached records</h3>
+          {records.length === 0 ? (
+            <p className="text-sm text-muted">
+              Upload your DD-214 and any service or medical records under Account — they&apos;ll be listed here and
+              image scans will print with this packet.
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-muted">The following records accompany this packet:</p>
+              <ul className="mt-2 space-y-1 text-sm">
+                {records.map((r) => (
+                  <li key={r.name} className="text-ink">
+                    • {r.name}
+                    {r.isImage ? <span className="text-faint"> (printed below)</span> : <span className="text-faint"> — attach this file when you submit</span>}
+                  </li>
+                ))}
+              </ul>
+              {records.some((r) => r.isImage) && (
+                <div className="mt-4 space-y-4">
+                  {records
+                    .filter((r) => r.isImage && r.url)
+                    .map((r) => (
+                      <figure key={r.name} className="break-inside-avoid">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={r.url} alt={r.name} className="max-h-[560px] w-auto rounded border border-line" />
+                        <figcaption className="mt-1 text-xs text-faint">{r.name}</figcaption>
+                      </figure>
+                    ))}
+                </div>
+              )}
+            </>
+          )}
         </section>
 
         <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-faint">
