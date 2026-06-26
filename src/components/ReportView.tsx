@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
 
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
@@ -17,22 +18,6 @@ const EXPOSURE_LABEL: Record<string, string> = {
   radiation: "Radiation / depleted uranium",
   pfas_afff: "PFAS / AFFF",
   gulf_war_agent: "Gulf War agent",
-};
-
-// Documented basis + citation for each exposure class. Facts and sources only —
-// the packet never asserts that an exposure CAUSED a condition.
-const EXPOSURE_BASIS: Record<string, string> = {
-  burn_pit: "Airborne hazards / burn-pit exposure — Honoring our PACT Act of 2022 (Pub. L. 117-168); 38 CFR §3.320.",
-  particulate: "Fine particulate matter — PACT Act airborne hazards; 38 CFR §3.320.",
-  pesticide: "Herbicide (Agent Orange) exposure — Agent Orange Act; 38 CFR §3.307, §3.309(e).",
-  radiation: "Ionizing radiation / depleted uranium — 38 CFR §3.309(d), §3.311; VA radiation programs.",
-  water_contamination: "Contaminated water — Camp Lejeune Justice Act of 2022 (Camp Lejeune service 1953–1987).",
-  chemical_solvent: "Industrial solvents / chemicals — ATSDR toxicological profiles.",
-  nerve_agent: "Chemical-warfare-agent exposure — DoD / VA Gulf War exposure records.",
-  gulf_war_agent: "Gulf War / Southwest Asia service — 38 CFR §3.317 (medically unexplained chronic multisymptom illness).",
-  pfas_afff: "PFAS / AFFF exposure — ATSDR PFAS toxicological profile (emerging).",
-  heavy_metal: "Heavy-metal exposure — ATSDR toxicological profiles.",
-  asbestos_silica: "Asbestos / silica exposure — VA asbestos guidance; ATSDR profiles.",
 };
 
 const CONDITION_EXPOSURES: Record<string, string[]> = {
@@ -127,7 +112,7 @@ export default function ReportView() {
       : null;
 
   const classesPresent = Object.keys(expoPlaces);
-  const presumptivePresent = classesPresent.filter((c) => RECOGNIZED.has(c));
+  const presumptiveConditions = conditions.filter((c) => CONDITION_BASIS[c.label]?.presumptive).length;
 
   // Contentions: conditions that line up with at least one logged exposure.
   const contentions = conditions
@@ -174,10 +159,9 @@ export default function ReportView() {
           <p className="mt-1.5 text-sm leading-relaxed text-ink">
             You logged service at {rows.length} location{rows.length === 1 ? "" : "s"}. Documented exposures include{" "}
             {classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.{" "}
-            {contentions.length > 0
-              ? `${contentions.length} of your condition${contentions.length === 1 ? "" : "s"} line up with those exposures`
-              : "Add your conditions to see how they line up"}
-            {presumptivePresent.length > 0 ? `, and ${presumptivePresent.length} exposure type${presumptivePresent.length === 1 ? " falls" : "s fall"} under a recognized presumptive pathway.` : "."}
+            {conditions.length > 0
+              ? `Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.`
+              : "Add your conditions to see which carry a recognized presumptive pathway."}
           </p>
           <p className="mt-2 text-sm font-medium text-ink">
             Your next step: bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to
@@ -239,18 +223,26 @@ export default function ReportView() {
             <ul className="space-y-2">
               {conditions.map((c, i) => {
                 const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
+                const basis = CONDITION_BASIS[c.label];
                 return (
                   <li key={i} className="text-sm">
-                    <span className="font-semibold">{c.label}</span>
-                    {c.claim_status !== "none" ? <span className="text-muted"> — VA claim {c.claim_status}</span> : null}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{c.label}</span>
+                      {basis && (
+                        <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${basis.presumptive ? "bg-success-soft text-success" : "bg-warn-soft text-warn"}`}>
+                          {basis.tag}
+                        </span>
+                      )}
+                      {c.claim_status !== "none" ? <span className="text-xs text-muted">VA claim {c.claim_status}</span> : null}
+                    </div>
                     {matches.length > 0 ? (
                       <div className="mt-0.5 text-xs leading-relaxed text-muted">
-                        Documented association with{" "}
-                        {matches.map((e) => `${EXPOSURE_LABEL[e] ?? e}${RECOGNIZED.has(e) ? " (presumptive)" : ""}`).join(", ")}.
+                        Documented association with {matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.
                       </div>
                     ) : (
                       <div className="mt-0.5 text-xs text-muted">No logged exposure linked yet.</div>
                     )}
+                    {basis && <div className="mt-0.5 text-xs leading-relaxed text-faint">{basis.cite}</div>}
                   </li>
                 );
               })}
@@ -292,14 +284,18 @@ export default function ReportView() {
             <p className="mt-3 text-sm text-muted">Add conditions and exposures to generate the contentions list.</p>
           ) : (
             <ul className="mt-3 space-y-2">
-              {contentions.map((c) => (
-                <li key={c.label} className="text-sm">
-                  <span className="font-semibold">{c.label}</span>
-                  <span className="text-muted">
-                    {" "}— claimed as connected to {c.matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}
-                  </span>
-                </li>
-              ))}
+              {contentions.map((c) => {
+                const basis = CONDITION_BASIS[c.label];
+                return (
+                  <li key={c.label} className="text-sm">
+                    <span className="font-semibold">{c.label}</span>
+                    <span className="text-muted">
+                      {" "}— claimed as connected to {c.matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}
+                    </span>
+                    {basis && <div className="mt-0.5 text-xs text-faint">{basis.cite}</div>}
+                  </li>
+                );
+              })}
             </ul>
           )}
           <div className="mt-5 grid grid-cols-2 gap-6 text-sm">
@@ -326,8 +322,9 @@ export default function ReportView() {
         <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-faint">
           This packet assembles veteran-entered facts with documented sources. It states associations and presumptive
           pathways; it does not assert medical causation, which requires a licensed clinician&apos;s opinion. Citations
-          are general and depend on your specific dates and locations — confirm with your VSO. Veterans Crisis Line:
-          dial 988, then press 1.
+          are general and depend on your specific dates and locations — confirm with your VSO. Sources: PACT Act of
+          2022, 38 CFR Part 3, Camp Lejeune Justice Act, and ATSDR toxicological profiles (VA.gov, June 2026). Veterans
+          Crisis Line: dial 988, then press 1.
         </p>
       </div>
     </div>
