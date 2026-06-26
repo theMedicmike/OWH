@@ -36,6 +36,7 @@ const SECTIONS: NavSection[] = [
 const BOTTOM_LINKS: NavItem[] = [
   { href: "/help",  label: "How to use this",   d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" },
   { href: "/about", label: "Why we built this",  d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
+  { href: "/book",  label: "Read the book",      d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" },
 ];
 
 function Icon({ d }: { d: string }) {
@@ -130,8 +131,11 @@ export default function AppShell({ title, children }: { title: string; children:
         ))}
       </nav>
 
-      {/* Help / About */}
+      {/* The mission */}
       <div className="border-t border-white/10 px-3 py-2 space-y-0.5">
+        <div className="px-3 pb-1 pt-1">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-white/35">The mission</span>
+        </div>
         {BOTTOM_LINKS.map((item) => (
           <NavLink
             key={item.href}
