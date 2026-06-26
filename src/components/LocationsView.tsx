@@ -148,10 +148,14 @@ export default function LocationsView() {
 
                 {/* Background */}
                 {info[r.id] ? (
-                  <div className="mt-4 rounded-lg bg-canvas p-3">
-                    <div className="text-[11px] font-bold uppercase tracking-wide text-accent">Background</div>
-                    <p className="mt-1 text-sm leading-relaxed text-ink">{info[r.id]}</p>
-                    <p className="mt-1.5 text-[11px] text-faint">General background — confirm specific dates and details independently.</p>
+                  <div className="mt-4 rounded-lg bg-canvas p-4">
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-accent">The history of this ground</div>
+                    <div className="mt-1.5 space-y-2">
+                      {info[r.id].split(/\n{2,}/).map((para, k) => (
+                        <p key={k} className="text-sm leading-relaxed text-ink">{para}</p>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-[11px] text-faint">General history drawn from the historical record — confirm specific dates and details independently.</p>
                   </div>
                 ) : (
                   <button

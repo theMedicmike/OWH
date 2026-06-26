@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
 import { ServiceRibbon } from "./Patriotic";
+import { downloadClaimPdf } from "@/lib/claimPdf";
 
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
@@ -56,6 +57,7 @@ export default function ReportView() {
   const [expoPlaces, setExpoPlaces] = useState<Record<string, string[]>>({});
   const [corroByClass, setCorroByClass] = useState<Record<string, number>>({});
   const [records, setRecords] = useState<RecordFile[]>([]);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -139,30 +141,76 @@ export default function ReportView() {
     })
     .filter((c) => c.matches.length > 0);
 
+  async function handleDownload() {
+    setPdfBusy(true);
+    try {
+      await downloadClaimPdf({
+        name: member?.display_name || user?.email || "Veteran",
+        branch: member?.branch ?? null,
+        years,
+        today,
+        summary: `You logged service at ${rows.length} location${rows.length === 1 ? "" : "s"}. Documented exposures include ${classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.${conditions.length > 0 ? ` Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.` : " Add your conditions to see which carry a recognized presumptive pathway."}`,
+        nextStep: "bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to review the hand-off sheet on the last page.",
+        timeline: rows.map((r) => ({
+          year: r.date_start ? String(new Date(r.date_start).getUTCFullYear()) : "—",
+          place: r.place_name || "a logged location",
+          exposures: (r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", "),
+        })),
+        exposures: classesPresent.map((c) => ({
+          label: EXPOSURE_LABEL[c] ?? c,
+          presumptive: RECOGNIZED.has(c),
+          places: (expoPlaces[c] ?? []).join("; "),
+          basis: EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile.",
+        })),
+        conditions: conditions.map((c) => {
+          const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
+          const basis = CONDITION_BASIS[c.label];
+          return {
+            label: c.label,
+            tag: basis?.tag,
+            presumptive: basis?.presumptive,
+            status: c.claim_status,
+            matches: matches.length ? `Documented association with ${matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.` : "",
+            cite: basis?.cite,
+          };
+        }),
+        corroborations: Object.entries(corroByClass).map(
+          ([c, n]) => `${n} fellow service member${n === 1 ? "" : "s"} corroborate${n === 1 ? "s" : ""} exposure to ${EXPOSURE_LABEL[c] ?? c} at ${(expoPlaces[c] ?? []).join("; ")}.`
+        ),
+        contentions: contentions.map((c) => ({
+          label: c.label,
+          matches: c.matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", "),
+          cite: CONDITION_BASIS[c.label]?.cite,
+        })),
+        attachments: records.map((r) => ({ name: r.name, isImage: r.isImage, url: r.url })),
+      });
+    } finally {
+      setPdfBusy(false);
+    }
+  }
+
   const sectionTitle = "mb-2 text-[13px] font-bold uppercase tracking-wide text-brand";
   const sectionWrap = "mt-6 break-inside-avoid border-t border-line pt-5 first:mt-0 first:border-0 first:pt-0";
 
   return (
     <div>
       <div className="mb-4 print:hidden">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="text-xs text-muted">A claim-support packet to bring to your VSO and clinician.</span>
-          <button onClick={() => window.print()} className="flex-none rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-            Print / Save as PDF
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={handleDownload} disabled={pdfBusy} className="flex-none rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-60">
+              {pdfBusy ? "Building PDF…" : "Download PDF"}
+            </button>
+            <button onClick={() => window.print()} className="flex-none rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:bg-canvas">
+              Print
+            </button>
+          </div>
         </div>
-        <div className="mt-2 flex items-start gap-2 rounded-lg border border-warn/30 bg-warn-soft px-3 py-2 text-xs leading-relaxed text-warn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none">
-            <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
-          </svg>
-          <span>
-            <strong>Nothing happens when you tap it?</strong> You&apos;re likely viewing this inside
-            another app (like Gmail&apos;s built-in browser), which blocks printing. Tap the{" "}
-            <strong>share</strong> or <strong>⋯</strong> icon near the address bar and choose{" "}
-            <strong>&ldquo;Open in browser&rdquo;</strong> (Safari or Chrome) — then this button will
-            let you save a PDF or send it to a printer.
-          </span>
-        </div>
+        <p className="mt-2 text-xs leading-relaxed text-faint">
+          Download PDF saves the packet as a file you can print or email — it works even inside an
+          in-app browser like Gmail&apos;s. On some phones the PDF opens in a viewer first; use the
+          share icon there to save or print it. Print works best on a computer.
+        </p>
       </div>
 
       <div className="rounded-xl border border-line bg-white p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">
