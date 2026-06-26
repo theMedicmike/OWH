@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
 
-type Counts = { checkins: number; exposures: number; conditions: number; corroborations: number };
+type Counts = { checkins: number; exposures: number; conditions: number; corroborations: number; connections: number };
 
 const QUICK = [
   { href: "/intake", title: "Continue your timeline", body: "Talk it through with your guide.", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
@@ -17,7 +17,7 @@ const QUICK = [
 export default function DashboardView() {
   const { user, supabase } = useAuth();
   const [name, setName] = useState<string | null>(null);
-  const [counts, setCounts] = useState<Counts>({ checkins: 0, exposures: 0, conditions: 0, corroborations: 0 });
+  const [counts, setCounts] = useState<Counts>({ checkins: 0, exposures: 0, conditions: 0, corroborations: 0, connections: 0 });
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -39,7 +39,9 @@ export default function DashboardView() {
         const c = await supabase.from("corroborations").select("id", { count: "exact", head: true }).in("exposure_id", ids);
         corr = c.count ?? 0;
       }
-      setCounts({ checkins: ci.count ?? 0, exposures: ex.count ?? 0, conditions: co.count ?? 0, corroborations: corr });
+      const { data: conns } = await supabase.rpc("list_buddy_connections");
+      const connections = ((conns ?? []) as { status: string }[]).filter((x) => x.status === "accepted").length;
+      setCounts({ checkins: ci.count ?? 0, exposures: ex.count ?? 0, conditions: co.count ?? 0, corroborations: corr, connections });
       setLoaded(true);
     })();
   }, [user, supabase]);
@@ -50,6 +52,7 @@ export default function DashboardView() {
     { label: "Exposures documented", value: counts.exposures },
     { label: "Health conditions", value: counts.conditions },
     { label: "Buddy corroborations", value: counts.corroborations },
+    { label: "Battle buddies", value: counts.connections },
   ];
 
   const nextStep =
