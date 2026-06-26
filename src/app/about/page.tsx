@@ -72,11 +72,13 @@ export default function AboutPage() {
           health so hard that piecing it all back together feels out of reach.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          That wall is exactly what this app tears down. The conversations at Dave and Lisa&apos;s
-          table — and the honest, generous way the Eckersons let me dig into the hardest parts of
-          their story — are the reason Connecting the Dots of Service exists. This one&apos;s for
-          them, and for every veteran who should never have to reverse-engineer their own life just
-          to be believed.
+          That wall is exactly what this app tears down. Dave and Lisa have lived this struggle
+          firsthand — and instead of letting it beat them, they were determined to help. They walked
+          me through their own experience, the real and ongoing battles they&apos;ve faced since
+          Dave&apos;s retirement, and pushed me to build something that actually addresses them —
+          not in theory, but in real time. Connecting the Dots of Service exists because of their
+          grit and their generosity. This one&apos;s for them, and for every veteran who should
+          never have to reverse-engineer their own life just to be believed.
         </p>
 
         <h3 className="mt-7 text-base font-bold text-ink">What I set out to build</h3>
