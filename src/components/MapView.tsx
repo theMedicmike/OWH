@@ -52,6 +52,12 @@ const EXPOSURES = [
   { label: "Gulf War agent", value: "gulf_war_agent" },
 ];
 
+const STATUSES = [
+  { label: "Recognized", value: "recognized", color: "#1D9E75" },
+  { label: "Documented", value: "documented", color: "#BA7517" },
+  { label: "Emerging", value: "emerging", color: "#E24B4A" },
+];
+
 function fmt(lat: number, lng: number) {
   return `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? "N" : "S"}, ${Math.abs(lng).toFixed(1)}°${lng >= 0 ? "E" : "W"}`;
 }
@@ -143,8 +149,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
   // map filters
   const [activeClasses, setActiveClasses] = useState<Set<string>>(new Set());
+  const [activeStatuses, setActiveStatuses] = useState<Set<string>>(new Set());
   const [yearOn, setYearOn] = useState(false);
   const [filterYear, setFilterYear] = useState(2007);
+  const [showFilters, setShowFilters] = useState(false);
 
   function toggle(value: string) {
     setSelected((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
@@ -170,6 +178,27 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     if (activeClasses.size === 0) return true;
     return classes.some((c) => activeClasses.has(c));
   }
+
+  function toggleStatus(value: string) {
+    setActiveStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
+  }
+
+  function statusMatch(status: string) {
+    return activeStatuses.size === 0 || activeStatuses.has(status);
+  }
+
+  function clearFilters() {
+    setActiveClasses(new Set());
+    setActiveStatuses(new Set());
+    setYearOn(false);
+  }
+
+  const activeCount = activeClasses.size + activeStatuses.size + (yearOn ? 1 : 0);
 
   // The flip: instead of asking the veteran to name the chemicals, read the
   // documented exposures from recognized sites near the dropped pin in that year,
@@ -260,6 +289,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       const ll = wkbToLngLat(s.geom);
       if (!ll) continue;
       if (!classMatch(s.exposure_classes ?? [])) continue;
+      if (!statusMatch(s.status)) continue;
       if (yearOn) {
         const f = yearOf(s.date_from);
         const t = yearOf(s.date_to);
@@ -277,7 +307,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         .addTo(map);
       siteMarkersRef.current.push(m);
     }
-  }, [sites, mapLoaded, activeClasses, yearOn, filterYear]);
+  }, [sites, mapLoaded, activeClasses, activeStatuses, yearOn, filterYear]);
 
   // draft marker
   useEffect(() => {
@@ -350,52 +380,86 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
   return (
     <div>
-      <div className="mb-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Filter the map</span>
-          <div className="flex items-center gap-3">
-            {activeClasses.size > 0 && (
-              <button onClick={() => setActiveClasses(new Set())} className="text-xs text-blue-600 hover:underline dark:text-blue-400">
-                clear categories
+      <div className="mb-3 overflow-hidden rounded-xl border border-line bg-surface">
+        <button
+          type="button"
+          onClick={() => setShowFilters((v) => !v)}
+          className="flex w-full items-center justify-between gap-2 px-4 py-3"
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-muted">
+              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+            </svg>
+            Filter the map
+            {activeCount > 0 && (
+              <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-brand-foreground">{activeCount}</span>
+            )}
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${showFilters ? "rotate-180" : ""}`}>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+
+        {showFilters && (
+          <div className="border-t border-line px-4 py-3">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-muted">By recognition</div>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {STATUSES.map((s) => {
+                const on = activeStatuses.has(s.value);
+                return (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => toggleStatus(s.value)}
+                    className={`${chipBase} inline-flex items-center gap-1.5 ${on ? "border-transparent text-white" : "border-line text-muted hover:bg-canvas"}`}
+                    style={on ? { background: s.color } : undefined}
+                  >
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: on ? "#fff" : s.color }} />
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 text-[11px] font-bold uppercase tracking-wide text-muted">By exposure</div>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {EXPOSURES.map((x) => {
+                const on = activeClasses.has(x.value);
+                return (
+                  <button
+                    key={x.value}
+                    type="button"
+                    onClick={() => toggleClass(x.value)}
+                    className={on ? `${chipBase} border-brand bg-brand/10 font-medium text-brand` : `${chipBase} border-line text-muted hover:bg-canvas`}
+                  >
+                    {x.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <label className="mt-3 flex items-center gap-1.5 text-xs text-muted">
+              <input type="checkbox" checked={yearOn} onChange={(e) => setYearOn(e.target.checked)} />
+              Filter by year
+            </label>
+            {yearOn && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="w-10 text-xs font-medium text-ink">{filterYear}</span>
+                <input type="range" min={1945} max={2026} value={filterYear} onChange={(e) => setFilterYear(+e.target.value)} className="flex-1" />
+              </div>
+            )}
+
+            {activeCount > 0 && (
+              <button onClick={clearFilters} className="mt-3 text-xs font-medium text-brand hover:underline">
+                Clear all filters
               </button>
             )}
-            <label className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-300">
-              <input type="checkbox" checked={yearOn} onChange={(e) => setYearOn(e.target.checked)} />
-              filter by year
-            </label>
-          </div>
-        </div>
-
-        {yearOn && (
-          <div className="mt-2 flex items-center gap-2">
-            <span className="w-10 text-xs font-medium">{filterYear}</span>
-            <input type="range" min={1955} max={2026} value={filterYear} onChange={(e) => setFilterYear(+e.target.value)} className="flex-1" />
           </div>
         )}
-
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {EXPOSURES.map((x) => {
-            const on = activeClasses.has(x.value);
-            return (
-              <button
-                key={x.value}
-                type="button"
-                onClick={() => toggleClass(x.value)}
-                className={
-                  on
-                    ? `${chipBase} border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300`
-                    : `${chipBase} border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800`
-                }
-              >
-                {x.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       <div className="relative">
-        <div ref={containerRef} className="h-[520px] w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800" />
+        <div ref={containerRef} className="h-[520px] w-full overflow-hidden rounded-xl border border-line" />
 
         <div className="absolute left-3 top-3 z-[2]">
           <button
@@ -426,18 +490,18 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <ServiceRibbon className="mb-3 rounded-full opacity-90" />
             <div className="text-sm font-semibold text-ink">New check-in</div>
 
-            <label className="mt-2 block text-xs text-zinc-500">Place</label>
+            <label className="mt-2 block text-xs text-muted">Place</label>
             <input
               type="text"
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
               placeholder="Name this place"
-              className="mt-1 w-full rounded-md border border-zinc-300 bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700"
+              className="mt-1 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
             />
-            <div className="mt-1 text-xs text-zinc-400">{fmt(draft.lat, draft.lng)}</div>
+            <div className="mt-1 text-xs text-faint">{fmt(draft.lat, draft.lng)}</div>
 
-            <label className="mt-3 block text-xs text-zinc-500">Service year: {year}</label>
-            <input type="range" min={1955} max={2026} value={year} onChange={(e) => setYear(+e.target.value)} className="w-full" />
+            <label className="mt-3 block text-xs text-muted">Service year: {year}</label>
+            <input type="range" min={1945} max={2026} value={year} onChange={(e) => setYear(+e.target.value)} className="w-full" />
 
             {suggestions.sites.length > 0 ? (
               <>
@@ -504,9 +568,9 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                   {saving ? "Saving…" : (selected.length || otherText.trim()) ? `Save check-in${selected.length ? ` (${selected.length})` : ""}` : "Pick at least one"}
                 </button>
               ) : (
-                <div className="flex-1 text-xs text-zinc-500">Sign in above to save this pin to your record.</div>
+                <div className="flex-1 text-xs text-muted">Sign in above to save this pin to your record.</div>
               )}
-              <button onClick={closeDraft} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700">
+              <button onClick={closeDraft} className="rounded-md border border-line px-3 py-1.5 text-sm text-muted hover:bg-canvas">
                 Cancel
               </button>
             </div>
@@ -515,17 +579,17 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       </div>
 
       {user && checkins.length > 0 && (
-        <div className="mt-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Your timeline ({checkins.length})</div>
-          <ul className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="mt-4 rounded-xl border border-line bg-surface p-4">
+          <div className="text-sm font-semibold text-ink">Your timeline ({checkins.length})</div>
+          <ul className="mt-2 divide-y divide-line">
             {checkins.map((c, i) => (
               <li key={i} className="flex items-center justify-between gap-4 py-2 text-sm">
-                <span className="text-zinc-800 dark:text-zinc-200">{c.year ?? "—"} · {c.place}</span>
-                <span className="shrink-0 text-zinc-500">{c.exposures}</span>
+                <span className="text-ink">{c.year ?? "—"} · {c.place}</span>
+                <span className="shrink-0 text-muted">{c.exposures}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">Saved to your private record.</p>
+          <p className="mt-2 text-xs text-success">Saved to your private record.</p>
         </div>
       )}
     </div>

@@ -174,6 +174,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
 
   // Step 2 state
   const [locations, setLocations] = useState<LocationEntry[]>([makeLocation()]);
+  const [showNaval, setShowNaval] = useState(false);
 
   // Step 3 state
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -316,6 +317,30 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     return sites.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 8);
   }
 
+  // Naval / submarine service doesn't sit on a map — the honest anchor is the
+  // homeport and the shipyard. Surface those sites for one-tap quick-add.
+  const NAVAL_RE = /naval|submarine|shipyard|electric boat|newport news|pearl harbor|kitsap|kings bay|point loma|charleston|portsmouth|puget sound|mare island|philadelphia naval|long beach naval|hunters point/i;
+  const navalSites = sites.filter((s) => NAVAL_RE.test(s.name));
+
+  function navalShort(name: string) {
+    return name.replace(/\s*\(.*?\)\s*/g, " ").split(",")[0].trim();
+  }
+
+  function addNavalSite(site: SiteOption) {
+    const classes = Array.from(new Set(site.exposure_classes ?? []));
+    const fromY = site.date_from ? String(new Date(site.date_from).getUTCFullYear()) : "";
+    const toY = site.date_to ? String(new Date(site.date_to).getUTCFullYear()) : "";
+    const entry: LocationEntry = {
+      ...makeLocation(),
+      name: site.name, matchedSite: site.name, confirmed: classes, exposures: classes, fromYear: fromY, toYear: toY,
+    };
+    setLocations((prev) => {
+      const firstEmpty = prev.length === 1 && !prev[0].name.trim() && prev[0].exposures.length === 0 && !prev[0].other.trim();
+      return firstEmpty ? [entry] : [...prev, entry];
+    });
+    setShowNaval(false);
+  }
+
   function toggleExposure(id: string, value: string) {
     setLocations((prev) => prev.map((l) => {
       if (l.id !== id) return l;
@@ -396,6 +421,57 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       {/* ── Step 2: Where You Served ─────────────────────────────────────── */}
       {step === 1 && (
         <div className="space-y-4">
+          <div className="overflow-hidden rounded-xl border border-accent/30 bg-accent/5">
+            <button
+              type="button"
+              onClick={() => setShowNaval((v) => !v)}
+              className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-accent">
+                  <circle cx="12" cy="5" r="3" />
+                  <path d="M12 8v13M5 12H3a9 9 0 0 0 18 0h-2" />
+                </svg>
+                Served aboard a ship or submarine?
+              </span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${showNaval ? "rotate-180" : ""}`}>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {showNaval && (
+              <div className="border-t border-accent/20 px-4 py-3">
+                <p className="text-sm leading-relaxed text-muted">
+                  A ship or sub doesn&apos;t sit in one place on the map. The honest way to capture it is to
+                  pin your <strong className="text-ink">homeport</strong> and the{" "}
+                  <strong className="text-ink">shipyard</strong> where your vessel was overhauled — that&apos;s
+                  where the documented exposures were: asbestos, solvents and fuels, the sealed-atmosphere
+                  chemicals you breathed for months, and refueling radiological work.
+                </p>
+                {navalSites.length > 0 ? (
+                  <>
+                    <div className="mt-3 text-[11px] font-bold uppercase tracking-wide text-muted">Quick-add a naval site</div>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {navalSites.map((s) => (
+                        <button
+                          key={s.name}
+                          type="button"
+                          onClick={() => addNavalSite(s)}
+                          className="rounded-full border border-line bg-white px-2.5 py-1 text-xs text-ink transition hover:border-brand hover:text-brand"
+                        >
+                          + {navalShort(s.name)}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="mt-2 text-xs text-faint">
+                    Type your homeport or shipyard in a location below — it&apos;ll auto-fill the documented exposures.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
           <SectionCard
             title="Where you served"
             subtitle="Add every base, deployment, or location you remember. Don't worry about being exact — we'll figure out the rest."
