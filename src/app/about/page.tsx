@@ -50,6 +50,35 @@ export default function AboutPage() {
           makes them prove they&apos;re worth believing.
         </p>
 
+        <h3 className="mt-7 text-base font-bold text-ink">It started with a Marine named Dave</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          This didn&apos;t start as an app. It started at my friend Dave Eckerson&apos;s kitchen
+          table. Dave is a Gunnery Sergeant in the Marine Corps who served in more places around the
+          world than most people could name — across the better part of 30 years.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          While I was writing my book, <em>What Happened to Our Veterans</em>, I was talking it
+          through with Edgar Rodriguez — a fellow Marine and a business coach — about Dave&apos;s
+          story, and how hard it was to connect his health to his service. That conversation is
+          where it clicked: &ldquo;connecting the dots of service&rdquo; wasn&apos;t just going to be
+          a chapter in the book. It was the whole problem.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          So I went over to Dave and Lisa&apos;s house, again and again, and we sat down to actually
+          try to do it — to retrace three decades of service and find where his root-cause health
+          issues might have started. We hit a wall almost immediately. Dave had served in so many
+          locations that going back 30 years was nearly impossible. Nobody keeps track of this while
+          they&apos;re in. And by the time a service member gets out, they&apos;re chasing their
+          health so hard that piecing it all back together feels out of reach.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          That wall is exactly what this app tears down. The conversations at Dave and Lisa&apos;s
+          table — and the honest, generous way the Eckersons let me dig into the hardest parts of
+          their story — are the reason Connecting the Dots of Service exists. This one&apos;s for
+          them, and for every veteran who should never have to reverse-engineer their own life just
+          to be believed.
+        </p>
+
         <h3 className="mt-7 text-base font-bold text-ink">What I set out to build</h3>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           I built Connecting the Dots of Service so that{" "}
