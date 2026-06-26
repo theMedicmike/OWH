@@ -66,6 +66,7 @@ export default function AppShell({ title, children }: { title: string; children:
   const { user, ready, signOut } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
 
   if (!ready) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted">Loading…</div>;
@@ -178,6 +179,54 @@ export default function AppShell({ title, children }: { title: string; children:
             </svg>
           </button>
           <h1 className="text-base font-bold tracking-tight text-ink">{title}</h1>
+
+          {/* Account menu (always visible) */}
+          <div className="relative ml-auto">
+            <button
+              onClick={() => setMenu((m) => !m)}
+              className="flex items-center gap-2 rounded-full border border-line py-1 pl-1 pr-3 text-sm text-ink transition hover:bg-canvas"
+              aria-label="Account menu"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
+                {(user.email?.[0] ?? "U").toUpperCase()}
+              </span>
+              <span className="hidden max-w-[140px] truncate font-medium sm:block">{user.email}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${menu ? "rotate-180" : ""}`}>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+
+            {menu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
+                <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
+                  <div className="border-b border-line px-4 py-3">
+                    <div className="text-xs text-faint">Signed in as</div>
+                    <div className="truncate text-sm font-semibold text-ink">{user.email}</div>
+                  </div>
+                  <Link
+                    href="/account"
+                    onClick={() => setMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink transition hover:bg-canvas"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] text-muted">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />
+                    </svg>
+                    Account settings
+                  </Link>
+                  <button
+                    onClick={() => { setMenu(false); signOut(); }}
+                    className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </header>
 
         <main className="flex-1 px-5 py-6 sm:px-7 lg:px-9">
