@@ -10,7 +10,7 @@ type Counts = { checkins: number; exposures: number; conditions: number; corrobo
 const QUICK = [
   { href: "/intake", title: "Continue your timeline", body: "Talk it through with your guide.", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
   { href: "/map", title: "Open the map", body: "Drop a pin where you served.", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
-  { href: "/report", title: "Your report", body: "One page for your clinician or VSO.", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5z" },
+  { href: "/report", title: "Your claim packet", body: "A cited packet for your VSO & clinician.", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5z" },
   { href: "/buddies", title: "Find battle buddies", body: "Corroborate with who was there.", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
 ];
 
@@ -57,7 +57,7 @@ export default function DashboardView() {
       ? { text: "Start by logging where you served — open the guided intake or the map.", href: "/intake", cta: "Begin your timeline" }
       : counts.conditions === 0
       ? { text: "Add the health conditions you live with so we can connect them to your exposures.", href: "/health", cta: "Add your health" }
-      : { text: "Your record is taking shape. Generate the one-page report to bring to your clinician or VSO.", href: "/report", cta: "Open your report" };
+      : { text: "Your record is taking shape. Assemble your claim packet to bring to your clinician or VSO.", href: "/report", cta: "Open your claim packet" };
 
   return (
     <div className="space-y-6">

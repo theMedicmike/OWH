@@ -6,16 +6,30 @@ import { useState } from "react";
 import { useAuth } from "./AuthProvider";
 
 type NavItem = { href: string; label: string; d: string };
+type NavSection = { title?: string; tag?: string; items: NavItem[] };
 
-const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", d: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" },
-  { href: "/map", label: "Map", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
-  { href: "/intake", label: "Guided intake", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
-  { href: "/estimator", label: "Exposure summary", d: "M3 12h4l3 8 4-16 3 8h4" },
-  { href: "/health", label: "Health", d: "M19 14c1.5-1.6 3-3.3 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5C2 10.7 3.5 12.4 5 14l7 7 7-7z" },
-  { href: "/report", label: "Report", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM9 13h6M9 17h6" },
-  { href: "/buddies", label: "Battle buddies", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
-  { href: "/account", label: "Account", d: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
+const SECTIONS: NavSection[] = [
+  {
+    items: [{ href: "/dashboard", label: "Dashboard", d: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" }],
+  },
+  {
+    title: "Your claim",
+    items: [
+      { href: "/map", label: "Where you served", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
+      { href: "/intake", label: "Guided intake", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
+      { href: "/health", label: "Conditions & links", d: "M19 14c1.5-1.6 3-3.3 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5C2 10.7 3.5 12.4 5 14l7 7 7-7z" },
+      { href: "/buddies", label: "Battle buddies", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
+      { href: "/report", label: "Claim packet", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM9 13h6M9 17h6" },
+    ],
+  },
+  {
+    title: "Your health",
+    tag: "private",
+    items: [{ href: "/estimator", label: "Exposure insights", d: "M3 12h4l3 8 4-16 3 8h4" }],
+  },
+  {
+    items: [{ href: "/account", label: "Account", d: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" }],
+  },
 ];
 
 function Icon({ d }: { d: string }) {
@@ -64,23 +78,35 @@ export default function AppShell({ title, children }: { title: string; children:
         </div>
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-3">
-        {NAV.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                active ? "bg-brand/10 font-semibold text-brand" : "text-muted hover:bg-canvas hover:text-ink"
-              }`}
-            >
-              <Icon d={item.d} />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 space-y-3 px-3 py-1">
+        {SECTIONS.map((section, si) => (
+          <div key={si} className="space-y-0.5">
+            {section.title && (
+              <div className="flex items-center gap-1.5 px-3 pb-1 pt-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-faint">{section.title}</span>
+                {section.tag && (
+                  <span className="rounded bg-canvas px-1.5 py-0.5 text-[10px] font-medium text-faint">{section.tag}</span>
+                )}
+              </div>
+            )}
+            {section.items.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                    active ? "bg-brand/10 font-semibold text-brand" : "text-muted hover:bg-canvas hover:text-ink"
+                  }`}
+                >
+                  <Icon d={item.d} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-line p-3">

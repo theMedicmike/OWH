@@ -3,9 +3,10 @@ import ReportView from "@/components/ReportView";
 
 export default function ReportPage() {
   return (
-    <AppShell title="Report">
+    <AppShell title="Claim packet">
       <p className="mb-4 text-sm text-muted print:hidden">
-        Your service, exposures, conditions, and the connections between them, on one page to print or save.
+        Everything you&apos;ve logged, assembled into a cited packet for your VSO and a hand-off sheet for your
+        clinician. Facts and sources — never a diagnosis.
       </p>
       <ReportView />
     </AppShell>
