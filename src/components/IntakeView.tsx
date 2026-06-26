@@ -151,15 +151,17 @@ export default function IntakeView() {
           <div key={mi}>
             <div className={msg.role === "user" ? "flex justify-end" : "flex gap-2"}>
               {msg.role === "assistant" && (
-                <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
-                  <i className="ti ti-route" aria-hidden="true" />
+                <div className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand/10 text-brand">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                    <circle cx="6" cy="19" r="3" /><circle cx="18" cy="5" r="3" /><path d="M9 19h6a3 3 0 0 0 3-3V8" />
+                  </svg>
                 </div>
               )}
               <div
                 className={
                   msg.role === "user"
-                    ? "max-w-[80%] rounded-xl bg-blue-600 px-3.5 py-2 text-sm text-white"
-                    : "max-w-[85%] rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-sm leading-relaxed text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                    ? "max-w-[80%] rounded-xl bg-brand px-3.5 py-2 text-sm text-brand-foreground"
+                    : "max-w-[85%] rounded-xl border border-line bg-surface px-3.5 py-2 text-sm leading-relaxed text-ink"
                 }
               >
                 {msg.content}
@@ -167,64 +169,67 @@ export default function IntakeView() {
             </div>
 
             {msg.proposals?.map((p, pi) => (
-              <div key={pi} className="ml-9 mt-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50">
-                <div className="text-xs text-zinc-500">Proposed check-in</div>
-                <div className="mt-0.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">{p.place}</div>
-                <div className="text-xs text-zinc-500">Year {p.year}</div>
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {p.exposures.map((e) => (
-                    <span key={e} className="rounded-md bg-blue-50 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                      {EXPOSURE_LABEL[e] ?? e}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-2">
-                  {!user ? (
-                    <span className="text-xs text-zinc-500">Sign in on the map to save this.</span>
-                  ) : p.status === "saved" ? (
-                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Saved to your timeline ✓</span>
-                  ) : p.status === "saved_approx" ? (
-                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                      Saved to your timeline ✓ — we couldn&apos;t pinpoint the exact spot, so you can set it on the map when you&apos;re ready.
-                    </span>
-                  ) : p.status === "error" ? (
-                    <span className="text-xs text-rose-500">Couldn&apos;t save just now — please try again.</span>
-                  ) : (
-                    <button
-                      onClick={() => saveProposal(mi, pi)}
-                      disabled={p.status === "saving"}
-                      className="rounded-md bg-zinc-900 px-3 py-1 text-xs text-white hover:opacity-90 disabled:opacity-60 dark:bg-white dark:text-zinc-900"
-                    >
-                      {p.status === "saving" ? "Saving…" : "Save to my timeline"}
-                    </button>
-                  )}
+              <div key={pi} className="ml-9 mt-2 overflow-hidden rounded-xl border border-line bg-canvas">
+                <div className="h-1 bg-accent" />
+                <div className="p-3">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-accent">Proposed check-in</div>
+                  <div className="mt-0.5 text-sm font-medium text-ink">{p.place}</div>
+                  <div className="text-xs text-muted">Year {p.year}</div>
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {p.exposures.map((e) => (
+                      <span key={e} className="rounded-md bg-brand/5 px-2 py-0.5 text-xs font-medium text-brand">
+                        {EXPOSURE_LABEL[e] ?? e}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-2">
+                    {!user ? (
+                      <span className="text-xs text-muted">Sign in on the map to save this.</span>
+                    ) : p.status === "saved" ? (
+                      <span className="text-xs font-medium text-success">Saved to your timeline ✓</span>
+                    ) : p.status === "saved_approx" ? (
+                      <span className="text-xs font-medium text-success">
+                        Saved to your timeline ✓ — we couldn&apos;t pinpoint the exact spot, so you can set it on the map when you&apos;re ready.
+                      </span>
+                    ) : p.status === "error" ? (
+                      <span className="text-xs text-red-600">Couldn&apos;t save just now — please try again.</span>
+                    ) : (
+                      <button
+                        onClick={() => saveProposal(mi, pi)}
+                        disabled={p.status === "saving"}
+                        className="rounded-md bg-brand px-3 py-1 text-xs font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-60"
+                      >
+                        {p.status === "saving" ? "Saving…" : "Save to my timeline"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ))}
-        {busy && <div className="ml-9 text-sm text-zinc-400">typing…</div>}
+        {busy && <div className="ml-9 text-sm text-faint">typing…</div>}
         <div ref={endRef} />
       </div>
 
-      <div className="mt-4 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900">
+      <div className="mt-4 flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
           placeholder="Type your answer…"
-          className="flex-1 bg-transparent text-sm outline-none"
+          className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
         />
         <button
           onClick={send}
           disabled={busy || !input.trim()}
-          className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+          className="rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
         >
           Send
         </button>
       </div>
 
-      <p className="mt-3 text-xs leading-relaxed text-zinc-400">
+      <p className="mt-3 text-xs leading-relaxed text-faint">
         Your guide helps you remember and record; it does not diagnose. If anything feels heavy, the Veterans Crisis
         Line is one tap away: dial 988, then press 1.
       </p>
