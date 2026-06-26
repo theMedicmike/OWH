@@ -109,6 +109,30 @@ export default function AppShell({ title, children }: { title: string; children:
         ))}
       </nav>
 
+      <div className="border-t border-line px-3 py-2">
+        {(
+          [
+            { href: "/help", label: "How to use this", d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" },
+            { href: "/about", label: "Why we built this", d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
+          ] as NavItem[]
+        ).map((item) => {
+          const active = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                active ? "bg-brand/10 font-semibold text-brand" : "text-muted hover:bg-canvas hover:text-ink"
+              }`}
+            >
+              <Icon d={item.d} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+
       <div className="border-t border-line p-3">
         <div className="truncate px-2 text-xs text-faint">{user.email}</div>
         <button
