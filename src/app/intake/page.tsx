@@ -1,8 +1,15 @@
+import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import IntakeFormView from "@/components/IntakeFormView";
 import Link from "next/link";
 
-export default function IntakePage() {
+export default async function IntakePage() {
+  const supabase = await createClient();
+  const { data: sites } = await supabase
+    .from("known_exposure_sites")
+    .select("name, exposure_classes, date_from, date_to")
+    .order("name");
+
   return (
     <AppShell title="Intake form">
       <div className="mb-5 flex items-center justify-between gap-4">
@@ -17,7 +24,7 @@ export default function IntakePage() {
           Talk it through with AI instead →
         </Link>
       </div>
-      <IntakeFormView />
+      <IntakeFormView sites={sites ?? []} />
     </AppShell>
   );
 }

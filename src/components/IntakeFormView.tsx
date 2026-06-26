@@ -25,6 +25,10 @@ const EXPOSURES = [
   { label: "Gulf War agents",               value: "gulf_war_agent" },
 ];
 
+const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(
+  EXPOSURES.map((e) => [e.value, e.label])
+);
+
 const CONDITIONS = [
   "Chronic rhinitis / sinusitis",
   "Asthma / reactive airway",
@@ -49,6 +53,13 @@ const STEPS = ["Your service", "Where you served", "Your health", "Done"];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type SiteOption = {
+  name: string;
+  exposure_classes: string[] | null;
+  date_from: string | null;
+  date_to: string | null;
+};
+
 type LocationEntry = {
   id: string;
   name: string;
@@ -56,10 +67,17 @@ type LocationEntry = {
   fromYear: string;
   toYear: string;
   exposures: string[];
+  confirmed: string[];      // documented exposure classes for the matched site
+  matchedSite: string | null;
+  other: string;            // free-text exposure not on the standard list
 };
 
 function makeLocation(): LocationEntry {
-  return { id: crypto.randomUUID(), name: "", region: "", fromYear: "", toYear: "", exposures: [] };
+  return {
+    id: crypto.randomUUID(),
+    name: "", region: "", fromYear: "", toYear: "",
+    exposures: [], confirmed: [], matchedSite: null, other: "",
+  };
 }
 
 async function geocode(name: string, region: string): Promise<{ lat: number; lng: number }> {
@@ -138,12 +156,13 @@ const selectCls = inputCls + " appearance-none cursor-pointer";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function IntakeFormView() {
+export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] }) {
   const { supabase, user } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [openDrop, setOpenDrop] = useState<string | null>(null);
 
   // Step 1 state
   const [displayName, setDisplayName] = useState("");
@@ -215,7 +234,7 @@ export default function IntakeFormView() {
     setError(""); setSaving(true);
     try {
       for (const loc of locations) {
-        if (!loc.name.trim() && loc.exposures.length === 0) continue;
+        if (!loc.name.trim() && loc.exposures.length === 0 && !loc.other.trim()) continue;
         const coords = await geocode(loc.name, loc.region);
         const year = parseInt(loc.fromYear) || new Date().getFullYear();
         const { data: newId, error: rpcErr } = await supabase.rpc("log_check_in", {
@@ -226,8 +245,13 @@ export default function IntakeFormView() {
           p_exposures: loc.exposures,
         });
         if (rpcErr) throw new Error(rpcErr.message);
-        if (newId && loc.name.trim()) {
-          await supabase.from("check_ins").update({ place_name: loc.name.trim() }).eq("id", newId);
+        if (newId) {
+          const patch: { place_name?: string; notes?: string } = {};
+          if (loc.name.trim()) patch.place_name = loc.name.trim();
+          if (loc.other.trim()) patch.notes = `Other exposure noted: ${loc.other.trim()}`;
+          if (Object.keys(patch).length > 0) {
+            await supabase.from("check_ins").update(patch).eq("id", newId);
+          }
         }
       }
       setStep(2);
@@ -264,11 +288,44 @@ export default function IntakeFormView() {
     setLocations((prev) => prev.map((l) => l.id === id ? { ...l, ...patch } : l));
   }
 
+  // When a veteran picks a prebuilt site, pre-fill its documented exposures
+  // (marked "confirmed") and the documented year range — same idea as the map.
+  function selectSite(id: string, site: SiteOption) {
+    const classes = Array.from(new Set(site.exposure_classes ?? []));
+    const fromY = site.date_from ? String(new Date(site.date_from).getUTCFullYear()) : "";
+    const toY = site.date_to ? String(new Date(site.date_to).getUTCFullYear()) : "";
+    setLocations((prev) => prev.map((l) => {
+      if (l.id !== id) return l;
+      return {
+        ...l,
+        name: site.name,
+        matchedSite: site.name,
+        confirmed: classes,
+        // union of anything they'd already checked with the documented ones
+        exposures: Array.from(new Set([...l.exposures, ...classes])),
+        fromYear: l.fromYear || fromY,
+        toYear: l.toYear || toY,
+      };
+    }));
+    setOpenDrop(null);
+  }
+
+  function siteMatches(query: string): SiteOption[] {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return sites.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 8);
+  }
+
   function toggleExposure(id: string, value: string) {
     setLocations((prev) => prev.map((l) => {
       if (l.id !== id) return l;
       const has = l.exposures.includes(value);
-      return { ...l, exposures: has ? l.exposures.filter((e) => e !== value) : [...l.exposures, value] };
+      return {
+        ...l,
+        exposures: has ? l.exposures.filter((e) => e !== value) : [...l.exposures, value],
+        // unchecking a documented exposure drops its "Confirmed" badge too
+        confirmed: has ? l.confirmed.filter((e) => e !== value) : l.confirmed,
+      };
     }));
   }
 
@@ -360,8 +417,45 @@ export default function IntakeFormView() {
 
                   <div className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Base / location name">
-                        <input className={inputCls} placeholder="e.g. Camp Lejeune, Ali Al Salem AB" value={loc.name} onChange={(e) => updateLocation(loc.id, { name: e.target.value })} />
+                      <Field label="Base / location name" hint="Start typing — pick from our recognized sites to auto-fill documented exposures.">
+                        <div className="relative">
+                          <input
+                            className={inputCls}
+                            placeholder="e.g. Camp Lejeune, Ali Al Salem AB"
+                            value={loc.name}
+                            autoComplete="off"
+                            onChange={(e) => { updateLocation(loc.id, { name: e.target.value, matchedSite: null, confirmed: [] }); setOpenDrop(loc.id); }}
+                            onFocus={() => setOpenDrop(loc.id)}
+                            onBlur={() => setTimeout(() => setOpenDrop((cur) => (cur === loc.id ? null : cur)), 150)}
+                          />
+                          {loc.matchedSite && (
+                            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-success">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                                <path d="M20 6L9 17l-5-5" />
+                              </svg>
+                            </span>
+                          )}
+                          {openDrop === loc.id && loc.name.trim() !== loc.matchedSite && siteMatches(loc.name).length > 0 && (
+                            <div className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-line bg-white shadow-lg">
+                              {siteMatches(loc.name).map((s) => (
+                                <button
+                                  key={s.name}
+                                  type="button"
+                                  onMouseDown={(e) => { e.preventDefault(); selectSite(loc.id, s); }}
+                                  className="flex w-full flex-col items-start gap-0.5 border-b border-line px-3.5 py-2.5 text-left transition last:border-0 hover:bg-canvas"
+                                >
+                                  <span className="text-sm font-semibold text-ink">{s.name}</span>
+                                  {(s.exposure_classes?.length ?? 0) > 0 && (
+                                    <span className="text-[11px] text-muted">
+                                      Documented: {(s.exposure_classes ?? []).slice(0, 3).map((c) => EXPOSURE_LABEL[c] ?? c).join(", ")}
+                                      {(s.exposure_classes?.length ?? 0) > 3 ? "…" : ""}
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </Field>
                       <Field label="Country / region">
                         <input className={inputCls} placeholder="e.g. Iraq, North Carolina, Germany" value={loc.region} onChange={(e) => updateLocation(loc.id, { region: e.target.value })} />
@@ -377,19 +471,57 @@ export default function IntakeFormView() {
                       </Field>
                     </div>
 
-                    <Field label="Exposures at this location" hint="Check everything you remember — the app fills in the rest based on documented sources.">
-                      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        {EXPOSURES.map((exp) => (
-                          <label key={exp.value} className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-sm transition ${loc.exposures.includes(exp.value) ? "border-brand bg-brand/5 font-medium text-brand" : "border-line text-muted hover:border-brand/30"}`}>
-                            <input
-                              type="checkbox"
-                              checked={loc.exposures.includes(exp.value)}
-                              onChange={() => toggleExposure(loc.id, exp.value)}
-                              className="rounded accent-brand"
-                            />
-                            {exp.label}
-                          </label>
-                        ))}
+                    <Field
+                      label="Exposures at this location"
+                      hint="Check everything you remember — the app fills in the rest based on documented sources."
+                    >
+                      {loc.matchedSite && loc.confirmed.length > 0 && (
+                        <div className="mb-3 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-xs text-success">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
+                          </svg>
+                          <span>
+                            <strong>{loc.confirmed.length} documented exposure{loc.confirmed.length > 1 ? "s" : ""}</strong> for {loc.matchedSite} {loc.confirmed.length > 1 ? "are" : "is"} confirmed and pre-selected below. Add or remove anything else that applies.
+                          </span>
+                        </div>
+                      )}
+                      <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {EXPOSURES.map((exp) => {
+                          const checked = loc.exposures.includes(exp.value);
+                          const isConfirmed = loc.confirmed.includes(exp.value);
+                          return (
+                            <label key={exp.value} className={`flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-sm transition ${
+                              isConfirmed ? "border-success/40 bg-success-soft font-medium text-success" :
+                              checked ? "border-brand bg-brand/5 font-medium text-brand" :
+                              "border-line text-muted hover:border-brand/30"
+                            }`}>
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleExposure(loc.id, exp.value)}
+                                className={`rounded ${isConfirmed ? "accent-green-700" : "accent-brand"}`}
+                              />
+                              <span className="flex-1">{exp.label}</span>
+                              {isConfirmed && (
+                                <span className="rounded bg-success px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                                  Confirmed
+                                </span>
+                              )}
+                            </label>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-3">
+                        <label className="mb-1.5 block text-xs font-medium text-muted">
+                          Something else? Add an exposure that isn&apos;t listed.
+                        </label>
+                        <input
+                          className={inputCls}
+                          placeholder="e.g. specific chemical, contaminated fuel, paint fumes…"
+                          value={loc.other}
+                          onChange={(e) => updateLocation(loc.id, { other: e.target.value })}
+                        />
                       </div>
                     </Field>
                   </div>
