@@ -15,11 +15,11 @@ const SECTIONS: NavSection[] = [
   {
     title: "Your claim",
     items: [
-      { href: "/map", label: "Where you served", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
-      { href: "/intake", label: "Guided intake", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
-      { href: "/health", label: "Conditions & links", d: "M19 14c1.5-1.6 3-3.3 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5C2 10.7 3.5 12.4 5 14l7 7 7-7z" },
-      { href: "/buddies", label: "Battle buddies", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
-      { href: "/report", label: "Claim packet", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM9 13h6M9 17h6" },
+      { href: "/map",     label: "Where you served",  d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
+      { href: "/intake",  label: "Intake form",        d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
+      { href: "/health",  label: "Conditions & links", d: "M19 14c1.5-1.6 3-3.3 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5C2 10.7 3.5 12.4 5 14l7 7 7-7z" },
+      { href: "/buddies", label: "Battle buddies",     d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
+      { href: "/report",  label: "Claim packet",       d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM9 13h6M9 17h6" },
     ],
   },
   {
@@ -32,11 +32,33 @@ const SECTIONS: NavSection[] = [
   },
 ];
 
+const BOTTOM_LINKS: NavItem[] = [
+  { href: "/help",  label: "How to use this",   d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" },
+  { href: "/about", label: "Why we built this",  d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
+];
+
 function Icon({ d }: { d: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-none">
       <path d={d} />
     </svg>
+  );
+}
+
+function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; onClick: () => void }) {
+  return (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      className={`flex items-center gap-3 py-2 pr-3 text-sm transition-all ${
+        active
+          ? "rounded-r-lg border-l-[3px] border-accent bg-white/15 pl-2.5 font-semibold text-white"
+          : "rounded-lg pl-3 text-white/65 hover:bg-white/10 hover:text-white"
+      }`}
+    >
+      <Icon d={item.d} />
+      {item.label}
+    </Link>
   );
 }
 
@@ -64,76 +86,63 @@ export default function AppShell({ title, children }: { title: string; children:
   }
 
   const sidebar = (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2.5 px-4 py-4">
+    <div className="flex h-full flex-col bg-brand">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 py-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/owh-round.png" alt="Operation Whole Health" className="h-10 w-10 flex-none object-contain" />
+        <img src="/owh-round.png" alt="OWH" className="h-11 w-11 flex-none object-contain" />
         <div className="leading-tight">
-          <div className="text-sm font-semibold tracking-tight text-ink">Connecting the Dots</div>
-          <div className="text-[11px] text-faint">of Service</div>
+          <div className="text-sm font-bold tracking-tight text-white">Connecting the Dots</div>
+          <div className="text-[11px] text-white/45">of Service</div>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-3 px-3 py-1">
+      {/* Nav */}
+      <nav className="flex-1 space-y-4 px-3 py-2 overflow-y-auto">
         {SECTIONS.map((section, si) => (
           <div key={si} className="space-y-0.5">
             {section.title && (
-              <div className="flex items-center gap-1.5 px-3 pb-1 pt-1.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-faint">{section.title}</span>
+              <div className="flex items-center gap-1.5 px-3 pb-1 pt-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/35">
+                  {section.title}
+                </span>
                 {section.tag && (
-                  <span className="rounded bg-canvas px-1.5 py-0.5 text-[10px] font-medium text-faint">{section.tag}</span>
+                  <span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">
+                    {section.tag}
+                  </span>
                 )}
               </div>
             )}
-            {section.items.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(item.href + "/");
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                    active ? "bg-brand/10 font-semibold text-brand" : "text-muted hover:bg-canvas hover:text-ink"
-                  }`}
-                >
-                  <Icon d={item.d} />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {section.items.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+                active={pathname === item.href || pathname.startsWith(item.href + "/")}
+                onClick={() => setOpen(false)}
+              />
+            ))}
           </div>
         ))}
       </nav>
 
-      <div className="border-t border-line px-3 py-2">
-        {(
-          [
-            { href: "/help", label: "How to use this", d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" },
-            { href: "/about", label: "Why we built this", d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
-          ] as NavItem[]
-        ).map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                active ? "bg-brand/10 font-semibold text-brand" : "text-muted hover:bg-canvas hover:text-ink"
-              }`}
-            >
-              <Icon d={item.d} />
-              {item.label}
-            </Link>
-          );
-        })}
+      {/* Help / About */}
+      <div className="border-t border-white/10 px-3 py-2 space-y-0.5">
+        {BOTTOM_LINKS.map((item) => (
+          <NavLink
+            key={item.href}
+            item={item}
+            active={pathname === item.href}
+            onClick={() => setOpen(false)}
+          />
+        ))}
       </div>
 
-      <div className="border-t border-line p-3">
-        <div className="truncate px-2 text-xs text-faint">{user.email}</div>
+      {/* User / sign out */}
+      <div className="border-t border-white/10 p-3">
+        <div className="truncate px-2 text-xs text-white/35">{user.email}</div>
         <button
           onClick={signOut}
-          className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-muted transition hover:bg-canvas hover:text-ink"
+          className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-white/55 transition hover:bg-white/10 hover:text-white"
         >
           Sign out
         </button>
@@ -144,21 +153,21 @@ export default function AppShell({ title, children }: { title: string; children:
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[256px_1fr]">
       {/* Sidebar (desktop) */}
-      <aside className="hidden border-r border-line bg-surface lg:block print:hidden">
-        <div className="sticky top-0 h-screen">{sidebar}</div>
+      <aside className="hidden lg:block print:hidden">
+        <div className="sticky top-0 h-screen overflow-hidden">{sidebar}</div>
       </aside>
 
       {/* Drawer (mobile) */}
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-ink/40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-64 border-r border-line bg-surface shadow-xl">{sidebar}</div>
+          <div className="absolute inset-0 bg-ink/50" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-0 h-full w-64 shadow-2xl">{sidebar}</div>
         </div>
       )}
 
       {/* Main column */}
       <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-surface/90 px-5 py-3 backdrop-blur print:hidden">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-white/95 px-5 py-3 backdrop-blur print:hidden">
           <button
             onClick={() => setOpen(true)}
             className="rounded-lg border border-line p-1.5 text-muted hover:bg-canvas lg:hidden"
@@ -168,7 +177,7 @@ export default function AppShell({ title, children }: { title: string; children:
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <h1 className="text-base font-semibold tracking-tight text-ink">{title}</h1>
+          <h1 className="text-base font-bold tracking-tight text-ink">{title}</h1>
         </header>
 
         <main className="flex-1 px-5 py-6 sm:px-7 lg:px-9">
