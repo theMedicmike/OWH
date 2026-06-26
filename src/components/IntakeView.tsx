@@ -22,7 +22,7 @@ type Proposal = {
   place: string;
   year: number;
   exposures: string[];
-  status: "idle" | "saving" | "saved" | "error";
+  status: "idle" | "saving" | "saved" | "saved_approx" | "error";
 };
 
 type Msg = { role: "user" | "assistant"; content: string; proposals?: Proposal[] };
@@ -48,13 +48,27 @@ function parseProposals(text: string): { clean: string; proposals: Proposal[] } 
   return { clean, proposals };
 }
 
-async function geocode(place: string): Promise<{ lat: number; lng: number } | null> {
+async function geocodeOnce(q: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(place)}`);
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
     const j = await r.json();
     if (j[0]) return { lat: parseFloat(j[0].lat), lng: parseFloat(j[0].lon) };
   } catch {
     // ignore
+  }
+  return null;
+}
+
+// Try the full place, then progressively simpler queries by dropping the most
+// specific leading segment. "Camp Victory, Baghdad, Iraq" → "Baghdad, Iraq" →
+// "Iraq", so a base name that isn't in the gazetteer still resolves to its city.
+async function geocode(place: string): Promise<{ lat: number; lng: number } | null> {
+  const segs = place.split(",").map((s) => s.trim()).filter(Boolean);
+  const tries: string[] = [place];
+  for (let i = 1; i < segs.length; i++) tries.push(segs.slice(i).join(", "));
+  for (const q of Array.from(new Set(tries))) {
+    const hit = await geocodeOnce(q);
+    if (hit) return hit;
   }
   return null;
 }
@@ -106,19 +120,22 @@ export default function IntakeView() {
     });
     const p = messages[mi].proposals![pi];
     const loc = await geocode(p.place);
+    // Never block the save: if we can't pin the exact spot, save it anyway and
+    // let the member fine-tune the location on the map later.
+    const coords = loc ?? { lat: 0, lng: 0 };
     let status: Proposal["status"] = "error";
-    if (loc) {
-      const { data: newId, error } = await supabase.rpc("log_check_in", {
-        p_lng: loc.lng,
-        p_lat: loc.lat,
-        p_year: p.year,
-        p_conflict: null,
-        p_exposures: p.exposures,
-      });
-      if (!error && newId) {
-        await supabase.from("check_ins").update({ place_name: p.place }).eq("id", newId);
-        status = "saved";
-      }
+    const { data: newId, error } = await supabase.rpc("log_check_in", {
+      p_lng: coords.lng,
+      p_lat: coords.lat,
+      p_year: p.year,
+      p_conflict: null,
+      p_exposures: p.exposures,
+    });
+    if (!error && newId) {
+      const patch: { place_name: string; notes?: string } = { place_name: p.place };
+      if (!loc) patch.notes = "Location approximate — set the exact spot on the map.";
+      await supabase.from("check_ins").update(patch).eq("id", newId);
+      status = loc ? "saved" : "saved_approx";
     }
     setMessages((prev) => {
       const copy = structuredClone(prev) as Msg[];
@@ -166,8 +183,12 @@ export default function IntakeView() {
                     <span className="text-xs text-zinc-500">Sign in on the map to save this.</span>
                   ) : p.status === "saved" ? (
                     <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Saved to your timeline ✓</span>
+                  ) : p.status === "saved_approx" ? (
+                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                      Saved to your timeline ✓ — we couldn&apos;t pinpoint the exact spot, so you can set it on the map when you&apos;re ready.
+                    </span>
                   ) : p.status === "error" ? (
-                    <span className="text-xs text-rose-500">Couldn&apos;t locate that place. Add it on the map instead.</span>
+                    <span className="text-xs text-rose-500">Couldn&apos;t save just now — please try again.</span>
                   ) : (
                     <button
                       onClick={() => saveProposal(mi, pi)}

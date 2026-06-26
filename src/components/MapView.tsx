@@ -137,6 +137,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [selected, setSelected] = useState<string[]>([]);
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
 
   // map filters
   const [activeClasses, setActiveClasses] = useState<Set<string>>(new Set());
@@ -266,8 +267,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       const m = new maplibregl.Marker({ element: el })
         .setLngLat(ll)
         .setPopup(
-          new maplibregl.Popup({ offset: 16 }).setHTML(
-            `<div style="font:14px system-ui"><strong>${s.name}</strong><br><span style="color:${STATUS_COLOR[s.status] ?? "#888780"};text-transform:capitalize">${s.status}</span></div>`,
+          new maplibregl.Popup({ offset: 16, maxWidth: "240px" }).setHTML(
+            `<div style="font:14px system-ui;max-width:220px;line-height:1.35"><strong>${s.name}</strong><br><span style="color:${STATUS_COLOR[s.status] ?? "#888780"};text-transform:capitalize">${s.status}</span></div>`,
           ),
         )
         .addTo(map);
@@ -388,19 +389,34 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       <div className="relative">
         <div ref={containerRef} className="h-[520px] w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800" />
 
-        <div className="pointer-events-none absolute left-4 top-4 rounded-lg bg-white/90 px-3 py-2 text-xs shadow-sm backdrop-blur dark:bg-zinc-900/90">
-          <div className="font-medium text-zinc-700 dark:text-zinc-200">Known exposure sites</div>
-          <div className="mt-1 flex flex-col gap-0.5 text-zinc-500">
-            <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />recognized</span>
-            <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#BA7517" }} />documented</span>
-            <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#E24B4A" }} />emerging</span>
-            <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#185FA5" }} />your check-ins</span>
-          </div>
+        <div className="absolute left-3 top-3 z-[2]">
+          <button
+            type="button"
+            onClick={() => setShowLegend((v) => !v)}
+            className="flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1.5 text-xs font-medium text-ink shadow-sm backdrop-blur transition hover:bg-white"
+          >
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />
+            Legend
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-3.5 w-3.5 text-muted transition-transform ${showLegend ? "rotate-180" : ""}`}>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          {showLegend && (
+            <div className="mt-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
+              <div className="font-semibold text-ink">Known exposure sites</div>
+              <div className="mt-1 flex flex-col gap-0.5 text-muted">
+                <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />recognized</span>
+                <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#BA7517" }} />documented</span>
+                <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#E24B4A" }} />emerging</span>
+                <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#185FA5" }} />your check-ins</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {draft && (
-          <div className="absolute right-4 top-4 w-80 rounded-xl border border-zinc-200 bg-white p-4 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-            <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">New check-in</div>
+          <div className="mt-3 w-full rounded-xl border border-line bg-white p-4 shadow-lg sm:absolute sm:right-4 sm:top-4 sm:mt-0 sm:w-80 sm:max-h-[calc(100%-2rem)] sm:overflow-auto">
+            <div className="text-sm font-semibold text-ink">New check-in</div>
 
             <label className="mt-2 block text-xs text-zinc-500">Place</label>
             <input
@@ -417,33 +433,40 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
             {suggestions.sites.length > 0 ? (
               <>
-                <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">Likely exposures here</div>
-                <div className="mb-2 text-xs text-zinc-500">
-                  Documented at {suggestions.sites.slice(0, 2).join(", ")}
-                  {suggestions.sites.length > 2 ? ` +${suggestions.sites.length - 2} more` : ""}. We&apos;ve checked the
-                  likely ones — confirm or adjust.
+                <div className="mt-3 text-sm font-semibold text-ink">Documented exposures here</div>
+                <div className="mb-2 mt-1 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-2.5 py-1.5 text-xs text-success">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-3.5 w-3.5 flex-none">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
+                  </svg>
+                  <span>
+                    Confirmed at {suggestions.sites.slice(0, 2).join(", ")}
+                    {suggestions.sites.length > 2 ? ` +${suggestions.sites.length - 2} more` : ""}. We&apos;ve pre-selected them — confirm or adjust.
+                  </span>
                 </div>
               </>
             ) : (
               <>
-                <div className="mt-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">What were you exposed to here?</div>
-                <div className="mb-2 text-xs text-zinc-500">Tap what applies — everything you pick is tagged to this check-in.</div>
+                <div className="mt-3 text-sm font-semibold text-ink">What were you exposed to here?</div>
+                <div className="mb-2 text-xs text-muted">Tap what applies — everything you pick is tagged to this check-in.</div>
               </>
             )}
             <div className="flex flex-wrap gap-1.5">
               {EXPOSURES.map((x) => {
                 const on = selected.includes(x.value);
+                const documented = suggestions.classes.includes(x.value);
+                const cls =
+                  documented && on
+                    ? `${chipBase} inline-flex items-center gap-1 border-success/50 bg-success-soft font-semibold text-success`
+                    : on
+                    ? `${chipBase} border-brand bg-brand/10 font-medium text-brand`
+                    : `${chipBase} border-line text-muted hover:bg-canvas`;
                 return (
-                  <button
-                    key={x.label}
-                    type="button"
-                    onClick={() => toggle(x.value)}
-                    className={
-                      on
-                        ? `${chipBase} border-brand bg-brand/10 font-medium text-brand`
-                        : `${chipBase} border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800`
-                    }
-                  >
+                  <button key={x.label} type="button" onClick={() => toggle(x.value)} className={cls}>
+                    {documented && on && (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    )}
                     {x.label}
                   </button>
                 );
