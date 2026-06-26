@@ -8,10 +8,11 @@ export default function EstimatorPage() {
         ← Back to the map
       </Link>
       <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-        Exposure &amp; burden estimator
+        What your service likely exposed you to
       </h1>
       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        An estimate of likely toxic-metal burden, built from your service and the exposures you have logged.
+        A plain-language summary built from where you served and what you logged — a starting point to take to
+        your clinician. An estimate, not a diagnosis.
       </p>
       <div className="mt-6">
         <EstimatorView />

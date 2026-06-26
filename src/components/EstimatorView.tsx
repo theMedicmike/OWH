@@ -323,7 +323,7 @@ export default function EstimatorView() {
 
       <div className={card}>
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Estimated burden, by metal</div>
+          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Metals your service may have exposed you to</div>
           <span className="text-xs text-zinc-500">{confidence} confidence</span>
         </div>
         <div className="mt-3 space-y-2.5">
@@ -350,7 +350,7 @@ export default function EstimatorView() {
       <div className={card}>
         <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Chemical &amp; other contaminants</div>
         <div className="mt-1 text-xs text-zinc-500">
-          Exposure load from what you logged. These deplete antioxidants and damage organs rather than storing like metals.
+          Exposure load from what you logged. Unlike metals, these don&apos;t build up in tissue — they act on organs and the body&apos;s defenses.
         </div>
         <div className="mt-3 space-y-2.5">
           {cPresent.length === 0 && (
@@ -386,7 +386,7 @@ export default function EstimatorView() {
             </div>
             {cDepletes.length > 0 && (
               <div>
-                <div className="text-xs font-medium text-zinc-700 dark:text-zinc-300">What it depletes</div>
+                <div className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Defenses these can affect</div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {cDepletes.map((o) => (
                     <span key={o} className="rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
@@ -413,7 +413,7 @@ export default function EstimatorView() {
         </div>
 
         <div className={card}>
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Trace minerals it displaces</div>
+          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Nutrients these metals can interfere with</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {minerals.length ? (
               minerals.map((o) => (
@@ -423,7 +423,7 @@ export default function EstimatorView() {
               <span className="text-sm text-zinc-500">No clear depletions to flag yet.</span>
             )}
           </div>
-          <p className="mt-2 text-xs text-zinc-400">The root-cause replenishment targets, under guidance.</p>
+          <p className="mt-2 text-xs text-zinc-400">Nutrients the metals above are known to interfere with — worth reviewing with your clinician.</p>
         </div>
       </div>
 

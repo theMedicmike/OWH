@@ -13,9 +13,12 @@ export default async function Home() {
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
         Connecting the Dots of Service
       </h1>
+      <p className="mt-2 text-base text-zinc-700 dark:text-zinc-200">
+        Map where you served. Document what you were exposed to. Build the proof that connects it to your health.
+      </p>
       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        {sites?.length ?? 0} known exposure sites loaded. Click anywhere on the map to drop a pin and
-        log where you served.
+        {sites?.length ?? 0} recognized exposure sites loaded. Sign in, then click anywhere on the map to drop a
+        pin where you served.
       </p>
 
       <div className="mt-2 flex flex-wrap gap-4 text-sm">
@@ -23,7 +26,7 @@ export default async function Home() {
           Build your timeline with the guide →
         </Link>
         <Link href="/estimator" className="text-blue-600 hover:underline dark:text-blue-400">
-          Your exposure burden estimate →
+          What you were exposed to →
         </Link>
         <Link href="/health" className="text-blue-600 hover:underline dark:text-blue-400">
           Your health &amp; connections →
@@ -41,7 +44,7 @@ export default async function Home() {
       </div>
 
       <p className="mt-6 text-xs text-zinc-400 dark:text-zinc-600">
-        Phase 1. Next: accounts so pins save permanently, then the AI intake and the burden estimator.
+        An estimate, not a diagnosis. Built to help you and your clinician connect the dots — and to bring to your VSO.
       </p>
     </main>
   );
