@@ -152,17 +152,19 @@ export default function ReportView() {
 
       <div className="rounded-xl border border-line bg-white p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">
         {/* Cover */}
-        <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-accent">Connecting the Dots of Service · Operation Whole Health</div>
-            <h2 className="mt-1 text-xl font-bold tracking-tight text-ink">Claim Support Packet</h2>
-            <p className="mt-0.5 text-sm text-muted">
-              {member?.display_name || user.email}
-              {member?.branch ? ` · ${member.branch}` : ""}
-              {years ? ` · ${years}` : ""}
-            </p>
-          </div>
+        <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/owh-logo.png" alt="Operation Whole Health" className="h-12 w-auto object-contain" />
           <div className="text-right text-xs text-muted">Prepared<br />{today}</div>
+        </div>
+        <div className="border-b border-line pb-4">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-accent">Connecting the Dots of Service · Operation Whole Health</div>
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-ink">Claim Support Packet</h2>
+          <p className="mt-0.5 text-sm text-muted">
+            {member?.display_name || user.email}
+            {member?.branch ? ` · ${member.branch}` : ""}
+            {years ? ` · ${years}` : ""}
+          </p>
         </div>
         <p className="mt-3 text-xs leading-relaxed text-muted">
           Prepared from veteran-entered data. This is a self-reported record with documented-source citations to

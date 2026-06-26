@@ -65,13 +65,9 @@ export default function AppShell({ title, children }: { title: string; children:
 
   const sidebar = (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-brand-foreground">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="2.5" />
-          </svg>
-        </span>
+      <div className="flex items-center gap-2.5 px-4 py-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/owh-round.png" alt="Operation Whole Health" className="h-10 w-10 flex-none object-contain" />
         <div className="leading-tight">
           <div className="text-sm font-semibold tracking-tight text-ink">Connecting the Dots</div>
           <div className="text-[11px] text-faint">of Service</div>

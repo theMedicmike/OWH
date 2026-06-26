@@ -35,11 +35,9 @@ export default function Landing() {
         <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/5" />
         <div className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-white/5" />
 
-        <div className="relative flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15">
-            <PinIcon className="h-5 w-5" />
-          </span>
-          <span className="text-sm font-semibold tracking-tight">Connecting the Dots of Service</span>
+        <div className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/owh-logo.png" alt="Operation Whole Health" className="h-16 w-auto object-contain" />
         </div>
 
         <div className="relative">
@@ -76,11 +74,9 @@ export default function Landing() {
       {/* Auth side */}
       <section className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12">
         <div className="w-full max-w-sm">
-          <div className="mb-6 flex items-center gap-2.5 lg:hidden">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-brand-foreground">
-              <PinIcon className="h-5 w-5" />
-            </span>
-            <span className="text-sm font-semibold tracking-tight text-ink">Connecting the Dots of Service</span>
+          <div className="mb-6">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/owh-logo.png" alt="Operation Whole Health" className="h-14 w-auto object-contain lg:hidden" />
           </div>
 
           <h2 className="text-xl font-semibold tracking-tight text-ink">Welcome</h2>
