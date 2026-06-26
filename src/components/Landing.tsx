@@ -6,10 +6,19 @@ import { useAuth } from "./AuthProvider";
 import AuthCard from "./AuthCard";
 
 const POINTS = [
-  { title: "Map where you served", body: "Drop a pin on every base, deployment, and war zone — your whole timeline, from day one." },
-  { title: "Document what you were exposed to", body: "Burn pits, heavy metals, solvents, PFAS, radiation, and more — tagged to the place and year." },
-  { title: "Build the proof", body: "Corroborate with the buddies who were there, and generate a one-page record for your clinician and VSO." },
+  { title: "Map where you served", body: "Every base, deployment, and war zone — your whole timeline, from day one." },
+  { title: "Document what you were exposed to", body: "Burn pits, heavy metals, solvents, PFAS, radiation — tagged to the place and year." },
+  { title: "Build the proof", body: "Corroborate with the buddies who were there, and generate a cited packet for your clinician and VSO." },
 ];
+
+function PinIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
 
 export default function Landing() {
   const { user, ready } = useAuth();
@@ -20,58 +29,72 @@ export default function Landing() {
   }, [ready, user, router]);
 
   return (
-    <main className="min-h-screen w-full">
-      <div className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 items-center gap-10 px-6 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-0">
-        {/* Left: mission */}
-        <section className="lg:py-16">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-brand-foreground">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="2.5" />
-              </svg>
-            </span>
-            <span className="text-sm font-semibold tracking-tight text-ink">Connecting the Dots of Service</span>
-          </div>
+    <main className="min-h-screen lg:grid lg:grid-cols-2">
+      {/* Brand panel (desktop) */}
+      <section className="relative hidden flex-col justify-between overflow-hidden bg-brand p-12 text-brand-foreground lg:flex">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-white/5" />
 
-          <h1 className="mt-8 text-4xl font-bold leading-[1.1] tracking-tight text-ink sm:text-5xl">
+        <div className="relative flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15">
+            <PinIcon className="h-5 w-5" />
+          </span>
+          <span className="text-sm font-semibold tracking-tight">Connecting the Dots of Service</span>
+        </div>
+
+        <div className="relative">
+          <h1 className="text-4xl font-bold leading-[1.1] tracking-tight">
             Prove where you served
             <br />
             made you sick.
           </h1>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-muted">
-            A living record for veterans and military first responders. Map your service, document your exposures,
-            and build the evidence that connects them to your health — so the VA can finally see it.
+          <div className="mt-4 h-1 w-12 rounded bg-accent" />
+          <p className="mt-5 max-w-md leading-relaxed text-white/75">
+            A living record for veterans and military first responders — so the VA can finally see the connection
+            between your service and your health.
           </p>
-
           <ul className="mt-8 space-y-4">
             {POINTS.map((p, i) => (
               <li key={p.title} className="flex gap-3.5">
-                <span className="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand">
+                <span className="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white/15 text-xs font-semibold">
                   {i + 1}
                 </span>
                 <div>
-                  <div className="text-sm font-semibold text-ink">{p.title}</div>
-                  <div className="text-sm leading-relaxed text-muted">{p.body}</div>
+                  <div className="text-sm font-semibold">{p.title}</div>
+                  <div className="text-sm leading-relaxed text-white/70">{p.body}</div>
                 </div>
               </li>
             ))}
           </ul>
+        </div>
 
-          <p className="mt-8 text-xs text-faint">
-            Built by Operation Whole Health, a veteran-founded 501(c)(3). An estimate and a record — not a diagnosis.
-          </p>
-        </section>
+        <div className="relative text-xs text-white/55">
+          Operation Whole Health, a veteran-founded 501(c)(3). An estimate and a record — not a diagnosis.
+        </div>
+      </section>
 
-        {/* Right: auth */}
-        <section className="lg:py-16">
-          <div className="mx-auto w-full max-w-sm">
-            <h2 className="mb-1 text-lg font-semibold text-ink">Start your record</h2>
-            <p className="mb-4 text-sm text-muted">It takes a minute, and it&apos;s yours forever.</p>
+      {/* Auth side */}
+      <section className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-6 flex items-center gap-2.5 lg:hidden">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-brand-foreground">
+              <PinIcon className="h-5 w-5" />
+            </span>
+            <span className="text-sm font-semibold tracking-tight text-ink">Connecting the Dots of Service</span>
+          </div>
+
+          <h2 className="text-xl font-semibold tracking-tight text-ink">Welcome</h2>
+          <p className="mt-1 text-sm text-muted">Sign in, or create your free account to start your record.</p>
+
+          <div className="mt-5">
             <AuthCard />
           </div>
-        </section>
-      </div>
+
+          <p className="mt-6 text-center text-xs leading-relaxed text-faint">
+            If you&apos;re struggling, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
+          </p>
+        </div>
+      </section>
     </main>
   );
 }

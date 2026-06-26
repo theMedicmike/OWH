@@ -8,6 +8,7 @@ export default function AuthCard() {
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -64,15 +65,24 @@ export default function AuthCard() {
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">Password</label>
-          <input
-            type="password"
-            required
-            autoComplete={mode === "in" ? "current-password" : "new-password"}
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={field}
-          />
+          <div className="relative">
+            <input
+              type={show ? "text" : "password"}
+              required
+              autoComplete={mode === "in" ? "current-password" : "new-password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`${field} pr-14`}
+            />
+            <button
+              type="button"
+              onClick={() => setShow((s) => !s)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-1 text-xs font-medium text-muted hover:text-ink"
+            >
+              {show ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
         <button
           type="submit"
