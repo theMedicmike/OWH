@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { EXPOSURE_LABEL, SOLUTION_PILLARS, type SolutionPillar } from "@/lib/education";
+import { ServiceRibbon } from "./Patriotic";
+import { EXPOSURE_LABEL, SOLUTION_PILLARS, START_THIS_WEEK, type SolutionPillar } from "@/lib/education";
 
 function PillarCard({ p, relevant }: { p: SolutionPillar; relevant: boolean }) {
   return (
@@ -85,13 +86,44 @@ export default function SolutionsView() {
 
   return (
     <div className="space-y-4">
-      {/* Guardrail banner */}
-      <div className="rounded-xl border border-accent/30 bg-accent/5 p-4">
-        <div className="text-xs font-bold uppercase tracking-wide text-accent">Root-cause, whole-person education</div>
-        <p className="mt-1.5 text-sm leading-relaxed text-ink">
-          Operation Whole Health is about treating the root cause, not just masking symptoms. Below are
-          general, well-studied areas you can explore to support your body alongside your medical care.
-          This is education — not treatment, not a prescription, and never part of your VA claim.
+      {/* Restoration mindset */}
+      <div className="overflow-hidden rounded-xl border border-accent/30 bg-accent/5">
+        <ServiceRibbon />
+        <div className="p-4">
+          <div className="text-xs font-bold uppercase tracking-wide text-accent">Burden, not broken</div>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink">
+            Most veterans aren&apos;t broken — they&apos;re carrying a burden that was never measured or
+            addressed. The body is built to heal; it just can&apos;t while it&apos;s still overwhelmed. So
+            restoration isn&apos;t about chasing one symptom or one miracle cure. It&apos;s about
+            rebuilding the terrain — reducing the burden, replenishing what was lost, and giving the body
+            the conditions it needs to repair itself.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-ink">
+            The mission has changed. It&apos;s no longer survival — it&apos;s restoration. Everything below
+            is general education to explore alongside your medical care. It is not treatment, not a
+            prescription, and never part of your VA claim.
+          </p>
+        </div>
+      </div>
+
+      {/* Start this week — the free medicine */}
+      <div className="rounded-xl border border-line bg-surface p-5">
+        <div className="text-sm font-bold text-ink">Start this week — the free medicine</div>
+        <p className="mt-1 text-xs text-muted">
+          You don&apos;t have to wait for an appointment. Pick one, do it for two weeks, then add the next.
+        </p>
+        <ul className="mt-3 space-y-2">
+          {START_THIS_WEEK.map((s, i) => (
+            <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-ink">
+              <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-brand/10 text-[11px] font-bold text-brand">{i + 1}</span>
+              {s}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 rounded-lg bg-canvas px-3 py-2 text-xs leading-relaxed text-muted">
+          Sequence it safely: stabilize before you optimize, change one thing at a time so you can tell
+          what&apos;s working, and never stop a prescribed medication on your own — any taper happens with
+          your prescriber.
         </p>
       </div>
 
@@ -122,12 +154,17 @@ export default function SolutionsView() {
       )}
 
       <div className="rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
-        <div className="font-semibold text-brand">A note on natural options</div>
-        <p className="mt-1 text-sm leading-relaxed text-ink">
+        <div className="font-semibold text-brand">Choosing help wisely</div>
+        <ul className="mt-1.5 space-y-1.5 text-sm leading-relaxed text-ink">
+          <li>• Run from anyone who promises a cure — no honest person will.</li>
+          <li>• Be cautious of anyone whose entire answer is the products they happen to sell.</li>
+          <li>• Good help welcomes the questions: &ldquo;Will you test before you treat? Will you coordinate with my VA doctors?&rdquo;</li>
+        </ul>
+        <p className="mt-2.5 text-sm leading-relaxed text-ink">
           Supplements, herbs, and protocols can interact with medications and conditions — including
           stressing the kidneys or liver, the very organs many exposures already burden. Always talk with
-          a qualified clinician or practitioner before starting anything. If you&apos;re struggling, the
-          Veterans Crisis Line is here 24/7 — dial <strong>988</strong>, then press <strong>1</strong>.
+          a qualified clinician before starting anything. If you&apos;re struggling, the Veterans Crisis
+          Line is here 24/7 — dial <strong>988</strong>, then press <strong>1</strong>.
         </p>
       </div>
     </div>
