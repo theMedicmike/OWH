@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function AiIntakePage() {
   return (
-    <AppShell title="AI-guided intake">
+    <AppShell title="Voice guided intake">
       <div className="mb-5 flex items-center justify-between gap-4">
         <p className="text-sm text-muted">
           Talk it through instead of clicking. Your guide asks the questions and turns your answers

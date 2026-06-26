@@ -135,6 +135,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [draftName, setDraftName] = useState("");
   const [year, setYear] = useState(2007);
   const [selected, setSelected] = useState<string[]>([]);
+  const [otherText, setOtherText] = useState("");
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [saving, setSaving] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
@@ -161,6 +162,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setDraft(null);
     setDraftName("");
     setSelected([]);
+    setOtherText("");
   }
 
   function classMatch(classes: string[]) {
@@ -317,7 +319,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   }, [checkins, mapLoaded, activeClasses, yearOn, filterYear]);
 
   async function addCheckin() {
-    if (!draft || !user || selected.length === 0) return;
+    if (!draft || !user || (selected.length === 0 && !otherText.trim())) return;
     setSaving(true);
     const { data: newId, error } = await supabase.rpc("log_check_in", {
       p_lng: draft.lng,
@@ -326,8 +328,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       p_conflict: null,
       p_exposures: selected,
     });
-    if (!error && newId && draftName.trim()) {
-      await supabase.from("check_ins").update({ place_name: draftName.trim() }).eq("id", newId);
+    if (!error && newId) {
+      const patch: { place_name?: string; notes?: string } = {};
+      if (draftName.trim()) patch.place_name = draftName.trim();
+      if (otherText.trim()) patch.notes = `Other exposure noted: ${otherText.trim()}`;
+      if (Object.keys(patch).length > 0) {
+        await supabase.from("check_ins").update(patch).eq("id", newId);
+      }
     }
     setSaving(false);
     if (error) {
@@ -393,18 +400,17 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           <button
             type="button"
             onClick={() => setShowLegend((v) => !v)}
-            className="flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1.5 text-xs font-medium text-ink shadow-sm backdrop-blur transition hover:bg-white"
+            className="flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1.5 text-xs font-semibold text-ink shadow-sm backdrop-blur transition hover:bg-white"
           >
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />
-            Legend
+            Known exposure sites
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-3.5 w-3.5 text-muted transition-transform ${showLegend ? "rotate-180" : ""}`}>
               <path d="M6 9l6 6 6-6" />
             </svg>
           </button>
           {showLegend && (
             <div className="mt-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
-              <div className="font-semibold text-ink">Known exposure sites</div>
-              <div className="mt-1 flex flex-col gap-0.5 text-muted">
+              <div className="flex flex-col gap-0.5 text-muted">
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />recognized</span>
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#BA7517" }} />documented</span>
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#E24B4A" }} />emerging</span>
@@ -473,14 +479,27 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               })}
             </div>
 
+            <div className="mt-3">
+              <label className="mb-1 block text-xs font-medium text-muted">
+                Something else? Add an exposure that isn&apos;t listed.
+              </label>
+              <input
+                type="text"
+                value={otherText}
+                onChange={(e) => setOtherText(e.target.value)}
+                placeholder="e.g. specific chemical, contaminated fuel, paint fumes…"
+                className="w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
+              />
+            </div>
+
             <div className="mt-4 flex gap-2">
               {user ? (
                 <button
                   onClick={addCheckin}
-                  disabled={saving || selected.length === 0}
+                  disabled={saving || (selected.length === 0 && !otherText.trim())}
                   className="flex-1 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
                 >
-                  {saving ? "Saving…" : selected.length ? `Save check-in (${selected.length})` : "Pick at least one"}
+                  {saving ? "Saving…" : (selected.length || otherText.trim()) ? `Save check-in${selected.length ? ` (${selected.length})` : ""}` : "Pick at least one"}
                 </button>
               ) : (
                 <div className="flex-1 text-xs text-zinc-500">Sign in above to save this pin to your record.</div>
