@@ -1,26 +1,43 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Dark mode is opt-in (class-based) so the UI stays consistently light and clean
+   regardless of the visitor's OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+  --color-canvas: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-ink: #15212e;
+  --color-muted: #5c6b7a;
+  --color-faint: #8a97a5;
+  --color-line: #e5e9ef;
+  --color-brand: #16314f;
+  --color-brand-600: #234c73;
+  --color-brand-700: #102438;
+  --color-brand-foreground: #ffffff;
+  --color-accent: #c1873d;
+  --color-success: #2f855a;
+  --color-success-soft: #e7f4ec;
+  --color-warn: #b07515;
+  --color-warn-soft: #fbf1de;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  border-color: var(--color-line);
 }
