@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import { ServiceRibbon } from "@/components/Patriotic";
 
 const MVP = [
   {
@@ -20,7 +21,8 @@ export default function AboutPage() {
     <AppShell title="Why we built this">
       <div className="mx-auto max-w-2xl">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/owh-logo.png" alt="Operation Whole Health" className="mb-5 h-16 w-auto object-contain" />
+        <img src="/owh-logo.png" alt="Operation Whole Health" className="h-16 w-auto object-contain" />
+        <ServiceRibbon className="mb-5 mt-4 w-40 rounded-full opacity-90" />
         <div className="mb-6 border-b border-line pb-5">
           <p className="text-sm font-semibold uppercase tracking-widest text-accent">
             Operation Whole Health &nbsp;·&nbsp; Connecting the Dots of Service

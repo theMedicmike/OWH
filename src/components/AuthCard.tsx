@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { ServiceRibbon } from "./Patriotic";
 
 export default function AuthCard() {
   const { supabase } = useAuth();
@@ -63,6 +64,7 @@ export default function AuthCard() {
 
   return (
     <div className="w-full rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-7">
+      <ServiceRibbon className="mb-5 rounded-full opacity-90" />
       <div className="flex rounded-lg bg-canvas p-1 text-sm font-medium">
         <button
           type="button"

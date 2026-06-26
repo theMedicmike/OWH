@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { ServiceRibbon, StarRow, Anniversary250 } from "./Patriotic";
 
 type NavItem = { href: string; label: string; d: string };
 type NavSection = { title?: string; tag?: string; items: NavItem[] };
@@ -98,6 +99,9 @@ export default function AppShell({ title, children }: { title: string; children:
         </div>
       </div>
 
+      {/* Service-ribbon accent */}
+      <ServiceRibbon className="opacity-90" />
+
       {/* Nav */}
       <nav className="flex-1 space-y-4 px-3 py-2 overflow-y-auto">
         {SECTIONS.map((section, si) => (
@@ -136,6 +140,12 @@ export default function AppShell({ title, children }: { title: string; children:
             onClick={() => setOpen(false)}
           />
         ))}
+      </div>
+
+      {/* 250th anniversary */}
+      <div className="px-3 pt-3">
+        <StarRow count={7} className="mb-2.5" />
+        <Anniversary250 />
       </div>
 
       {/* User / sign out */}

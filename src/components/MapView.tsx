@@ -5,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { ServiceRibbon } from "./Patriotic";
 
 export type Site = {
   name: string;
@@ -422,6 +423,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
         {draft && (
           <div className="mt-3 w-full rounded-xl border border-line bg-white p-4 shadow-lg sm:absolute sm:right-4 sm:top-4 sm:mt-0 sm:w-80 sm:max-h-[calc(100%-2rem)] sm:overflow-auto">
+            <ServiceRibbon className="mb-3 rounded-full opacity-90" />
             <div className="text-sm font-semibold text-ink">New check-in</div>
 
             <label className="mt-2 block text-xs text-zinc-500">Place</label>

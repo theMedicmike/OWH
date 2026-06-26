@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import { ServiceRibbon } from "@/components/Patriotic";
 
 const STEPS = [
   {
@@ -62,6 +63,7 @@ export default function HelpPage() {
           <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink">
             Connecting the Dots of Service
           </h2>
+          <ServiceRibbon className="mt-3 w-40 rounded-full opacity-90" />
           <p className="mt-1 text-sm text-muted">
             A simple, step-by-step guide. No tech experience needed.
           </p>

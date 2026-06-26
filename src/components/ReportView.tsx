@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
+import { ServiceRibbon } from "./Patriotic";
 
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
@@ -152,10 +153,14 @@ export default function ReportView() {
 
       <div className="rounded-xl border border-line bg-white p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">
         {/* Cover */}
+        <ServiceRibbon className="mb-4 rounded-full" />
         <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/owh-logo.png" alt="Operation Whole Health" className="h-12 w-auto object-contain" />
-          <div className="text-right text-xs text-muted">Prepared<br />{today}</div>
+          <div className="text-right text-xs text-muted">
+            Prepared<br />{today}
+            <div className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-accent">America&apos;s 250th · 1776–2026</div>
+          </div>
         </div>
         <div className="border-b border-line pb-4">
           <div className="text-[11px] font-semibold uppercase tracking-wide text-accent">Connecting the Dots of Service · Operation Whole Health</div>

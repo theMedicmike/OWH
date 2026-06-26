@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
+import { ServiceRibbon, Seal250, RibbonDivider } from "./Patriotic";
 
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
@@ -92,16 +93,18 @@ export default function DashboardView() {
     <div className="space-y-6">
       {/* Header */}
       <div className="overflow-hidden rounded-2xl bg-brand text-brand-foreground">
+        <ServiceRibbon />
         <div className="flex items-center gap-4 p-6">
           <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-white/15 text-xl font-bold">
             {initial}
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="text-lg font-semibold tracking-tight">Welcome back, {greeting}.</div>
             <div className="text-sm text-white/70">
               {[branch, years].filter(Boolean).join(" · ") || "Let's build your record."}
             </div>
           </div>
+          <Seal250 className="hidden sm:flex" />
         </div>
       </div>
 
@@ -110,21 +113,26 @@ export default function DashboardView() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-line bg-surface p-4">
-            <div className="text-2xl font-bold text-ink">{loaded ? s.value : "—"}</div>
-            <div className="mt-0.5 text-xs leading-snug text-muted">{s.label}</div>
+          <div key={s.label} className="overflow-hidden rounded-xl border border-line bg-surface">
+            <div className="h-1 bg-accent" />
+            <div className="p-4">
+              <div className="text-2xl font-bold text-ink">{loaded ? s.value : "—"}</div>
+              <div className="mt-0.5 text-xs leading-snug text-muted">{s.label}</div>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Next step */}
-      <div className="rounded-xl border border-brand/20 bg-brand/5 p-5">
-        <div className="text-xs font-semibold uppercase tracking-wide text-brand">Your next step</div>
+      <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
+        <div className="text-xs font-semibold uppercase tracking-wide text-accent">Your next step</div>
         <p className="mt-1.5 text-sm text-ink">{nextStep.text}</p>
         <Link href={nextStep.href} className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
           {nextStep.cta}
         </Link>
       </div>
+
+      <RibbonDivider label="Your record" />
 
       {/* Timeline + buddies */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

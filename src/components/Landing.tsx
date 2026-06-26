@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import AuthCard from "./AuthCard";
+import { ServiceRibbon, Anniversary250 } from "./Patriotic";
 
 const POINTS = [
   { title: "Map where you served", body: "Every base, deployment, and war zone — your whole timeline, from day one." },
@@ -38,6 +39,7 @@ export default function Landing() {
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/owh-logo.png" alt="Operation Whole Health" className="h-16 w-auto object-contain" />
+          <ServiceRibbon className="mt-5 w-40 rounded-full opacity-90" />
         </div>
 
         <div className="relative">
@@ -66,17 +68,21 @@ export default function Landing() {
           </ul>
         </div>
 
-        <div className="relative text-xs text-white/55">
-          Operation Whole Health, a Patriot-founded 501(c)(3). An estimate and a record — not a diagnosis.
+        <div className="relative space-y-4">
+          <Anniversary250 className="w-44" />
+          <div className="text-xs text-white/55">
+            Operation Whole Health, a Patriot-founded 501(c)(3). An estimate and a record — not a diagnosis.
+          </div>
         </div>
       </section>
 
       {/* Auth side */}
       <section className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12">
         <div className="w-full max-w-sm">
-          <div className="mb-6">
+          <div className="mb-6 lg:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/owh-logo.png" alt="Operation Whole Health" className="h-14 w-auto object-contain lg:hidden" />
+            <img src="/owh-logo.png" alt="Operation Whole Health" className="h-14 w-auto object-contain" />
+            <ServiceRibbon className="mt-4 w-32 rounded-full opacity-90" />
           </div>
 
           <h2 className="text-xl font-semibold tracking-tight text-ink">Welcome</h2>
