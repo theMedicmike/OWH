@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { EXPOSURE_LABEL, CONDITION_EDU, CONDITION_EXPOSURES } from "@/lib/education";
+import { EXPOSURE_LABEL, CONDITION_EDU, CONDITION_CASCADE, CONDITION_EXPOSURES } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
 
 type Cond = { label: string; claim_status: string };
@@ -44,7 +44,9 @@ export default function ConditionsView() {
     <div className="space-y-4">
       <p className="text-sm text-muted">
         The conditions you live with — what they are, how your exposures may relate, and what to track.
-        Understanding the connection is the first step to addressing the root cause.
+        These are rarely isolated problems; they&apos;re often threaded together by one common
+        denominator — the chronic inflammation toxic exposure leaves behind. Understanding the
+        connection is the first step to addressing the root cause.
       </p>
 
       {conditions.length === 0 ? (
@@ -75,6 +77,13 @@ export default function ConditionsView() {
 
                 {edu && <p className="mt-2 text-sm leading-relaxed text-muted">{edu.what}</p>}
                 {edu && <p className="mt-2 text-sm leading-relaxed text-ink">{edu.link}</p>}
+
+                {CONDITION_CASCADE[c.label] && (
+                  <div className="mt-3 rounded-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-accent">Why it&apos;s connected</div>
+                    <p className="mt-1 text-sm leading-relaxed text-ink">{CONDITION_CASCADE[c.label]}</p>
+                  </div>
+                )}
 
                 {related.length > 0 && (
                   <div className="mt-3">

@@ -185,6 +185,34 @@ export const EXPOSURE_EDU: Record<string, ExposureEdu> = {
   },
 };
 
+// "How the cascade works" — the book's signature framing: an exposure rarely
+// stays where it landed; it sets off a chain reaction across connected systems,
+// and the exposures themselves came in compounding combinations.
+export const EXPOSURE_CASCADE: Record<string, string> = {
+  burn_pit:
+    "Burn-pit smoke doesn't stop at the lungs. The ultrafine particles cross into the bloodstream and light an inflammatory fire that, for many veterans, never fully goes out — driving airway disease, but also feeding heart, brain, and immune problems that surface years later and look unrelated. And it rarely traveled alone: most who breathed the pits also breathed the dust and the diesel.",
+  particulate:
+    "Fine desert dust scars the smallest airways and keeps the immune system on alert long after the deployment ends. Because it usually arrived alongside burn-pit smoke, the two compound — one more thread in the cascade rather than a problem you can isolate.",
+  pesticide:
+    "Dioxin from Agent Orange stores in fat for decades and quietly disrupts the body's hormone and cellular signaling. That's why a single exposure in your twenties can surface as diabetes, heart disease, nerve injury, or cancer in your sixties — the same root, branching across systems over a lifetime.",
+  water_contamination:
+    "Contaminated water was absorbed every day — drinking, showering, even breathing the steam — so the dose built silently over months and years. Solvents strain the blood, kidneys, liver, and nervous system at once, and because the whole household drank the same water, the cascade can reach a veteran's family too.",
+  chemical_solvent:
+    "Solvents are absorbed through the lungs and skin and travel everywhere the blood goes. They burden the marrow, liver, kidneys, and nerves simultaneously — which is why solvent-exposed veterans often collect several 'unrelated' problems that actually share one source.",
+  heavy_metal:
+    "Metals don't pass through — they bank in bone, kidney, liver, and nerve tissue and compete with the minerals your body needs to run. That slow displacement keeps inflammation simmering and surfaces as kidney, blood-pressure, and nerve or cognitive symptoms years after the exposure ended.",
+  asbestos_silica:
+    "Asbestos and silica embed in lung tissue and sit there quietly, sometimes for decades, keeping a low inflammatory fire burning until it surfaces as scarring or cancer. That long delay is exactly why the exposure history has to be written down now, while you feel fine.",
+  nerve_agent:
+    "Even low-level nerve-agent exposure can leave the nervous system miscalibrated long after the event. It's one thread in the Gulf War cascade — woven together with the pills, the pesticides, and the smoke into a multi-system pattern that no single test explains.",
+  gulf_war_agent:
+    "Gulf War illness is the cascade made visible: pesticides, anti-nerve-agent pills, oil-fire smoke, and relentless stress, layered in one body, leaving fatigue, pain, gut trouble, and brain fog that don't fit a single diagnosis. The exposures came in combination, so the symptoms do too.",
+  radiation:
+    "Radiation damages DNA, and depleted uranium adds a heavy-metal load to the kidneys on top of cancer risk. The injury is cumulative and quiet — dose and proximity matter — which is why documenting your role and environment is part of the picture, not an afterthought.",
+  pfas_afff:
+    "PFAS are 'forever chemicals' for a reason: they build up and barely leave, so the body keeps reacting for years. They nudge the thyroid, cholesterol, immune system, and kidneys all at once — a slow systemic drift rather than one sharp illness.",
+};
+
 export type ConditionEdu = {
   what: string;
   link: string;
@@ -267,6 +295,42 @@ export const CONDITION_EDU: Record<string, ConditionEdu> = {
     link: "Established through an in-service stressor plus a current diagnosis — not exposure presumption. Mental and physical health are deeply connected, and support is available.",
     track: ["Sleep and mood patterns", "What helps and what worsens it", "Care team and supports"],
   },
+};
+
+// "Why it's connected" — these conditions are rarely isolated; they're threaded
+// together through shared biology, most often the chronic inflammation that toxic
+// exposure leaves behind.
+export const CONDITION_CASCADE: Record<string, string> = {
+  "Chronic rhinitis / sinusitis":
+    "Your sinuses are the first filter the smoke and dust hit, so chronic congestion is often the upper end of the same airway inflammation driving deeper lung problems — not a separate, minor complaint.",
+  "Asthma / reactive airway":
+    "Reactive airways are inflammation announcing itself loudly. The same inflammatory fire often runs quieter elsewhere, which is why airway symptoms and whole-body fatigue or fog frequently travel together.",
+  "COPD / chronic bronchitis":
+    "Years of particulate injury keep the airways inflamed and remodeling. It rarely stands alone — the same systemic inflammation taxes the heart and energy systems at the same time.",
+  "Constrictive bronchiolitis":
+    "The damage is in the smallest airways, below what ordinary tests see — which is exactly why so many veterans were told they were fine while the cascade kept moving. Normal imaging is the start of the conversation, not the end.",
+  "Respiratory or lung cancer":
+    "Cancer is the cascade's hardest edge — the end of a long road of inflammation, DNA damage, and cellular stress that may have begun decades earlier with smoke, herbicide, or radiation.",
+  "Other cancer":
+    "Different exposures favor different tissues, but the underlying story is shared: persistent toxic burden and inflammation wearing down the body's repair and quality-control systems over years.",
+  "Thyroid disorder":
+    "The thyroid sits downstream of dioxins, PFAS, and radiation, and it sets the tempo for energy, weight, mood, and temperature — so when it drifts, the effects ripple into nearly every system.",
+  "Kidney disease":
+    "The kidneys filter everything, so they take the brunt of metals, solvents, and PFAS. As they strain, blood pressure and mineral balance follow — one more example of how a single burden spreads outward.",
+  "Hypertension":
+    "High blood pressure is often inflammation and toxic burden showing up in the blood vessels. It's recognized for Agent Orange, and it travels with the same drivers behind kidney and heart strain.",
+  "Neurological / cognitive (TBI)":
+    "Blast and toxic exposure can both inflame the brain, and neuroinflammation doesn't stay put — it tangles with sleep, mood, and energy, which is why 'just getting older' rarely explains what veterans feel.",
+  "Peripheral neuropathy":
+    "Nerves are exquisitely sensitive to solvents, metals, and herbicides. Numbness and burning are often the visible edge of a wider neurotoxic and inflammatory process.",
+  "Gut / GI disorder":
+    "The gut trains the immune system and talks constantly to the brain, so gut trouble after service is rarely 'just digestion' — it both feeds and reflects the whole-body inflammation behind many other symptoms.",
+  "Autoimmune disorder":
+    "When barriers break down and inflammation never stands down, the immune system can lose its bearings and start targeting the body itself — a recognized risk after solvent, silica, metal, and Gulf War exposure.",
+  "Hormonal / reproductive":
+    "Many exposures are endocrine disruptors — they imitate or block the body's hormone signals. Because hormones coordinate so many systems, that disruption surfaces as fertility, mood, metabolic, and reproductive effects at once.",
+  "PTSD / mental health":
+    "Mind and body share one inflammatory, stress-driven biology. Trauma keeps the nervous system on alert, and that same vigilance worsens sleep, pain, and gut symptoms — which is why caring for mental health is part of physical restoration, not separate from it.",
 };
 
 // Which exposure classes are commonly studied in connection with each condition.

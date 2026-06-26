@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { EXPOSURE_LABEL, EXPOSURE_EDU } from "@/lib/education";
+import { EXPOSURE_LABEL, EXPOSURE_EDU, EXPOSURE_CASCADE } from "@/lib/education";
 import { EXPOSURE_BASIS } from "@/lib/citations";
 
 type Row = { place_name: string | null; exposures: { exposure_class: string }[] | null };
@@ -29,6 +29,13 @@ function ExposureCard({ cls, places }: { cls: string; places: string[] }) {
         {edu.body.map((p, i) => (
           <p key={i} className="mt-2 text-sm leading-relaxed text-muted">{p}</p>
         ))}
+
+        {EXPOSURE_CASCADE[cls] && (
+          <div className="mt-3 rounded-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-accent">How the cascade works</div>
+            <p className="mt-1 text-sm leading-relaxed text-ink">{EXPOSURE_CASCADE[cls]}</p>
+          </div>
+        )}
 
         <div className="mt-3 flex flex-wrap gap-1.5">
           {edu.systems.map((s) => (
@@ -99,7 +106,9 @@ export default function ExposuresView() {
     <div className="space-y-4">
       <p className="text-sm text-muted">
         What you were likely exposed to, in plain language — what it is, how it reaches the body, and
-        what to talk through with your clinician. Education, never a diagnosis.
+        what to talk through with your clinician. Almost no veteran was exposed to only one of these;
+        they came in combinations that compound. And you did not have to deploy to be exposed.
+        Education, never a diagnosis.
       </p>
 
       {mine.length === 0 ? (
