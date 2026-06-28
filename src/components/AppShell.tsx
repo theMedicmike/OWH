@@ -19,6 +19,7 @@ const SECTIONS: NavSection[] = [
       { href: "/map",     label: "Where you served",  d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
       { href: "/intake",  label: "Intake form",        d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
       { href: "/health",  label: "Conditions & links", d: "M19 14c1.5-1.6 3-3.3 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5C2 10.7 3.5 12.4 5 14l7 7 7-7z" },
+      { href: "/learn",   label: "Exposure library",   d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
       { href: "/buddies", label: "Battle buddies",     d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
       { href: "/report",  label: "Claim packet",       d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM9 13h6M9 17h6" },
     ],

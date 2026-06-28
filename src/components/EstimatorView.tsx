@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
+import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG, NUTRIENT_NAME_TO_SLUG } from "@/lib/toxlibrary";
 
 // Every service-relevant heavy metal / metalloid, with where it stores and the
 // vital trace minerals/nutrients it displaces or depletes. Heuristic, for the
@@ -355,7 +356,11 @@ export default function EstimatorView() {
             return (
               <div key={m.key}>
                 <div className="flex justify-between text-sm">
-                  <span className="text-ink dark:text-zinc-200">{m.name}</span>
+                  {METAL_KEY_TO_SLUG[m.key] ? (
+                    <Link href={`/learn/${METAL_KEY_TO_SLUG[m.key]}`} className="font-medium text-brand hover:underline">{m.name} →</Link>
+                  ) : (
+                    <span className="text-ink">{m.name}</span>
+                  )}
                   <span style={{ color: b.text }}>{b.label}</span>
                 </div>
                 <div className="mt-1 h-2 rounded-full bg-canvas dark:bg-zinc-800">
@@ -365,7 +370,7 @@ export default function EstimatorView() {
             );
           })}
         </div>
-        <p className="mt-3 text-xs text-faint">Tracking {METALS.length} metals; showing the ones your profile flags.</p>
+        <p className="mt-3 text-xs text-faint">Tracking {METALS.length} metals; showing the ones your profile flags. <Link href="/learn" className="font-medium text-brand hover:underline">Open the full exposure library →</Link></p>
       </div>
 
       <div className={card}>
@@ -385,7 +390,11 @@ export default function EstimatorView() {
             return (
               <div key={c.key}>
                 <div className="flex justify-between gap-3 text-sm">
-                  <span className="text-ink dark:text-zinc-200">{c.name}</span>
+                  {CONTAMINANT_KEY_TO_SLUG[c.key] ? (
+                    <Link href={`/learn/${CONTAMINANT_KEY_TO_SLUG[c.key]}`} className="font-medium text-brand hover:underline">{c.name} →</Link>
+                  ) : (
+                    <span className="text-ink">{c.name}</span>
+                  )}
                   <span className="shrink-0" style={{ color: b.text }}>{b.label}</span>
                 </div>
                 <div className="mt-1 h-2 rounded-full bg-canvas dark:bg-zinc-800">
@@ -425,9 +434,14 @@ export default function EstimatorView() {
           <p className="mt-1 text-xs text-muted">Documented biology — where each flagged metal is known to settle if exposure occurred.</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {organs.length ? (
-              organs.map((o) => (
-                <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
-              ))
+              organs.map((o) => {
+                const s = ORGAN_NAME_TO_SLUG[o];
+                return s ? (
+                  <Link key={o} href={`/learn/organ/${s}`} className="rounded-md bg-brand/5 px-2 py-1 text-xs font-medium text-brand hover:bg-brand/10">{o} →</Link>
+                ) : (
+                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted">{o}</span>
+                );
+              })
             ) : (
               <span className="text-sm text-muted">Nothing elevated enough to map yet.</span>
             )}
@@ -438,9 +452,14 @@ export default function EstimatorView() {
           <div className="text-sm font-medium text-ink dark:text-zinc-100">Nutrients these metals can interfere with</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {minerals.length ? (
-              minerals.map((o) => (
-                <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
-              ))
+              minerals.map((o) => {
+                const s = NUTRIENT_NAME_TO_SLUG[o.toLowerCase()];
+                return s ? (
+                  <Link key={o} href={`/learn/nutrient/${s}`} className="rounded-md bg-success-soft px-2 py-1 text-xs font-medium text-success hover:brightness-95">{o} →</Link>
+                ) : (
+                  <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success">{o}</span>
+                );
+              })
             ) : (
               <span className="text-sm text-muted">No clear depletions to flag yet.</span>
             )}
