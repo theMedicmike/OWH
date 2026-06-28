@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { ServiceRibbon } from "./Patriotic";
 
 // Every service-relevant heavy metal / metalloid, with where it stores and the
 // vital trace minerals/nutrients it displaces or depletes. Heuristic, for the
@@ -224,28 +225,47 @@ export default function EstimatorView() {
   const setCount = Object.values(munRates).filter((r) => r > 0).length + logged.length;
   const confidence = setCount >= 4 ? "moderate" : "low";
 
-  if (!ready) return <p className="text-sm text-zinc-500">Loading…</p>;
+  if (!ready) return <p className="text-sm text-muted">Loading…</p>;
 
   if (!user) {
     return (
-      <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-        <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      <div className="rounded-xl border border-line bg-surface p-6">
+        <p className="text-sm text-muted">
           Sign in on the map to build your record, then come back here for your estimate.
         </p>
-        <Link href="/" className="mt-3 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400">
+        <Link href="/" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">
           ← Go to the map
         </Link>
       </div>
     );
   }
 
-  const card = "rounded-xl border border-zinc-200 p-5 dark:border-zinc-800";
+  const card = "rounded-xl border border-line bg-surface p-5";
 
   return (
     <div className="space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-accent/30 bg-accent/5">
+        <ServiceRibbon />
+        <div className="p-5">
+          <div className="text-xs font-bold uppercase tracking-wide text-accent">Private — for you and your clinician</div>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink">
+            A standard blood test mostly shows <strong>recent</strong> exposure — last week, not your career.
+            Many service toxicants <strong>bioaccumulate</strong>: lead settles into bone for decades and can
+            remobilize years later; others lodge in organs. So a &ldquo;normal&rdquo; result doesn&apos;t rule
+            out a lifetime of stored exposure.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-ink">
+            This tool <strong>translates what you were exposed to</strong> into where those toxicants tend to
+            accumulate and the tests that can reveal them. It does <strong>not</strong> measure what is in your
+            body, and it is <strong>not</strong> part of your VA claim — keep it private and don&apos;t submit
+            it as evidence.
+          </p>
+        </div>
+      </div>
+
       <div className={card}>
-        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Your service profile</div>
-        <div className="mt-1 text-xs text-zinc-500">
+        <div className="text-sm font-medium text-ink dark:text-zinc-100">Your service profile</div>
+        <div className="mt-1 text-xs text-muted">
           {logged.length > 0
             ? "Built from the exposures you logged on the map, plus the details below."
             : "Log exposures on the map and they'll feed this automatically. Add the details below too."}
@@ -254,7 +274,7 @@ export default function EstimatorView() {
         {logged.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {logged.map((e) => (
-              <span key={e} className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              <span key={e} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-xs text-muted dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                 {EXPOSURE_LABEL[e] ?? e}
               </span>
             ))}
@@ -263,15 +283,15 @@ export default function EstimatorView() {
 
         <div className="mt-4 grid gap-3">
           <div className="flex items-center gap-3">
-            <label className="w-28 text-xs text-zinc-500">Primary role</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)} className="flex-1 rounded-md border border-zinc-300 bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700">
+            <label className="w-28 text-xs text-muted">Primary role</label>
+            <select value={role} onChange={(e) => setRole(e.target.value)} className="flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700">
               {Object.keys(ROLES).map((r) => (
                 <option key={r}>{r}</option>
               ))}
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <label className="w-28 text-xs text-zinc-500">Years of service</label>
+            <label className="w-28 text-xs text-muted">Years of service</label>
             <input type="range" min={0} max={50} step={1} value={years} onChange={(e) => setYears(+e.target.value)} className="flex-1" />
             <span className="w-14 text-right text-sm font-medium">{years}</span>
           </div>
@@ -279,23 +299,23 @@ export default function EstimatorView() {
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Weapons &amp; munitions exposure</div>
-        <div className="mt-1 text-xs text-zinc-500">
+        <div className="text-sm font-medium text-ink dark:text-zinc-100">Weapons &amp; munitions exposure</div>
+        <div className="mt-1 text-xs text-muted">
           Roughly how much were you around each, across your whole service? No exact numbers needed.
         </div>
 
         {MUNITION_GROUPS.map((g) => (
           <div key={g.group} className="mt-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{g.group}</span>
-              <span className="text-[11px] text-zinc-400">{g.metals}</span>
+              <span className="text-xs font-medium text-ink dark:text-zinc-300">{g.group}</span>
+              <span className="text-[11px] text-faint">{g.metals}</span>
             </div>
             {g.items.map((it) => {
               const cur = munRates[it.key] ?? 0;
               return (
-                <div key={it.key} className="flex items-center justify-between gap-3 border-t border-zinc-100 py-2 dark:border-zinc-800">
-                  <span className="text-sm text-zinc-800 dark:text-zinc-200">{it.label}</span>
-                  <div className="flex flex-none overflow-hidden rounded-md border border-zinc-300 text-xs dark:border-zinc-700">
+                <div key={it.key} className="flex items-center justify-between gap-3 border-t border-line py-2 dark:border-zinc-800">
+                  <span className="text-sm text-ink dark:text-zinc-200">{it.label}</span>
+                  <div className="flex flex-none overflow-hidden rounded-md border border-line text-xs dark:border-zinc-700">
                     {RATES.map((label, ri) => {
                       const on = cur === ri;
                       return (
@@ -304,8 +324,8 @@ export default function EstimatorView() {
                           type="button"
                           onClick={() => setMunRates((p) => ({ ...p, [it.key]: ri }))}
                           className={
-                            (on ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 " : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 ") +
-                            (ri > 0 ? "border-l border-zinc-300 dark:border-zinc-700 " : "") +
+                            (on ? "bg-brand/10 text-brand dark:bg-blue-950 dark:text-blue-300 " : "text-muted hover:bg-canvas dark:hover:bg-zinc-800 ") +
+                            (ri > 0 ? "border-l border-line dark:border-zinc-700 " : "") +
                             "px-2.5 py-1"
                           }
                         >
@@ -323,38 +343,39 @@ export default function EstimatorView() {
 
       <div className={card}>
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Metals your service may have exposed you to</div>
-          <span className="text-xs text-zinc-500">{confidence} confidence</span>
+          <div className="text-sm font-semibold text-ink">Estimated exposure likelihood — metals</div>
+          <span className="text-xs text-muted">{confidence} confidence</span>
         </div>
+        <p className="mt-1 text-xs text-muted">How likely your service led to meaningful exposure to each metal — not a measurement of what&apos;s in your body now.</p>
         <div className="mt-3 space-y-2.5">
-          {present.length === 0 && <p className="text-sm text-zinc-500">Set your role, munitions, and exposures to see your estimate.</p>}
+          {present.length === 0 && <p className="text-sm text-muted">Set your role, munitions, and exposures to see your estimate.</p>}
           {present.map((m) => {
             const v = idx[m.key];
             const b = band(v);
             return (
               <div key={m.key}>
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-800 dark:text-zinc-200">{m.name}</span>
+                  <span className="text-ink dark:text-zinc-200">{m.name}</span>
                   <span style={{ color: b.text }}>{b.label}</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                <div className="mt-1 h-2 rounded-full bg-canvas dark:bg-zinc-800">
                   <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
                 </div>
               </div>
             );
           })}
         </div>
-        <p className="mt-3 text-xs text-zinc-400">Tracking {METALS.length} metals; showing the ones your profile flags.</p>
+        <p className="mt-3 text-xs text-faint">Tracking {METALS.length} metals; showing the ones your profile flags.</p>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Chemical &amp; other contaminants</div>
-        <div className="mt-1 text-xs text-zinc-500">
+        <div className="text-sm font-medium text-ink dark:text-zinc-100">Chemical &amp; other contaminants</div>
+        <div className="mt-1 text-xs text-muted">
           Exposure load from what you logged. Unlike metals, these don&apos;t build up in tissue — they act on organs and the body&apos;s defenses.
         </div>
         <div className="mt-3 space-y-2.5">
           {cPresent.length === 0 && (
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted">
               Log chemical, water, PFAS, radiation, pesticide, or particulate exposures on the map to see these.
             </p>
           )}
@@ -364,10 +385,10 @@ export default function EstimatorView() {
             return (
               <div key={c.key}>
                 <div className="flex justify-between gap-3 text-sm">
-                  <span className="text-zinc-800 dark:text-zinc-200">{c.name}</span>
+                  <span className="text-ink dark:text-zinc-200">{c.name}</span>
                   <span className="shrink-0" style={{ color: b.text }}>{b.label}</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                <div className="mt-1 h-2 rounded-full bg-canvas dark:bg-zinc-800">
                   <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
                 </div>
               </div>
@@ -377,19 +398,19 @@ export default function EstimatorView() {
         {(cSystems.length > 0 || cDepletes.length > 0) && (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
-              <div className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Systems at risk</div>
+              <div className="text-xs font-medium text-ink dark:text-zinc-300">Systems at risk</div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {cSystems.map((o) => (
-                  <span key={o} className="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
+                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
                 ))}
               </div>
             </div>
             {cDepletes.length > 0 && (
               <div>
-                <div className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Defenses these can affect</div>
+                <div className="text-xs font-medium text-ink dark:text-zinc-300">Defenses these can affect</div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {cDepletes.map((o) => (
-                    <span key={o} className="rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
+                    <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
                   ))}
                 </div>
               </div>
@@ -400,48 +421,62 @@ export default function EstimatorView() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className={card}>
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Where it likely stores</div>
+          <div className="text-sm font-semibold text-ink">Where these metals tend to accumulate</div>
+          <p className="mt-1 text-xs text-muted">Documented biology — where each flagged metal is known to settle if exposure occurred.</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {organs.length ? (
               organs.map((o) => (
-                <span key={o} className="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
+                <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
               ))
             ) : (
-              <span className="text-sm text-zinc-500">Nothing elevated enough to map yet.</span>
+              <span className="text-sm text-muted">Nothing elevated enough to map yet.</span>
             )}
           </div>
         </div>
 
         <div className={card}>
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Nutrients these metals can interfere with</div>
+          <div className="text-sm font-medium text-ink dark:text-zinc-100">Nutrients these metals can interfere with</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {minerals.length ? (
               minerals.map((o) => (
-                <span key={o} className="rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
+                <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
               ))
             ) : (
-              <span className="text-sm text-zinc-500">No clear depletions to flag yet.</span>
+              <span className="text-sm text-muted">No clear depletions to flag yet.</span>
             )}
           </div>
-          <p className="mt-2 text-xs text-zinc-400">Nutrients the metals above are known to interfere with — worth reviewing with your clinician.</p>
+          <p className="mt-2 text-xs text-faint">Nutrients the metals above are known to interfere with — worth reviewing with your clinician.</p>
         </div>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">What to investigate next</div>
+        <div className="text-sm font-medium text-ink dark:text-zinc-100">What to investigate next</div>
         <div className="mt-2">
           {tests.map((t) => (
-            <div key={t} className="border-t border-zinc-100 py-2 text-sm text-zinc-700 first:border-t-0 dark:border-zinc-800 dark:text-zinc-300">
+            <div key={t} className="border-t border-line py-2 text-sm text-ink first:border-t-0 dark:border-zinc-800 dark:text-zinc-300">
               {t}
             </div>
           ))}
         </div>
       </div>
 
-      <p className="px-1 text-xs leading-relaxed text-zinc-400">
-        This is an estimate, the lowest tier of evidence, meant to guide testing and a conversation with your
-        clinician. It is not a diagnosis and never replaces medical care. The metal-to-mineral mapping and the
-        weighting will be reviewed and calibrated by the scientific advisory board.
+      <div className="rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
+        <div className="font-semibold text-brand">A note on testing — stay safe</div>
+        <p className="mt-1 text-sm leading-relaxed text-ink">
+          Ask your clinician for <strong>standard, unprovoked</strong> tests (for example, a 24-hour urine
+          collected <em>without</em> a chelating agent). <strong>Avoid &ldquo;provoked&rdquo; or
+          &ldquo;chelation-challenge&rdquo; urine tests, and any unsupervised chelation or &ldquo;detox&rdquo;
+          protocol</strong> — they aren&apos;t validated, can mislead, and can be dangerous. Real treatment, if
+          any, is decided and supervised by a qualified clinician.
+        </p>
+      </div>
+
+      <p className="border-t border-line px-1 pt-4 text-xs leading-relaxed text-faint">
+        This is an exposure-history estimate — the lowest tier of evidence — meant to guide testing and a
+        conversation with your clinician. It does not measure what is in your body, is not a diagnosis, never
+        replaces medical care, and is not part of your VA claim. The exposure-to-toxicant mapping and weighting
+        are heuristic and will be reviewed and calibrated by the scientific advisory board. If anything feels
+        heavy, the Veterans Crisis Line is one tap away: dial 988, then press 1.
       </p>
     </div>
   );
