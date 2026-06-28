@@ -39,6 +39,7 @@ export default function JourneyView() {
   const [hasRecord, setHasRecord] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [sel, setSel] = useState<{ type: "exp" | "cond"; key: string } | null>(null);
+  const [condStatus, setCondStatus] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -59,7 +60,9 @@ export default function JourneyView() {
       setRows((ci.data ?? []) as CheckRow[]);
       const exRows = (ex.data ?? []) as { id: string; exposure_class: string }[];
       setClasses(Array.from(new Set(exRows.map((e) => e.exposure_class))));
-      setConditions((co.data ?? []) as Cond[]);
+      const condList = (co.data ?? []) as Cond[];
+      setConditions(condList);
+      setCondStatus(Object.fromEntries(condList.map((c) => [c.label, c.claim_status])));
       const ids = exRows.map((e) => e.id);
       if (ids.length) {
         const c = await supabase.from("corroborations").select("id", { count: "exact", head: true }).in("exposure_id", ids);
@@ -108,6 +111,10 @@ export default function JourneyView() {
   function toggle(type: "exp" | "cond", key: string) {
     setSel((cur) => (cur && cur.type === type && cur.key === key ? null : { type, key }));
   }
+  async function setStatus(label: string, value: string) {
+    setCondStatus((p) => ({ ...p, [label]: value }));
+    await supabase.from("conditions").update({ claim_status: value }).eq("label", label);
+  }
 
   // Completeness steps (kept compact under the map).
   const steps = [
@@ -125,10 +132,30 @@ export default function JourneyView() {
 
   const canMap = classes.length > 0 && conditions.length > 0;
 
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
   return (
     <div className="space-y-5">
+      {/* Print-only letterhead */}
+      <div className="hidden print:block">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/owh-logo.png" alt="Operation Whole Health" className="h-10 w-auto object-contain" />
+        <div className="mt-2 text-lg font-bold text-ink">Connecting the Dots of Service</div>
+        <div className="text-sm text-muted">{[name, branch, years, today].filter(Boolean).join(" · ")}</div>
+        <div className="mt-1 text-sm text-ink">
+          Documented {rows.length} location{rows.length === 1 ? "" : "s"}, {classes.length} exposure{classes.length === 1 ? "" : "s"}, and {conditions.length} condition{conditions.length === 1 ? "" : "s"}; {connectedConds.size} connected to a documented exposure.
+        </div>
+        <hr className="mt-3 border-line" />
+      </div>
+
+      <div className="flex justify-end print:hidden">
+        <button onClick={() => window.print()} className="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-brand transition hover:bg-canvas">
+          Print / Save as PDF to share
+        </button>
+      </div>
+
       {/* Arrival header */}
-      <div className="overflow-hidden rounded-2xl bg-brand text-brand-foreground">
+      <div className="overflow-hidden rounded-2xl bg-brand text-brand-foreground print:hidden">
         <ServiceRibbon />
         <div className="p-6">
           <div className="text-lg font-semibold tracking-tight">Connecting the dots of your service, {greeting}.</div>
@@ -235,9 +262,39 @@ export default function JourneyView() {
         {sel && <Detail sel={sel} places={placesFor} />}
       </div>
 
+      {/* Where each claim stands */}
+      {conditions.length > 0 && (
+        <div className="rounded-xl border border-line bg-surface p-5">
+          <div className="text-sm font-bold text-ink">Where each claim stands</div>
+          <p className="mt-1 text-xs text-muted">From documented here, to recognized by the VA, to filed, to rated. Update each as your claim moves.</p>
+          <div className="mt-3 space-y-3">
+            {conditions.map((cond) => {
+              const basis = CONDITION_BASIS[cond.label];
+              const status = condStatus[cond.label] ?? cond.claim_status;
+              const recognized = !!basis?.presumptive && connectedConds.has(cond.label);
+              return (
+                <div key={cond.label} className="rounded-lg border border-line p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-ink">{cond.label}</span>
+                    <select value={status} onChange={(e) => setStatus(cond.label, e.target.value)} className="rounded-md border border-line bg-canvas px-2 py-1 text-xs text-ink print:hidden">
+                      <option value="none">Not filed</option>
+                      <option value="filed">Filed</option>
+                      <option value="granted">Granted</option>
+                      <option value="denied">Denied</option>
+                    </select>
+                  </div>
+                  <div className="mt-3"><StatusStrip recognized={recognized} filed={status !== "none"} rated={status === "granted"} denied={status === "denied"} /></div>
+                  {status === "denied" && <p className="mt-1.5 text-[11px] leading-relaxed text-muted">Denied isn&apos;t the end — you can appeal or file a supplemental claim, and this record strengthens it.</p>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Next dot */}
       {next.length > 0 && (
-        <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
+        <div className="rounded-xl border border-accent/30 bg-accent/5 p-5 print:hidden">
           <div className="text-xs font-semibold uppercase tracking-wide text-accent">Connect your next dot</div>
           <p className="mt-1 text-sm text-ink">Each one makes your record — and your claim — stronger.</p>
           <div className="mt-3 space-y-2">
@@ -250,7 +307,7 @@ export default function JourneyView() {
         </div>
       )}
 
-      <Link href="/report" className="block w-full rounded-xl bg-brand px-6 py-3 text-center text-sm font-bold text-brand-foreground transition hover:bg-brand-600">
+      <Link href="/report" className="block w-full rounded-xl bg-brand px-6 py-3 text-center text-sm font-bold text-brand-foreground transition hover:bg-brand-600 print:hidden">
         Open your claim packet →
       </Link>
 
@@ -259,6 +316,36 @@ export default function JourneyView() {
         estimate and a record, not a diagnosis or a determination of service connection. Bring it to an
         accredited VSO and your clinician. If anything feels heavy, the Veterans Crisis Line is one tap away: dial 988, then press 1.
       </p>
+    </div>
+  );
+}
+
+function StatusStrip({ recognized, filed, rated, denied }: { recognized: boolean; filed: boolean; rated: boolean; denied: boolean }) {
+  const steps = [
+    { label: "Logged", done: true, bad: false },
+    { label: "Recognized", done: recognized, bad: false },
+    { label: "Filed", done: filed, bad: false },
+    { label: denied ? "Denied" : "Rated", done: rated, bad: denied && filed && !rated },
+  ];
+  return (
+    <div className="flex items-center">
+      {steps.map((s, i) => (
+        <div key={s.label} className="flex flex-1 items-center">
+          <div className="flex flex-col items-center">
+            <span className={`flex h-5 w-5 flex-none items-center justify-center rounded-full ${s.bad ? "bg-red-500 text-white" : s.done ? "bg-success text-white" : "border border-line bg-white text-faint"}`}>
+              {s.done || s.bad ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" className="h-2.5 w-2.5">
+                  {s.bad ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M20 6 9 17l-5-5" />}
+                </svg>
+              ) : (
+                <span className="text-[9px] font-bold">{i + 1}</span>
+              )}
+            </span>
+            <span className={`mt-1 text-[9px] leading-none ${s.done || s.bad ? "font-medium text-ink" : "text-faint"}`}>{s.label}</span>
+          </div>
+          {i < steps.length - 1 && <div className={`mx-1 mb-3.5 h-0.5 flex-1 ${steps[i + 1].done ? "bg-success" : "bg-line"}`} />}
+        </div>
+      ))}
     </div>
   );
 }
