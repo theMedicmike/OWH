@@ -7,12 +7,20 @@ import DocumentsCard from "./DocumentsCard";
 
 const BRANCHES = ["", "Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
 
+const LAYERS = [
+  { v: "veteran", label: "A veteran or service member (me)" },
+  { v: "first_responder", label: "A military first responder (me)" },
+  { v: "family", label: "A family member or caregiver, helping a veteran" },
+  { v: "civilian", label: "Someone supporting a veteran" },
+];
+
 export default function AccountView() {
   const { user, supabase } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [branch, setBranch] = useState("");
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
+  const [layer, setLayer] = useState("veteran");
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -22,17 +30,18 @@ export default function AccountView() {
     (async () => {
       let { data } = await supabase
         .from("members")
-        .select("display_name, branch, service_start, service_end")
+        .select("display_name, branch, service_start, service_end, population_layer")
         .eq("auth_id", user.id)
         .maybeSingle();
       if (!data) {
-        const created = await supabase.from("members").insert({ auth_id: user.id }).select("display_name, branch, service_start, service_end").single();
+        const created = await supabase.from("members").insert({ auth_id: user.id }).select("display_name, branch, service_start, service_end, population_layer").single();
         data = created.data;
       }
       setDisplayName((data?.display_name as string) ?? "");
       setBranch((data?.branch as string) ?? "");
       setStartYear(data?.service_start ? String(new Date(data.service_start as string).getUTCFullYear()) : "");
       setEndYear(data?.service_end ? String(new Date(data.service_end as string).getUTCFullYear()) : "");
+      setLayer((data?.population_layer as string) ?? "veteran");
       setLoaded(true);
     })();
   }, [user, supabase]);
@@ -46,6 +55,7 @@ export default function AccountView() {
       .update({
         display_name: displayName || null,
         branch: branch || null,
+        population_layer: layer || "veteran",
         service_start: startYear ? `${startYear}-01-01` : null,
         service_end: endYear ? `${endYear}-12-31` : null,
       })
@@ -71,6 +81,20 @@ export default function AccountView() {
           <div className="sm:col-span-2">
             <label className="mb-1 block text-xs font-medium text-muted">Name</label>
             <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className={field} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-xs font-medium text-muted">Who is this account for?</label>
+            <select value={layer} onChange={(e) => setLayer(e.target.value)} className={field}>
+              {LAYERS.map((l) => (
+                <option key={l.v} value={l.v}>{l.label}</option>
+              ))}
+            </select>
+            {(layer === "family" || layer === "civilian") && (
+              <p className="mt-1.5 text-xs leading-relaxed text-muted">
+                Thank you for standing in the gap. You can build this record on behalf of the veteran
+                you&apos;re helping — fill in their service, locations, and health as you would your own.
+              </p>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Branch</label>

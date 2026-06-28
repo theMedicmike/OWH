@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { ServiceRibbon, StarRow, Anniversary250 } from "./Patriotic";
+import { TextSizeControl } from "./TextSize";
 
 type NavItem = { href: string; label: string; d: string };
 type NavSection = { title?: string; tag?: string; items: NavItem[] };
@@ -237,6 +238,7 @@ export default function AppShell({ title, children }: { title: string; children:
                     <div className="text-xs text-faint">Signed in as</div>
                     <div className="truncate text-sm font-semibold text-ink">{user.email}</div>
                   </div>
+                  <TextSizeControl />
                   <Link
                     href="/account"
                     onClick={() => setMenu(false)}
