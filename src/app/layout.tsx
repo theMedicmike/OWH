@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import CrisisSupport from "@/components/CrisisSupport";
@@ -17,6 +17,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Connecting the Dots of Service",
   description: "A living record of where veterans served, what they were exposed to, and what it cost them.",
+  applicationName: "Connect the Dots",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "Connect the Dots", statusBarStyle: "default" },
+  icons: { icon: "/icon-192.png", apple: "/apple-touch-icon.png" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#16314f",
 };
 
 export default function RootLayout({
