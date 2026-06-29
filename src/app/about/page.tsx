@@ -83,9 +83,9 @@ export default function AboutPage() {
           never have to reverse-engineer their own life just to be believed.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Dave and Lisa don&apos;t just carry this fight — they carry it for others. Alongside a
-          remarkable service dog named Caine, they help run <strong>JTF Canines</strong> (Joint Task
-          Force Canines), a faith-based 501(c)(3) that pairs active-duty service members and combat
+          Dave and Lisa don&apos;t just carry this fight — they carry it for others. Alongside
+          Dave&apos;s remarkable service dog, Caine, they help run <strong>JTF Canines</strong> (Joint
+          Task Force Canines), a faith-based 501(c)(3) that pairs active-duty service members and combat
           veterans with service dogs. That heart for fellow warriors is the very spirit this app was
           built in — and it&apos;s a big part of how we found each other.
         </p>
