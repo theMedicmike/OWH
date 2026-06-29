@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { ServiceRibbon, StarRow, Anniversary250 } from "./Patriotic";
 import { TextSizeControl } from "./TextSize";
+import OpsecGate from "./OpsecGate";
 
 type NavItem = { href: string; label: string; d: string };
 type NavSection = { title?: string; tag?: string; items: NavItem[] };
@@ -265,7 +266,7 @@ export default function AppShell({ title, children }: { title: string; children:
         </header>
 
         <main className="flex-1 px-5 py-6 sm:px-7 lg:px-9">
-          <div className="mx-auto w-full max-w-4xl">{children}</div>
+          <div className="mx-auto w-full max-w-4xl"><OpsecGate>{children}</OpsecGate></div>
         </main>
       </div>
     </div>

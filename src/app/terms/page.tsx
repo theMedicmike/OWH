@@ -43,21 +43,30 @@ export default function TermsPage() {
         connections are shared only with mutual consent.
       </P>
 
-      <H>6. Your content</H>
+      <H>6. Keep it unclassified</H>
+      <P>
+        Never enter classified, secret, or otherwise controlled information — no unit movements or
+        operations, no mission details, no capabilities, and nothing covered by a non-disclosure agreement
+        (NDA). Share only the general location, timeframe, and exposure type; that is all this app needs.
+        You are solely responsible for what you submit, and if you&apos;re unsure whether something is
+        sensitive, leave it out. This protects you and your fellow service members as much as it protects us.
+      </P>
+
+      <H>7. Your content</H>
       <P>
         Your record is yours. By using the app you give us permission to store and process your
         information solely to provide the service to you, as described in our{" "}
         <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>. We do not sell it.
       </P>
 
-      <H>7. Our content</H>
+      <H>8. Our content</H>
       <P>
         The book, written materials, and educational content in the app are the copyrighted property of
         Operation Whole Health and its founder, shared for your personal use — please don't redistribute
         them.
       </P>
 
-      <H>8. Accuracy and "as is"</H>
+      <H>9. Accuracy and "as is"</H>
       <P>
         Citations and exposure information are general and depend on your specific dates, locations, and
         diagnosis — always confirm with an accredited representative. Some features use AI, which can be
@@ -65,7 +74,7 @@ export default function TermsPage() {
         by law Operation Whole Health is not liable for decisions made based on it.
       </P>
 
-      <H>9. Changes and contact</H>
+      <H>10. Changes and contact</H>
       <P>
         We may update these terms; we'll post changes here with a new date. Questions? Email{" "}
         <a href="mailto:michael@operationwholehealth.org" className="text-brand hover:underline">michael@operationwholehealth.org</a>.

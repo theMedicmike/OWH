@@ -598,6 +598,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                           value={loc.other}
                           onChange={(e) => updateLocation(loc.id, { other: e.target.value })}
                         />
+                        <p className="mt-1.5 text-[11px] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
                       </div>
                     </Field>
                   </div>

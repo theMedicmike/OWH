@@ -556,6 +556,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 placeholder="e.g. specific chemical, contaminated fuel, paint fumes…"
                 className="w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
               />
+              <p className="mt-1.5 text-[11px] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
             </div>
 
             <div className="mt-4 flex gap-2">
