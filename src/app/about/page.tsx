@@ -82,6 +82,13 @@ export default function AboutPage() {
           grit and their generosity. This one&apos;s for them, and for every veteran who should
           never have to reverse-engineer their own life just to be believed.
         </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Dave and Lisa don&apos;t just carry this fight — they carry it for others. Alongside a
+          remarkable service dog named Caine, they help run <strong>JTF Canines</strong> (Joint Task
+          Force Canines), a faith-based 501(c)(3) that pairs active-duty service members and combat
+          veterans with service dogs. That heart for fellow warriors is the very spirit this app was
+          built in — and it&apos;s a big part of how we found each other.
+        </p>
 
         <h3 className="mt-7 text-base font-bold text-ink">What I set out to build</h3>
         <p className="mt-2 text-sm leading-relaxed text-muted">

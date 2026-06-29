@@ -4,13 +4,13 @@ import { ServiceRibbon } from "@/components/Patriotic";
 const STEPS = [
   {
     title: "Open the app",
-    body: "On your phone or computer, go to owh-three.vercel.app. Add it to your home screen so it opens like an app.",
-    tip: null,
+    body: "On your phone or computer, go to owh-three.vercel.app. Add it to your home screen so it opens like an app, with the OWH coin as its icon.",
+    tip: "Want bigger text? Tap your initials in the top-right and pick a larger size — it sticks.",
   },
   {
     title: "Create your account",
     body: 'Tap "Create account," enter your email and a password, and you\'re in. Next time, just tap "Sign in."',
-    tip: null,
+    tip: "Helping a veteran? Under Account, set \"Who is this account for?\" to family or caregiver — you can build the record on their behalf.",
   },
   {
     title: "Confirm your service",
@@ -33,14 +33,24 @@ const STEPS = [
     tip: null,
   },
   {
+    title: "See how it all connects",
+    body: 'Tap "Connect the dots" near the top of the sidebar. It draws a line from each of your exposures to every health condition the VA already links it to — your whole service-to-illness picture on one screen. Tap any dot to see the connection and its legal citation, mark where each claim stands (filed, granted, denied), and tap "Print / Save as PDF" to hand the whole map to your VSO or doctor.',
+    tip: "This is the page that makes your case at a glance — and it's yours to share.",
+  },
+  {
     title: "Upload your DD-214 & records",
     body: 'Tap Account → Upload a file. A clear photo or scan of your DD-214 works — it becomes part of your packet.',
     tip: null,
   },
   {
     title: "Tap your numbers to go deeper",
-    body: 'On your Dashboard, the boxes at the top — Locations, Exposures, Conditions — are buttons. Tap any one to open its own page. Locations lists every place you logged, with a "Learn about this place" button that tells you the history of each base — and a button to remove a spot if you added it by mistake. Exposures and Conditions explain, in plain language, what each one is and how they connect.',
+    body: 'On your Dashboard, the boxes at the top — Locations, Exposures, Conditions — are buttons. Tap any one to open its own page: Locations gives you the history of each base (and a way to remove a spot you added by mistake), and Exposures and Conditions explain in plain language what each one is and how they connect.',
     tip: "This is where the app teaches you — no chemistry degree required.",
+  },
+  {
+    title: "Look anything up in the Exposure Library",
+    body: 'Tap "Exposure library" in the sidebar for a plain-English encyclopedia of every metal and chemical — where it comes from, what it does in the body, where it stores, and the conditions the government already links to it. Tap a nutrient to learn the foods that restore it, or an organ to learn what happens there. It all clicks together like a web.',
+    tip: null,
   },
   {
     title: "Explore your Solutions",
@@ -60,7 +70,7 @@ const STEPS = [
   {
     title: "Get your Claim Packet",
     body: 'Tap "Claim packet." The app assembles everything — your timeline, your exposures with their legal citations, your conditions, and a sheet for your doctor to sign. Tap "Download PDF" to save it as a file you can print or email.',
-    tip: "Bring this to your VSO (DAV, VFW, American Legion) and ask your doctor to review the last page.",
+    tip: "Bring this to your VSO (DAV, VFW, American Legion). There's also a 5-question cover sheet you can print to clip on top for them.",
   },
   {
     title: "Your private health insights",
@@ -86,10 +96,10 @@ export default function HelpPage() {
 
         <div className="mb-6 rounded-xl border border-line bg-surface px-5 py-4 text-sm text-ink">
           <span className="font-semibold">What this does:</span> It helps you map where you served,
-          document what you were exposed to, learn what it means for your health, find root-cause ways
-          to start healing, read the book, and build a one-stop claim packet that connects it all — so
-          the VA can finally see it. Work at your own pace; everything saves automatically and stays
-          private to you.
+          document what you were exposed to, see how it all connects on one screen, look anything up in
+          the exposure library, find root-cause ways to start healing, read the book, and build a
+          one-stop claim packet that connects it all — so the VA can finally see it. Work at your own
+          pace; everything saves automatically and stays private to you.
         </div>
 
         <ol className="space-y-3">
