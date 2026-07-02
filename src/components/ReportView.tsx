@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
 import { ServiceRibbon } from "./Patriotic";
 import { downloadClaimPdf } from "@/lib/claimPdf";
+import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
 
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
@@ -214,6 +215,62 @@ export default function ReportView() {
         <Link href="/reviewer" className="mt-2 inline-block text-xs font-medium text-brand hover:underline">
           Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →
         </Link>
+      </div>
+
+      {/* How to actually file this — the bridge from packet to filed claim */}
+      <div className="mb-4 rounded-xl border border-brand/20 bg-brand/5 p-5 print:hidden">
+        <div className="text-[13px] font-bold uppercase tracking-wide text-brand">How to file this</div>
+        <p className="mt-1 text-xs leading-relaxed text-muted">
+          Your packet is evidence — here&apos;s how to turn it into a filed claim. Filing is <strong>free</strong>, and
+          an accredited VSO will help you for free. You never have to pay anyone to file a VA claim.
+        </p>
+        <ol className="mt-3 space-y-3">
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">1</span>
+            <div>
+              <div className="text-sm font-semibold text-ink">Lock in your date</div>
+              <p className="text-xs leading-relaxed text-muted">{VA_FORMS.intent.blurb}</p>
+              <a href={VA_FORMS.intent.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand hover:underline">
+                About VA Form {VA_FORMS.intent.number} (Intent to File) →
+              </a>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">2</span>
+            <div>
+              <div className="text-sm font-semibold text-ink">Get free help from a VSO</div>
+              <p className="text-xs leading-relaxed text-muted">
+                A Veterans Service Officer (VSO) — through DAV, VFW, or the American Legion — reviews your packet and
+                files with you at no cost. Bring the 5-question cover sheet above.
+              </p>
+              <a href={VSO_LOCATOR_URL} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand hover:underline">
+                Find an accredited VSO near you →
+              </a>
+            </div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">3</span>
+            <div>
+              <div className="text-sm font-semibold text-ink">File the claim</div>
+              <p className="text-xs leading-relaxed text-muted">
+                Submit VA Form {VA_FORMS.claim.number} online at VA.gov (or on paper with your VSO), and attach this
+                packet and your DD-214.
+              </p>
+              <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand hover:underline">
+                File a disability claim online at VA.gov →
+              </a>
+            </div>
+          </li>
+        </ol>
+        <p className="mt-3 border-t border-brand/15 pt-3 text-xs leading-relaxed text-muted">
+          Denied before, or expecting a denial? It is common, even for strong claims — and it isn&apos;t the end. You
+          can file a{" "}
+          <a href={VA_FORMS.supplemental.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Supplemental Claim (20-0995)</a>,
+          request a{" "}
+          <a href={VA_FORMS.hlr.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Higher-Level Review (20-0996)</a>, or a{" "}
+          <a href={VA_FORMS.board.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Board Appeal (10182)</a>.
+          Your VSO can help you pick the right lane.
+        </p>
       </div>
 
       <div className="rounded-xl border border-line bg-white p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">

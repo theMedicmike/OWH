@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
 import { ServiceRibbon, Seal250, RibbonDivider } from "./Patriotic";
+import { CONDITION_EXPOSURES } from "@/lib/education";
+import { recordProgress } from "@/lib/nextaction";
 
 const EXPOSURE_LABEL: Record<string, string> = {
   burn_pit: "Burn pits",
@@ -41,6 +43,9 @@ export default function DashboardView() {
   const [buddies, setBuddies] = useState<Conn[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [classes, setClasses] = useState<string[]>([]);
+  const [condLabels, setCondLabels] = useState<string[]>([]);
+  const [hasDD214, setHasDD214] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -53,22 +58,27 @@ export default function DashboardView() {
       const se = m.data?.service_end ? new Date(m.data.service_end as string).getUTCFullYear() : null;
       setYears(ss || se ? `${ss ?? "?"}–${se ?? "?"}` : null);
 
-      const [ci, ex, co, exprows, conns] = await Promise.all([
+      const [ci, exprows, cond, conns, files] = await Promise.all([
         supabase.from("check_ins").select("id, place_name, date_start, exposures(exposure_class)").order("date_start", { ascending: false }),
-        supabase.from("exposures").select("id", { count: "exact", head: true }),
-        supabase.from("conditions").select("id", { count: "exact", head: true }),
-        supabase.from("exposures").select("id"),
+        supabase.from("exposures").select("id, exposure_class"),
+        supabase.from("conditions").select("label").order("created_at"),
         supabase.rpc("list_buddy_connections"),
+        supabase.storage.from("records").list(user.id),
       ]);
       setRows((ci.data ?? []) as CheckRow[]);
+      const exRows = (exprows.data ?? []) as { id: string; exposure_class: string }[];
+      setClasses(Array.from(new Set(exRows.map((e) => e.exposure_class))));
+      const condRows = (cond.data ?? []) as { label: string }[];
+      setCondLabels(condRows.map((c) => c.label));
       let corr = 0;
-      const ids = (exprows.data ?? []).map((e: { id: string }) => e.id);
+      const ids = exRows.map((e) => e.id);
       if (ids.length) {
         const c = await supabase.from("corroborations").select("id", { count: "exact", head: true }).in("exposure_id", ids);
         corr = c.count ?? 0;
       }
-      setCounts({ exposures: ex.count ?? 0, conditions: co.count ?? 0, corroborations: corr });
+      setCounts({ exposures: exRows.length, conditions: condRows.length, corroborations: corr });
       setBuddies(((conns.data ?? []) as Conn[]).filter((x) => x.status === "accepted"));
+      setHasDD214(((files.data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder")).length > 0);
       setLoaded(true);
     })();
   }, [user, supabase]);
@@ -92,12 +102,18 @@ export default function DashboardView() {
     { label: "Solutions", value: counts.exposures + counts.conditions, href: "/solutions" },
   ];
 
-  const nextStep =
-    checkins === 0
-      ? { text: "Start by logging where you served — open the guided intake or the map.", href: "/intake", cta: "Begin your timeline" }
-      : counts.conditions === 0
-      ? { text: "Add the health conditions you live with so we can connect them to your exposures.", href: "/health", cta: "Add your health" }
-      : { text: "Your record is taking shape. Assemble your claim packet to bring to your clinician or VSO.", href: "/report", cta: "Open your claim packet" };
+  const connectedCount = condLabels.filter((label) =>
+    (CONDITION_EXPOSURES[label] ?? []).some((ec) => classes.includes(ec))
+  ).length;
+  const prog = recordProgress({
+    hasService: !!(branch || years),
+    locations: checkins,
+    exposures: classes.length,
+    conditions: counts.conditions,
+    connectedConditions: connectedCount,
+    corroborations: counts.corroborations,
+    hasDD214,
+  });
 
   return (
     <div className="space-y-6">
@@ -140,13 +156,46 @@ export default function DashboardView() {
         ))}
       </div>
 
-      {/* Next step */}
+      {/* Resume / next-action bridge */}
       <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
-        <div className="text-xs font-semibold uppercase tracking-wide text-accent">Your next step</div>
-        <p className="mt-1.5 text-sm text-ink">{nextStep.text}</p>
-        <Link href={nextStep.href} className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-          {nextStep.cta}
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-accent">
+            {!loaded ? "Your record" : prog.claimReady ? "Your record is claim-ready" : "Pick up where you left off"}
+          </div>
+          <span className="flex-none text-xs font-semibold text-muted">{loaded ? `${prog.done} of ${prog.total} · ${prog.pct}%` : "—"}</span>
+        </div>
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-line">
+          <span className="block h-2 rounded-full bg-accent transition-all" style={{ width: loaded ? `${prog.pct}%` : "0%" }} />
+        </div>
+        {!loaded ? (
+          <p className="mt-3 text-sm text-muted">Loading your record…</p>
+        ) : prog.next ? (
+          <>
+            <p className="mt-3 text-sm text-ink">
+              You&apos;re <strong>{prog.remaining.length}</strong> step{prog.remaining.length === 1 ? "" : "s"} from a
+              claim-ready record. Next: {prog.next.label.toLowerCase()}.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Link href={prog.next.href} className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+                {prog.next.cta}
+              </Link>
+              {prog.claimReady && (
+                <Link href="/report" className="text-sm font-semibold text-brand hover:underline">
+                  or open your claim packet →
+                </Link>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-3 text-sm text-ink">
+              Every dot is connected. Assemble your claim packet and bring it to an accredited VSO to file.
+            </p>
+            <Link href="/report" className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+              Open your claim packet
+            </Link>
+          </>
+        )}
       </div>
 
       <RibbonDivider label="Your record" />

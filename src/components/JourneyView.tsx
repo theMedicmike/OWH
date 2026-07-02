@@ -6,6 +6,7 @@ import { useAuth } from "./AuthProvider";
 import { ServiceRibbon } from "./Patriotic";
 import { EXPOSURE_LABEL, CONDITION_EXPOSURES } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
+import { recordProgress, conditionNextAction, VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
 
 type CheckRow = { place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
 type Cond = { label: string; claim_status: string };
@@ -40,6 +41,7 @@ export default function JourneyView() {
   const [loaded, setLoaded] = useState(false);
   const [sel, setSel] = useState<{ type: "exp" | "cond"; key: string } | null>(null);
   const [condStatus, setCondStatus] = useState<Record<string, string>>({});
+  const [condFiled, setCondFiled] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -63,6 +65,16 @@ export default function JourneyView() {
       const condList = (co.data ?? []) as Cond[];
       setConditions(condList);
       setCondStatus(Object.fromEntries(condList.map((c) => [c.label, c.claim_status])));
+      // Filed dates live in an optional column (migration 0010); load defensively
+      // so the page still works before the migration is applied.
+      const filed = await supabase.from("conditions").select("label, filed_on");
+      if (!filed.error) {
+        const fm: Record<string, string> = {};
+        for (const r of (filed.data ?? []) as { label: string; filed_on: string | null }[]) {
+          if (r.filed_on) fm[r.label] = r.filed_on;
+        }
+        setCondFiled(fm);
+      }
       const ids = exRows.map((e) => e.id);
       if (ids.length) {
         const c = await supabase.from("corroborations").select("id", { count: "exact", head: true }).in("exposure_id", ids);
@@ -114,21 +126,28 @@ export default function JourneyView() {
   async function setStatus(label: string, value: string) {
     setCondStatus((p) => ({ ...p, [label]: value }));
     await supabase.from("conditions").update({ claim_status: value }).eq("label", label);
+    // When they mark it filed and haven't dated it, default to today.
+    if (value === "filed" && !condFiled[label]) setFiled(label, new Date().toISOString().slice(0, 10));
+  }
+  async function setFiled(label: string, value: string) {
+    setCondFiled((p) => ({ ...p, [label]: value }));
+    // filed_on is optional (migration 0010); ignore the error if it isn't there yet.
+    await supabase.from("conditions").update({ filed_on: value || null }).eq("label", label);
   }
 
-  // Completeness steps (kept compact under the map).
-  const steps = [
-    { label: "Service details", done: !!(branch || years), href: "/account", cta: "Add your service details" },
-    { label: "Where you served", done: rows.length > 0, href: "/map", cta: "Map where you served" },
-    { label: "Exposures", done: classes.length > 0, href: "/map", cta: "Document your exposures" },
-    { label: "Conditions", done: conditions.length > 0, href: "/health", cta: "Add your health conditions" },
-    { label: "A documented link", done: connectedConds.size > 0, href: "/conditions", cta: "Connect a condition to an exposure" },
-    { label: "Corroboration", done: corr > 0, href: "/buddies", cta: "Get a battle buddy to corroborate" },
-    { label: "DD-214", done: hasRecord, href: "/account", cta: "Upload your DD-214" },
-  ];
-  const doneCount = steps.filter((s) => s.done).length;
-  const pct = Math.round((doneCount / steps.length) * 100);
-  const next = steps.filter((s) => !s.done);
+  // Completeness steps — shared with the dashboard so the two can't drift.
+  const prog = recordProgress({
+    hasService: !!(branch || years),
+    locations: rows.length,
+    exposures: classes.length,
+    conditions: conditions.length,
+    connectedConditions: connectedConds.size,
+    corroborations: corr,
+    hasDD214: hasRecord,
+  });
+  const doneCount = prog.done;
+  const pct = prog.pct;
+  const next = prog.remaining;
 
   const canMap = classes.length > 0 && conditions.length > 0;
 
@@ -168,7 +187,7 @@ export default function JourneyView() {
           <div className="mt-4">
             <div className="flex items-end justify-between">
               <span className="text-sm text-white/80">Your record is taking shape</span>
-              <span className="text-sm font-bold">{doneCount} of {steps.length} · {pct}%</span>
+              <span className="text-sm font-bold">{doneCount} of {prog.total} · {pct}%</span>
             </div>
             <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-white/15">
               <span className="block h-2.5 rounded-full bg-accent" style={{ width: `${pct}%` }} />
@@ -272,6 +291,8 @@ export default function JourneyView() {
               const basis = CONDITION_BASIS[cond.label];
               const status = condStatus[cond.label] ?? cond.claim_status;
               const recognized = !!basis?.presumptive && connectedConds.has(cond.label);
+              const na = conditionNextAction(status, { recognized });
+              const filedOn = condFiled[cond.label];
               return (
                 <div key={cond.label} className="rounded-lg border border-line p-3">
                   <div className="flex items-center justify-between gap-2">
@@ -284,7 +305,57 @@ export default function JourneyView() {
                     </select>
                   </div>
                   <div className="mt-3"><StatusStrip recognized={recognized} filed={status !== "none"} rated={status === "granted"} denied={status === "denied"} /></div>
-                  {status === "denied" && <p className="mt-1.5 text-[11px] leading-relaxed text-muted">Denied isn&apos;t the end — you can appeal or file a supplemental claim, and this record strengthens it.</p>}
+
+                  {/* What to do next for this claim */}
+                  <div className="mt-3 rounded-lg border-l-2 border-accent bg-accent/5 p-3">
+                    <div className="text-xs font-bold text-ink">{na.headline}</div>
+                    <p className="mt-1 text-[11px] leading-relaxed text-muted">{na.detail}</p>
+
+                    {/* Filed date control */}
+                    {status === "filed" && (
+                      <>
+                        <label className="mt-2 flex items-center gap-2 text-[11px] font-medium text-ink print:hidden">
+                          Filed on
+                          <input
+                            type="date"
+                            value={filedOn ?? ""}
+                            max={new Date().toISOString().slice(0, 10)}
+                            onChange={(e) => setFiled(cond.label, e.target.value)}
+                            className="rounded-md border border-line bg-canvas px-2 py-1 text-[11px] text-ink"
+                          />
+                        </label>
+                        {filedOn && (
+                          <div className="mt-1 hidden text-[11px] text-muted print:block">
+                            Filed on {new Date(filedOn + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Real VA forms + VSO locator */}
+                    <div className="mt-2 flex flex-col gap-1 print:hidden">
+                      {status === "none" && (
+                        <>
+                          <FormLink form={VA_FORMS.intent} lead="Start with" />
+                          <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-brand hover:underline">
+                            Then file the claim (VA Form 21-526EZ) online at VA.gov →
+                          </a>
+                        </>
+                      )}
+                      {status === "denied" && (
+                        <>
+                          <FormLink form={VA_FORMS.supplemental} lead="Option 1 —" />
+                          <FormLink form={VA_FORMS.hlr} lead="Option 2 —" />
+                          <FormLink form={VA_FORMS.board} lead="Option 3 —" />
+                        </>
+                      )}
+                      {status !== "granted" && (
+                        <a href={VSO_LOCATOR_URL} target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-brand hover:underline">
+                          Find an accredited VSO near you (free help filing) →
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -317,6 +388,14 @@ export default function JourneyView() {
         accredited VSO and your clinician. If anything feels heavy, the Veterans Crisis Line is one tap away: dial 988, then press 1.
       </p>
     </div>
+  );
+}
+
+function FormLink({ form, lead }: { form: { number: string; name: string; url: string }; lead: string }) {
+  return (
+    <a href={form.url} target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-brand hover:underline">
+      {lead} VA Form {form.number} ({form.name}) →
+    </a>
   );
 }
 
