@@ -151,6 +151,18 @@ export default function JourneyView() {
 
   const canMap = classes.length > 0 && conditions.length > 0;
 
+  // Watchtower v1 — recognized conditions the VA links to exposures the veteran
+  // has documented, but that they haven't added to their record yet. "Benefits
+  // you may be leaving on the table." A prompt to consider, never a diagnosis.
+  const loggedClasses = new Set(classes);
+  const myConds = new Set(conditions.map((c) => c.label));
+  const unclaimedRecognized = Object.keys(CONDITION_EXPOSURES).filter(
+    (label) =>
+      !myConds.has(label) &&
+      CONDITION_BASIS[label]?.presumptive &&
+      (CONDITION_EXPOSURES[label] ?? []).some((ec) => loggedClasses.has(ec))
+  );
+
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   return (
@@ -360,6 +372,33 @@ export default function JourneyView() {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Watchtower — benefits you may be leaving on the table */}
+      {unclaimedRecognized.length > 0 && (
+        <div className="rounded-xl border border-accent/40 bg-accent/5 p-5 print:hidden">
+          <div className="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 flex-none text-accent">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" />
+            </svg>
+            <div className="text-sm font-bold text-ink">Benefits you may be leaving on the table</div>
+          </div>
+          <p className="mt-1.5 text-xs leading-relaxed text-muted">
+            The VA already recognizes a link between exposures you&apos;ve documented and the conditions below —
+            and they&apos;re not in your record yet. If you live with any of them, even mildly, add it: you may be
+            able to claim it. This is a prompt to consider with your clinician, not a diagnosis.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {unclaimedRecognized.map((c) => (
+              <span key={c} className="inline-flex items-center rounded-md border border-accent/30 bg-white px-2.5 py-1 text-xs font-medium text-ink">
+                {c}
+              </span>
+            ))}
+          </div>
+          <Link href="/health" className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+            Add a condition to your record
+          </Link>
         </div>
       )}
 
