@@ -3,7 +3,7 @@ import SolutionsView from "@/components/SolutionsView";
 
 export default function SolutionsPage() {
   return (
-    <AppShell title="Solutions">
+    <AppShell title="Whole health">
       <SolutionsView />
     </AppShell>
   );

@@ -30,6 +30,7 @@ const QUICK = [
   { href: "/map", title: "Open the map", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
   { href: "/intake/ai", title: "Voice guided intake", d: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" },
   { href: "/learn", title: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
+  { href: "/solutions", title: "Whole health", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
   { href: "/report", title: "Your claim packet", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5z" },
 ];
 
@@ -99,7 +100,6 @@ export default function DashboardView() {
     { label: "Conditions", value: counts.conditions, href: "/conditions" },
     { label: "Corroborations", value: counts.corroborations, href: "/buddies" },
     { label: "Battle buddies", value: buddies.length, href: "/buddies" },
-    { label: "Solutions", value: counts.exposures + counts.conditions, href: "/solutions" },
   ];
 
   const connectedCount = condLabels.filter((label) =>
@@ -137,7 +137,7 @@ export default function DashboardView() {
       <VerifyCard />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((s) => (
           <Link
             key={s.label}
@@ -156,44 +156,68 @@ export default function DashboardView() {
         ))}
       </div>
 
-      {/* Resume / next-action bridge */}
+      {/* Start here (brand-new) / Resume (returning) — one lit door either way */}
       <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-accent">
-            {!loaded ? "Your record" : prog.claimReady ? "Your record is claim-ready" : "Pick up where you left off"}
-          </div>
-          <span className="flex-none text-xs font-semibold text-muted">{loaded ? `${prog.done} of ${prog.total} · ${prog.pct}%` : "—"}</span>
-        </div>
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-line">
-          <span className="block h-2 rounded-full bg-accent transition-all" style={{ width: loaded ? `${prog.pct}%` : "0%" }} />
-        </div>
         {!loaded ? (
-          <p className="mt-3 text-sm text-muted">Loading your record…</p>
-        ) : prog.next ? (
           <>
-            <p className="mt-3 text-sm text-ink">
-              You&apos;re <strong>{prog.remaining.length}</strong> step{prog.remaining.length === 1 ? "" : "s"} from a
-              claim-ready record. Next: {prog.next.label.toLowerCase()}.
+            <div className="text-xs font-semibold uppercase tracking-wide text-accent">Your record</div>
+            <p className="mt-1.5 text-sm text-muted">Loading your record…</p>
+          </>
+        ) : checkins === 0 ? (
+          <>
+            <div className="text-xs font-semibold uppercase tracking-wide text-accent">Start here</div>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink">
+              Welcome{name ? `, ${name}` : ""}. The first step is the map — drop a pin where you served, and
+              we&apos;ll show you the exposures the government already documents there. That&apos;s the whole
+              idea: connect where you were to what it did to your health.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <Link href={prog.next.href} className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-                {prog.next.cta}
+              <Link href="/map" className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+                Drop your first pin on the map
               </Link>
-              {prog.claimReady && (
-                <Link href="/report" className="text-sm font-semibold text-brand hover:underline">
-                  or open your claim packet →
-                </Link>
-              )}
+              <Link href="/intake/ai" className="text-sm font-semibold text-brand hover:underline">
+                or answer a few questions instead →
+              </Link>
             </div>
           </>
         ) : (
           <>
-            <p className="mt-3 text-sm text-ink">
-              Every dot is connected. Assemble your claim packet and bring it to an accredited VSO to file.
-            </p>
-            <Link href="/report" className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-              Open your claim packet
-            </Link>
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-accent">
+                {prog.claimReady ? "Your record is claim-ready" : "Pick up where you left off"}
+              </div>
+              <span className="flex-none text-xs font-semibold text-muted">{prog.done} of {prog.total} · {prog.pct}%</span>
+            </div>
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-line">
+              <span className="block h-2 rounded-full bg-accent transition-all" style={{ width: `${prog.pct}%` }} />
+            </div>
+            {prog.next ? (
+              <>
+                <p className="mt-3 text-sm text-ink">
+                  You&apos;re <strong>{prog.remaining.length}</strong> step{prog.remaining.length === 1 ? "" : "s"} from a
+                  claim-ready record. Next: {prog.next.label.toLowerCase()}.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <Link href={prog.next.href} className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+                    {prog.next.cta}
+                  </Link>
+                  {prog.claimReady && (
+                    <Link href="/report" className="text-sm font-semibold text-brand hover:underline">
+                      or open your claim packet →
+                    </Link>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-3 text-sm text-ink">
+                  Every dot is connected. Assemble your claim packet and bring it to an accredited VSO (Veterans Service Officer — free help) to file.
+                </p>
+                <Link href="/report" className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+                  Open your claim packet
+                </Link>
+              </>
+            )}
           </>
         )}
       </div>
@@ -208,7 +232,12 @@ export default function DashboardView() {
             <Link href="/map" className="text-xs font-medium text-brand hover:underline">Open map →</Link>
           </div>
           {checkins === 0 ? (
-            <p className="mt-3 text-sm text-muted">No check-ins yet. Drop your first pin on the map.</p>
+            <div className="mt-3">
+              <p className="text-sm text-muted">No locations yet. Start by marking one place you served.</p>
+              <Link href="/map" className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+                Drop your first pin
+              </Link>
+            </div>
           ) : (
             <ul className="mt-3 space-y-2">
               {rows.slice(0, 6).map((r) => (
@@ -249,7 +278,12 @@ export default function DashboardView() {
             <Link href="/buddies" className="text-xs font-medium text-brand hover:underline">Find buddies →</Link>
           </div>
           {buddies.length === 0 ? (
-            <p className="mt-3 text-sm text-muted">No connections yet. Reconnect with the veterans who served where you did — privately, and only if you both agree.</p>
+            <div className="mt-3">
+              <p className="text-sm text-muted">No connections yet. Reconnect with the veterans who served where you did — privately, and only if you both agree.</p>
+              <Link href="/buddies" className="mt-3 inline-block rounded-lg border border-line px-4 py-2 text-sm font-semibold text-brand hover:bg-canvas">
+                Find battle buddies
+              </Link>
+            </div>
           ) : (
             <ul className="mt-3 space-y-2">
               {buddies.map((b, i) => (

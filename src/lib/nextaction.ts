@@ -99,7 +99,7 @@ export function recordSteps(s: RecordState): RecordStep[] {
     { key: "conditions", label: "Conditions", done: s.conditions > 0, href: "/health", cta: "Add the conditions you live with" },
     { key: "link", label: "A documented link", done: s.connectedConditions > 0, href: "/conditions", cta: "Connect a condition to an exposure" },
     { key: "corroboration", label: "Corroboration", done: s.corroborations > 0, href: "/buddies", cta: "Ask a battle buddy to corroborate" },
-    { key: "dd214", label: "DD-214 on file", done: s.hasDD214, href: "/account", cta: "Upload your DD-214" },
+    { key: "dd214", label: "DD-214 on file", done: s.hasDD214, href: "/account", cta: "Upload your DD-214 (discharge papers)" },
   ];
 }
 

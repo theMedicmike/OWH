@@ -82,7 +82,7 @@ export default async function ToxicantPage({ params }: { params: Promise<{ slug:
           <p className="text-sm leading-relaxed text-ink">
             Bring this to your clinician and your VSO — they decide what testing and care, if any, is right
             for you. For general, whole-person ways to support your body, see{" "}
-            <Link href="/solutions" className="font-semibold text-brand hover:underline">Solutions</Link>.
+            <Link href="/solutions" className="font-semibold text-brand hover:underline">Whole health</Link>.
           </p>
         </div>
 

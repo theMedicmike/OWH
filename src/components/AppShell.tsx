@@ -31,6 +31,12 @@ const SECTIONS: NavSection[] = [
   },
   {
     title: "Your health",
+    items: [
+      { href: "/solutions", label: "Whole health", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
+    ],
+  },
+  {
+    title: "Just for you",
     tag: "private",
     items: [{ href: "/estimator", label: "Exposure insights", d: "M3 12h4l3 8 4-16 3 8h4" }],
   },

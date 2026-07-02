@@ -70,7 +70,7 @@ export default function SolutionsView() {
   if (!user) {
     return (
       <div className="rounded-xl border border-line bg-surface p-6">
-        <p className="text-sm text-muted">Sign in to see your solutions.</p>
+        <p className="text-sm text-muted">Sign in to see your whole-health plan.</p>
         <Link href="/" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">← Go to sign in</Link>
       </div>
     );

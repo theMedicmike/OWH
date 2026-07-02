@@ -53,8 +53,8 @@ const STEPS = [
     tip: null,
   },
   {
-    title: "Explore your Solutions",
-    body: 'Tap the "Solutions" box on your Dashboard. It pulls together your exposures and conditions and shows root-cause, whole-person ways to support your body and start healing — plus simple things you can begin this week. It\'s education to bring to your own doctor, never a prescription.',
+    title: "Explore Whole health",
+    body: 'Tap "Whole health" in the sidebar (or on your Dashboard). It pulls together your exposures and conditions and shows root-cause, whole-person ways to support your body and start healing — plus simple things you can begin this week. It\'s education to bring to your own doctor, never a prescription.',
     tip: "Operation Whole Health is about the root cause — not just masking symptoms.",
   },
   {
