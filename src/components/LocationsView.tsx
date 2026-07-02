@@ -22,6 +22,18 @@ function yearOf(d: string | null) {
   return d ? new Date(d).getUTCFullYear() : null;
 }
 
+// A plain-English sense of how long the veteran was somewhere. Duration matters:
+// a brief stop is weighed differently than a long assignment, and being honest
+// about it keeps the record credible.
+function durationLabel(sy: number | null, ey: number | null): string | null {
+  if (!sy) return null;
+  if (!ey || ey === sy) return null; // single year — we can't infer a span
+  const yrs = ey - sy;
+  if (yrs <= 0) return null;
+  if (yrs === 1) return "about a year";
+  return `about ${yrs} years`;
+}
+
 export default function LocationsView() {
   const [supabase] = useState(() => createClient());
   const [user, setUser] = useState<User | null>(null);
@@ -30,6 +42,9 @@ export default function LocationsView() {
   const [info, setInfo] = useState<Record<string, string>>({});
   const [infoBusy, setInfoBusy] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [edStart, setEdStart] = useState("");
+  const [edEnd, setEdEnd] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -68,6 +83,21 @@ export default function LocationsView() {
     setConfirmDel(null);
   }
 
+  function startEdit(r: Row) {
+    setEditId(r.id);
+    setEdStart(yearOf(r.date_start)?.toString() ?? "");
+    setEdEnd(yearOf(r.date_end)?.toString() ?? "");
+  }
+  async function saveDates(id: string) {
+    const sy = edStart.trim() ? parseInt(edStart, 10) : null;
+    const ey = edEnd.trim() ? parseInt(edEnd, 10) : null;
+    const date_start = sy ? `${sy}-01-01` : null;
+    const date_end = ey ? `${ey}-12-31` : null;
+    await supabase.from("check_ins").update({ date_start, date_end }).eq("id", id);
+    setRows((prev) => prev.map((x) => (x.id === id ? { ...x, date_start, date_end } : x)));
+    setEditId(null);
+  }
+
   if (!loaded) return <p className="text-sm text-muted">Loading…</p>;
   if (!user) {
     return (
@@ -84,6 +114,14 @@ export default function LocationsView() {
         Every place you&apos;ve logged. Tap a location to learn its background, review the documented
         exposures tied to it, or remove it from your record.
       </p>
+
+      {rows.length > 0 && (
+        <div className="rounded-lg border-l-2 border-accent bg-accent/5 px-3.5 py-2.5 text-xs leading-relaxed text-muted">
+          <span className="font-semibold text-ink">How long you were somewhere matters.</span> A brief stop is
+          weighed differently than a long assignment. Set your arrival and departure years on each location so your
+          record — and your claim — stays accurate and credible.
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <div className="rounded-xl border border-line bg-surface p-6 text-center">
@@ -106,9 +144,36 @@ export default function LocationsView() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="font-bold text-ink">{r.place_name || "A logged location"}</div>
-                    <div className="text-xs text-muted">{[range, r.conflict].filter(Boolean).join(" · ") || "Year not set"}</div>
+                    <div className="text-xs text-muted">
+                      {[range, durationLabel(ys, ye), r.conflict].filter(Boolean).join(" · ") || "Year not set"}
+                    </div>
                   </div>
                 </div>
+
+                {/* How long were you here? — duration nuance */}
+                {editId === r.id ? (
+                  <div className="mt-3 flex flex-wrap items-end gap-2 rounded-lg border border-line bg-canvas p-3">
+                    <label className="text-xs font-medium text-ink">
+                      Arrived (year)
+                      <input type="number" inputMode="numeric" min={1940} max={2030} value={edStart} onChange={(e) => setEdStart(e.target.value)} placeholder="—"
+                        className="mt-1 block w-24 rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink" />
+                    </label>
+                    <label className="text-xs font-medium text-ink">
+                      Departed (year)
+                      <input type="number" inputMode="numeric" min={1940} max={2030} value={edEnd} onChange={(e) => setEdEnd(e.target.value)} placeholder="—"
+                        className="mt-1 block w-24 rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink" />
+                    </label>
+                    <button onClick={() => saveDates(r.id)} className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600">Save</button>
+                    <button onClick={() => setEditId(null)} className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-muted hover:bg-canvas">Cancel</button>
+                  </div>
+                ) : (
+                  <button onClick={() => startEdit(r)} className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                      <path d="M12 6v6l4 2M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" />
+                    </svg>
+                    {ye && ye !== ys ? "Edit how long you were here" : "Set how long you were here"}
+                  </button>
+                )}
 
                 {classes.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">

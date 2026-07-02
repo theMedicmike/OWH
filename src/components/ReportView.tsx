@@ -44,7 +44,18 @@ const CONDITION_EXPOSURES: Record<string, string[]> = {
 const RECOGNIZED = new Set(["burn_pit", "particulate", "pesticide", "radiation", "water_contamination", "gulf_war_agent"]);
 
 type ExpoRow = { id: string; exposure_class: string };
-type CheckRow = { place_name: string | null; date_start: string | null; exposures: ExpoRow[] | null };
+type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: ExpoRow[] | null };
+
+function yr(d: string | null) {
+  return d ? new Date(d).getUTCFullYear() : null;
+}
+// A year or a year-range, so a brief stop reads differently than a long tour.
+function rangeLabel(ds: string | null, de: string | null): string {
+  const s = yr(ds), e = yr(de);
+  if (!s && !e) return "—";
+  if (s && e && e !== s) return `${s}–${e}`;
+  return String(s ?? e);
+}
 type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null };
 type RecordFile = { name: string; url: string; isImage: boolean };
 
@@ -67,7 +78,7 @@ export default function ReportView() {
       if (!data.user) return;
       const [{ data: m }, { data: c }, { data: cond }] = await Promise.all([
         supabase.from("members").select("display_name, branch, service_start, service_end").maybeSingle(),
-        supabase.from("check_ins").select("place_name, date_start, exposures(id, exposure_class)").order("date_start"),
+        supabase.from("check_ins").select("place_name, date_start, date_end, exposures(id, exposure_class)").order("date_start"),
         supabase.from("conditions").select("label, claim_status").order("created_at"),
       ]);
       setMember((m as Member) ?? null);
@@ -153,7 +164,7 @@ export default function ReportView() {
         summary: `You logged service at ${rows.length} location${rows.length === 1 ? "" : "s"}. Documented exposures include ${classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.${conditions.length > 0 ? ` Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.` : " Add your conditions to see which carry a recognized presumptive pathway."}`,
         nextStep: "bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to review the hand-off sheet on the last page.",
         timeline: rows.map((r) => ({
-          year: r.date_start ? String(new Date(r.date_start).getUTCFullYear()) : "—",
+          year: rangeLabel(r.date_start, r.date_end),
           place: r.place_name || "a logged location",
           exposures: (r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", "),
         })),
@@ -292,6 +303,9 @@ export default function ReportView() {
             {member?.branch ? ` · ${member.branch}` : ""}
             {years ? ` · ${years}` : ""}
           </p>
+          <div className="mt-2 inline-block rounded-md border border-line bg-canvas px-2.5 py-1 text-[11px] font-semibold text-muted">
+            A self-prepared record — not a medical diagnosis or a legal opinion.
+          </div>
         </div>
         <p className="mt-3 text-xs leading-relaxed text-muted">
           Prepared from veteran-entered data. This is a self-reported record with documented-source citations to
@@ -328,7 +342,7 @@ export default function ReportView() {
             <ul className="space-y-1.5">
               {rows.map((r, i) => (
                 <li key={i} className="text-sm">
-                  <span className="font-semibold">{r.date_start ? new Date(r.date_start).getUTCFullYear() : "—"}</span>
+                  <span className="font-semibold">{rangeLabel(r.date_start, r.date_end)}</span>
                   {" · "}
                   {r.place_name || "a logged location"}
                   {" — "}
