@@ -80,6 +80,17 @@ function makeLocation(): LocationEntry {
   };
 }
 
+// Known-site names follow "Place, Country/Region (descriptor)" — e.g.
+// "Joint Base Balad, Iraq (burn pits)". Pull the country/region out (drop any
+// trailing "(descriptor)", then take the text after the last comma) so picking
+// a site can auto-fill the Country / region field. Returns "" if there's none.
+function regionFromSiteName(name: string): string {
+  const cleaned = name.replace(/\s*\([^)]*\)\s*$/, "").trim();
+  const parts = cleaned.split(",");
+  if (parts.length < 2) return "";
+  return parts[parts.length - 1].trim();
+}
+
 async function geocode(name: string, region: string): Promise<{ lat: number; lng: number }> {
   try {
     const q = [name, region].filter(Boolean).join(", ");
@@ -304,6 +315,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         confirmed: classes,
         // union of anything they'd already checked with the documented ones
         exposures: Array.from(new Set([...l.exposures, ...classes])),
+        // auto-fill the country/region from the site name (keep theirs if set)
+        region: l.region || regionFromSiteName(site.name),
         fromYear: l.fromYear || fromY,
         toYear: l.toYear || toY,
       };
@@ -332,7 +345,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     const toY = site.date_to ? String(new Date(site.date_to).getUTCFullYear()) : "";
     const entry: LocationEntry = {
       ...makeLocation(),
-      name: site.name, matchedSite: site.name, confirmed: classes, exposures: classes, fromYear: fromY, toYear: toY,
+      name: site.name, matchedSite: site.name, confirmed: classes, exposures: classes,
+      region: regionFromSiteName(site.name), fromYear: fromY, toYear: toY,
     };
     setLocations((prev) => {
       const firstEmpty = prev.length === 1 && !prev[0].name.trim() && prev[0].exposures.length === 0 && !prev[0].other.trim();
