@@ -45,9 +45,7 @@ export default function Landing() {
 
         <div className="relative">
           <h1 className="text-4xl font-bold leading-[1.1] tracking-tight">
-            Prove where you served
-            <br />
-            made you sick.
+            Finally connect the dots between your service and your health.
           </h1>
           <div className="mt-4 h-1 w-12 rounded bg-accent" />
           <p className="mt-5 max-w-md leading-relaxed text-white/75">
@@ -85,12 +83,12 @@ export default function Landing() {
             <img src="/owh-logo.png" alt="Operation Whole Health" className="h-14 w-auto object-contain" />
             <ServiceRibbon className="mt-4 w-32 rounded-full opacity-90" />
             <h1 className="mt-5 text-2xl font-bold leading-tight tracking-tight text-ink">
-              Prove where you served made you sick.
+              Finally connect the dots between your service and your health.
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               A free, private tool for veterans and military first responders. Map where you served,
               see what you were likely exposed to, and build the documented proof that connects it to
-              your health — so the VA can finally see it.
+              your health — so you can build the strongest possible case.
             </p>
             <ul className="mt-4 space-y-3">
               {POINTS.map((p, i) => (
@@ -110,7 +108,15 @@ export default function Landing() {
           <h2 className="text-xl font-semibold tracking-tight text-ink">Welcome</h2>
           <p className="mt-1 text-sm text-muted">Sign in, or create your free account to start your record.</p>
 
-          <div className="mt-5">
+          <div className="mt-3 flex items-start gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-xs leading-relaxed text-muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none text-success">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <span>Free and private, built for veterans by a Patriot-founded 501(c)(3). Your record is yours — never sold.</span>
+          </div>
+
+          <div className="mt-4">
             <AuthCard />
           </div>
 
