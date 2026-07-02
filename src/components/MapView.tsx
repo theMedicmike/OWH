@@ -146,6 +146,9 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [saving, setSaving] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
+  // When a known-site dot is clicked, we pin that exact site so its documented
+  // exposures pre-select regardless of the service year the veteran chooses.
+  const [pinnedSite, setPinnedSite] = useState<{ name: string; classes: string[] } | null>(null);
 
   // map filters
   const [activeClasses, setActiveClasses] = useState<Set<string>>(new Set());
@@ -172,6 +175,20 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setDraftName("");
     setSelected([]);
     setOtherText("");
+    setPinnedSite(null);
+  }
+
+  // Clicking a known-exposure dot seeds the check-in from THAT site: its name,
+  // its coordinates, and — the key part — its documented exposures, all
+  // pre-selected. The veteran keeps their own service year and can add anything
+  // personal on top. No need to be a doctor to know what was in the ground.
+  function startFromSite(site: Site, ll: [number, number]) {
+    const classes = Array.from(new Set(site.exposure_classes ?? []));
+    setPinnedSite({ name: site.name, classes });
+    const fromY = yearOf(site.date_from);
+    const toY = yearOf(site.date_to);
+    setYear((y) => (fromY !== null && toY !== null && y >= fromY && y <= toY ? y : fromY ?? y));
+    setDraft({ lng: ll[0], lat: ll[1] });
   }
 
   function classMatch(classes: string[]) {
@@ -224,12 +241,22 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // Seed the selection from suggestions when the pin is dropped, or when moving
   // the year reveals a different documented set. Manual edits are preserved while
   // the suggested set is unchanged.
-  const suggestionKey = suggestions.classes.join(",");
+  // Documented set shown + pre-selected = the pinned site's classes (always) plus
+  // anything documented near the pin in that service year.
+  const docClasses = useMemo(
+    () => Array.from(new Set([...(pinnedSite?.classes ?? []), ...suggestions.classes])),
+    [pinnedSite, suggestions],
+  );
+  const docSites = Array.from(new Set([...(pinnedSite ? [pinnedSite.name] : []), ...suggestions.sites]));
+
+  // Seed the selection when the pin is dropped, or when the documented set
+  // changes (e.g. moving the year). Manual edits persist while it's unchanged.
+  const docKey = docClasses.join(",");
   useEffect(() => {
     if (!draft) return;
-    setSelected(suggestions.classes);
+    setSelected(docClasses);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft, suggestionKey]);
+  }, [draft, docKey]);
 
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return;
@@ -242,7 +269,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl(), "bottom-right");
     map.on("load", () => setMapLoaded(true));
-    map.on("click", (e) => setDraft({ lng: e.lngLat.lng, lat: e.lngLat.lat }));
+    map.on("click", (e) => { setPinnedSite(null); setDraft({ lng: e.lngLat.lng, lat: e.lngLat.lat }); });
     return () => {
       map.remove();
       mapRef.current = null;
@@ -256,6 +283,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       setDraftName("");
       return;
     }
+    // A pinned known site names itself — no need to reverse-geocode over it.
+    if (pinnedSite) {
+      setDraftName(pinnedSite.name);
+      return;
+    }
     setDraftName("");
     reverseGeocode(draft.lat, draft.lng).then((name) => {
       if (active) setDraftName(name);
@@ -263,7 +295,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     return () => {
       active = false;
     };
-  }, [draft]);
+  }, [draft, pinnedSite]);
 
   useEffect(() => {
     let active = true;
@@ -297,6 +329,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       }
       const el = document.createElement("div");
       el.style.cssText = `width:14px;height:14px;border-radius:50%;border:2px solid #fff;cursor:pointer;background:${STATUS_COLOR[s.status] ?? "#888780"};box-shadow:0 0 0 1px rgba(0,0,0,0.15)`;
+      el.title = `${s.name} — click to start a check-in here`;
+      el.addEventListener("click", (ev) => { ev.stopPropagation(); startFromSite(s, ll); });
       const m = new maplibregl.Marker({ element: el })
         .setLngLat(ll)
         .setPopup(
@@ -503,7 +537,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <label className="mt-3 block text-xs text-muted">Service year: {year}</label>
             <input type="range" min={1945} max={2026} value={year} onChange={(e) => setYear(+e.target.value)} className="w-full" />
 
-            {suggestions.sites.length > 0 ? (
+            {docSites.length > 0 ? (
               <>
                 <div className="mt-3 text-sm font-semibold text-ink">Documented exposures here</div>
                 <div className="mb-2 mt-1 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-2.5 py-1.5 text-xs text-success">
@@ -511,8 +545,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
                   </svg>
                   <span>
-                    Confirmed at {suggestions.sites.slice(0, 2).join(", ")}
-                    {suggestions.sites.length > 2 ? ` +${suggestions.sites.length - 2} more` : ""}. We&apos;ve pre-selected them — confirm or adjust.
+                    Confirmed at {docSites.slice(0, 2).join(", ")}
+                    {docSites.length > 2 ? ` +${docSites.length - 2} more` : ""}. We&apos;ve pre-selected them — confirm or adjust.
                   </span>
                 </div>
               </>
@@ -525,7 +559,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <div className="flex flex-wrap gap-1.5">
               {EXPOSURES.map((x) => {
                 const on = selected.includes(x.value);
-                const documented = suggestions.classes.includes(x.value);
+                const documented = docClasses.includes(x.value);
                 const cls =
                   documented && on
                     ? `${chipBase} inline-flex items-center gap-1 border-success/50 bg-success-soft font-semibold text-success`
