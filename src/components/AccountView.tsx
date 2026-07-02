@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
 import DocumentsCard from "./DocumentsCard";
+import CohortConsentCard from "./CohortConsentCard";
 
 const BRANCHES = ["", "Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
 
@@ -125,6 +126,8 @@ export default function AccountView() {
       </div>
 
       <DocumentsCard />
+
+      <CohortConsentCard />
     </div>
   );
 }

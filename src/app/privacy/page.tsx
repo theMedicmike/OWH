@@ -45,11 +45,20 @@ export default function PrivacyPage() {
         into map points), and Vercel (hosting). We do not sell data to data brokers.
       </P>
 
-      <H>If we ever publish patterns</H>
+      <H>Contributing to the collective record (opt-in)</H>
       <P>
-        A long-term hope is that exposure patterns across many veterans can help get new conditions
-        recognized. If we ever publish anything from the collective data, it will be aggregated and
-        de-identified — your name is never attached — and we will be transparent about it.
+        Exposure patterns across many veterans can help get new conditions recognized and support research
+        and legislation like the Breaking the Cascade Act. You can choose to contribute your record to that
+        collective picture in <strong>Account → &quot;Help prove what happened to all of us.&quot;</strong> This is{" "}
+        <strong>off by default</strong> — nothing is ever included unless you turn it on, and you can turn it
+        back off at any time, which removes you from future updates.
+      </P>
+      <P>
+        When you do opt in, only <strong>coarse patterns</strong> are used — exposure type, a general place, a
+        year, a condition, and whether it was corroborated. Your name, email, exact coordinates, exact dates,
+        free-text notes, and uploaded documents are <strong>never</strong> included. Counts are only shown or
+        shared once enough people are included that no individual can be identified. This data is{" "}
+        <strong>never sold</strong>; any research use is under a signed data-use agreement.
       </P>
 
       <H>Your rights and control</H>
