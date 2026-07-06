@@ -2,6 +2,8 @@ import AppShell from "@/components/AppShell";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_AUTHOR } from "@/content/book";
+import ReaderClient from "@/components/ReaderClient";
+import { isHeavy, isMemoriamOnly, canShareChapter } from "@/content/heavyChapters";
 
 export function generateStaticParams() {
   return BOOK_CHAPTERS.map((c) => ({ slug: c.slug }));
@@ -22,14 +24,16 @@ export default async function ChapterPage({ params }: { params: Promise<{ slug: 
         <div className="mt-3 text-xs font-bold uppercase tracking-widest text-accent">Chapter {chapter.number}</div>
         <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-ink">{chapter.title}</h1>
 
-        <div className="mt-5 space-y-4">
-          {chapter.paragraphs.map((p, i) =>
-            p.type === "h" ? (
-              <h2 key={i} className="pt-3 text-lg font-bold text-ink">{p.text}</h2>
-            ) : (
-              <p key={i} className="text-[15px] leading-7 text-ink/90">{p.text}</p>
-            )
-          )}
+        <div className="mt-5">
+          <ReaderClient
+            key={chapter.slug}
+            chapter={chapter}
+            prevSlug={prev?.slug}
+            nextSlug={next?.slug}
+            heavy={isHeavy(chapter.slug)}
+            memoriamOnly={isMemoriamOnly(chapter.slug)}
+            canShare={canShareChapter(chapter.slug)}
+          />
         </div>
 
         <nav className="mt-8 flex items-stretch justify-between gap-3 border-t border-line pt-5">

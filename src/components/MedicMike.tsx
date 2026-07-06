@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MEDIC_MIKE_GREETING } from "@/lib/medicMike";
+import { pickMaleVoice } from "@/lib/voice";
+import MikeAvatar from "./MikeAvatar";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -19,38 +21,6 @@ interface SRLike {
   onerror: (() => void) | null;
 }
 type SRCtor = new () => SRLike;
-
-function pickMaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
-  if (!voices.length) return null;
-  const byName = ["Microsoft David", "Microsoft Guy", "Microsoft Mark", "Daniel", "Google UK English Male", "Alex", "Aaron", "Fred", "Reed", "Rocko"];
-  for (const n of byName) {
-    const v = voices.find((x) => x.name.includes(n));
-    if (v) return v;
-  }
-  const male = voices.find((v) => /\bmale\b/i.test(v.name) && /^en/i.test(v.lang));
-  if (male) return male;
-  return voices.find((v) => /^en-US/i.test(v.lang)) || voices.find((v) => /^en/i.test(v.lang)) || voices[0];
-}
-
-// Renders the real photo the moment /medic-mike.png exists; a medic badge until then.
-function MikeAvatar({ size = 40 }: { size?: number }) {
-  const [ok, setOk] = useState(true);
-  const s = { width: size, height: size };
-  if (ok) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src="/medic-mike.png" alt="Medic Mike" onError={() => setOk(false)}
-        className="flex-none rounded-full object-cover ring-2 ring-accent/40" style={s} />
-    );
-  }
-  return (
-    <span className="flex flex-none items-center justify-center rounded-full bg-brand text-white ring-2 ring-accent/40" style={s}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" style={{ width: size * 0.5, height: size * 0.5 }}>
-        <path d="M12 8v8M8 12h8" />
-      </svg>
-    </span>
-  );
-}
 
 export default function MedicMike() {
   const [messages, setMessages] = useState<Msg[]>([{ role: "assistant", content: MEDIC_MIKE_GREETING }]);
