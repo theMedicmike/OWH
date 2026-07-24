@@ -19,6 +19,8 @@ const base = (slug: string) => slug.replace(/^\d+-/, "");
 // Heavy chapters: the crisis line (988) is baked into the card image, added to
 // the caption, and shown in the Listen bar and share sheet.
 export const HEAVY_CHAPTERS = new Set<string>([
+  "the-smoke-and-the-fire",          // pillar; lifeline + 988 sit at chapter END
+  "the-veteran-biological-cascade",  // map chapter; closing lifeline section at END
   "sworn-to-silence",
   "the-family-cascade",
   "the-biology-of-suicide",

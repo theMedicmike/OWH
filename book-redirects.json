@@ -1,0 +1,262 @@
+[
+  {
+    "source": "/book/09-the-veteran-biological-cascade",
+    "destination": "/book/10-the-veteran-biological-cascade"
+  },
+  {
+    "source": "/book/10-why-veterans-are-different",
+    "destination": "/book/11-why-veterans-are-different"
+  },
+  {
+    "source": "/book/11-the-exposures-a-field-guide",
+    "destination": "/book/12-the-exposures-a-field-guide"
+  },
+  {
+    "source": "/book/12-agent-orange-and-the-vietnam-generation",
+    "destination": "/book/13-agent-orange-and-the-vietnam-generation"
+  },
+  {
+    "source": "/book/13-the-gulf-war-and-the-illness-they-were-told-wasn-t-real",
+    "destination": "/book/14-the-gulf-war-and-the-illness-they-were-told-wasn-t-real"
+  },
+  {
+    "source": "/book/14-burn-pits-the-invisible-battlefield",
+    "destination": "/book/15-burn-pits-the-invisible-battlefield"
+  },
+  {
+    "source": "/book/15-the-exposure-on-the-tray",
+    "destination": "/book/16-the-exposure-on-the-tray"
+  },
+  {
+    "source": "/book/16-what-they-drank",
+    "destination": "/book/17-what-they-drank"
+  },
+  {
+    "source": "/book/17-below-decks",
+    "destination": "/book/18-below-decks"
+  },
+  {
+    "source": "/book/18-the-orange-dust",
+    "destination": "/book/19-the-orange-dust"
+  },
+  {
+    "source": "/book/19-camp-stronghold-freedom",
+    "destination": "/book/20-camp-stronghold-freedom"
+  },
+  {
+    "source": "/book/20-sworn-to-silence",
+    "destination": "/book/21-sworn-to-silence"
+  },
+  {
+    "source": "/book/21-volunteers",
+    "destination": "/book/22-volunteers"
+  },
+  {
+    "source": "/book/22-the-weekly-pill",
+    "destination": "/book/23-the-weekly-pill"
+  },
+  {
+    "source": "/book/23-the-pain-they-made-you-prove",
+    "destination": "/book/24-the-pain-they-made-you-prove"
+  },
+  {
+    "source": "/book/24-blast-the-brain-injury-you-can-t-see",
+    "destination": "/book/25-blast-the-brain-injury-you-can-t-see"
+  },
+  {
+    "source": "/book/25-the-neurotoxicity-cascade",
+    "destination": "/book/26-the-neurotoxicity-cascade"
+  },
+  {
+    "source": "/book/26-the-mineral-displacement-cascade",
+    "destination": "/book/27-the-mineral-displacement-cascade"
+  },
+  {
+    "source": "/book/27-the-bone-marrow-connection",
+    "destination": "/book/28-the-bone-marrow-connection"
+  },
+  {
+    "source": "/book/28-inflammation-the-common-denominator",
+    "destination": "/book/29-inflammation-the-common-denominator"
+  },
+  {
+    "source": "/book/29-hormone-disruption-and-the-endocrine-cascade",
+    "destination": "/book/30-hormone-disruption-and-the-endocrine-cascade"
+  },
+  {
+    "source": "/book/30-the-cardiometabolic-cascade",
+    "destination": "/book/31-the-cardiometabolic-cascade"
+  },
+  {
+    "source": "/book/31-the-gut-brain-connection",
+    "destination": "/book/32-the-gut-brain-connection"
+  },
+  {
+    "source": "/book/32-the-mitochondrial-collapse",
+    "destination": "/book/33-the-mitochondrial-collapse"
+  },
+  {
+    "source": "/book/33-the-sleep-destruction-cascade",
+    "destination": "/book/34-the-sleep-destruction-cascade"
+  },
+  {
+    "source": "/book/34-the-family-cascade",
+    "destination": "/book/35-the-family-cascade"
+  },
+  {
+    "source": "/book/35-the-biology-of-suicide",
+    "destination": "/book/36-the-biology-of-suicide"
+  },
+  {
+    "source": "/book/36-the-addiction-cascade",
+    "destination": "/book/37-the-addiction-cascade"
+  },
+  {
+    "source": "/book/37-the-weight-of-the-trigger",
+    "destination": "/book/38-the-weight-of-the-trigger"
+  },
+  {
+    "source": "/book/38-moral-injury-the-wound-that-isn-t-in-the-body",
+    "destination": "/book/39-moral-injury-the-wound-that-isn-t-in-the-body"
+  },
+  {
+    "source": "/book/39-why-testing-matters",
+    "destination": "/book/40-why-testing-matters"
+  },
+  {
+    "source": "/book/40-the-restoration-blueprint",
+    "destination": "/book/41-the-restoration-blueprint"
+  },
+  {
+    "source": "/book/41-rebuilding-the-terrain",
+    "destination": "/book/42-rebuilding-the-terrain"
+  },
+  {
+    "source": "/book/42-the-body-wants-to-heal-why-restoration-is-possible",
+    "destination": "/book/43-the-body-wants-to-heal-why-restoration-is-possible"
+  },
+  {
+    "source": "/book/43-the-detoxification-framework",
+    "destination": "/book/44-the-detoxification-framework"
+  },
+  {
+    "source": "/book/44-the-sleep-restoration-framework",
+    "destination": "/book/45-the-sleep-restoration-framework"
+  },
+  {
+    "source": "/book/45-the-brain-restoration-framework",
+    "destination": "/book/46-the-brain-restoration-framework"
+  },
+  {
+    "source": "/book/46-the-gut-restoration-framework",
+    "destination": "/book/47-the-gut-restoration-framework"
+  },
+  {
+    "source": "/book/47-the-hormone-and-metabolic-restoration-framework",
+    "destination": "/book/48-the-hormone-and-metabolic-restoration-framework"
+  },
+  {
+    "source": "/book/48-the-bone-marrow-and-mineral-restoration-framework",
+    "destination": "/book/49-the-bone-marrow-and-mineral-restoration-framework"
+  },
+  {
+    "source": "/book/49-connection-purpose-and-brotherhood-the-medicine-we-forget",
+    "destination": "/book/50-connection-purpose-and-brotherhood-the-medicine-we-forget"
+  },
+  {
+    "source": "/book/50-the-veteran-restoration-protocol",
+    "destination": "/book/51-the-veteran-restoration-protocol"
+  },
+  {
+    "source": "/book/51-the-playbook-what-to-do-monday-morning",
+    "destination": "/book/52-the-playbook-what-to-do-monday-morning"
+  },
+  {
+    "source": "/book/52-the-lethality-equation",
+    "destination": "/book/53-the-lethality-equation"
+  },
+  {
+    "source": "/book/53-the-bone-marrow-cascade",
+    "destination": "/book/54-the-bone-marrow-cascade"
+  },
+  {
+    "source": "/book/54-the-female-combat-veteran-biological-cascade",
+    "destination": "/book/55-the-female-combat-veteran-biological-cascade"
+  },
+  {
+    "source": "/book/55-testing-the-bridge-between-what-happened-and-what-we-do-now",
+    "destination": "/book/56-testing-the-bridge-between-what-happened-and-what-we-do-now"
+  },
+  {
+    "source": "/book/56-the-future-of-veteran-medicine",
+    "destination": "/book/57-the-future-of-veteran-medicine"
+  },
+  {
+    "source": "/book/57-the-economic-cost-of-ignoring-toxic-burden",
+    "destination": "/book/58-the-economic-cost-of-ignoring-toxic-burden"
+  },
+  {
+    "source": "/book/58-the-ledger",
+    "destination": "/book/59-the-ledger"
+  },
+  {
+    "source": "/book/59-guilty-until-proven-injured",
+    "destination": "/book/60-guilty-until-proven-injured"
+  },
+  {
+    "source": "/book/60-when-the-cascade-reaches-the-street",
+    "destination": "/book/61-when-the-cascade-reaches-the-street"
+  },
+  {
+    "source": "/book/61-the-future-of-veteran-health-and-wellness",
+    "destination": "/book/62-the-future-of-veteran-health-and-wellness"
+  },
+  {
+    "source": "/book/62-the-family-that-served-too",
+    "destination": "/book/63-the-family-that-served-too"
+  },
+  {
+    "source": "/book/63-the-caregiver-who-served-too",
+    "destination": "/book/64-the-caregiver-who-served-too"
+  },
+  {
+    "source": "/book/64-the-spirit-that-served-too",
+    "destination": "/book/65-the-spirit-that-served-too"
+  },
+  {
+    "source": "/book/65-post-traumatic-growth-coming-back-stronger",
+    "destination": "/book/66-post-traumatic-growth-coming-back-stronger"
+  },
+  {
+    "source": "/book/66-everything-here-has-a-name",
+    "destination": "/book/67-everything-here-has-a-name"
+  },
+  {
+    "source": "/book/67-in-their-own-words",
+    "destination": "/book/68-in-their-own-words"
+  },
+  {
+    "source": "/book/68-a-letter-to-the-veteran",
+    "destination": "/book/69-a-letter-to-the-veteran"
+  },
+  {
+    "source": "/book/69-epilogue",
+    "destination": "/book/70-epilogue"
+  },
+  {
+    "source": "/book/70-the-language-of-the-cascade",
+    "destination": "/book/71-the-language-of-the-cascade"
+  },
+  {
+    "source": "/book/71-where-to-start",
+    "destination": "/book/72-where-to-start"
+  },
+  {
+    "source": "/book/72-appendix-the-conditions-the-government-already-links-to-service",
+    "destination": "/book/73-appendix-the-conditions-the-government-already-links-to-service"
+  },
+  {
+    "source": "/book/73-master-endnotes-and-source-trail",
+    "destination": "/book/74-master-endnotes-and-source-trail"
+  }
+]
