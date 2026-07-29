@@ -41,8 +41,16 @@ export default function PrivacyPage() {
       <H>Service providers</H>
       <P>
         We rely on a small set of vendors to run the app: Supabase (database, authentication, file
-        storage), Anthropic (the AI features above), OpenStreetMap and BigDataCloud (to turn place names
-        into map points), and Vercel (hosting). We do not sell data to data brokers.
+        storage), Anthropic (the AI features above), OpenFreeMap (background map tiles only), and Vercel
+        (hosting). We do not sell data to data brokers.
+      </P>
+      <P>
+        <strong>Where you served never leaves this app.</strong> Base names and pin locations are matched
+        against a list of military installations bundled inside the app itself — we removed the outside
+        look-up services that used to receive them. The one thing your browser still requests from an
+        outside service is the plain background map imagery, which, like loading any web image, tells
+        that provider your IP address and the area of the world you are looking at. It never carries your
+        pins, your exposures, your conditions, or anything identifying you.
       </P>
 
       <H>Contributing to the collective record (opt-in)</H>

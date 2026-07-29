@@ -47,6 +47,7 @@ export default function JourneyView() {
   const [svcStart, setSvcStart] = useState<number | null>(null);
   const [svcEnd, setSvcEnd] = useState<number | null>(null);
   const [onsetEdit, setOnsetEdit] = useState<string | null>(null);
+  const [onsetErr, setOnsetErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -180,7 +181,19 @@ export default function JourneyView() {
     };
   })();
 
-  async function saveOnset(label: string, year: number | null) {
+  async function saveOnset(label: string, raw: number | null) {
+    // Clamp: a bare number input's min/max are inert, and an out-of-range year
+    // doesn't just look wrong — it blows up the timeline axis (thousands of
+    // ticks) and prints fabricated latency ("1986 yrs after Balad") onto page
+    // one of the claim packet.
+    const thisYear = new Date().getUTCFullYear();
+    const year = raw === null ? null : Math.round(raw);
+    if (year !== null && (year < 1940 || year > thisYear)) {
+      setOnsetErr(`Enter a year between 1940 and ${thisYear}.`);
+      return;
+    }
+    const before = condOnset;
+    setOnsetErr(null);
     setCondOnset((prev) => {
       const next = { ...prev };
       if (year) next[label] = year; else delete next[label];
@@ -188,9 +201,17 @@ export default function JourneyView() {
     });
     setOnsetEdit(null);
     const { data: mem } = await supabase.from("members").select("id").eq("auth_id", user!.id).maybeSingle();
-    if (mem?.id) {
-      // No-op until migration 0012 is applied; the UI keeps working either way.
-      await supabase.from("conditions").update({ onset_year: year }).eq("member_id", mem.id).eq("label", label);
+    if (!mem?.id) { setCondOnset(before); setOnsetErr("Couldn't find your record — try again."); return; }
+    const { error } = await supabase.from("conditions")
+      .update({ onset_year: year }).eq("member_id", mem.id).eq("label", label);
+    if (error) {
+      // Roll back rather than show a year the packet won't have.
+      setCondOnset(before);
+      setOnsetErr(
+        /column .* does not exist/i.test(error.message)
+          ? "Onset years need database migration 0012 applied before they'll save."
+          : `Couldn't save that year: ${error.message}`
+      );
     }
   }
 
@@ -262,6 +283,11 @@ export default function JourneyView() {
               Roughly is fine — the year you first noticed it or were diagnosed. This is what puts the
               gap between your service and your symptoms on the record.
             </p>
+            {onsetErr && (
+              <div role="status" className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-medium text-red-700">
+                {onsetErr}
+              </div>
+            )}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {conditions.map((c) => {
                 const y = condOnset[c.label];

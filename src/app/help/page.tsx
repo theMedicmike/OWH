@@ -49,7 +49,7 @@ const STEPS = [
   },
   {
     title: "Look anything up in the Exposure Library",
-    body: 'Tap "Exposure library" in the sidebar for a plain-English encyclopedia of every metal and chemical — where it comes from, what it does in the body, where it stores, and the conditions the government already links to it. Tap a nutrient to learn the foods that restore it, or an organ to learn what happens there. It all clicks together like a web.',
+    body: 'Tap "Exposure library" in the sidebar for a plain-English encyclopedia of every metal and chemical — where it comes from, what it does in the body, where it stores, and the conditions the government already links to it. Tap an organ or body system to learn what happens there. It all clicks together like a web.',
     tip: null,
   },
   {

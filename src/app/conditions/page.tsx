@@ -3,7 +3,7 @@ import ConditionsView from "@/components/ConditionsView";
 
 export default function ConditionsPage() {
   return (
-    <AppShell title="Your conditions">
+    <AppShell title="Condition library">
       <ConditionsView />
     </AppShell>
   );

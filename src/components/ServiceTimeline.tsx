@@ -48,17 +48,29 @@ export function latencyFor(cond: TimelineCondition, tours: TimelineTour[]): { ye
   return { years: cond.onsetYear - best.year, place: best.place, year: best.year };
 }
 
+// Defensive: any year outside this window is bad data (a typo, a legacy row),
+// and letting it through stretches the axis so the real record collapses to a
+// sliver — on screen AND on page one of the claim packet.
+const MIN_YEAR = 1940;
+const sane = (y: number | null | undefined): y is number =>
+  typeof y === "number" && Number.isFinite(y) && y >= MIN_YEAR && y <= new Date().getUTCFullYear() + 1;
+
 export function timelineBounds(d: TimelineData): { min: number; max: number } {
   const years: number[] = [];
-  if (d.serviceStart) years.push(d.serviceStart);
-  if (d.serviceEnd) years.push(d.serviceEnd);
-  for (const t of d.tours) { years.push(t.startYear); if (t.endYear) years.push(t.endYear); }
-  for (const c of d.conditions) if (c.onsetYear) years.push(c.onsetYear);
+  if (sane(d.serviceStart)) years.push(d.serviceStart);
+  if (sane(d.serviceEnd)) years.push(d.serviceEnd);
+  for (const t of d.tours) { if (sane(t.startYear)) years.push(t.startYear); if (sane(t.endYear)) years.push(t.endYear); }
+  for (const c of d.conditions) if (sane(c.onsetYear)) years.push(c.onsetYear);
   const now = new Date().getUTCFullYear();
   if (years.length === 0) return { min: now - 20, max: now };
   const min = Math.min(...years);
   const max = Math.max(...years, now);
   return { min: min - 1, max: max + 1 };
+}
+
+// Adaptive tick step so no span can flood the axis with nodes.
+export function tickStep(span: number): number {
+  return [1, 2, 5, 10, 20, 25, 50, 100].find((s) => span / s <= 10) ?? 100;
 }
 
 export default function ServiceTimeline({ data, compact = false }: { data: TimelineData; compact?: boolean }) {
@@ -71,9 +83,10 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
   const dated = conds.filter((c) => c.onsetYear);
   const undated = conds.filter((c) => !c.onsetYear);
 
-  // Decade ticks across the whole span.
+  // Adaptive ticks — never more than ~11 labels no matter the span.
+  const step = tickStep(span);
   const ticks: number[] = [];
-  for (let y = Math.ceil(min / 5) * 5; y <= max; y += 5) ticks.push(y);
+  for (let y = Math.ceil(min / step) * step; y <= max; y += step) ticks.push(y);
 
   if (tours.length === 0 && conds.length === 0) {
     return (
@@ -84,7 +97,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
   }
 
   return (
-    <div className="w-full">
+    <div className="print-exact w-full">
       {/* Year axis */}
       <div className="relative mb-1 h-4">
         {ticks.map((t) => (
@@ -99,19 +112,19 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
         ))}
       </div>
 
-      {/* Service band */}
+      {/* Service band — caption gets its own row so it can't print over the bar */}
       {(data.serviceStart || data.serviceEnd) && (
-        <div className="relative mt-2 h-5">
+        <div className="relative mt-2 h-8">
+          <span className="absolute left-0 top-0 text-[10px] font-semibold uppercase tracking-wide text-brand">
+            In service
+          </span>
           <div
-            className="absolute top-1 h-3 rounded-full bg-brand/15 ring-1 ring-brand/30"
+            className="absolute top-4 h-3 rounded-full bg-brand/15 ring-1 ring-brand/30 print:border print:border-ink"
             style={{
               left: `${pct(data.serviceStart ?? min)}%`,
               width: `${Math.max(1.5, pct(data.serviceEnd ?? max) - pct(data.serviceStart ?? min))}%`,
             }}
           />
-          <span className="absolute left-0 top-0 text-[10px] font-semibold uppercase tracking-wide text-brand">
-            In service
-          </span>
         </div>
       )}
 
@@ -124,13 +137,17 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
           return (
             <div key={`${t.place}-${i}`} className="relative h-9">
               <div
-                className="absolute top-0 flex h-5 items-center rounded-md bg-brand px-1.5 text-[10px] font-semibold text-white shadow-sm print:bg-brand"
+                className="absolute top-0 flex h-5 items-center rounded-md bg-brand px-1.5 text-[10px] font-semibold text-white shadow-sm print:border print:border-ink"
                 style={{ left: `${left}%`, width: `${width}%`, minWidth: 8 }}
                 title={`${t.place} — ${t.startYear}${t.endYear && t.endYear !== t.startYear ? `–${t.endYear}` : ""}`}
               />
+              {/* Past the midpoint, anchor from the right so long labels can't
+                  push the page into horizontal scroll (or off the printed edge). */}
               <div
-                className="absolute top-[22px] max-w-[70%] truncate text-[11px] leading-tight text-ink"
-                style={{ left: `${Math.min(left, 70)}%` }}
+                className="absolute top-[22px] truncate text-[11px] leading-tight text-ink"
+                style={left > 50
+                  ? { right: `${100 - left}%`, maxWidth: `${Math.max(20, left)}%`, textAlign: "right" }
+                  : { left: `${left}%`, maxWidth: `${Math.max(20, 100 - left)}%` }}
               >
                 <span className="font-semibold">{t.place}</span>{" "}
                 <span className="tabular-nums text-muted">
@@ -165,13 +182,15 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
                     />
                   )}
                   <span
-                    className="absolute top-1.5 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[2px] bg-accent ring-2 ring-white print:bg-accent"
+                    className="absolute top-1.5 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[2px] bg-accent ring-2 ring-white print:border print:border-ink"
                     style={{ left: `${left}%` }}
                     title={`${c.label} — ${c.onsetYear}`}
                   />
                   <div
-                    className="absolute top-[22px] max-w-[70%] truncate text-[11px] leading-tight text-ink"
-                    style={{ left: `${Math.min(left, 70)}%` }}
+                    className="absolute top-[22px] truncate text-[11px] leading-tight text-ink"
+                    style={left > 50
+                      ? { right: `${100 - left}%`, maxWidth: `${Math.max(20, left)}%`, textAlign: "right" }
+                      : { left: `${left}%`, maxWidth: `${Math.max(20, 100 - left)}%` }}
                   >
                     <span className="font-semibold">{c.label}</span>{" "}
                     <span className="tabular-nums text-muted">{c.onsetYear}</span>

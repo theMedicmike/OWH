@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_LABEL } from "@/lib/education";
+import { searchGazetteer } from "@/lib/gazetteer";
 
 
 type Proposal = {
@@ -36,27 +37,17 @@ function parseProposals(text: string): { clean: string; proposals: Proposal[] } 
   return { clean, proposals };
 }
 
-async function geocodeOnce(q: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
-    const j = await r.json();
-    if (j[0]) return { lat: parseFloat(j[0].lat), lng: parseFloat(j[0].lon) };
-  } catch {
-    // ignore
-  }
-  return null;
-}
-
-// Try the full place, then progressively simpler queries by dropping the most
-// specific leading segment. "Camp Victory, Baghdad, Iraq" → "Baghdad, Iraq" →
-// "Iraq", so a base name that isn't in the gazetteer still resolves to its city.
-async function geocode(place: string): Promise<{ lat: number; lng: number } | null> {
+// LOCAL ONLY. This previously queried Nominatim, which sent every deployment
+// location a veteran typed — plus their IP — to a third party, from behind the
+// OPSEC gate. Nothing about where a veteran served leaves this app. If the
+// gazetteer doesn't know the place we return null and the check-in saves
+// without coordinates, flagged for the veteran to place on the map.
+function geocode(place: string): { lat: number; lng: number } | null {
   const segs = place.split(",").map((s) => s.trim()).filter(Boolean);
-  const tries: string[] = [place];
-  for (let i = 1; i < segs.length; i++) tries.push(segs.slice(i).join(", "));
-  for (const q of Array.from(new Set(tries))) {
-    const hit = await geocodeOnce(q);
-    if (hit) return hit;
+  const tries = [place, ...segs.slice(1).map((_, i) => segs.slice(i + 1).join(", "))];
+  for (const q of Array.from(new Set(tries.filter(Boolean)))) {
+    const hit = searchGazetteer(q, [], 1)[0];
+    if (hit) return { lat: hit.lat, lng: hit.lng };
   }
   return null;
 }
@@ -107,7 +98,7 @@ export default function IntakeView() {
       return copy;
     });
     const p = messages[mi].proposals![pi];
-    const loc = await geocode(p.place);
+    const loc = geocode(p.place);
     // Never block the save: if we can't pin the exact spot, save it anyway and
     // let the member fine-tune the location on the map later.
     const coords = loc ?? { lat: 0, lng: 0 };

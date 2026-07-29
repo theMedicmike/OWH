@@ -39,6 +39,7 @@ const STEPS = ["Your service", "Where you served", "Your health", "Done"];
 
 type SiteOption = {
   name: string;
+  geom: string | null;
   exposure_classes: string[] | null;
   date_from: string | null;
   date_to: string | null;
@@ -75,12 +76,39 @@ function regionFromSiteName(name: string): string {
   return parts[parts.length - 1].trim();
 }
 
-// Local-only geocoding. The old Nominatim lookup shipped every place a veteran
-// typed to a third party; the gazetteer keeps it in the app. Unknown places save
-// at 0,0 (unmapped) rather than leaking the query.
-function geocode(name: string, region: string): { lat: number; lng: number } {
-  const hit = searchGazetteer(name, [], 1)[0] ?? (region ? searchGazetteer(region, [], 1)[0] : undefined);
-  return hit ? { lat: hit.lat, lng: hit.lng } : { lat: 0, lng: 0 };
+// Decode PostGIS WKB hex → [lng, lat] so a matched documented site uses the
+// EXACT coordinate the database already holds instead of being re-guessed.
+function wkbToLngLat(hex: string | null): [number, number] | null {
+  if (typeof hex !== "string" || hex.length < 42) return null;
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  const view = new DataView(bytes.buffer);
+  const le = bytes[0] === 1;
+  const type = view.getUint32(1, le);
+  let offset = 5;
+  if (type & 0x20000000) offset += 4;
+  const lng = view.getFloat64(offset, le);
+  const lat = view.getFloat64(offset + 8, le);
+  if (Number.isNaN(lng) || Number.isNaN(lat)) return null;
+  return [lng, lat];
+}
+
+// Local-only place resolution. Never guesses: a region like "California" must
+// NOT resolve to whichever base happens to be listed first there — that would
+// fabricate a coordinate inside a claim record. Returns null when unknown, and
+// the location saves without a pin for the veteran to place on the map.
+function geocode(name: string, sites: SiteOption[]): { lat: number; lng: number } | null {
+  const exact = sites.find((s) => s.name === name);
+  if (exact) {
+    const ll = wkbToLngLat(exact.geom);
+    if (ll) return { lng: ll[0], lat: ll[1] };
+  }
+  const extras = sites.flatMap((s) => {
+    const ll = wkbToLngLat(s.geom);
+    return ll ? [{ name: s.name, region: "documented site", lat: ll[1], lng: ll[0] }] : [];
+  });
+  const hit = searchGazetteer(name, extras, 1)[0];
+  return hit ? { lat: hit.lat, lng: hit.lng } : null;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -226,20 +254,27 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     try {
       for (const loc of locations) {
         if (!loc.name.trim() && loc.exposures.length === 0 && !loc.other.trim()) continue;
-        const coords = geocode(loc.name, loc.region);
+        const coords = geocode(loc.name.trim(), sites);
         const year = parseInt(loc.fromYear) || new Date().getFullYear();
         const { data: newId, error: rpcErr } = await supabase.rpc("log_check_in", {
-          p_lng: coords.lng,
-          p_lat: coords.lat,
+          // Unknown place → 0,0 marks it unmapped; the note below tells the
+          // veteran to place it. We never invent a plausible-looking location.
+          p_lng: coords?.lng ?? 0,
+          p_lat: coords?.lat ?? 0,
           p_year: year,
           p_conflict: null,
           p_exposures: loc.exposures,
         });
         if (rpcErr) throw new Error(rpcErr.message);
         if (newId) {
-          const patch: { place_name?: string; notes?: string } = {};
+          const patch: { place_name?: string; notes?: string; date_end?: string } = {};
           if (loc.name.trim()) patch.place_name = loc.name.trim();
-          if (loc.other.trim()) patch.notes = `Other exposure noted: ${loc.other.trim()}`;
+          const noteParts: string[] = [];
+          if (loc.other.trim()) noteParts.push(`Other exposure noted: ${loc.other.trim()}`);
+          if (!coords) noteParts.push("Location not yet pinned — set the exact spot on the map.");
+          if (noteParts.length) patch.notes = noteParts.join("\n");
+          // Keep the tour span so the timeline can draw a real bar, not a point.
+          if (loc.toYear && parseInt(loc.toYear)) patch.date_end = `${parseInt(loc.toYear)}-12-31`;
           if (Object.keys(patch).length > 0) {
             await supabase.from("check_ins").update(patch).eq("id", newId);
           }
@@ -258,11 +293,23 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     try {
       const memberId = await ensureMemberId();
       if (!memberId) throw new Error("Could not find account record.");
-      // Clear existing, re-insert selected
-      await supabase.from("conditions").delete().eq("member_id", memberId);
-      if (selectedConditions.length > 0) {
+      // DIFF, never delete-and-reinsert. Re-running this wizard is the designed
+      // flow (it prefills from the DB), and a blanket delete silently wiped
+      // onset_year, filed_on, and every claim_status the veteran had recorded —
+      // the most expensive data in the app.
+      const { data: existing } = await supabase
+        .from("conditions").select("id, label").eq("member_id", memberId);
+      const have = (existing ?? []) as { id: string; label: string }[];
+      const haveLabels = new Set(have.map((c) => c.label));
+      const keep = new Set(selectedConditions);
+      const toRemove = have.filter((c) => !keep.has(c.label)).map((c) => c.id);
+      const toAdd = selectedConditions.filter((l) => !haveLabels.has(l));
+      if (toRemove.length) {
+        await supabase.from("conditions").delete().in("id", toRemove);
+      }
+      if (toAdd.length > 0) {
         await supabase.from("conditions").insert(
-          selectedConditions.map((label) => ({ member_id: memberId, label, claim_status: "none" }))
+          toAdd.map((label) => ({ member_id: memberId, label, claim_status: "none" }))
         );
       }
       setStep(3);

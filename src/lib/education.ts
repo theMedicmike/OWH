@@ -32,6 +32,13 @@ export const EXPOSURES: { label: string; value: string }[] = [
   { label: "Radiation / depleted uranium", value: "radiation" },
   { label: "PFAS / AFFF", value: "pfas_afff" },
   { label: "Gulf War agent", value: "gulf_war_agent" },
+  // These two exist in the database's exposure_class enum and are seeded on
+  // real recognized sites (Qarmat Ali, Hanford, Fort Ord). Without chips here
+  // they were saved to a veteran's record invisibly — under a banner telling
+  // them to "uncheck anything that doesn't apply" — and printed into the packet
+  // as the raw enum string.
+  { label: "Industrial chemical / PCBs", value: "industrial_chemical" },
+  { label: "Other exposure", value: "other" },
 ];
 
 export const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(

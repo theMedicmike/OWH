@@ -9,7 +9,7 @@ export default async function MapPage() {
     .select("name, status, geom, exposure_classes, date_from, date_to");
 
   return (
-    <AppShell title="Map">
+    <AppShell title="Where you served">
       <p className="mb-4 text-sm text-muted">
         {sites?.length ?? 0} recognized exposure sites loaded. Click anywhere on the map to drop a pin where you
         served, then tag what you were exposed to.

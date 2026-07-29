@@ -115,8 +115,12 @@ export default function AppShell({ title, children }: { title: string; children:
     );
   }
 
+  // The whole sidebar scrolls — not just <nav>. With ~440px of fixed chrome
+  // below the nav, a short viewport (phone landscape) used to clip the crisis
+  // line off-screen with no way to reach it, which defeats the entire point of
+  // keeping 988 one tap away.
   const sidebar = (
-    <div className="flex h-full flex-col bg-brand">
+    <div className="flex h-full flex-col overflow-y-auto bg-brand">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -131,7 +135,7 @@ export default function AppShell({ title, children }: { title: string; children:
       <ServiceRibbon className="opacity-90" />
 
       {/* Nav */}
-      <nav className="flex-1 space-y-4 px-3 py-2 overflow-y-auto">
+      <nav className="flex-1 space-y-4 px-3 py-2">
         {SECTIONS.map((section, si) => (
           <div key={si} className="space-y-0.5">
             {section.title && (

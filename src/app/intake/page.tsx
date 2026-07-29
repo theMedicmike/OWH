@@ -7,11 +7,11 @@ export default async function IntakePage() {
   const supabase = await createClient();
   const { data: sites } = await supabase
     .from("known_exposure_sites")
-    .select("name, exposure_classes, date_from, date_to")
+    .select("name, geom, exposure_classes, date_from, date_to")
     .order("name");
 
   return (
-    <AppShell title="Intake form">
+    <AppShell title="Your service">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
           Fill out your service history, locations, and health conditions. Everything saves to your

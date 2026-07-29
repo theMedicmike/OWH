@@ -131,6 +131,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [story, setStory] = useState("");
   const [month, setMonth] = useState(0); // 0 = not sure; months matter for presumptives
   const [searchQ, setSearchQ] = useState("");
+  const draftRef = useRef<{ lng: number; lat: number } | null>(null);
+  const yearSeeded = useRef(false);
 
   // Known exposure sites double as gazetteer entries (search + local naming).
   const gazExtras = useMemo<GazEntry[]>(() =>
@@ -164,19 +166,28 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     });
   }
 
+  // Every field that belongs to ONE check-in. Must be cleared whenever a new
+  // draft opens, or the last location's narrative/month rides along into the
+  // next one's record.
+  function resetDraftFields() {
+    setSelected([]);
+    setOtherText("");
+    setStory("");
+    setMonth(0);
+  }
+
   function closeDraft() {
     setDraft(null);
     setDraftName("");
-    setSelected([]);
-    setOtherText("");
     setPinnedSite(null);
-    setStory("");
-    setMonth(0);
+    setPending(null);
+    resetDraftFields();
   }
 
   // Confirm chip → open the real check-in draft at the pending pin.
   function beginDraft() {
     if (!pending) return;
+    resetDraftFields();
     setDraft(pending);
     setPending(null);
   }
@@ -189,7 +200,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     const site = sites.find((s) => s.name === e.name);
     setPending(null);
     if (site) startFromSite(site, ll);
-    else { setPinnedSite(null); setDraft({ lng: e.lng, lat: e.lat }); }
+    else { resetDraftFields(); setPinnedSite(null); setDraftName(e.name); setDraft({ lng: e.lng, lat: e.lat }); }
     setSearchQ("");
   }
 
@@ -199,6 +210,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // personal on top. No need to be a doctor to know what was in the ground.
   function startFromSite(site: Site, ll: [number, number]) {
     const classes = Array.from(new Set(site.exposure_classes ?? []));
+    resetDraftFields();
     setPinnedSite({ name: site.name, classes });
     const fromY = yearOf(site.date_from);
     const toY = yearOf(site.date_to);
@@ -284,7 +296,14 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl(), "bottom-right");
     map.on("load", () => setMapLoaded(true));
-    map.on("click", (e) => { setPinnedSite(null); setPending({ lng: e.lngLat.lng, lat: e.lngLat.lat }); });
+    // A stray tap must never destroy an open draft. Clearing pinnedSite while a
+    // draft is up re-runs the name + documented-exposure effects and silently
+    // discards the veteran's typed place and their exposure choices.
+    map.on("click", (e) => {
+      if (draftRef.current) return;
+      setPinnedSite(null);
+      setPending({ lng: e.lngLat.lng, lat: e.lngLat.lat });
+    });
     return () => {
       map.remove();
       mapRef.current = null;
@@ -307,14 +326,22 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, pinnedSite]);
 
-  // Default the service-year slider to the veteran's own service start —
-  // never a hardcoded year that silently mislabels every record.
+  // Keep the click handler's view of "is a draft open" current without
+  // re-registering the map listener.
+  useEffect(() => { draftRef.current = draft; }, [draft]);
+
+  // Seed the service-year slider from the veteran's own service start — ONCE.
+  // Supabase hands React a new user object on every token refresh; without the
+  // ref guard that would silently reset a year the veteran had dragged, and
+  // write the wrong year into a record whose whole point is the year.
   useEffect(() => {
-    if (!user) return;
+    if (!user || yearSeeded.current) return;
     supabase.from("members").select("service_start").eq("auth_id", user.id).maybeSingle().then(({ data }) => {
+      if (yearSeeded.current) return;
+      yearSeeded.current = true;
       if (data?.service_start) setYear(new Date(data.service_start).getUTCFullYear());
     });
-  }, [user, supabase]);
+  }, [user?.id, supabase]);
 
   useEffect(() => {
     let active = true;
@@ -390,6 +417,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       const el = document.createElement("div");
       el.style.cssText =
         "width:14px;height:14px;border-radius:50%;border:2px solid #fff;background:#185FA5;box-shadow:0 0 0 1px rgba(0,0,0,0.2)";
+      // Don't let tapping your own saved pin fall through to the map handler.
+      el.addEventListener("click", (ev) => ev.stopPropagation());
       const m = new maplibregl.Marker({ element: el })
         .setLngLat([c.lng, c.lat])
         .setPopup(
@@ -421,7 +450,18 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       // Month-level dates when known — presumptive windows can turn on months.
       if (month >= 1 && month <= 12) patch.date_start = `${year}-${String(month).padStart(2, "0")}-01`;
       if (Object.keys(patch).length > 0) {
-        await supabase.from("check_ins").update(patch).eq("id", newId);
+        // This patch carries the veteran's OWN WORDS and the month-precision
+        // date. If it fails we must not close the panel — the text would be
+        // gone for good, and nothing else in the app can re-enter it.
+        const { error: patchErr } = await supabase.from("check_ins").update(patch).eq("id", newId);
+        if (patchErr) {
+          setSaving(false);
+          alert(
+            "The pin saved, but your notes and place name didn't: " + patchErr.message +
+            "\n\nYour words are still on screen — try Save again."
+          );
+          return;
+        }
       }
     }
     setSaving(false);
@@ -467,6 +507,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                   <button
                     key={s.value}
                     type="button"
+                    aria-pressed={on}
                     onClick={() => toggleStatus(s.value)}
                     className={`${chipBase} inline-flex items-center gap-1.5 ${on ? "border-transparent text-white" : "border-line text-muted hover:bg-canvas"}`}
                     style={on ? { background: s.color } : undefined}
@@ -486,6 +527,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                   <button
                     key={x.value}
                     type="button"
+                    aria-pressed={on}
                     onClick={() => toggleClass(x.value)}
                     className={on ? `${chipBase} border-brand bg-brand/10 font-medium text-brand` : `${chipBase} border-line text-muted hover:bg-canvas`}
                   >
@@ -532,7 +574,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               <button
                 key={`${r.name}|${r.region}`}
                 type="button"
-                onMouseDown={(e) => { e.preventDefault(); pickSearch(r); }}
+                // onMouseDown only prevents the blur; the real activation is
+                // onClick so Enter/Space and screen readers work.
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickSearch(r)}
                 className="flex w-full items-center justify-between gap-2 border-b border-line px-3.5 py-2.5 text-left transition last:border-0 hover:bg-canvas"
               >
                 <span className="text-sm font-medium text-ink">{r.name}</span>
@@ -660,9 +705,9 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                     ? `${chipBase} border-brand bg-brand/10 font-medium text-brand`
                     : `${chipBase} border-line text-muted hover:bg-canvas`;
                 return (
-                  <button key={x.label} type="button" onClick={() => toggle(x.value)} className={cls}>
+                  <button key={x.label} type="button" aria-pressed={on} onClick={() => toggle(x.value)} className={cls}>
                     {documented && on && (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
                         <path d="M20 6L9 17l-5-5" />
                       </svg>
                     )}

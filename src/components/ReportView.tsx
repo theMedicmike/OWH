@@ -330,7 +330,7 @@ export default function ReportView() {
             Where this veteran served, what is documented at those places, and when their health changed.
           </p>
           <div className="mt-3">
-            <ServiceTimeline data={packetTimeline} compact />
+            <ServiceTimeline data={packetTimeline} />
           </div>
         </section>
 

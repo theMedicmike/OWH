@@ -39,8 +39,20 @@ export default function OwnYourRecordCard() {
       supabase.from("check_ins").select("*, exposures(*)").order("date_start"),
       supabase.from("exposures").select("*"),
       supabase.from("conditions").select("*").order("created_at"),
-      supabase.from("corroborations").select("*"),
+      // Only the veteran's own exposure ids + a count. RLS also returns rows
+      // where ANOTHER member corroborated them, and those rows carry that
+      // person's member id — which must never land in a file the veteran is
+      // told to hand to a VSO, especially while the packet promises
+      // corroborators stay anonymous.
+      supabase.from("corroborations").select("exposure_id, witness_type, created_at"),
     ]);
+    // A failed query must not masquerade as an empty record in a file whose
+    // own note calls it "your complete record".
+    const failed = [member, checks, expos, conds, corr].find((r) => r.error);
+    if (failed?.error) {
+      setMsg(`Couldn't build a complete export: ${failed.error.message}. Nothing was downloaded — try again.`);
+      return null;
+    }
     return {
       exported_at: new Date().toISOString(),
       exported_from: "Connecting the Dots of Service — Operation Whole Health",
@@ -61,7 +73,7 @@ export default function OwnYourRecordCard() {
     setBusy("json"); setMsg(null);
     const bundle = await gather();
     setBusy(null);
-    if (!bundle) return;
+    if (!bundle) return; // gather() already surfaced why
     const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -74,9 +86,15 @@ export default function OwnYourRecordCard() {
 
   async function exportPrintable() {
     setBusy("print"); setMsg(null);
+    // Open the window SYNCHRONOUSLY inside the click — Safari blocks
+    // window.open unconditionally after an await, and Chrome does once the
+    // user-activation lapses during the five queries below.
+    const w = window.open("", "_blank");
+    if (!w) { setBusy(null); setMsg("Your browser blocked the pop-up — allow pop-ups for this site and try again."); return; }
+    w.document.write("<!doctype html><title>Building your archive…</title><p style=\"font:14px system-ui;padding:24px\">Building your archive…</p>");
     const b = await gather();
     setBusy(null);
-    if (!b) return;
+    if (!b) { w.close(); return; }
     const esc = (s: unknown) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c] as string));
     const m = b.member as Record<string, unknown> | null;
     const locs = b.locations as Record<string, unknown>[];
@@ -101,22 +119,35 @@ ${locs.map((l) => {
 <table><tr><th>Condition</th><th>Began</th><th>Claim status</th></tr>
 ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</td><td>${esc(c.claim_status)}</td></tr>`).join("")}</table>
 <p style="margin-top:28px;font-size:11px;color:#666">A self-prepared record — not a medical diagnosis or a legal opinion. Veterans Crisis Line: 988, then press 1.</p>`;
-    const w = window.open("", "_blank");
-    if (!w) { setMsg("Your browser blocked the pop-up — allow pop-ups and try again."); return; }
-    w.document.write(html); w.document.close(); w.focus(); w.print();
+    w.document.open(); w.document.write(html); w.document.close(); w.focus(); w.print();
     setMsg("Your printable archive is open — use your browser's Save as PDF.");
   }
 
   async function deleteEverything() {
     if (!user || confirm !== "DELETE") return;
     setBusy("delete"); setMsg(null);
+
+    // Uploads are keyed on the AUTH id, so clear them regardless of whether a
+    // member row exists — and page the listing, because list() returns only
+    // 100 by default and silently leaves the rest behind.
+    const names: string[] = [];
+    for (let offset = 0; ; offset += 1000) {
+      const page = await supabase.storage.from("records").list(user.id, { limit: 1000, offset });
+      if (page.error) { setBusy(null); setMsg(`Couldn't list your uploaded files: ${page.error.message}. Nothing was deleted.`); return; }
+      const batch = (page.data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder");
+      names.push(...batch.map((f) => `${user.id}/${f.name}`));
+      if ((page.data ?? []).length < 1000) break;
+    }
+    if (names.length) {
+      const { error: rmErr } = await supabase.storage.from("records").remove(names);
+      if (rmErr) { setBusy(null); setMsg(`Couldn't delete your uploaded files: ${rmErr.message}. Nothing else was deleted.`); return; }
+    }
+
     const { data: mem } = await supabase.from("members").select("id").eq("auth_id", user.id).maybeSingle();
     if (mem?.id) {
-      // check_ins/exposures/conditions cascade from members; remove uploads too.
-      const files = await supabase.storage.from("records").list(user.id);
-      const names = (files.data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder").map((f) => `${user.id}/${f.name}`);
-      if (names.length) await supabase.storage.from("records").remove(names);
-      await supabase.from("members").delete().eq("id", mem.id);
+      // check_ins / exposures / conditions / corroborations cascade from members.
+      const { error: delErr } = await supabase.from("members").delete().eq("id", mem.id);
+      if (delErr) { setBusy(null); setMsg(`Couldn't delete your record: ${delErr.message}. Nothing was removed — try again.`); return; }
     }
     setBusy(null);
     setMsg("Your record has been deleted. Signing you out.");
@@ -161,7 +192,7 @@ ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</
         </div>
 
         {msg && (
-          <div className="mt-4 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-xs font-medium text-success">{msg}</div>
+          <div role="status" aria-live="polite" className="mt-4 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-xs font-medium text-success">{msg}</div>
         )}
 
         {/* Delete — a real off-ramp */}
@@ -171,13 +202,22 @@ ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</
               Delete my record
             </button>
           ) : (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-              <div className="text-sm font-bold text-red-700">Delete everything?</div>
+            <div role="alertdialog" aria-labelledby="del-title" className="rounded-xl border border-red-200 bg-red-50 p-4">
+              <div id="del-title" className="text-sm font-bold text-red-700">Delete everything?</div>
               <p className="mt-1 text-xs leading-relaxed text-red-700/90">
                 This removes your locations, exposures, conditions, corroborations, and uploaded documents.
                 It cannot be undone. Download a copy first if you might want it later.
               </p>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-red-700/80">
+                Your sign-in email and the record of any consent you gave or withdrew are kept, because we
+                have to be able to show what you agreed to. To remove those too, email{" "}
+                <a className="underline" href="mailto:michael@operationwholehealth.org?subject=Delete%20my%20account">
+                  michael@operationwholehealth.org
+                </a>.
+              </p>
               <input
+                autoFocus
+                aria-label="Type DELETE to confirm"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="Type DELETE to confirm"

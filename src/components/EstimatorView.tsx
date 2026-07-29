@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
-import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG, NUTRIENT_NAME_TO_SLUG } from "@/lib/toxlibrary";
+import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG } from "@/lib/toxlibrary";
 import { EXPOSURE_LABEL } from "@/lib/education";
 
 // Every service-relevant heavy metal / metalloid, with where it stores and the
@@ -437,17 +437,14 @@ export default function EstimatorView() {
         </div>
 
         <div className={card}>
-          <div className="text-sm font-medium text-ink dark:text-zinc-100">Nutrients these metals can interfere with</div>
+          <div className="text-sm font-medium text-ink dark:text-zinc-100">Minerals these metals can displace</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {minerals.length ? (
-              minerals.map((o) => {
-                const s = NUTRIENT_NAME_TO_SLUG[o.toLowerCase()];
-                return s ? (
-                  <Link key={o} href={`/learn/nutrient/${s}`} className="rounded-md bg-success-soft px-2 py-1 text-xs font-medium text-success hover:brightness-95">{o} →</Link>
-                ) : (
-                  <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success">{o}</span>
-                );
-              })
+              // Plain spans: the nutrient deep-dives were removed from this
+              // documentation app, so linking here would 404.
+              minerals.map((o) => (
+                <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success">{o}</span>
+              ))
             ) : (
               <span className="text-sm text-muted">No clear depletions to flag yet.</span>
             )}

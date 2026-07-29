@@ -44,3 +44,16 @@ body {
 * {
   border-color: var(--color-line);
 }
+
+/* The claim packet is meant to be printed and handed to a VSO. Browsers strip
+   background colors by default, which would erase the service timeline
+   entirely — its bars, band, and onset diamonds are all backgrounds. Force
+   them to survive; the print:border fallbacks keep shapes visible even when a
+   printer or user setting still drops fills. */
+@media print {
+  .print-exact,
+  .print-exact * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
