@@ -7,8 +7,9 @@ import { ServiceRibbon } from "./Patriotic";
 import { EXPOSURE_LABEL, CONDITION_EXPOSURES } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
 import { recordProgress, conditionNextAction, VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
+import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 
-type CheckRow = { place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
+type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: { exposure_class: string }[] | null };
 type Cond = { label: string; claim_status: string };
 
 // Each logged exposure class points to its deep-dive page in the Exposure Library.
@@ -42,6 +43,10 @@ export default function JourneyView() {
   const [sel, setSel] = useState<{ type: "exp" | "cond"; key: string } | null>(null);
   const [condStatus, setCondStatus] = useState<Record<string, string>>({});
   const [condFiled, setCondFiled] = useState<Record<string, string>>({});
+  const [condOnset, setCondOnset] = useState<Record<string, number>>({});
+  const [svcStart, setSvcStart] = useState<number | null>(null);
+  const [svcEnd, setSvcEnd] = useState<number | null>(null);
+  const [onsetEdit, setOnsetEdit] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -52,9 +57,10 @@ export default function JourneyView() {
       const ss = m.data?.service_start ? new Date(m.data.service_start as string).getUTCFullYear() : null;
       const se = m.data?.service_end ? new Date(m.data.service_end as string).getUTCFullYear() : null;
       setYears(ss || se ? `${ss ?? "?"}–${se ?? "?"}` : null);
+      setSvcStart(ss); setSvcEnd(se);
 
       const [ci, ex, co, files] = await Promise.all([
-        supabase.from("check_ins").select("place_name, date_start, exposures(exposure_class)").order("date_start", { ascending: true }),
+        supabase.from("check_ins").select("place_name, date_start, date_end, exposures(exposure_class)").order("date_start", { ascending: true }),
         supabase.from("exposures").select("id, exposure_class"),
         supabase.from("conditions").select("label, claim_status").order("created_at"),
         supabase.storage.from("records").list(user.id),
@@ -74,6 +80,16 @@ export default function JourneyView() {
           if (r.filed_on) fm[r.label] = r.filed_on;
         }
         setCondFiled(fm);
+      }
+      // Onset years live in an optional column (migration 0012); read
+      // defensively so the timeline still renders before it's applied.
+      const onset = await supabase.from("conditions").select("label, onset_year");
+      if (!onset.error) {
+        const om: Record<string, number> = {};
+        for (const r of (onset.data ?? []) as { label: string; onset_year: number | null }[]) {
+          if (r.onset_year) om[r.label] = r.onset_year;
+        }
+        setCondOnset(om);
       }
       const ids = exRows.map((e) => e.id);
       if (ids.length) {
@@ -135,6 +151,49 @@ export default function JourneyView() {
     await supabase.from("conditions").update({ filed_on: value || null }).eq("label", label);
   }
 
+  // ── The timeline: the mission rendered as a screen ────────────────────────
+  // Tours collapse repeat check-ins at the same place+year into one bar.
+  const timeline: TimelineData = (() => {
+    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string> }>();
+    for (const r of rows) {
+      if (!r.date_start) continue;
+      const sy = new Date(r.date_start).getUTCFullYear();
+      const ey = r.date_end ? new Date(r.date_end).getUTCFullYear() : null;
+      const place = r.place_name || "Unnamed location";
+      const key = `${place}|${sy}`;
+      const entry = byKey.get(key) ?? { place, startYear: sy, endYear: ey, exposures: new Set<string>() };
+      if (ey && (!entry.endYear || ey > entry.endYear)) entry.endYear = ey;
+      for (const e of r.exposures ?? []) entry.exposures.add(e.exposure_class);
+      byKey.set(key, entry);
+    }
+    return {
+      serviceStart: svcStart,
+      serviceEnd: svcEnd,
+      tours: Array.from(byKey.values()).map((t) => ({
+        place: t.place, startYear: t.startYear, endYear: t.endYear, exposures: Array.from(t.exposures),
+      })),
+      conditions: conditions.map((c) => ({
+        label: c.label,
+        onsetYear: condOnset[c.label] ?? null,
+        linkedExposures: (CONDITION_EXPOSURES[c.label] ?? []).filter((ec) => classes.includes(ec)),
+      })),
+    };
+  })();
+
+  async function saveOnset(label: string, year: number | null) {
+    setCondOnset((prev) => {
+      const next = { ...prev };
+      if (year) next[label] = year; else delete next[label];
+      return next;
+    });
+    setOnsetEdit(null);
+    const { data: mem } = await supabase.from("members").select("id").eq("auth_id", user!.id).maybeSingle();
+    if (mem?.id) {
+      // No-op until migration 0012 is applied; the UI keeps working either way.
+      await supabase.from("conditions").update({ onset_year: year }).eq("member_id", mem.id).eq("label", label);
+    }
+  }
+
   // Completeness steps — shared with the dashboard so the two can't drift.
   const prog = recordProgress({
     hasService: !!(branch || years),
@@ -184,6 +243,63 @@ export default function JourneyView() {
           Print / Save as PDF to share
         </button>
       </div>
+
+      {/* ── Your service timeline — "a veteran is a timeline" ─────────────── */}
+      <section className="rounded-2xl border border-line bg-surface p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-base font-bold text-ink">Your service timeline</h2>
+          <span className="text-xs text-muted">Where you were · what was there · when your health changed</span>
+        </div>
+        <div className="mt-4">
+          <ServiceTimeline data={timeline} />
+        </div>
+
+        {/* Onset years — the half of the record that makes latency visible */}
+        {conditions.length > 0 && (
+          <div className="mt-5 border-t border-line pt-4 print:hidden">
+            <div className="text-xs font-semibold text-ink">When did each condition begin?</div>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+              Roughly is fine — the year you first noticed it or were diagnosed. This is what puts the
+              gap between your service and your symptoms on the record.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {conditions.map((c) => {
+                const y = condOnset[c.label];
+                const editing = onsetEdit === c.label;
+                return editing ? (
+                  <span key={c.label} className="inline-flex items-center gap-1 rounded-full border border-brand bg-white px-2 py-1">
+                    <span className="text-[11px] font-medium text-ink">{c.label}</span>
+                    <input
+                      type="number"
+                      autoFocus
+                      min={1940}
+                      max={new Date().getUTCFullYear()}
+                      defaultValue={y ?? ""}
+                      placeholder="Year"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveOnset(c.label, parseInt((e.target as HTMLInputElement).value) || null);
+                        if (e.key === "Escape") setOnsetEdit(null);
+                      }}
+                      onBlur={(e) => saveOnset(c.label, parseInt(e.target.value) || null)}
+                      className="w-16 rounded border border-line px-1 py-0.5 text-[11px] tabular-nums text-ink focus:border-brand focus:outline-none"
+                    />
+                  </span>
+                ) : (
+                  <button
+                    key={c.label}
+                    onClick={() => setOnsetEdit(c.label)}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
+                      y ? "border-accent/40 bg-accent/5 font-medium text-ink" : "border-dashed border-line text-muted hover:border-brand/40 hover:text-brand"
+                    }`}
+                  >
+                    {c.label} <span className="tabular-nums">{y ? `· ${y}` : "· add year"}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Arrival header */}
       <div className="overflow-hidden rounded-2xl bg-brand text-brand-foreground print:hidden">

@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
 import { ServiceRibbon } from "./Patriotic";
 import { downloadClaimPdf } from "@/lib/claimPdf";
-import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
+import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
+import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 
 
@@ -40,6 +41,7 @@ export default function ReportView() {
   const [corroByClass, setCorroByClass] = useState<Record<string, number>>({});
   const [records, setRecords] = useState<RecordFile[]>([]);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [condOnset, setCondOnset] = useState<Record<string, number>>({});
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -55,6 +57,17 @@ export default function ReportView() {
       const checks = (c ?? []) as CheckRow[];
       setRows(checks);
       setConditions((cond ?? []) as { label: string; claim_status: string }[]);
+
+      // Onset years (migration 0012) — read defensively; the packet still
+      // builds without them, just without the latency line.
+      const onset = await supabase.from("conditions").select("label, onset_year");
+      if (!onset.error) {
+        const om: Record<string, number> = {};
+        for (const r of (onset.data ?? []) as { label: string; onset_year: number | null }[]) {
+          if (r.onset_year) om[r.label] = r.onset_year;
+        }
+        setCondOnset(om);
+      }
 
       const map: Record<string, string[]> = {};
       const classOfExposure: Record<string, string> = {};
@@ -114,6 +127,34 @@ export default function ReportView() {
 
   const classesPresent = Object.keys(expoPlaces);
   const presumptiveConditions = conditions.filter((c) => CONDITION_BASIS[c.label]?.presumptive).length;
+
+  // Page one of the packet: the longitudinal record (SEC. 309's whole idea).
+  const packetTimeline: TimelineData = (() => {
+    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string> }>();
+    for (const r of rows) {
+      if (!r.date_start) continue;
+      const sy = new Date(r.date_start).getUTCFullYear();
+      const ey = r.date_end ? new Date(r.date_end).getUTCFullYear() : null;
+      const place = r.place_name || "Unnamed location";
+      const key = `${place}|${sy}`;
+      const entry = byKey.get(key) ?? { place, startYear: sy, endYear: ey, exposures: new Set<string>() };
+      if (ey && (!entry.endYear || ey > entry.endYear)) entry.endYear = ey;
+      for (const e of r.exposures ?? []) entry.exposures.add(e.exposure_class);
+      byKey.set(key, entry);
+    }
+    return {
+      serviceStart: member?.service_start ? new Date(member.service_start).getUTCFullYear() : null,
+      serviceEnd: member?.service_end ? new Date(member.service_end).getUTCFullYear() : null,
+      tours: Array.from(byKey.values()).map((t) => ({
+        place: t.place, startYear: t.startYear, endYear: t.endYear, exposures: Array.from(t.exposures),
+      })),
+      conditions: conditions.map((c) => ({
+        label: c.label,
+        onsetYear: condOnset[c.label] ?? null,
+        linkedExposures: (CONDITION_EXPOSURES[c.label] ?? []).filter((ec) => classesPresent.includes(ec)),
+      })),
+    };
+  })();
 
   // Contentions: conditions that line up with at least one logged exposure.
   const contentions = conditions
@@ -281,6 +322,17 @@ export default function ReportView() {
           Prepared from veteran-entered data. This is a self-reported record with documented-source citations to
           assist an accredited VSO and a clinician. It is not a diagnosis or a determination of service connection.
         </p>
+
+        {/* ── Page one: the service timeline ─────────────────────────────── */}
+        <section className="mt-5 break-inside-avoid rounded-lg border border-line p-4">
+          <div className="text-[13px] font-bold uppercase tracking-wide text-brand">Service timeline</div>
+          <p className="mt-0.5 text-xs text-muted">
+            Where this veteran served, what is documented at those places, and when their health changed.
+          </p>
+          <div className="mt-3">
+            <ServiceTimeline data={packetTimeline} compact />
+          </div>
+        </section>
 
         {/* Plain-language summary */}
         <div className="mt-5 rounded-lg border border-brand/20 bg-brand/5 p-4">
