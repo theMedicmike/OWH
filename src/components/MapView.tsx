@@ -7,6 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
 import { searchGazetteer, nearestPlace, type GazEntry } from "@/lib/gazetteer";
+import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 
 export type Site = {
   name: string;
@@ -39,20 +40,6 @@ const STATUS_COLOR: Record<string, string> = {
   emerging: "#E24B4A",
 };
 
-const EXPOSURES = [
-  { label: "Burn pits", value: "burn_pit" },
-  { label: "Heavy metals", value: "heavy_metal" },
-  { label: "Chemical / solvent", value: "chemical_solvent" },
-  { label: "Water contamination", value: "water_contamination" },
-  { label: "Pesticide / herbicide", value: "pesticide" },
-  { label: "Asbestos / silica", value: "asbestos_silica" },
-  { label: "Nerve agent", value: "nerve_agent" },
-  { label: "Particulate / dust", value: "particulate" },
-  { label: "Radiation / depleted uranium", value: "radiation" },
-  { label: "PFAS / AFFF", value: "pfas_afff" },
-  { label: "Gulf War agent", value: "gulf_war_agent" },
-];
-
 const STATUSES = [
   { label: "Recognized", value: "recognized", color: "#1D9E75" },
   { label: "Documented", value: "documented", color: "#BA7517" },
@@ -64,7 +51,7 @@ function fmt(lat: number, lng: number) {
 }
 
 function labelFor(value: string) {
-  return EXPOSURES.find((e) => e.value === value)?.label ?? value;
+  return EXPOSURE_LABEL[value] ?? value;
 }
 
 function yearOf(date: string | null): number | null {

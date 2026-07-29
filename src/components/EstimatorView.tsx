@@ -5,7 +5,8 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
-import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG, NUTRIENT_NAME_TO_SLUG } from "@/lib/toxlibrary";
+import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG, NUTRIENT_NAME_TO_SLUG } from "@/lib/toxlibrary";
+import { EXPOSURE_LABEL } from "@/lib/education";
 
 // Every service-relevant heavy metal / metalloid, with where it stores and the
 // vital trace minerals/nutrients it displaces or depletes. Heuristic, for the
@@ -118,19 +119,6 @@ const CONTAMINANT_ROLE: Record<string, Record<string, number>> = {
   "Aviation door gunner": { solv: 12 },
 };
 
-const EXPOSURE_LABEL: Record<string, string> = {
-  burn_pit: "Burn pits",
-  heavy_metal: "Heavy metals",
-  chemical_solvent: "Chemical / solvent",
-  water_contamination: "Water contamination",
-  pesticide: "Pesticide / herbicide",
-  asbestos_silica: "Asbestos / silica",
-  nerve_agent: "Nerve agent",
-  particulate: "Particulate / dust",
-  radiation: "Radiation / depleted uranium",
-  pfas_afff: "PFAS / AFFF",
-  gulf_war_agent: "Gulf War agent",
-};
 
 function band(v: number) {
   if (v >= 70) return { label: "very high", bar: "#E24B4A", text: "#A32D2D" };

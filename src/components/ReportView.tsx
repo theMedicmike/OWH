@@ -7,41 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
 import { ServiceRibbon } from "./Patriotic";
 import { downloadClaimPdf } from "@/lib/claimPdf";
-import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
+import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
+import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 
-const EXPOSURE_LABEL: Record<string, string> = {
-  burn_pit: "Burn pits",
-  heavy_metal: "Heavy metals",
-  chemical_solvent: "Chemical / solvent",
-  water_contamination: "Water contamination",
-  pesticide: "Pesticide / herbicide",
-  asbestos_silica: "Asbestos / silica",
-  nerve_agent: "Nerve agent",
-  particulate: "Particulate / dust",
-  radiation: "Radiation / depleted uranium",
-  pfas_afff: "PFAS / AFFF",
-  gulf_war_agent: "Gulf War agent",
-};
 
-const CONDITION_EXPOSURES: Record<string, string[]> = {
-  "Chronic rhinitis / sinusitis": ["burn_pit", "particulate", "chemical_solvent"],
-  "Asthma / reactive airway": ["burn_pit", "particulate", "chemical_solvent", "pfas_afff"],
-  "COPD / chronic bronchitis": ["burn_pit", "particulate"],
-  "Constrictive bronchiolitis": ["burn_pit", "particulate"],
-  "Respiratory or lung cancer": ["burn_pit", "radiation", "chemical_solvent", "particulate"],
-  "Other cancer": ["burn_pit", "radiation", "pesticide", "chemical_solvent", "heavy_metal", "pfas_afff"],
-  "Thyroid disorder": ["radiation", "chemical_solvent", "pesticide"],
-  "Kidney disease": ["heavy_metal", "radiation", "pfas_afff", "water_contamination"],
-  "Hypertension": ["heavy_metal", "chemical_solvent"],
-  "Neurological / cognitive (TBI)": ["heavy_metal", "nerve_agent"],
-  "Peripheral neuropathy": ["heavy_metal", "chemical_solvent", "nerve_agent", "pesticide"],
-  "Gut / GI disorder": ["heavy_metal", "pesticide", "water_contamination"],
-  "Autoimmune disorder": ["chemical_solvent", "pesticide", "heavy_metal"],
-  "Hormonal / reproductive": ["chemical_solvent", "pesticide", "radiation", "pfas_afff"],
-  "PTSD / mental health": ["nerve_agent", "gulf_war_agent"],
-};
 // Exposure classes that carry a recognized presumptive pathway.
-const RECOGNIZED = new Set(["burn_pit", "particulate", "pesticide", "radiation", "water_contamination", "gulf_war_agent"]);
 
 type ExpoRow = { id: string; exposure_class: string };
 type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: ExpoRow[] | null };
@@ -170,7 +140,7 @@ export default function ReportView() {
         })),
         exposures: classesPresent.map((c) => ({
           label: EXPOSURE_LABEL[c] ?? c,
-          presumptive: RECOGNIZED.has(c),
+          presumptive: RECOGNIZED_CLASSES.has(c),
           places: (expoPlaces[c] ?? []).join("; "),
           basis: EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile.",
         })),
@@ -366,7 +336,7 @@ export default function ReportView() {
                 <li key={c} className="text-sm">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{EXPOSURE_LABEL[c] ?? c}</span>
-                    {RECOGNIZED.has(c) && (
+                    {RECOGNIZED_CLASSES.has(c) && (
                       <span className="rounded bg-success-soft px-1.5 py-0.5 text-[11px] font-medium text-success">Presumptive pathway</span>
                     )}
                     <span className="text-xs text-muted">({(expoPlaces[c] ?? []).join("; ")})</span>

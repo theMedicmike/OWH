@@ -1,21 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "./AuthProvider";
+import { EXPOSURE_LABEL } from "@/lib/education";
 
-const EXPOSURE_LABEL: Record<string, string> = {
-  burn_pit: "Burn pits",
-  heavy_metal: "Heavy metals",
-  chemical_solvent: "Chemical / solvent",
-  water_contamination: "Water contamination",
-  pesticide: "Pesticide / herbicide",
-  asbestos_silica: "Asbestos / silica",
-  nerve_agent: "Nerve agent",
-  particulate: "Particulate / dust",
-  radiation: "Radiation / depleted uranium",
-  pfas_afff: "PFAS / AFFF",
-  gulf_war_agent: "Gulf War agent",
-};
 
 type Candidate = { exposure_id: string; place: string | null; ev_year: number | null; exposure_class: string };
 type Connection = {

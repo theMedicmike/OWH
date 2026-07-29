@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/navigation";
+import { searchGazetteer } from "@/lib/gazetteer";
+import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -10,24 +12,6 @@ const BRANCHES = [
   "Army", "Navy", "Marine Corps", "Air Force", "Space Force",
   "Coast Guard", "National Guard", "Reserves",
 ];
-
-const EXPOSURES = [
-  { label: "Burn pits / open-air fire",    value: "burn_pit" },
-  { label: "Heavy metals",                  value: "heavy_metal" },
-  { label: "Chemical / solvent",            value: "chemical_solvent" },
-  { label: "Water contamination",           value: "water_contamination" },
-  { label: "Pesticide / herbicide",         value: "pesticide" },
-  { label: "Asbestos / silica dust",        value: "asbestos_silica" },
-  { label: "Nerve agent",                   value: "nerve_agent" },
-  { label: "Particulate / dust storms",     value: "particulate" },
-  { label: "Radiation / depleted uranium",  value: "radiation" },
-  { label: "PFAS / AFFF firefighting foam", value: "pfas_afff" },
-  { label: "Gulf War agents",               value: "gulf_war_agent" },
-];
-
-const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(
-  EXPOSURES.map((e) => [e.value, e.label])
-);
 
 const CONDITIONS = [
   "Chronic rhinitis / sinusitis",
@@ -91,17 +75,12 @@ function regionFromSiteName(name: string): string {
   return parts[parts.length - 1].trim();
 }
 
-async function geocode(name: string, region: string): Promise<{ lat: number; lng: number }> {
-  try {
-    const q = [name, region].filter(Boolean).join(", ");
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
-      { headers: { "User-Agent": "ConnectingDots-OWH/1.0" } }
-    );
-    const json = await res.json();
-    if (json[0]) return { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) };
-  } catch { /* fall through */ }
-  return { lat: 0, lng: 0 };
+// Local-only geocoding. The old Nominatim lookup shipped every place a veteran
+// typed to a third party; the gazetteer keeps it in the app. Unknown places save
+// at 0,0 (unmapped) rather than leaking the query.
+function geocode(name: string, region: string): { lat: number; lng: number } {
+  const hit = searchGazetteer(name, [], 1)[0] ?? (region ? searchGazetteer(region, [], 1)[0] : undefined);
+  return hit ? { lat: hit.lat, lng: hit.lng } : { lat: 0, lng: 0 };
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -247,7 +226,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     try {
       for (const loc of locations) {
         if (!loc.name.trim() && loc.exposures.length === 0 && !loc.other.trim()) continue;
-        const coords = await geocode(loc.name, loc.region);
+        const coords = geocode(loc.name, loc.region);
         const year = parseInt(loc.fromYear) || new Date().getFullYear();
         const { data: newId, error: rpcErr } = await supabase.rpc("log_check_in", {
           p_lng: coords.lng,

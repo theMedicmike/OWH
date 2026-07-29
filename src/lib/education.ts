@@ -5,19 +5,43 @@
 // toxicological profiles, VA / PACT Act materials, and peer-reviewed literature.
 // Legal/claim citations live in citations.ts and are reused on these pages.
 
-export const EXPOSURE_LABEL: Record<string, string> = {
-  burn_pit: "Burn pits",
-  heavy_metal: "Heavy metals",
-  chemical_solvent: "Chemical / solvent",
-  water_contamination: "Water contamination",
-  pesticide: "Pesticide / herbicide",
-  asbestos_silica: "Asbestos / silica",
-  nerve_agent: "Nerve agent",
-  particulate: "Particulate / dust",
-  radiation: "Radiation / depleted uranium",
-  pfas_afff: "PFAS / AFFF",
-  gulf_war_agent: "Gulf War agent",
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// THE RECORD'S ONE BRAIN.
+// Exposure classes, their labels, and the condition↔exposure mapping live HERE
+// and nowhere else. Every view (map, intake, journey, health, dashboard,
+// buddies, estimator) and the claim packet must import from this file — copies
+// silently drift, and when they do, the screen the veteran trusts and the packet
+// they file disagree. That is disqualifying for a quasi-legal document.
+//
+// ⚠️ MAINTENANCE: CONDITION_EXPOSURES must track actual VA presumptive law as
+// the PACT Act and its rulemaking evolve. Assign an owner and review it on a set
+// cadence — a stale mapping quietly generates WRONG claims, which is worse than
+// generating none.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// The canonical ordered option list shown anywhere a veteran picks exposures.
+export const EXPOSURES: { label: string; value: string }[] = [
+  { label: "Burn pits", value: "burn_pit" },
+  { label: "Heavy metals", value: "heavy_metal" },
+  { label: "Chemical / solvent", value: "chemical_solvent" },
+  { label: "Water contamination", value: "water_contamination" },
+  { label: "Pesticide / herbicide", value: "pesticide" },
+  { label: "Asbestos / silica", value: "asbestos_silica" },
+  { label: "Nerve agent", value: "nerve_agent" },
+  { label: "Particulate / dust", value: "particulate" },
+  { label: "Radiation / depleted uranium", value: "radiation" },
+  { label: "PFAS / AFFF", value: "pfas_afff" },
+  { label: "Gulf War agent", value: "gulf_war_agent" },
+];
+
+export const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(
+  EXPOSURES.map((e) => [e.value, e.label]),
+);
+
+// Exposure classes that carry a recognized presumptive pathway.
+export const RECOGNIZED_CLASSES = new Set([
+  "burn_pit", "particulate", "pesticide", "radiation", "water_contamination", "gulf_war_agent",
+]);
 
 export type ExposureEdu = {
   short: string;

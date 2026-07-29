@@ -5,6 +5,11 @@ import {
   TOXICANTS, TOXICANT_BY_SLUG, ORGAN_BY_SLUG, NUTRIENT_BY_SLUG, prettySlug, LIBRARY_NOTE,
 } from "@/lib/toxlibrary";
 
+// NOTE: nutrient pages ("the foods that restore them") were removed from this
+// documentation app — dietary remediation advice is care guidance, not exposure
+// documentation, and it must not sit next to the founder's separate nutrition
+// work. The nutrients a toxicant DISPLACES stay, as plain biology, unlinked.
+
 export function generateStaticParams() {
   return TOXICANTS.map((t) => ({ slug: t.slug }));
 }
@@ -49,14 +54,17 @@ export default async function ToxicantPage({ params }: { params: Promise<{ slug:
         )}
 
         {t.nutrients.length > 0 && (
-          <Section title="Nutrients it interferes with — tap to learn the foods that restore them">
+          <Section title="Minerals it displaces in the body">
             <div className="flex flex-wrap gap-1.5">
-              {t.nutrients.map((n) => NUTRIENT_BY_SLUG[n] ? (
-                <Link key={n} href={`/learn/nutrient/${n}`} className="rounded-md bg-success-soft px-2.5 py-1 text-xs font-medium text-success hover:brightness-95">{NUTRIENT_BY_SLUG[n].name} →</Link>
-              ) : (
-                <span key={n} className="rounded-md bg-canvas px-2.5 py-1 text-xs text-muted">{prettySlug(n)}</span>
+              {t.nutrients.map((n) => (
+                <span key={n} className="rounded-md bg-canvas px-2.5 py-1 text-xs text-muted">
+                  {NUTRIENT_BY_SLUG[n]?.name ?? prettySlug(n)}
+                </span>
               ))}
             </div>
+            <p className="text-[11px] leading-relaxed text-faint">
+              Documented displacement, not a treatment plan — what to do about it is a conversation with your clinician.
+            </p>
           </Section>
         )}
 

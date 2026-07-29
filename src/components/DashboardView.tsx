@@ -5,22 +5,9 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
 import { ServiceRibbon, Seal250, RibbonDivider } from "./Patriotic";
-import { CONDITION_EXPOSURES } from "@/lib/education";
+import { CONDITION_EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 import { recordProgress } from "@/lib/nextaction";
 
-const EXPOSURE_LABEL: Record<string, string> = {
-  burn_pit: "Burn pits",
-  heavy_metal: "Heavy metals",
-  chemical_solvent: "Chemical / solvent",
-  water_contamination: "Water contamination",
-  pesticide: "Pesticide / herbicide",
-  asbestos_silica: "Asbestos / silica",
-  nerve_agent: "Nerve agent",
-  particulate: "Particulate / dust",
-  radiation: "Radiation / DU",
-  pfas_afff: "PFAS / AFFF",
-  gulf_war_agent: "Gulf War agent",
-};
 
 type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
 type Conn = { status: string; other_name: string | null; place: string | null; ev_year: number | null };

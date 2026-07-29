@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 
 const CONDITIONS = [
   "Chronic rhinitis / sinusitis",
@@ -23,39 +24,8 @@ const CONDITIONS = [
   "PTSD / mental health",
 ];
 
-const CONDITION_EXPOSURES: Record<string, string[]> = {
-  "Chronic rhinitis / sinusitis": ["burn_pit", "particulate", "chemical_solvent"],
-  "Asthma / reactive airway": ["burn_pit", "particulate", "chemical_solvent", "pfas_afff"],
-  "COPD / chronic bronchitis": ["burn_pit", "particulate"],
-  "Constrictive bronchiolitis": ["burn_pit", "particulate"],
-  "Respiratory or lung cancer": ["burn_pit", "radiation", "chemical_solvent", "particulate"],
-  "Other cancer": ["burn_pit", "radiation", "pesticide", "chemical_solvent", "heavy_metal", "pfas_afff"],
-  "Thyroid disorder": ["radiation", "chemical_solvent", "pesticide"],
-  "Kidney disease": ["heavy_metal", "radiation", "pfas_afff", "water_contamination"],
-  "Hypertension": ["heavy_metal", "chemical_solvent"],
-  "Neurological / cognitive (TBI)": ["heavy_metal", "nerve_agent"],
-  "Peripheral neuropathy": ["heavy_metal", "chemical_solvent", "nerve_agent", "pesticide"],
-  "Gut / GI disorder": ["heavy_metal", "pesticide", "water_contamination"],
-  "Autoimmune disorder": ["chemical_solvent", "pesticide", "heavy_metal"],
-  "Hormonal / reproductive": ["chemical_solvent", "pesticide", "radiation", "pfas_afff"],
-  "PTSD / mental health": ["nerve_agent", "gulf_war_agent"],
-};
 
-const EXPOSURE_LABEL: Record<string, string> = {
-  burn_pit: "Burn pits",
-  heavy_metal: "Heavy metals",
-  chemical_solvent: "Chemical / solvent",
-  water_contamination: "Water contamination",
-  pesticide: "Pesticide / herbicide",
-  asbestos_silica: "Asbestos / silica",
-  nerve_agent: "Nerve agent",
-  particulate: "Particulate / dust",
-  radiation: "Radiation / depleted uranium",
-  pfas_afff: "PFAS / AFFF",
-  gulf_war_agent: "Gulf War agent",
-};
 
-const RECOGNIZED = new Set(["burn_pit", "pesticide", "radiation", "water_contamination"]);
 const CLAIMS = ["none", "filed", "granted", "denied"];
 
 type Condition = { id: string; label: string; claim_status: string };
@@ -213,7 +183,7 @@ export default function HealthView() {
                           </span>
                           <span className="text-zinc-400">at</span>
                           <span className="text-zinc-600 dark:text-zinc-300">{(expoPlaces[e] ?? []).join(", ")}</span>
-                          {RECOGNIZED.has(e) && (
+                          {RECOGNIZED_CLASSES.has(e) && (
                             <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
                               may be PACT Act presumptive
                             </span>

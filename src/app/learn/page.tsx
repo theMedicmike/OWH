@@ -1,7 +1,7 @@
 import AppShell from "@/components/AppShell";
 import Link from "next/link";
 import { ServiceRibbon } from "@/components/Patriotic";
-import { TOXICANTS, NUTRIENTS, ORGANS, LIBRARY_NOTE } from "@/lib/toxlibrary";
+import { TOXICANTS, ORGANS, LIBRARY_NOTE } from "@/lib/toxlibrary";
 
 export const metadata = { title: "Exposure library" };
 
@@ -33,16 +33,15 @@ export default function LearnIndex() {
           <ServiceRibbon className="mb-4 w-40 rounded-full opacity-90" />
           <p className="text-sm leading-relaxed text-muted">
             A plain-language encyclopedia of what your service may have exposed you to — built on the
-            government&apos;s own record. Tap any toxicant, nutrient, or organ to learn where it comes
-            from, what it does in the body, the conditions the VA already links to it, and what to ask
-            your clinician.
+            government&apos;s own record. Tap any exposure or body system to learn where it comes from,
+            what it does in the body, the conditions the VA already links to it, and what to ask your
+            clinician. This is documentation for your record — not medical advice or a treatment plan.
           </p>
         </div>
 
         <Group title="Heavy metals" blurb="The 16 metals the app tracks — where they store and what they do." base="/learn" items={metals} />
         <Group title="Chemicals & contaminants" blurb="Burn pits, jet fuel, solvents, PFAS, dioxins, asbestos, radiation, and more." base="/learn" items={contaminants} />
-        <Group title="Nutrients" blurb="The minerals toxic metals push out — and the foods that restore them." base="/learn/nutrient" items={NUTRIENTS.map((n) => ({ slug: n.slug, name: n.name, short: n.role }))} />
-        <Group title="Organs & systems" blurb="What toxicants do to bone, marrow, brain, kidney, lungs, and more." base="/learn/organ" items={ORGANS.map((o) => ({ slug: o.slug, name: o.name, short: o.what }))} />
+        <Group title="Organs & systems" blurb="What these exposures do to bone, marrow, brain, kidney, lungs, and more." base="/learn/organ" items={ORGANS.map((o) => ({ slug: o.slug, name: o.name, short: o.what }))} />
 
         <p className="border-t border-line pt-4 text-xs leading-relaxed text-faint">{LIBRARY_NOTE} Veterans Crisis Line: dial 988, then press 1.</p>
       </div>
