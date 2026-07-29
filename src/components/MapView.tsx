@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
+import { searchGazetteer, nearestPlace, type GazEntry } from "@/lib/gazetteer";
 
 export type Site = {
   name: string;
@@ -68,19 +69,6 @@ function labelFor(value: string) {
 
 function yearOf(date: string | null): number | null {
   return date ? new Date(date).getUTCFullYear() : null;
-}
-
-async function reverseGeocode(lat: number, lng: number): Promise<string> {
-  try {
-    const r = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
-    );
-    const j = await r.json();
-    const parts = [j.locality || j.city, j.principalSubdivision, j.countryName].filter(Boolean);
-    return Array.from(new Set(parts)).join(", ");
-  } catch {
-    return "";
-  }
 }
 
 function wkbToLngLat(hex: string | null): [number, number] | null {
@@ -149,6 +137,25 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // When a known-site dot is clicked, we pin that exact site so its documented
   // exposures pre-select regardless of the service year the veteran chooses.
   const [pinnedSite, setPinnedSite] = useState<{ name: string; classes: string[] } | null>(null);
+  // A plain map click drops a PENDING pin + confirm chip (never the full panel —
+  // stray taps were spawning check-in drafts). The chip opens the draft.
+  const [pending, setPending] = useState<{ lng: number; lat: number } | null>(null);
+  // The veteran's own words — the primary evidence field on every check-in.
+  const [story, setStory] = useState("");
+  const [month, setMonth] = useState(0); // 0 = not sure; months matter for presumptives
+  const [searchQ, setSearchQ] = useState("");
+
+  // Known exposure sites double as gazetteer entries (search + local naming).
+  const gazExtras = useMemo<GazEntry[]>(() =>
+    sites.flatMap((s) => {
+      const ll = wkbToLngLat(s.geom);
+      return ll ? [{ name: s.name, region: "documented site", lat: ll[1], lng: ll[0] }] : [];
+    }), [sites]);
+  const searchResults = useMemo(() => searchGazetteer(searchQ, gazExtras), [searchQ, gazExtras]);
+  const pendingNear = useMemo(
+    () => (pending ? nearestPlace(pending.lat, pending.lng, gazExtras) : null),
+    [pending, gazExtras],
+  );
 
   // map filters
   const [activeClasses, setActiveClasses] = useState<Set<string>>(new Set());
@@ -176,6 +183,27 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setSelected([]);
     setOtherText("");
     setPinnedSite(null);
+    setStory("");
+    setMonth(0);
+  }
+
+  // Confirm chip → open the real check-in draft at the pending pin.
+  function beginDraft() {
+    if (!pending) return;
+    setDraft(pending);
+    setPending(null);
+  }
+
+  // Search pick: fly there; a documented site seeds a full draft from that site,
+  // anywhere else opens a draft at the base's coordinates.
+  function pickSearch(e: GazEntry) {
+    const ll: [number, number] = [e.lng, e.lat];
+    mapRef.current?.flyTo({ center: ll, zoom: 9 });
+    const site = sites.find((s) => s.name === e.name);
+    setPending(null);
+    if (site) startFromSite(site, ll);
+    else { setPinnedSite(null); setDraft({ lng: e.lng, lat: e.lat }); }
+    setSearchQ("");
   }
 
   // Clicking a known-exposure dot seeds the check-in from THAT site: its name,
@@ -262,14 +290,14 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     if (mapRef.current || !containerRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: "https://demotiles.maplibre.org/style.json",
+      style: "https://tiles.openfreemap.org/styles/liberty",
       center: [20, 25],
-      zoom: 1.3,
+      zoom: 1.6,
     });
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl(), "bottom-right");
     map.on("load", () => setMapLoaded(true));
-    map.on("click", (e) => { setPinnedSite(null); setDraft({ lng: e.lngLat.lng, lat: e.lngLat.lat }); });
+    map.on("click", (e) => { setPinnedSite(null); setPending({ lng: e.lngLat.lng, lat: e.lngLat.lat }); });
     return () => {
       map.remove();
       mapRef.current = null;
@@ -277,25 +305,29 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   }, []);
 
   // reverse-geocode the dropped pin
+  // Name the dropped pin from the LOCAL gazetteer — nothing leaves the device.
   useEffect(() => {
-    let active = true;
     if (!draft) {
       setDraftName("");
       return;
     }
-    // A pinned known site names itself — no need to reverse-geocode over it.
     if (pinnedSite) {
       setDraftName(pinnedSite.name);
       return;
     }
-    setDraftName("");
-    reverseGeocode(draft.lat, draft.lng).then((name) => {
-      if (active) setDraftName(name);
-    });
-    return () => {
-      active = false;
-    };
+    const near = nearestPlace(draft.lat, draft.lng, gazExtras);
+    setDraftName(near ? near.name : "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, pinnedSite]);
+
+  // Default the service-year slider to the veteran's own service start —
+  // never a hardcoded year that silently mislabels every record.
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("members").select("service_start").eq("auth_id", user.id).maybeSingle().then(({ data }) => {
+      if (data?.service_start) setYear(new Date(data.service_start).getUTCFullYear());
+    });
+  }, [user, supabase]);
 
   useEffect(() => {
     let active = true;
@@ -343,7 +375,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     }
   }, [sites, mapLoaded, activeClasses, activeStatuses, yearOn, filterYear]);
 
-  // draft marker
+  // draft / pending marker (gold while pending confirmation, blue once drafting)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -351,13 +383,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       draftMarkerRef.current.remove();
       draftMarkerRef.current = null;
     }
-    if (draft) {
+    const spot = draft ?? pending;
+    if (spot) {
       const el = document.createElement("div");
-      el.style.cssText =
-        "width:18px;height:18px;border-radius:50%;border:3px solid #fff;background:#185FA5;box-shadow:0 0 0 1px rgba(0,0,0,0.25)";
-      draftMarkerRef.current = new maplibregl.Marker({ element: el }).setLngLat([draft.lng, draft.lat]).addTo(map);
+      el.style.cssText = `width:18px;height:18px;border-radius:50%;border:3px solid #fff;background:${draft ? "#185FA5" : "#c1873d"};box-shadow:0 0 0 1px rgba(0,0,0,0.25)`;
+      draftMarkerRef.current = new maplibregl.Marker({ element: el }).setLngLat([spot.lng, spot.lat]).addTo(map);
     }
-  }, [draft]);
+  }, [draft, pending]);
 
   // render check-in markers (filtered)
   useEffect(() => {
@@ -384,7 +416,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   }, [checkins, mapLoaded, activeClasses, yearOn, filterYear]);
 
   async function addCheckin() {
-    if (!draft || !user || (selected.length === 0 && !otherText.trim())) return;
+    if (!draft || !user || (selected.length === 0 && !otherText.trim() && !story.trim())) return;
     setSaving(true);
     const { data: newId, error } = await supabase.rpc("log_check_in", {
       p_lng: draft.lng,
@@ -394,9 +426,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       p_exposures: selected,
     });
     if (!error && newId) {
-      const patch: { place_name?: string; notes?: string } = {};
+      const patch: { place_name?: string; notes?: string; date_start?: string } = {};
       if (draftName.trim()) patch.place_name = draftName.trim();
-      if (otherText.trim()) patch.notes = `Other exposure noted: ${otherText.trim()}`;
+      // The veteran's narrative leads; a free-text "other exposure" follows it.
+      const noteParts = [story.trim(), otherText.trim() ? `Other exposure noted: ${otherText.trim()}` : ""].filter(Boolean);
+      if (noteParts.length) patch.notes = noteParts.join("\n");
+      // Month-level dates when known — presumptive windows can turn on months.
+      if (month >= 1 && month <= 12) patch.date_start = `${year}-${String(month).padStart(2, "0")}-01`;
       if (Object.keys(patch).length > 0) {
         await supabase.from("check_ins").update(patch).eq("id", newId);
       }
@@ -492,8 +528,56 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         )}
       </div>
 
+      {/* Find your base — local gazetteer, nothing leaves the app */}
+      <div className="relative mb-3">
+        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-4 w-4"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /></svg>
+        </div>
+        <input
+          value={searchQ}
+          onChange={(e) => setSearchQ(e.target.value)}
+          placeholder="Find your base — type its name (e.g. Balad, Lejeune, Bagram)"
+          className="w-full rounded-xl border border-line bg-white py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+        />
+        {searchResults.length > 0 && (
+          <div className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-line bg-white shadow-lg">
+            {searchResults.map((r) => (
+              <button
+                key={`${r.name}|${r.region}`}
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); pickSearch(r); }}
+                className="flex w-full items-center justify-between gap-2 border-b border-line px-3.5 py-2.5 text-left transition last:border-0 hover:bg-canvas"
+              >
+                <span className="text-sm font-medium text-ink">{r.name}</span>
+                <span className={`flex-none text-[11px] ${r.region === "documented site" ? "font-semibold text-success" : "text-muted"}`}>
+                  {r.region === "documented site" ? "● documented" : r.region}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="relative">
         <div ref={containerRef} className="h-[520px] w-full overflow-hidden rounded-xl border border-line" />
+
+        {/* Confirm chip for a dropped pin — a stray tap never spawns the panel */}
+        {pending && !draft && (
+          <div className="absolute left-1/2 top-3 z-[3] flex max-w-[94%] -translate-x-1/2 items-center gap-2 rounded-full bg-white/95 py-1.5 pl-4 pr-1.5 shadow-lg ring-1 ring-line backdrop-blur">
+            <span className="truncate text-xs font-medium text-ink">
+              {pendingNear ? pendingNear.name : fmt(pending.lat, pending.lng)}
+            </span>
+            <button
+              onClick={beginDraft}
+              className="flex-none rounded-full bg-brand px-3 py-1.5 text-xs font-bold text-white transition hover:bg-brand-600"
+            >
+              Check in here
+            </button>
+            <button onClick={() => setPending(null)} aria-label="Dismiss pin" className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-muted hover:bg-canvas">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-3.5 w-3.5"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
+        )}
 
         <div className="absolute left-3 top-3 z-[2]">
           <button
@@ -537,16 +621,38 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <label className="mt-3 block text-xs text-muted">Service year: {year}</label>
             <input type="range" min={1945} max={2026} value={year} onChange={(e) => setYear(+e.target.value)} className="w-full" />
 
+            <label className="mt-1 block text-xs text-muted">Month, if you remember — months can matter for presumptive windows</label>
+            <select
+              value={month}
+              onChange={(e) => setMonth(+e.target.value)}
+              className="mt-1 w-full cursor-pointer appearance-none rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink focus:border-brand focus:bg-white focus:outline-none"
+            >
+              <option value={0}>Not sure</option>
+              {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+
+            <label className="mt-3 block text-sm font-semibold text-ink">In your own words — what were you doing here?</label>
+            <p className="mt-0.5 text-[11px] leading-snug text-faint">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>
+            <textarea
+              value={story}
+              onChange={(e) => setStory(e.target.value)}
+              rows={2}
+              placeholder="e.g. Convoy security out of the north gate; burn pit smoke drifted over our motor pool most nights."
+              className="mt-1.5 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
+            />
+
             {docSites.length > 0 ? (
               <>
-                <div className="mt-3 text-sm font-semibold text-ink">Documented exposures here</div>
+                <div className="mt-3 text-sm font-semibold text-ink">Documented near this spot — confirm yours</div>
                 <div className="mb-2 mt-1 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-2.5 py-1.5 text-xs text-success">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-3.5 w-3.5 flex-none">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
                   </svg>
                   <span>
-                    Confirmed at {docSites.slice(0, 2).join(", ")}
-                    {docSites.length > 2 ? ` +${docSites.length - 2} more` : ""}. We&apos;ve pre-selected them — confirm or adjust.
+                    Documented at {docSites.slice(0, 2).join(", ")}
+                    {docSites.length > 2 ? ` +${docSites.length - 2} more` : ""} — pre-checked below. Keep what matches your memory; uncheck anything that doesn&apos;t apply to you.
                   </span>
                 </div>
               </>
@@ -597,10 +703,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               {user ? (
                 <button
                   onClick={addCheckin}
-                  disabled={saving || (selected.length === 0 && !otherText.trim())}
+                  disabled={saving || (selected.length === 0 && !otherText.trim() && !story.trim())}
                   className="flex-1 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
                 >
-                  {saving ? "Saving…" : (selected.length || otherText.trim()) ? `Save check-in${selected.length ? ` (${selected.length})` : ""}` : "Pick at least one"}
+                  {saving ? "Saving…" : (selected.length || otherText.trim() || story.trim()) ? `Save check-in${selected.length ? ` (${selected.length})` : ""}` : "Add your words or an exposure"}
                 </button>
               ) : (
                 <div className="flex-1 text-xs text-muted">Sign in above to save this pin to your record.</div>
