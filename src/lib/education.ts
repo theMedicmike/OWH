@@ -5,6 +5,8 @@
 // toxicological profiles, VA / PACT Act materials, and peer-reviewed literature.
 // Legal/claim citations live in citations.ts and are reused on these pages.
 
+import { CONDITIONS as CONDITION_CATALOG } from "./conditions";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // THE RECORD'S ONE BRAIN.
 // Exposure classes, their labels, and the condition↔exposure mapping live HERE
@@ -365,7 +367,11 @@ export const CONDITION_CASCADE: Record<string, string> = {
 };
 
 // Which exposure classes are commonly studied in connection with each condition.
-export const CONDITION_EXPOSURES: Record<string, string[]> = {
+// LEGACY LABELS — the original 15-item list. Veterans who used the app before
+// the catalog expanded have these exact strings saved on their records, so they
+// must keep resolving or those records would silently lose their connections.
+// Nothing new writes these.
+const LEGACY_CONDITION_EXPOSURES: Record<string, string[]> = {
   "Chronic rhinitis / sinusitis": ["burn_pit", "particulate", "chemical_solvent"],
   "Asthma / reactive airway": ["burn_pit", "particulate", "chemical_solvent", "pfas_afff"],
   "COPD / chronic bronchitis": ["burn_pit", "particulate"],
@@ -381,6 +387,16 @@ export const CONDITION_EXPOSURES: Record<string, string[]> = {
   "Autoimmune disorder": ["chemical_solvent", "pesticide", "heavy_metal", "asbestos_silica"],
   "Hormonal / reproductive": ["chemical_solvent", "pesticide", "radiation", "pfas_afff"],
   "PTSD / mental health": ["nerve_agent", "gulf_war_agent"],
+};
+
+// The live mapping is DERIVED from the condition catalog (src/lib/conditions.ts)
+// so the catalog stays the one place a condition's documented associations are
+// declared. Legacy labels are merged underneath.
+export const CONDITION_EXPOSURES: Record<string, string[]> = {
+  ...LEGACY_CONDITION_EXPOSURES,
+  ...Object.fromEntries(
+    CONDITION_CATALOG.filter((c) => c.exposures.length > 0).map((c) => [c.label, c.exposures]),
+  ),
 };
 
 export type SolutionPillar = {

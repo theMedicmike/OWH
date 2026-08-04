@@ -13,22 +13,15 @@ const BRANCHES = [
   "Coast Guard", "National Guard", "Reserves",
 ];
 
+// A short, common starter set drawn from the ONE catalog — the full 95-item
+// list with search lives on step 4 ("Your conditions"), and this wizard points
+// there rather than maintaining a competing list.
 const CONDITIONS = [
-  "Chronic rhinitis / sinusitis",
-  "Asthma / reactive airway",
-  "COPD / chronic bronchitis",
-  "Constrictive bronchiolitis",
-  "Respiratory or lung cancer",
-  "Other cancer",
-  "Thyroid disorder",
-  "Kidney disease",
-  "Hypertension",
-  "Neurological / cognitive (TBI)",
-  "Peripheral neuropathy",
-  "Gut / GI disorder",
-  "Autoimmune disorder",
-  "Hormonal / reproductive",
-  "PTSD / mental health",
+  "Asthma", "Chronic sinusitis", "COPD", "Tinnitus", "Hearing loss",
+  "Back pain / degenerative disc", "Knee pain / instability", "PTSD",
+  "Depression", "Anxiety", "Sleep apnea", "Migraines / chronic headaches",
+  "Traumatic brain injury (TBI)", "High blood pressure", "Type 2 diabetes",
+  "GERD / acid reflux", "Peripheral neuropathy", "Chronic muscle or joint pain",
 ];
 
 const VA_RATINGS = ["Not rated yet", "0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"];
