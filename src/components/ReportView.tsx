@@ -10,6 +10,8 @@ import { downloadClaimPdf } from "@/lib/claimPdf";
 import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { latencyFor, type TimelineData } from "./ServiceTimeline";
 import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
+import { veteranWords, otherExposure } from "@/lib/veteranWords";
+import StatementCard from "./StatementCard";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 
 
@@ -18,16 +20,8 @@ import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/e
 type ExpoRow = { id: string; exposure_class: string };
 type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; notes?: string | null; exposures: ExpoRow[] | null };
 
-// Machine-generated note lines never print as the veteran's words.
-const MACHINE_NOTE = /^(Location not yet pinned|Location approximate|Other exposure noted:)/;
-function veteranWords(notes: string | null | undefined): string {
-  return (notes ?? "")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => l && !MACHINE_NOTE.test(l))
-    .join(" ")
-    .trim();
-}
+// veteranWords/otherExposure live in lib/veteranWords.ts — shared with the
+// standalone statement so the two can never filter differently.
 
 const EVIDENCE_LINE: Record<string, string> = {
   documented: "diagnosis in writing",
@@ -35,15 +29,6 @@ const EVIDENCE_LINE: Record<string, string> = {
   undocumented: "not yet documented in writing",
 };
 
-// The veteran's free-text exposure ("sodium dichromate at Qarmat Ali") must
-// reach the deliverable — it is often the most specific evidence they have.
-function otherExposure(notes: string | null | undefined): string | null {
-  for (const l of (notes ?? "").split("\n")) {
-    const m = l.trim().match(/^Other exposure noted:\s*(.+)/);
-    if (m) return m[1].trim();
-  }
-  return null;
-}
 const PRECISION_LINE: Record<string, string> = {
   in_service: "began during service",
   after_service: "began after separation",
@@ -363,6 +348,24 @@ export default function ReportView() {
           Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →
         </Link>
       </div>
+
+      {/* The veteran's own words as a standalone deliverable — verbatim, VSO-routed */}
+      <StatementCard
+        name={member?.display_name || user.email || "Veteran"}
+        branch={member?.branch ?? null}
+        years={years}
+        rows={rows.map((r) => ({
+          place: r.place_name || "A place I served",
+          range: rangeLabel(r.date_start, r.date_end),
+          exposures: (r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", "),
+          notes: r.notes ?? null,
+        }))}
+        conditions={conditions.map((c) => ({
+          label: c.label,
+          onset: condOnset[c.label] ?? null,
+          secondaryTo: condDetail[c.label]?.secondary_to ?? null,
+        }))}
+      />
 
       {/* How to actually file this — the bridge from packet to filed claim */}
       <div className="mb-4 rounded-xl border border-brand/20 bg-brand/5 p-5 print:hidden">

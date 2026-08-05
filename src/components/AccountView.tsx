@@ -7,6 +7,7 @@ import DocumentsCard from "./DocumentsCard";
 import CohortConsentCard from "./CohortConsentCard";
 import OwnYourRecordCard from "./OwnYourRecordCard";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
+import DD214Assist from "./DD214Assist";
 
 const BRANCHES = ["", "Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
 
@@ -191,6 +192,8 @@ export default function AccountView() {
       </div>
 
       <DocumentsCard />
+
+      <DD214Assist />
 
       <OwnYourRecordCard />
 
