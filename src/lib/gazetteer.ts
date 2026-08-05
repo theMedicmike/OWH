@@ -242,6 +242,59 @@ export const GAZETTEER: GazEntry[] = [
   { name: "Coast Guard Base Kodiak", region: "Alaska", lat: 57.75, lng: -152.5 },
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOT CAMP / BASIC TRAINING — the one place every veteran has been.
+//
+// Everybody remembers boot camp and the year they shipped, which makes it the
+// easiest possible first question and the first pin on the map. It is also not
+// trivia: several training installations carry documented exposures (Fort
+// McClellan's chemical-warfare training and PCBs, Fort Ord's Superfund status,
+// Great Lakes, Parris Island water), and a veteran who only ever "served
+// stateside" often has this as their single most relevant location.
+// ─────────────────────────────────────────────────────────────────────────────
+export const BOOT_CAMPS: Record<string, GazEntry[]> = {
+  Army: [
+    { name: "Fort Jackson", region: "South Carolina", lat: 34.02, lng: -80.94 },
+    { name: "Fort Moore (Fort Benning)", region: "Georgia", lat: 32.35, lng: -84.97 },
+    { name: "Fort Leonard Wood", region: "Missouri", lat: 37.74, lng: -92.13 },
+    { name: "Fort Sill", region: "Oklahoma", lat: 34.65, lng: -98.4 },
+    { name: "Fort Knox", region: "Kentucky", lat: 37.89, lng: -85.96 },
+    { name: "Fort Dix", region: "New Jersey", lat: 40.03, lng: -74.6 },
+    { name: "Fort McClellan", region: "Alabama", lat: 33.72, lng: -85.79 },
+    { name: "Fort Ord", region: "California", lat: 36.65, lng: -121.79 },
+    { name: "Fort Bliss", region: "Texas", lat: 31.81, lng: -106.42 },
+    { name: "Fort Polk (Fort Johnson)", region: "Louisiana", lat: 31.05, lng: -93.21 },
+  ],
+  "Marine Corps": [
+    { name: "MCRD Parris Island", region: "South Carolina", lat: 32.31, lng: -80.68 },
+    { name: "MCRD San Diego", region: "California", lat: 32.74, lng: -117.2 },
+  ],
+  Navy: [
+    { name: "Naval Station Great Lakes", region: "Illinois", lat: 42.31, lng: -87.85 },
+    { name: "Naval Training Center Orlando", region: "Florida", lat: 28.57, lng: -81.35 },
+    { name: "Naval Training Center San Diego", region: "California", lat: 32.73, lng: -117.2 },
+    { name: "Naval Training Center Great Lakes", region: "Illinois", lat: 42.31, lng: -87.85 },
+  ],
+  "Air Force": [
+    { name: "Lackland AFB (JBSA)", region: "Texas", lat: 29.39, lng: -98.62 },
+  ],
+  "Space Force": [
+    { name: "Lackland AFB (JBSA)", region: "Texas", lat: 29.39, lng: -98.62 },
+  ],
+  "Coast Guard": [
+    { name: "Coast Guard Training Center Cape May", region: "New Jersey", lat: 38.96, lng: -74.9 },
+  ],
+};
+
+// Guard and Reserve members go through their parent service's basic training.
+BOOT_CAMPS["National Guard"] = BOOT_CAMPS.Army;
+BOOT_CAMPS["Reserves"] = BOOT_CAMPS.Army;
+
+export function bootCampsFor(branch: string | null | undefined): GazEntry[] {
+  if (!branch) return [];
+  return BOOT_CAMPS[branch] ?? [];
+}
+
 // Search the gazetteer plus any runtime entries (e.g. known exposure sites).
 export function searchGazetteer(query: string, extra: GazEntry[] = [], limit = 8): GazEntry[] {
   const q = query.trim().toLowerCase();

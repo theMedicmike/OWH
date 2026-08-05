@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/navigation";
-import { searchGazetteer } from "@/lib/gazetteer";
+import { searchGazetteer, bootCampsFor } from "@/lib/gazetteer";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 
@@ -186,6 +186,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   const [endYear, setEndYear] = useState("");
   const [currentlyServing, setCurrentlyServing] = useState(false);
   const [mos, setMos] = useState("");
+  const [bootCamp, setBootCamp] = useState("");
+  const [bootCampYear, setBootCampYear] = useState("");
 
   // Step 2 state
   const [locations, setLocations] = useState<LocationEntry[]>([makeLocation()]);
@@ -275,11 +277,45 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         const fallback = await supabase.from("members").update(base).eq("id", memberId);
         if (fallback.error) throw new Error(fallback.error.message);
       }
+      await saveBootCamp();
       setStep(1);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  // Boot camp becomes the veteran's first check-in — a real pin, with whatever
+  // is documented at that installation already attached. Idempotent: re-running
+  // the wizard must never create a second one.
+  async function saveBootCamp() {
+    if (!bootCamp || bootCamp === "__other") return;
+    const entry = bootCampsFor(branch).find((b) => b.name === bootCamp);
+    if (!entry) return;
+    const placeName = `${entry.name}, ${entry.region}`;
+
+    const { data: existing } = await supabase.from("check_ins").select("id").eq("place_name", placeName).limit(1);
+    if (existing?.length) return;
+
+    const year = parseInt(bootCampYear) || parseInt(startYear);
+    const thisYear = new Date().getUTCFullYear();
+    if (!year || year < 1940 || year > thisYear) return; // never invent a date
+
+    // Documented exposures at that installation, if our site list knows it.
+    const site = sites.find(
+      (s) => s.name.toLowerCase().includes(entry.name.toLowerCase().replace(/ \(.*\)/, "")),
+    );
+    const classes = Array.from(new Set(site?.exposure_classes ?? []));
+
+    const { data: newId } = await supabase.rpc("log_check_in", {
+      p_lng: entry.lng, p_lat: entry.lat, p_year: year, p_conflict: null, p_exposures: classes,
+    });
+    if (newId) {
+      await supabase.from("check_ins").update({
+        place_name: placeName,
+        notes: "Basic training / boot camp.",
+      }).eq("id", newId);
     }
   }
 
@@ -502,6 +538,40 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                 {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
             </Field>
+
+            {/* Boot camp — the one place every veteran has been, and the
+                easiest possible first pin on the map. */}
+            {branch && (
+              <Field
+                label="Where did you go to boot camp?"
+                hint="Everybody remembers boot camp — and it counts. Some training posts carry documented exposures of their own."
+              >
+                <select className={selectCls} value={bootCamp} onChange={(e) => setBootCamp(e.target.value)}>
+                  <option value="">Select…</option>
+                  {bootCampsFor(branch).map((b) => (
+                    <option key={b.name} value={b.name}>{b.name} — {b.region}</option>
+                  ))}
+                  <option value="__other">Somewhere else / I&apos;ll add it on the map</option>
+                </select>
+                {bootCamp && bootCamp !== "__other" && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <label className="text-xs text-muted">What year?</label>
+                    <input
+                      className="w-28 rounded-xl border border-line bg-canvas px-3 py-2 text-sm tabular-nums text-ink focus:border-brand focus:bg-white focus:outline-none"
+                      type="number"
+                      min="1940"
+                      max={new Date().getFullYear()}
+                      placeholder={startYear || "YYYY"}
+                      value={bootCampYear}
+                      onChange={(e) => setBootCampYear(e.target.value)}
+                    />
+                    <span className="text-[11px] text-faint">
+                      We&apos;ll drop your first pin here — you can move or remove it any time.
+                    </span>
+                  </div>
+                )}
+              </Field>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Service start year">
