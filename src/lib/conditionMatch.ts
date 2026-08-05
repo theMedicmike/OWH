@@ -1,6 +1,6 @@
 import { EXPOSURE_LABEL } from "@/lib/education";
 import { defFor, PROGRAM_LABEL, type LinkType } from "@/lib/conditions";
-import { scopeFor } from "@/lib/presumptive";
+import { scopeFor, LEJEUNE_HEALTHCARE_NOTE } from "@/lib/presumptive";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONNECTING THE DOTS — the sentence, not the badge.
@@ -125,7 +125,12 @@ export function matchCondition(
   // tours, print the scope alongside every claim, and never assert a
   // presumption we cannot place them inside.
   const programs = def?.programs ?? [];
+  // Camp Lejeune HEALTH CARE (38 CFR §17.400) is cost-free care, NOT a
+  // disability presumptive — a different list and a different benefit. It gets
+  // its own sentence so the two are never blurred.
+  const healthcareOnly = programs.includes("lejeune_healthcare");
   const scoped = programs
+    .filter((p) => p !== "lejeune_healthcare")
     .map((p) => ({ p, s: scopeFor(p, tours.map((t) => ({ place: t.place, year: t.year }))) }))
     .filter((x) => x.s.status !== "out-of-scope");
 
@@ -142,6 +147,11 @@ export function matchCondition(
       (scoped.map((x) => x.s.note).filter(Boolean).length
         ? "\n\n" + scoped.map((x) => x.s.note).filter(Boolean).join(" ")
         : "");
+  }
+  // Health-care eligibility gets its own sentence — never merged into a
+  // sentence about disability presumptives.
+  if (healthcareOnly) {
+    ask = (ask ? ask + "\n\n" : "") + LEJEUNE_HEALTHCARE_NOTE;
   }
 
   return {

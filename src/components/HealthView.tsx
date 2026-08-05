@@ -10,6 +10,7 @@ import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 import { CONDITION_EXPOSURES } from "@/lib/education";
 import { matchCondition, type TourLite } from "@/lib/conditionMatch";
 import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
+import { asthmaPostServiceNote } from "@/lib/presumptive";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 4 — "Your conditions". Tap sheet + the connection to where you served.
@@ -404,7 +405,14 @@ export default function HealthView() {
                         </p>
                       )}
                       <p className="text-[13px] leading-relaxed text-ink">{m.sentence}</p>
-                      {m.ask && <p className="mt-2 text-[12px] font-semibold leading-relaxed text-accent">→ {m.ask}</p>}
+                      {m.ask && <p className="mt-2 whitespace-pre-line text-[12px] font-semibold leading-relaxed text-accent">→ {m.ask}</p>}
+                      {/* §1120(b)(1): the presumptive is asthma DIAGNOSED AFTER
+                          SERVICE — honor the qualifier we have the data for. */}
+                      {c.label === "Asthma" && asthmaPostServiceNote(c.onset_precision) && (
+                        <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[12px] leading-relaxed text-ink">
+                          {asthmaPostServiceNote(c.onset_precision)}
+                        </p>
+                      )}
                     </div>
                   )}
                   {m.kind === "event" && (() => {

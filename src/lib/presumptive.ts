@@ -57,7 +57,11 @@ export const LEJEUNE_SCOPE =
   "Requires 30 or more days — consecutive or not — at Camp Lejeune or MCAS New River between August 1, 1953 and December 31, 1987. Applies to veterans, reservists and National Guard. (38 CFR §3.307(a)(7).) The eight presumptive diseases are listed at 38 CFR §3.309(f). No VA presumption of exposure applies to contaminated water at any other installation.";
 
 export const GULF_WAR_SCOPE =
-  "38 CFR §3.317 covers a qualifying chronic disability only if no clinical diagnosis explains it — except chronic fatigue syndrome, fibromyalgia and functional gastrointestinal disorders, which the regulation names and which DO qualify. Symptoms must have lasted 6 months or more (§3.317(a)(4)), and must have appeared during Southwest Asia service or reached 10% or more by DECEMBER 31, 2026 (§3.317(a)(1)(i)) — ask your VSO about that deadline now, and whether VA has extended it.";
+  // The two gates that actually decide a §3.317 claim — the no-clinical-
+  // diagnosis rule (a)(1)(ii) and the 6-month chronicity rule (a)(4) — were
+  // both absent from the app before 2026-08. The deadline is appended
+  // separately by gulfWarScope() so it can never be edited away from here.
+  "38 CFR §3.317 covers a qualifying chronic disability only if NO clinical diagnosis explains it (§3.317(a)(1)(ii)) — except chronic fatigue syndrome, fibromyalgia and functional gastrointestinal disorders, which the regulation names and which DO qualify even though they are diagnoses. The symptoms must also have lasted 6 months or more, or come and gone across a 6-month period measured from when they first appeared (§3.317(a)(4)).";
 
 export const RADIATION_SCOPE =
   "A radiation presumption applies only to veterans who took part in a listed radiation-risk activity: atmospheric nuclear test participation; the occupation of Hiroshima or Nagasaki (8/6/1945–7/1/1946); POW in Japan; qualifying service at Paducah, Portsmouth or K-25; Amchitka before 1/1/1974; the Enewetak cleanup (1977–1980); Palomares (1/17/1966–3/31/1967); or Thule (1/21–9/25/1968). (38 CFR §3.309(d)(3)(ii).) Other radiation work — including radar, shipyard and depleted uranium — goes through a dose assessment under 38 CFR §3.311, not a presumption.";
@@ -114,8 +118,14 @@ export function lejeuneScope(tours: TourFacts[]): ScopeResult {
   };
 }
 
+// ⏰ 38 CFR §3.317(a)(1)(i). Grep-verified absent from the whole codebase
+// before 2026-08 — with under five months left to run.
+export const GULF_WAR_DEADLINE = "December 31, 2026";
+export const GULF_WAR_DEADLINE_LINE =
+  `⏰ A Gulf War qualifying chronic disability must have become manifest during Southwest Asia service, or to a degree of 10 percent or more not later than ${GULF_WAR_DEADLINE} (38 CFR §3.317(a)(1)(i)). Ask your VSO about this deadline now, and confirm whether VA has extended it.`;
+
 export function gulfWarScope(): ScopeResult {
-  return { status: "unknown", scope: GULF_WAR_SCOPE };
+  return { status: "unknown", scope: `${GULF_WAR_SCOPE} ${GULF_WAR_DEADLINE_LINE}` };
 }
 export function radiationScope(): ScopeResult {
   return {
@@ -134,6 +144,16 @@ export function scopeFor(program: string, tours: TourFacts[]): ScopeResult {
     case "radiation": return radiationScope();
     default: return { status: "unknown", scope: "" };
   }
+}
+
+// 38 U.S.C. §1120(b)(1) reads "Asthma that was diagnosed after service." The
+// app already asks when a condition began (onset_precision), so it can honor
+// the qualifier instead of printing a caveat nobody reads.
+export function asthmaPostServiceNote(onsetPrecision: string | null | undefined): string | null {
+  if (onsetPrecision === "in_service") {
+    return "You marked this as beginning while you were in. The PACT Act presumptive for asthma reads \"asthma that was DIAGNOSED AFTER SERVICE\" (38 U.S.C. §1120(b)(1)) — so the presumption may not be the right route here. That does not close the door: asthma that began in service is claimed by direct service connection instead. Ask your VSO which lane fits.";
+  }
+  return null;
 }
 
 // Camp Lejeune health-care eligibility (38 CFR §17.400) is COST-FREE CARE, not
