@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/navigation";
 import { searchGazetteer } from "@/lib/gazetteer";
+import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -174,6 +175,9 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [openDrop, setOpenDrop] = useState<string | null>(null);
+  // Guards against save-as-wipe: never write over a record we failed to read.
+  const [prefillOk, setPrefillOk] = useState(false);
+  const [condsLoaded, setCondsLoaded] = useState(false);
 
   // Step 1 state
   const [displayName, setDisplayName] = useState("");
@@ -200,14 +204,22 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     // (MOS and VA rating were being overwritten with blanks).
     (async () => {
       type M = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; va_healthcare?: boolean | null };
-      let data: M | null = (await supabase.from("members")
+      const wide = await supabase.from("members")
         .select("display_name, branch, service_start, service_end, mos, va_rating, va_healthcare")
-        .eq("auth_id", user.id).maybeSingle()).data;
-      if (!data) {
-        data = (await supabase.from("members")
+        .eq("auth_id", user.id).maybeSingle();
+      let data: M | null = wide.data;
+      let ok = !wide.error;
+      if (wide.error) {
+        // Pre-migration-0014 the wide select 42703s; the narrow one must work.
+        const narrow = await supabase.from("members")
           .select("display_name, branch, service_start, service_end")
-          .eq("auth_id", user.id).maybeSingle()).data;
+          .eq("auth_id", user.id).maybeSingle();
+        data = narrow.data;
+        ok = !narrow.error;
       }
+      // No row (brand-new member) is a SUCCESSFUL prefill of nothing; only a
+      // failed read blocks saving, because saving over an unread record wipes it.
+      setPrefillOk(ok);
       if (!data) return;
       if (data.display_name) setDisplayName(data.display_name);
       if (data.branch) setBranch(data.branch);
@@ -219,7 +231,9 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     })();
     supabase.from("conditions")
       .select("label")
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) return; // condsLoaded stays false → step 3 will not delete
+        setCondsLoaded(true);
         if (data?.length) setSelectedConditions(data.map((r) => r.label));
       });
   }, [user, supabase]);
@@ -245,12 +259,21 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         service_start: startYear ? `${startYear}-01-01` : null,
         service_end: (!currentlyServing && endYear) ? `${endYear}-12-31` : null,
       };
-      // MOS was collected and silently DROPPED for the app's whole life — it
-      // matters (duty-related exposure is weighed by MOS). Write it; if
-      // migration 0014 isn't applied yet, fall back so nothing else is lost.
+      // A failed prefill means we'd be overwriting fields we never read —
+      // that's how a save becomes a wipe. Refuse.
+      if (!prefillOk) {
+        throw new Error("Couldn't load your saved record — refresh the page before saving.");
+      }
+      // MOS was collected and silently DROPPED for the app's whole life. Write
+      // it; pre-migration-0014 the write fails with a missing-column error
+      // (PGRST204 on updates — NOT the 42703 text selects produce), so retry
+      // with the base payload and check THAT result too. Any other failure
+      // must stop the wizard, not silently advance.
       const withMos = await supabase.from("members").update({ ...base, mos: mos.trim() || null }).eq("id", memberId);
-      if (withMos.error && /column .* does not exist/i.test(withMos.error.message)) {
-        await supabase.from("members").update(base).eq("id", memberId);
+      if (withMos.error) {
+        if (!isMissingColumnError(withMos.error)) throw new Error(withMos.error.message);
+        const fallback = await supabase.from("members").update(base).eq("id", memberId);
+        if (fallback.error) throw new Error(fallback.error.message);
       }
       setStep(1);
     } catch (e: unknown) {
@@ -266,11 +289,25 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       // A record with an invented date is worse than an incomplete one — never
       // stamp "this year" into a legal record because a field was left blank.
       const toSave = locations.filter((l) => l.name.trim() || l.exposures.length > 0 || l.other.trim());
-      const missingYear = toSave.find((l) => !parseInt(l.fromYear));
-      if (missingYear) {
-        setSaving(false);
-        setError(`Add the year you arrived at ${missingYear.name.trim() || "each location"} — your best guess is fine. Even the year matters.`);
-        return;
+      const thisYear = new Date().getUTCFullYear();
+      for (const l of toSave) {
+        const name = l.name.trim() || "each location";
+        const fy = parseInt(l.fromYear);
+        // Truthiness isn't validation — "91" and "20244" would land in a legal
+        // record as real dates.
+        if (!fy || fy < 1940 || fy > thisYear) {
+          setSaving(false);
+          setError(`Add the year you arrived at ${name} (1940–${thisYear}) — your best guess is fine. Even the year matters.`);
+          return;
+        }
+        if (l.toYear.trim()) {
+          const ty = parseInt(l.toYear);
+          if (!ty || ty < fy || ty > thisYear) {
+            setSaving(false);
+            setError(`Check the year you left ${name} — it needs to be between ${fy} and ${thisYear}.`);
+            return;
+          }
+        }
       }
       for (const loc of toSave) {
         const coords = geocode(loc.name.trim(), sites);
@@ -327,7 +364,10 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       const keep = new Set(selectedConditions);
       const toRemove = have.filter((c) => !keep.has(c.label)).map((c) => c.id);
       const toAdd = selectedConditions.filter((l) => !haveLabels.has(l));
-      if (toRemove.length) {
+      // Deleting is only legitimate when the prefill actually loaded — if it
+      // failed, selectedConditions is empty and this would erase the veteran's
+      // entire health record (onset years, evidence status, claim history).
+      if (condsLoaded && toRemove.length) {
         await supabase.from("conditions").delete().in("id", toRemove);
       }
       if (toAdd.length > 0) {
@@ -336,11 +376,15 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         );
       }
       // The VA rating + healthcare answers were also collected-and-dropped.
-      // Best-effort: pre-migration-0014 this is a harmless no-op.
-      await supabase.from("members").update({
+      // Pre-migration-0014 the missing-column failure is expected and fine;
+      // anything else must surface instead of silently losing the answers.
+      const vaSave = await supabase.from("members").update({
         va_rating: vaRating || null,
         va_healthcare: vaCare,
       }).eq("id", memberId);
+      if (vaSave.error && !isMissingColumnError(vaSave.error)) {
+        throw new Error(vaSave.error.message);
+      }
       setStep(3);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong saving conditions.");

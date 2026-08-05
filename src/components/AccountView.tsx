@@ -6,6 +6,7 @@ import VerifyCard from "./VerifyCard";
 import DocumentsCard from "./DocumentsCard";
 import CohortConsentCard from "./CohortConsentCard";
 import OwnYourRecordCard from "./OwnYourRecordCard";
+import { isMissingColumnError } from "@/lib/supabaseErrors";
 
 const BRANCHES = ["", "Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
 
@@ -29,6 +30,7 @@ export default function AccountView() {
   const [units, setUnits] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveErr, setSaveErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -41,8 +43,10 @@ export default function AccountView() {
         .select("display_name, branch, service_start, service_end, population_layer, mos, va_rating, va_healthcare, units")
         .eq("auth_id", user.id).maybeSingle()).data;
       if (!data) {
+        // units has existed since 0001 — it MUST be in the fallback select, or
+        // a pre-0014 save would quietly wipe it to [].
         data = (await supabase.from("members")
-          .select("display_name, branch, service_start, service_end, population_layer")
+          .select("display_name, branch, service_start, service_end, population_layer, units")
           .eq("auth_id", user.id).maybeSingle()).data;
       }
       if (!data) {
@@ -74,16 +78,25 @@ export default function AccountView() {
       service_end: endYear ? `${endYear}-12-31` : null,
       units: units.split(",").map((u) => u.trim()).filter(Boolean),
     };
+    setSaveErr(null);
     const full = await supabase.from("members").update({
       ...base,
       mos: mos.trim() || null,
       va_rating: vaRating || null,
       va_healthcare: vaCare,
     }).eq("auth_id", user.id);
-    if (full.error && /column .* does not exist/i.test(full.error.message)) {
-      await supabase.from("members").update(base).eq("auth_id", user.id);
+    let err = full.error;
+    if (err && isMissingColumnError(err)) {
+      // Pre-migration-0014: save the base profile and check THAT result —
+      // updates fail with PGRST204, not the 42703 text the old regex expected,
+      // which made this fallback dead code and every save a silent no-op.
+      err = (await supabase.from("members").update(base).eq("auth_id", user.id)).error;
     }
     setBusy(false);
+    if (err) {
+      setSaveErr(`Couldn't save: ${err.message}`);
+      return;
+    }
     setSaved(true);
   }
 
@@ -173,6 +186,7 @@ export default function AccountView() {
             {busy ? "Saving…" : "Save profile"}
           </button>
           {saved && <span className="text-xs text-success">Saved.</span>}
+          {saveErr && <span role="status" className="text-xs font-medium text-red-600">{saveErr}</span>}
         </div>
       </div>
 

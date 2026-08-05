@@ -112,9 +112,20 @@ export default function DashboardView() {
     filedConditions: filedCount,
   });
 
+  const [reqErr, setReqErr] = useState<string | null>(null);
   async function respondReq(id: string, accept: boolean) {
-    await supabase.rpc("respond_buddy_connection", { p_connection_id: id, p_accept: accept });
+    setReqErr(null);
+    // The RPC never throws — it RETURNS 'accepted'/'declined' or a failure
+    // code ('no_member'/'not_found'/'forbidden'). Only a confirmed outcome
+    // may dismiss the card; a failed Accept must never look successful.
+    const { data, error } = await supabase.rpc("respond_buddy_connection", { p_connection_id: id, p_accept: accept });
+    if (error || (data !== "accepted" && data !== "declined")) {
+      setReqErr("That didn't go through — try again in a moment.");
+      return;
+    }
+    const req = pendingReqs.find((r) => r.id === id);
     setPendingReqs((prev) => prev.filter((r) => r.id !== id));
+    if (data === "accepted" && req) setBuddies((prev) => [...prev, { ...req, status: "accepted" }]);
   }
 
   return (
@@ -162,6 +173,7 @@ export default function DashboardView() {
       {pendingReqs.length > 0 && (
         <div className="rounded-xl border border-accent/40 bg-accent/5 p-5">
           <div className="text-xs font-semibold uppercase tracking-wide text-accent">Battle buddies</div>
+          {reqErr && <p role="status" className="mt-1 text-xs font-medium text-red-600">{reqErr}</p>}
           {pendingReqs.map((r) => (
             <div key={r.id} className="mt-2 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-ink">

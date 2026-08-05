@@ -224,6 +224,8 @@ export default function JourneyView() {
     connectedConditions: connectedConds.size,
     corroborations: corr,
     hasDD214: hasRecord,
+    // Keep in lockstep with the dashboard — same inputs, same step count.
+    filedConditions: conditions.filter((c) => c.claim_status && c.claim_status !== "none").length,
   });
   const doneCount = prog.done;
   const pct = prog.pct;

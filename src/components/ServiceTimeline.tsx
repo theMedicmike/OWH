@@ -38,9 +38,12 @@ export type TimelineData = {
 // Latency: years between the earliest logged exposure that is linked to a
 // condition and that condition's onset. Stated as a fact, never as causation.
 export function latencyFor(cond: TimelineCondition, tours: TimelineTour[]): { years: number; place: string; year: number } | null {
-  if (!cond.onsetYear || cond.linkedExposures.length === 0) return null;
+  // Same sanity gate as the drawing code — otherwise one bad year that the
+  // chart quietly hides still prints "1821 years after..." into the PDF.
+  if (!sane(cond.onsetYear) || cond.linkedExposures.length === 0) return null;
   let best: { place: string; year: number } | null = null;
   for (const t of tours) {
+    if (!sane(t.startYear)) continue;
     if (!t.exposures.some((e) => cond.linkedExposures.includes(e))) continue;
     if (!best || t.startYear < best.year) best = { place: t.place, year: t.startYear };
   }

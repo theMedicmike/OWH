@@ -134,6 +134,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [searchQ, setSearchQ] = useState("");
   const draftRef = useRef<{ lng: number; lat: number } | null>(null);
   const yearSeeded = useRef(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   // Known exposure sites double as gazetteer entries (search + local naming).
   const gazExtras = useMemo<GazEntry[]>(() =>
@@ -332,6 +333,15 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // re-registering the map listener.
   useEffect(() => { draftRef.current = draft; }, [draft]);
 
+  // Below the side-by-side breakpoint the panel opens BELOW a 520px map with
+  // no visual cue — "Check in here" looked like it did nothing. Bring it into
+  // view the moment a draft opens.
+  useEffect(() => {
+    if (draft && typeof window !== "undefined" && window.innerWidth < 1024) {
+      panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [draft]);
+
   // Seed the service-year slider from the veteran's own service start — ONCE.
   // Supabase hands React a new user object on every token refresh; without the
   // ref guard that would silently reset a year the veteran had dragged, and
@@ -435,6 +445,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
   async function addCheckin() {
     if (!draft || !user || (selected.length === 0 && !otherText.trim() && !story.trim())) return;
+    // A typed-but-invalid departure year must block the save, not vanish.
+    if (endYear.trim() !== "") {
+      const ey = parseInt(endYear);
+      if (!ey || ey < year || ey > new Date().getUTCFullYear()) return;
+    }
     setSaving(true);
     const { data: newId, error } = await supabase.rpc("log_check_in", {
       p_lng: draft.lng,
@@ -574,6 +589,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           placeholder="Find your base — type its name (e.g. Balad, Lejeune, Bagram)"
           className="w-full rounded-xl border border-line bg-white py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
         />
+        <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
+          Search covers every major installation, stateside and overseas. The dots on the map are only the
+          sites with <span className="font-medium text-muted">documented</span> exposures — if your base
+          isn&apos;t a dot, it still belongs on your record: find it here or drop the pin yourself.
+        </p>
         {searchResults.length > 0 && (
           <div className="absolute z-30 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-line bg-white shadow-lg">
             {searchResults.map((r) => (
@@ -648,7 +668,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         </div>
 
         {draft && (
-          <div className="mt-3 w-full rounded-xl border border-line bg-white p-4 shadow-lg lg:mt-0 lg:max-h-[520px] lg:w-[340px] lg:flex-none lg:overflow-y-auto">
+          <div ref={panelRef} className="mt-3 w-full scroll-mt-16 rounded-xl border border-line bg-white p-4 shadow-lg lg:mt-0 lg:max-h-[520px] lg:w-[340px] lg:flex-none lg:overflow-y-auto">
             <ServiceRibbon className="mb-3 rounded-full opacity-90" />
             <div className="text-sm font-semibold text-ink">New check-in</div>
 
@@ -681,12 +701,22 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <input
               type="number"
               min={1945}
-              max={2026}
+              max={new Date().getUTCFullYear()}
               value={endYear}
               onChange={(e) => setEndYear(e.target.value)}
-              placeholder={`e.g. ${Math.min(year + 1, 2026)}`}
+              placeholder={`e.g. ${Math.min(year + 1, new Date().getUTCFullYear())}`}
               className="mt-1 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm tabular-nums text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
             />
+            {endYear.trim() !== "" && (() => {
+              const ey = parseInt(endYear);
+              const bad = !ey || ey < year || ey > new Date().getUTCFullYear();
+              // Silently discarding a typed year is how records lie — say it.
+              return bad ? (
+                <p role="status" className="mt-1 text-[11px] font-medium text-red-600">
+                  The year you left needs to be between {year} and {new Date().getUTCFullYear()}.
+                </p>
+              ) : null;
+            })()}
 
             <label className="mt-3 block text-sm font-semibold text-ink">In your own words — what were you doing here?</label>
             <p className="mt-0.5 text-[11px] leading-snug text-faint">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>

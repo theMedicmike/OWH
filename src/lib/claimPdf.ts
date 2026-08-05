@@ -35,6 +35,18 @@ const RIBBON = [
   [158, 42, 43], [243, 234, 214], [58, 110, 165], [193, 135, 61], [58, 110, 165], [243, 234, 214], [158, 42, 43],
 ] as [number, number, number][];
 
+// jsPDF's built-in helvetica is cp1252 — emoji or non-Latin glyphs in the
+// veteran's narrative would print as garbage inside a quoted line. Map the
+// common typographic characters, drop the rest.
+function sanitize(s: string): string {
+  return s
+    .replace(/[‘’ʼ]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[–—]/g, "-")
+    .replace(/…/g, "...")
+    .replace(/[^\x00-\xFF]/g, "");
+}
+
 function blobToDataURL(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -106,7 +118,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     doc.setFont("helvetica", style);
     doc.setFontSize(size);
     doc.setTextColor(color[0], color[1], color[2]);
-    const lines = doc.splitTextToSize(s, contentW - indent) as string[];
+    const lines = doc.splitTextToSize(sanitize(s), contentW - indent) as string[];
     for (const ln of lines) {
       ensure(lh);
       doc.text(ln, margin + indent, y);
@@ -122,7 +134,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(size);
     doc.setTextColor(color[0], color[1], color[2]);
-    const lines = doc.splitTextToSize(s, contentW - 16) as string[];
+    const lines = doc.splitTextToSize(sanitize(s), contentW - 16) as string[];
     lines.forEach((ln, i) => {
       ensure(lh);
       if (i === 0) {

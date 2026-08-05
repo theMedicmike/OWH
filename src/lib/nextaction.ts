@@ -81,8 +81,9 @@ export type RecordState = {
   connectedConditions: number;
   corroborations: number;
   hasDD214: boolean;
-  /** conditions the veteran has marked filed/granted/denied — the record's afterlife */
-  filedConditions?: number;
+  /** conditions the veteran has marked filed/granted/denied — the record's afterlife.
+   *  REQUIRED so no caller can silently drift from the others' step math. */
+  filedConditions: number;
 };
 
 export type RecordStep = {
