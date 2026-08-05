@@ -255,7 +255,10 @@ export default function ReportView() {
         }),
         exposures: classesPresent.map((c) => ({
           label: EXPOSURE_LABEL[c] ?? c,
-          presumptive: RECOGNIZED_CLASSES.has(c),
+          // NEVER derive presumptive status from the exposure class — a
+          // presumption belongs to a veteran whose service meets specific
+          // locations and dates. The packet states what is documented.
+          presumptive: false,
           places: (expoPlaces[c] ?? []).join("; "),
           basis: EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile.",
         })),
@@ -471,8 +474,8 @@ export default function ReportView() {
             You logged service at {rows.length} location{rows.length === 1 ? "" : "s"}. Documented exposures include{" "}
             {classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.{" "}
             {conditions.length > 0
-              ? `Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.`
-              : "Add your conditions to see which carry a recognized presumptive pathway."}
+              ? `${presumptiveConditions > 0 ? `${presumptiveConditions} of them ${presumptiveConditions === 1 ? "appears" : "appear"} on a VA presumptive list for some veterans — whether that applies here depends on where and when this veteran served, which an accredited VSO should confirm.` : "Whether any of them carries a presumptive pathway depends on where and when this veteran served — a question for an accredited VSO."}`
+              : "Add your conditions to see which are studied alongside your documented exposures."}
           </p>
           <p className="mt-2 text-sm font-medium text-ink">
             Your next step: bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to
@@ -530,9 +533,8 @@ export default function ReportView() {
                 <li key={c} className="text-sm">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{EXPOSURE_LABEL[c] ?? c}</span>
-                    {RECOGNIZED_CLASSES.has(c) && (
-                      <span className="rounded bg-success-soft px-1.5 py-0.5 text-[11px] font-medium text-success">Presumptive pathway</span>
-                    )}
+                    {/* No badge from the class alone — scope decides, and the
+                        packet must not imply eligibility it can't verify. */}
                     <span className="text-xs text-muted">({(expoPlaces[c] ?? []).join("; ")})</span>
                   </div>
                   <div className="mt-0.5 text-xs leading-relaxed text-muted">{EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}</div>
@@ -690,7 +692,7 @@ export default function ReportView() {
           This packet assembles veteran-entered facts with documented sources. It states associations and presumptive
           pathways; it does not assert medical causation, which requires a licensed clinician&apos;s opinion. Citations
           are general and depend on your specific dates and locations — confirm with your VSO. Sources: PACT Act of
-          2022, 38 CFR Part 3, Camp Lejeune Justice Act, and ATSDR toxicological profiles (VA.gov, June 2026). Veterans
+          2022 (38 U.S.C. §§1116, 1119, 1120), 38 CFR §§3.307, 3.309, 3.311, 3.317, 3.320, and ATSDR toxicological profiles. Veterans
           Crisis Line: dial 988, then press 1.
         </p>
       </div>

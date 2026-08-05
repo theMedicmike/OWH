@@ -19,7 +19,7 @@ export default function TrustPage() {
       <H>Where the science comes from</H>
       <P>
         The exposures and conditions in this app are grounded in documented, public sources: the PACT Act
-        of 2022, 38 CFR Part 3, the Camp Lejeune Justice Act, VA presumptive lists, and ATSDR
+        of 2022, 38 CFR Part 3 (§§3.307, 3.309, 3.311, 3.317, 3.320), VA presumptive lists, and ATSDR
         toxicological profiles. Every known site is labeled honestly — <strong>recognized</strong> (the
         government concedes the link), <strong>documented</strong> (a federal agency finding or
         peer-reviewed study), or <strong>emerging</strong> (a real but not-yet-recognized link). We will

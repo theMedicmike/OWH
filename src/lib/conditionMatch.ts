@@ -1,5 +1,6 @@
-import { EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
+import { EXPOSURE_LABEL } from "@/lib/education";
 import { defFor, PROGRAM_LABEL, type LinkType } from "@/lib/conditions";
+import { scopeFor } from "@/lib/presumptive";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONNECTING THE DOTS — the sentence, not the badge.
@@ -115,15 +116,33 @@ export function matchCondition(
     sentence += ` The same is documented at ${list(otherPlaces)}.`;
   }
 
-  // Presumptive programs → a question for a VSO, never a verdict.
+  // Presumptive programs → a scoped QUESTION for a VSO, never a verdict.
+  //
+  // This previously read `... || true`, which made the filter unconditional:
+  // every program tag printed for every veteran regardless of where or when
+  // they served. A presumption belongs to a veteran whose service meets
+  // specific locations and dates — so we now check the veteran's OWN logged
+  // tours, print the scope alongside every claim, and never assert a
+  // presumption we cannot place them inside.
   const programs = def?.programs ?? [];
-  const relevant = programs.filter((p) =>
-    p === "gulf_war" ? true : classes.some((c) => RECOGNIZED_CLASSES.has(c)) || true,
-  );
-  const ask =
-    relevant.length > 0
-      ? `Ask an accredited VSO whether this falls under ${list(relevant.map((p) => PROGRAM_LABEL[p] ?? p))}. Dates, locations, and your service details decide it — and only VA decides it.`
-      : undefined;
+  const scoped = programs
+    .map((p) => ({ p, s: scopeFor(p, tours.map((t) => ({ place: t.place, year: t.year }))) }))
+    .filter((x) => x.s.status !== "out-of-scope");
+
+  let ask: string | undefined;
+  if (scoped.length > 0) {
+    const names = list(scoped.map((x) => PROGRAM_LABEL[x.p] ?? x.p));
+    const anyInScope = scoped.some((x) => x.s.status === "in-scope");
+    ask =
+      (anyInScope
+        ? `Your logged service may fall inside ${names} — ask an accredited VSO to confirm it. Only VA decides.`
+        : `Ask an accredited VSO whether your service brings this under ${names}. Nothing you've logged settles it either way.`) +
+      "\n\n" +
+      scoped.map((x) => x.s.scope).filter(Boolean).join("\n\n") +
+      (scoped.map((x) => x.s.note).filter(Boolean).length
+        ? "\n\n" + scoped.map((x) => x.s.note).filter(Boolean).join(" ")
+        : "");
+  }
 
   return {
     kind: "place",

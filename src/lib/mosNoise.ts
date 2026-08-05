@@ -15,8 +15,28 @@
 // "applicability is for the rater to determine."
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ⚠️ GATED OFF — 2026-08 accuracy audit.
+//
+// Three findings, any one of which is disqualifying for a document a rater
+// reads: (1) this file invented a fourth tier, "High", which appears in NO VA
+// publication (the listing uses Low / Moderate / Highly Probable); (2) two Air
+// Force codes here (3F0X1, 3F5X1) do not appear in the listing at all — it
+// predates the 3S→3F conversion; (3) the claimed review date could not be
+// substantiated: the authoritative listing lives on VBA's INTRANET
+// (M21-1 V.iii.2.B.1.b), and the only publicly obtainable version is the
+// attachment to VA Fast Letter 10-35 (2 Sep 2010). Several ratings here are
+// contested between extractions.
+//
+// UNTIL an accredited VSO verifies these rows against the current listing,
+// nothing here prints. Under-claiming costs a veteran a conversation;
+// over-claiming a noise rating costs them credibility with the rater.
+//
+// TO ENABLE: verify every row against the official listing, correct the tiers
+// to the real three, then set this true.
+export const MOS_NOISE_ENABLED = false;
+
 export type NoiseRating = "Low" | "Moderate" | "High" | "Highly Probable";
-export const MOS_NOISE_REVIEWED = "2026-08";
+export const MOS_NOISE_REVIEWED = "VA Fast Letter 10-35 attachment, 2 Sep 2010 — NOT yet re-verified against VA's current listing";
 
 type Row = { rating: NoiseRating; title: string };
 
@@ -73,9 +93,9 @@ const TABLE: Record<string, Record<string, Row>> = {
     "2W1X1": { rating: "Highly Probable", title: "Aircraft Armament Systems" },
     "3E8X1": { rating: "Highly Probable", title: "Explosive Ordnance Disposal" },
     "1C1X1": { rating: "Moderate", title: "Air Traffic Control" },
-    "2T1X1": { rating: "Moderate", title: "Ground Transportation" },
-    "3F0X1": { rating: "Low", title: "Personnel" },
-    "3F5X1": { rating: "Low", title: "Administration" },
+    // 2T1X1 rating contested between extractions — title agreed, rating held.
+    "2T1X1": { rating: "Moderate", title: "Vehicle Operations" },
+    // 3F0X1 / 3F5X1 REMOVED — no 3F-series AFSC appears in the listing.
   },
   "Coast Guard": {
     "GM": { rating: "Highly Probable", title: "Gunner's Mate" },
@@ -90,7 +110,8 @@ const TABLE: Record<string, Record<string, Row>> = {
 // Guard/Reserve members carry their parent-service codes.
 TABLE["National Guard"] = TABLE.Army;
 TABLE["Reserves"] = TABLE.Army;
-TABLE["Space Force"] = TABLE["Air Force"];
+// Space Force alias REMOVED — no VA source states that Space Force codes are
+// adjudicated against the Air Force portion of a 2010 listing.
 
 const WORDS: Record<string, string> = {
   ALPHA: "A", BRAVO: "B", CHARLIE: "C", DELTA: "D", ECHO: "E", FOXTROT: "F",
@@ -127,6 +148,7 @@ export function normalizeMos(raw: string, branch: string): string | null {
 export type NoiseHit = { code: string; title: string; rating: NoiseRating };
 
 export function mosNoiseLookup(rawMos: string | null | undefined, branch: string | null | undefined): NoiseHit | null {
+  if (!MOS_NOISE_ENABLED) return null; // gated until VSO-verified — see header
   if (!rawMos || !branch) return null; // missing/ambiguous branch = no match, ever
   const byBranch = TABLE[branch];
   if (!byBranch) return null;

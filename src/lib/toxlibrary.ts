@@ -331,7 +331,9 @@ export const TOXICANTS: Toxicant[] = [
     untreated: "Blood, kidney, liver, and neurological conditions can develop years later; an exposure record matters for both care and a claim.",
     tests: ["CBC for blood/marrow effects", "Kidney and liver panels", "Neurological evaluation if symptomatic"],
     iarc: "IARC Group 1 (benzene; TCE).",
-    sources: ["Camp Lejeune Justice Act", "ATSDR ToxFAQs: Trichloroethylene / Benzene", "IARC Group 1"],
+    // The Camp Lejeune Justice Act names NO diseases — it is a tort action in
+    // EDNC whose filing window closed 10 Aug 2024. The disease list is §3.309(f).
+    sources: ["38 CFR 3.309(f) (VA presumptive list)", "ATSDR ToxFAQs: Trichloroethylene / Benzene", "IARC Group 1"],
   },
   {
     slug: "dioxins", name: "Dioxins (Agent Orange family)", kind: "contaminant",

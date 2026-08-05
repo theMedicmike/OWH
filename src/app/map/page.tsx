@@ -11,7 +11,7 @@ export default async function MapPage() {
   return (
     <AppShell title="Where you served">
       <p className="mb-4 text-sm text-muted">
-        {sites?.length ?? 0} recognized exposure sites loaded. Click anywhere on the map to drop a pin where you
+        {sites?.length ?? 0} known exposure sites loaded. Click anywhere on the map to drop a pin where you
         served, then tag what you were exposed to.
       </p>
       <MapPanel sites={sites ?? []} />

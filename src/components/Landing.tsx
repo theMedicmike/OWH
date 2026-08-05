@@ -15,7 +15,9 @@ const SAMPLE: TimelineData = {
   serviceEnd: 2011,
   tours: [
     { place: "Joint Base Balad", startYear: 2004, endYear: 2005, exposures: ["burn_pit"] },
-    { place: "Camp Lejeune", startYear: 2007, endYear: 2010, exposures: ["water_contamination"] },
+    // Inside the statutory Camp Lejeune window (Aug 1953 – Dec 1987). The
+    // sample packet must never demonstrate a claim outside its own scope.
+    { place: "Camp Lejeune", startYear: 1982, endYear: 1985, exposures: ["water_contamination"] },
   ],
   conditions: [
     { label: "Asthma", onsetYear: 2012, linkedExposures: ["burn_pit"] },

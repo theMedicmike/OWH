@@ -38,11 +38,15 @@ export type ConditionDef = {
 };
 
 export const PROGRAM_LABEL: Record<string, string> = {
-  pact: "PACT Act (burn pits & particulate matter)",
-  agent_orange: "Agent Orange",
-  lejeune: "Camp Lejeune water",
-  gulf_war: "Gulf War illness",
-  radiation: "Radiation exposure",
+  pact: "the PACT Act (burn pits & particulate matter)",
+  agent_orange: "Agent Orange / tactical herbicides",
+  lejeune: "Camp Lejeune / MCAS New River water (30+ days, Aug 1 1953 – Dec 31 1987)",
+  // Cost-free CARE under 38 CFR §17.400 — a different list and a different
+  // benefit from the eight disability presumptives at §3.309(f). Conflating
+  // the two is the classic Camp Lejeune error.
+  lejeune_healthcare: "Camp Lejeune health care (cost-free care — not disability compensation)",
+  gulf_war: "the Gulf War presumptives (38 CFR §3.317)",
+  radiation: "radiation-risk activity presumptives (38 CFR §3.309(d))",
 };
 
 // Body systems, in the order a person thinks about their own body — breathing
@@ -68,7 +72,7 @@ export const SYSTEMS = [
 
 export const CONDITIONS: ConditionDef[] = [
   // ── Breathing & sinuses ──
-  { label: "Asthma", system: "Breathing & sinuses", exposures: ["burn_pit", "particulate", "chemical_solvent", "pfas_afff"], programs: ["pact"], link: "place" },
+  { label: "Asthma", system: "Breathing & sinuses", exposures: ["burn_pit", "particulate", "chemical_solvent", "pfas_afff"], programs: ["pact"], link: "place", alt: "presumptive only if DIAGNOSED AFTER SERVICE — 38 U.S.C. §1120(b)(1)" },
   { label: "Chronic sinusitis", system: "Breathing & sinuses", exposures: ["burn_pit", "particulate", "chemical_solvent"], programs: ["pact"], link: "place" },
   { label: "Chronic rhinitis", system: "Breathing & sinuses", exposures: ["burn_pit", "particulate", "chemical_solvent"], programs: ["pact"], link: "place", alt: "constant congestion, runny nose" },
   { label: "COPD", system: "Breathing & sinuses", exposures: ["burn_pit", "particulate"], programs: ["pact"], link: "place", alt: "chronic obstructive pulmonary disease" },
@@ -100,7 +104,8 @@ export const CONDITIONS: ConditionDef[] = [
   // ── Head & nerves ──
   { label: "Traumatic brain injury (TBI)", system: "Head & nerves", exposures: [], link: "event", alt: "blast exposure, concussion" },
   { label: "Migraines / chronic headaches", system: "Head & nerves", exposures: ["gulf_war_agent", "chemical_solvent"], programs: ["gulf_war"], link: "both" },
-  { label: "Peripheral neuropathy", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent", "pesticide"], programs: ["agent_orange"], link: "both", alt: "numbness, tingling, burning in hands or feet" },
+  { label: "Peripheral neuropathy (early-onset)", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent", "pesticide"], programs: ["agent_orange"], link: "both", alt: "numbness, tingling, burning — began within a YEAR of exposure (the window is part of the rule)" },
+  { label: "Peripheral neuropathy (later onset)", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent"], link: "both", alt: "numbness, tingling, burning in hands or feet" },
   { label: "Memory or concentration problems", system: "Head & nerves", exposures: ["heavy_metal", "nerve_agent", "gulf_war_agent"], programs: ["gulf_war"], link: "both" },
   { label: "Parkinson's disease", system: "Head & nerves", exposures: ["pesticide", "chemical_solvent", "water_contamination"], programs: ["agent_orange", "lejeune"], link: "place" },
   { label: "Parkinsonism / tremor", system: "Head & nerves", exposures: ["pesticide", "chemical_solvent", "heavy_metal"], programs: ["agent_orange"], link: "place" },
@@ -133,18 +138,29 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "GERD / acid reflux", system: "Stomach & digestion", exposures: [], link: "both" },
   { label: "Ulcers", system: "Stomach & digestion", exposures: [], link: "both" },
   { label: "Chronic diarrhea or constipation", system: "Stomach & digestion", exposures: ["gulf_war_agent", "water_contamination"], programs: ["gulf_war"], link: "both" },
-  { label: "Liver disease", system: "Stomach & digestion", exposures: ["chemical_solvent", "water_contamination", "heavy_metal"], programs: ["lejeune"], link: "place" },
+  // §3.309(f) lists LIVER CANCER. Hepatic steatosis is §17.400 health care.
+  { label: "Hepatic steatosis (fatty liver)", system: "Stomach & digestion", exposures: ["chemical_solvent", "water_contamination"], programs: ["lejeune_healthcare"], link: "place" },
+  { label: "Liver disease (other)", system: "Stomach & digestion", exposures: ["chemical_solvent", "water_contamination", "heavy_metal"], link: "both" },
 
   // ── Hormones & metabolism ──
   { label: "Type 2 diabetes", system: "Hormones & metabolism", exposures: ["pesticide"], programs: ["agent_orange"], link: "place" },
-  { label: "Thyroid disorder", system: "Hormones & metabolism", exposures: ["radiation", "chemical_solvent", "pesticide", "pfas_afff"], programs: ["agent_orange", "pact"], link: "place", alt: "hypothyroidism, Hashimoto's" },
+  // VA's herbicide list names HYPOTHYROIDISM alone — not hyperthyroidism,
+  // Graves', goiter, nodules, or euthyroid Hashimoto's. No thyroid condition
+  // is on the PACT Act list at all.
+  { label: "Hypothyroidism (underactive thyroid)", system: "Hormones & metabolism", exposures: ["chemical_solvent", "pesticide", "pfas_afff"], programs: ["agent_orange"], link: "place", alt: "Hashimoto's causing low thyroid" },
+  { label: "Other thyroid disorder", system: "Hormones & metabolism", exposures: ["chemical_solvent", "pfas_afff"], link: "both", alt: "hyperthyroid, Graves', goiter" },
+  { label: "Thyroid nodules", system: "Hormones & metabolism", exposures: ["radiation"], link: "both", alt: "non-malignant thyroid nodular disease" },
   { label: "Low testosterone", system: "Hormones & metabolism", exposures: [], link: "both" },
   { label: "Unexplained weight change", system: "Hormones & metabolism", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both" },
 
   // ── Kidneys & urinary ──
-  { label: "Kidney disease", system: "Kidneys & urinary", exposures: ["heavy_metal", "radiation", "pfas_afff", "water_contamination"], programs: ["lejeune"], link: "place" },
+  // §3.309(f) lists KIDNEY CANCER. Non-cancer renal toxicity is on the Camp
+  // Lejeune HEALTH CARE list (§17.400) — care, not compensation. DU kidney
+  // injury is chemical heavy-metal nephrotoxicity, not radiation.
+  { label: "Kidney disease", system: "Kidneys & urinary", exposures: ["heavy_metal", "pfas_afff", "water_contamination"], programs: ["lejeune_healthcare"], link: "place" },
   { label: "Kidney stones", system: "Kidneys & urinary", exposures: [], link: "both" },
-  { label: "Bladder problems", system: "Kidneys & urinary", exposures: ["water_contamination"], programs: ["lejeune"], link: "place" },
+  // Non-cancer bladder conditions are on neither §3.309(f) nor §17.400.
+  { label: "Bladder problems", system: "Kidneys & urinary", exposures: ["water_contamination"], link: "both" },
 
   // ── Skin ──
   { label: "Chronic rash or skin condition", system: "Skin", exposures: ["pesticide", "chemical_solvent", "gulf_war_agent"], programs: ["gulf_war"], link: "place" },
@@ -174,10 +190,15 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Multiple myeloma", system: "Cancer", exposures: ["pesticide", "water_contamination"], programs: ["agent_orange", "lejeune"], link: "place" },
   { label: "Non-Hodgkin's lymphoma", system: "Cancer", exposures: ["pesticide", "water_contamination"], programs: ["agent_orange", "lejeune"], link: "place" },
   { label: "Hodgkin's disease", system: "Cancer", exposures: ["pesticide"], programs: ["agent_orange"], link: "place" },
-  { label: "Leukemia", system: "Cancer", exposures: ["chemical_solvent", "water_contamination", "radiation"], programs: ["agent_orange", "lejeune"], link: "place" },
+  // §3.309(e) covers CHRONIC B-CELL leukemias only; §3.309(f) says "adult
+  // leukemia". A bare "Leukemia" must never generate an Agent Orange contention.
+  { label: "Chronic B-cell leukemia (CLL, hairy-cell)", system: "Cancer", exposures: ["chemical_solvent", "water_contamination", "pesticide"], programs: ["agent_orange", "lejeune", "pact"], link: "place" },
+  { label: "Leukemia (other type)", system: "Cancer", exposures: ["chemical_solvent", "water_contamination", "radiation"], programs: ["lejeune", "pact"], link: "place" },
   { label: "Soft tissue sarcoma", system: "Cancer", exposures: ["pesticide"], programs: ["agent_orange"], link: "place" },
   { label: "Reproductive cancer", system: "Cancer", exposures: ["burn_pit", "particulate"], programs: ["pact"], link: "place" },
-  { label: "Breast cancer", system: "Cancer", exposures: ["water_contamination", "radiation"], programs: ["lejeune"], link: "place" },
+  // Breast cancer is NOT on §3.309(f); it is §17.400 health care. VA lists
+  // female breast cancer under PACT reproductive cancers.
+  { label: "Breast cancer", system: "Cancer", exposures: ["burn_pit", "particulate", "water_contamination", "radiation"], programs: ["lejeune_healthcare", "pact"], link: "place" },
   { label: "Thyroid cancer", system: "Cancer", exposures: ["radiation"], programs: ["radiation"], link: "place" },
   { label: "Other cancer", system: "Cancer", exposures: ["burn_pit", "radiation", "pesticide", "chemical_solvent", "heavy_metal", "pfas_afff"], link: "place" },
 
@@ -185,7 +206,10 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Infertility", system: "Reproductive & sexual health", exposures: ["chemical_solvent", "pesticide", "radiation", "pfas_afff"], link: "both" },
   { label: "Erectile dysfunction", system: "Reproductive & sexual health", exposures: [], link: "both" },
   { label: "Menstrual disorders", system: "Reproductive & sexual health", exposures: ["gulf_war_agent", "chemical_solvent"], programs: ["gulf_war"], link: "both" },
-  { label: "Pregnancy loss or birth defect in a child", system: "Reproductive & sexual health", exposures: ["pesticide", "water_contamination", "chemical_solvent"], programs: ["agent_orange", "lejeune"], link: "place" },
+  { label: "Pregnancy loss", system: "Reproductive & sexual health", exposures: ["water_contamination", "chemical_solvent"], programs: ["lejeune_healthcare"], link: "place", alt: "miscarriage — on VA's Camp Lejeune health-care list" },
+  // A child's birth-defect benefit belongs to the CHILD, not the veteran's own
+  // claim — 38 U.S.C. §§1805/1815, 38 CFR §§3.814/3.815, VA Form 21-0304.
+  { label: "Birth defect in a child", system: "Reproductive & sexual health", exposures: ["pesticide", "water_contamination", "chemical_solvent"], link: "place", alt: "this benefit belongs to the child — ask your VSO about VA Form 21-0304" },
 
   // ── Vision ──
   { label: "Vision loss or eye injury", system: "Vision", exposures: [], link: "event" },

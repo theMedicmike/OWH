@@ -48,7 +48,10 @@ export const VA_FORMS: Record<string, VaForm> = {
     name: "Higher-Level Review",
     url: "https://www.va.gov/find-forms/about-form-20-0996/",
     blurb:
-      "Denied and you believe the VA made an error on the evidence they already had? A more senior reviewer takes a fresh look. No new evidence needed.",
+      // 38 CFR §3.2601(f): the higher-level adjudicator MAY NOT consider
+      // additional evidence. "No new evidence needed" read as "new evidence is
+      // optional" — a live wrong-lane risk inside a one-year window.
+      "Denied and you believe the VA erred on the evidence they already had? A more senior reviewer takes a fresh look — but the record is CLOSED: new evidence cannot be submitted or considered (38 CFR §3.2601(f)). If you have new evidence, file a Supplemental Claim (20-0995) instead.",
   },
   board: {
     number: "10182",

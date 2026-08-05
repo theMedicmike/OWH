@@ -47,9 +47,17 @@ export const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(
   EXPOSURES.map((e) => [e.value, e.label]),
 );
 
-// Exposure classes that carry a recognized presumptive pathway.
+// Exposure classes that CAN lead to a presumption for SOME veterans — never a
+// determination on its own.
+//
+// ⚠️ This set must NEVER drive a "presumptive" badge or flag. A presumption
+// attaches to a veteran whose service meets specific locations and dates; use
+// `scopeFor()` in lib/presumptive.ts. Radiation was removed: 38 CFR
+// §3.309(d)(3)(ii) is a CLOSED list of radiation-risk activities, and radar,
+// shipyard, weapons work and depleted uranium confer nothing — those go
+// through a §3.311 dose assessment instead.
 export const RECOGNIZED_CLASSES = new Set([
-  "burn_pit", "particulate", "pesticide", "radiation", "water_contamination", "gulf_war_agent",
+  "burn_pit", "particulate", "pesticide", "water_contamination", "gulf_war_agent",
 ]);
 
 export type ExposureEdu = {

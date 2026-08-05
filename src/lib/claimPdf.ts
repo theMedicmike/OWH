@@ -309,7 +309,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   doc.line(margin, y, pageW - margin, y);
   y += 12;
   text(
-    "This packet assembles veteran-entered facts with documented sources. It states associations and presumptive pathways; it does not assert medical causation, which requires a licensed clinician's opinion. Citations are general and depend on your specific dates and locations — confirm with your VSO. Sources: PACT Act of 2022, 38 CFR Part 3, Camp Lejeune Justice Act, and ATSDR toxicological profiles (VA.gov, 2026). Veterans Crisis Line: dial 988, then press 1.",
+    "This packet assembles veteran-entered facts with documented sources. It states documented ASSOCIATIONS; it does not assert medical causation (which requires a licensed clinician's opinion) and it does not determine eligibility for any presumption. Whether a VA presumption applies depends on where and when this veteran served — an accredited VSO should confirm that against the veteran's service record. Sources: 38 U.S.C. §§1116, 1119, 1120; 38 CFR §§3.307, 3.309, 3.311, 3.317, 3.320; and ATSDR toxicological profiles. Veterans Crisis Line: dial 988, then press 1.",
     { size: 7.5, color: FAINT }
   );
 
