@@ -20,9 +20,9 @@ import { PACT_SCOPE, AGENT_ORANGE_SCOPE, LEJEUNE_SCOPE, RADIATION_SCOPE, LEJEUNE
 // accredited VSO) before wide distribution.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Printed wherever the packet states its currency. ONE source of truth. */
-export const CITATIONS_AS_OF =
-  "Authorities checked August 2026 against 38 U.S.C. §§1116, 1119, 1120 and 38 CFR §§3.307, 3.309, 3.311, 3.317, 3.320. Presumptive lists change — confirm current status with an accredited VSO.";
+/** Printed wherever the packet states its currency. ONE source of truth —
+ *  the audit found three different strings claiming three different dates. */
+export { currencyLine as CITATIONS_CURRENCY } from "./accuracyOwner";
 
 export const EXPOSURE_BASIS: Record<string, string> = {
   burn_pit: `Burn pits / airborne hazards — PACT Act of 2022 (38 U.S.C. §§1119–1120; 38 CFR §§3.320, 3.320a, 3.320b). ${PACT_SCOPE}`,

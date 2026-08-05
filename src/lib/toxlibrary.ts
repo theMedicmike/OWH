@@ -327,7 +327,7 @@ export const TOXICANTS: Toxicant[] = [
     retention: "Volatile components clear over days, but the marrow, nerve, and organ injury from sustained exposure can be lasting.",
     organs: ["bone-marrow", "liver", "kidney", "nervous-system"],
     nutrients: [],
-    conditions: "Camp Lejeune law and ATSDR recognize solvent-contaminated water links to leukemia, aplastic anemia/MDS, bladder/kidney/liver cancer, multiple myeloma, non-Hodgkin lymphoma, and Parkinson's disease (TCE).",
+    conditions: "38 CFR §3.309(f) lists eight presumptive diseases for Camp Lejeune / MCAS New River service of 30+ days between Aug 1953 and Dec 1987: adult leukemia, aplastic anemia and other myelodysplastic syndromes, bladder cancer, kidney cancer, liver cancer, multiple myeloma, non-Hodgkin's lymphoma, and Parkinson's disease. ATSDR documents the underlying solvent associations.",
     untreated: "Blood, kidney, liver, and neurological conditions can develop years later; an exposure record matters for both care and a claim.",
     tests: ["CBC for blood/marrow effects", "Kidney and liver panels", "Neurological evaluation if symptomatic"],
     iarc: "IARC Group 1 (benzene; TCE).",
@@ -520,7 +520,7 @@ export const ORGANS: Organ[] = [
       "The marrow's blood-forming stem cells are especially vulnerable. Benzene (in jet fuel and solvents) and ionizing radiation damage these stem cells directly.",
       "Lead jams the enzyme assembly line that builds hemoglobin, so red cells are made poorly. When the stem-cell factory is disrupted at the source, the downstream effects show up across the whole body — anemia, weakened immunity, and, with benzene or radiation, blood cancers.",
     ],
-    conditions: "Benzene and radiation are recognized causes of leukemia, aplastic anemia, and myelodysplastic syndromes (Camp Lejeune law; radiation presumptives).",
+    conditions: "Benzene and ionizing radiation are documented causes of leukemia, aplastic anemia and myelodysplastic syndromes. Adult leukemia and aplastic anemia/MDS are Camp Lejeune presumptives (38 CFR §3.309(f)); leukemia other than CLL is on the radiation presumptive list (38 CFR §3.309(d)(2)) for veterans who took part in a listed radiation-risk activity.",
     untreated: "Marrow injury can progress quietly toward anemia, immune problems, or blood cancers. A simple blood count (CBC) is the front-line check — a clinician interprets it.",
   },
   {

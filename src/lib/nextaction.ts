@@ -55,7 +55,7 @@ export const VA_FORMS: Record<string, VaForm> = {
   },
   board: {
     number: "10182",
-    name: "Board Appeal",
+    name: "Board Appeal (Notice of Disagreement)",
     url: "https://www.va.gov/find-forms/about-form-10182/",
     blurb:
       "Take your appeal to a Veterans Law Judge at the Board of Veterans' Appeals. An accredited VSO or attorney can help you choose this lane.",

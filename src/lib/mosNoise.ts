@@ -35,7 +35,21 @@
 // to the real three, then set this true.
 export const MOS_NOISE_ENABLED = false;
 
-export type NoiseRating = "Low" | "Moderate" | "High" | "Highly Probable";
+// VA's listing has exactly THREE tiers. "High" was invented by this file and
+// is deliberately not in the type so it cannot be reintroduced by accident.
+export type NoiseRating = "Low" | "Moderate" | "Highly Probable";
+
+/** Codes whose rating this app cannot substantiate — must be re-derived from
+ *  the official listing by an accredited VSO before they may be shown. */
+export const PENDING_VERIFICATION = [
+  "Army 91B (Wheeled Vehicle Mechanic)",
+  "Marine Corps 3521 (Automotive Maintenance)",
+  "Navy BM (Boatswain's Mate)",
+  "Navy HT (Hull Maintenance Technician)",
+  "Coast Guard DC (Damage Controlman)",
+  "Coast Guard BM (Boatswain's Mate)",
+  "Air Force 2T1X1 (Vehicle Operations)",
+];
 export const MOS_NOISE_REVIEWED = "VA Fast Letter 10-35 attachment, 2 Sep 2010 — NOT yet re-verified against VA's current listing";
 
 type Row = { rating: NoiseRating; title: string };
@@ -52,7 +66,6 @@ const TABLE: Record<string, Record<string, Row>> = {
     "89B": { rating: "Highly Probable", title: "Ammunition Specialist" },
     "89D": { rating: "Highly Probable", title: "EOD Specialist" },
     "15T": { rating: "Highly Probable", title: "UH-60 Helicopter Repairer" },
-    "91B": { rating: "High", title: "Wheeled Vehicle Mechanic" },
     "88M": { rating: "Moderate", title: "Motor Transport Operator" },
     "68W": { rating: "Moderate", title: "Combat Medic Specialist" },
     "31B": { rating: "Moderate", title: "Military Police" },
@@ -68,7 +81,6 @@ const TABLE: Record<string, Record<string, Row>> = {
     "1371": { rating: "Highly Probable", title: "Combat Engineer" },
     "1833": { rating: "Highly Probable", title: "Assault Amphibious Vehicle Crewman" },
     "2311": { rating: "Highly Probable", title: "Ammunition Technician" },
-    "3521": { rating: "High", title: "Automotive Maintenance Technician" },
     "3531": { rating: "Moderate", title: "Motor Vehicle Operator" },
     "0111": { rating: "Low", title: "Administrative Specialist" },
     "3381": { rating: "Low", title: "Food Service Specialist" },
@@ -80,8 +92,6 @@ const TABLE: Record<string, Record<string, Row>> = {
     "GM": { rating: "Highly Probable", title: "Gunner's Mate" },
     "MM": { rating: "Highly Probable", title: "Machinist's Mate" },
     "EN": { rating: "Highly Probable", title: "Engineman" },
-    "BM": { rating: "High", title: "Boatswain's Mate" },
-    "HT": { rating: "High", title: "Hull Maintenance Technician" },
     "HM": { rating: "Moderate", title: "Hospital Corpsman" },
     "YN": { rating: "Low", title: "Yeoman" },
     "CS": { rating: "Low", title: "Culinary Specialist" },
@@ -93,15 +103,11 @@ const TABLE: Record<string, Record<string, Row>> = {
     "2W1X1": { rating: "Highly Probable", title: "Aircraft Armament Systems" },
     "3E8X1": { rating: "Highly Probable", title: "Explosive Ordnance Disposal" },
     "1C1X1": { rating: "Moderate", title: "Air Traffic Control" },
-    // 2T1X1 rating contested between extractions — title agreed, rating held.
-    "2T1X1": { rating: "Moderate", title: "Vehicle Operations" },
     // 3F0X1 / 3F5X1 REMOVED — no 3F-series AFSC appears in the listing.
   },
   "Coast Guard": {
     "GM": { rating: "Highly Probable", title: "Gunner's Mate" },
     "MK": { rating: "Highly Probable", title: "Machinery Technician" },
-    "DC": { rating: "High", title: "Damage Controlman" },
-    "BM": { rating: "High", title: "Boatswain's Mate" },
     "HS": { rating: "Moderate", title: "Health Services Technician" },
     "YN": { rating: "Low", title: "Yeoman" },
   },

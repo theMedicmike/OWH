@@ -11,6 +11,7 @@ import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { latencyFor, type TimelineData } from "./ServiceTimeline";
 import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
 import { veteranWords, otherExposure } from "@/lib/veteranWords";
+import { currencyLine } from "@/lib/accuracyOwner";
 import StatementCard from "./StatementCard";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 
@@ -689,11 +690,15 @@ export default function ReportView() {
         </section>
 
         <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-faint">
-          This packet assembles veteran-entered facts with documented sources. It states associations and presumptive
-          pathways; it does not assert medical causation, which requires a licensed clinician&apos;s opinion. Citations
-          are general and depend on your specific dates and locations — confirm with your VSO. Sources: PACT Act of
-          2022 (38 U.S.C. §§1116, 1119, 1120), 38 CFR §§3.307, 3.309, 3.311, 3.317, 3.320, and ATSDR toxicological profiles. Veterans
-          Crisis Line: dial 988, then press 1.
+          This packet assembles veteran-entered facts with documented sources. It states documented{" "}
+          <strong>associations</strong>; it does not assert medical causation (which requires a licensed
+          clinician&apos;s opinion) and it does not determine eligibility for any presumption. Whether a VA
+          presumption applies depends on where and when this veteran served — an accredited VSO should confirm
+          that against the service record. <strong>Gulf War deadline:</strong> under 38 CFR §3.317(a)(1)(i) a
+          qualifying chronic disability must have become manifest during Southwest Asia service, or to 10 percent
+          or more not later than December 31, 2026 — confirm with a VSO whether VA has extended it. Sources:
+          38 U.S.C. §§1116, 1119, 1120; 38 CFR §§3.307, 3.309, 3.311, 3.317, 3.320; and ATSDR toxicological
+          profiles. {currencyLine()} Veterans Crisis Line: dial 988, then press 1.
         </p>
       </div>
     </div>
