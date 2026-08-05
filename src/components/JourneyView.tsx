@@ -10,6 +10,8 @@ import { recordProgress, conditionNextAction, VA_FORMS, VSO_LOCATOR_URL, FILE_ON
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 import { plusOneYear, isPastOneYear } from "@/lib/nextaction";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
+import { CONDITION_BY_LABEL } from "@/lib/conditions";
+import type { CascadeFloor } from "@/content/cascadeFloors";
 
 type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: { exposure_class: string }[] | null };
 type Cond = { label: string; claim_status: string };
@@ -31,7 +33,7 @@ const EXPOSURE_TO_LEARN: Record<string, string> = {
 
 const ROW_H = 64;
 
-export default function JourneyView() {
+export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }) {
   const { user, supabase } = useAuth();
   const [name, setName] = useState<string | null>(null);
   const [branch, setBranch] = useState<string | null>(null);
@@ -303,6 +305,68 @@ export default function JourneyView() {
           Print / Save as PDF to share
         </button>
       </div>
+
+      {/* ── The cascade, four floors (the book's spine, on your record) ──── */}
+      {floors.length > 0 && (
+        <section className="overflow-hidden rounded-2xl border border-line bg-surface print:hidden">
+          <div className="border-b border-line bg-brand px-5 py-4">
+            <h2 className="text-base font-bold text-white">The cascade doesn&apos;t stop at your body</h2>
+            <p className="mt-1 text-sm leading-relaxed text-white/75">
+              One chain reaction, four floors — each one hiding the next. This is the spine of the book,
+              and this is where your record sits on it.
+            </p>
+          </div>
+          <div className="divide-y divide-line">
+            {floors.map((f) => {
+              // A floor is "on your record" only from facts the veteran
+              // actually entered — the app never tells anyone what they feel.
+              const touched =
+                f.key === "body" ? classes.length > 0 || conditions.length > 0
+                : f.key === "conscience" ? conditions.some((c) => CONDITION_BY_LABEL[c.label]?.system === "Mental health")
+                : f.key === "institution" ? conditions.some((c) => c.claim_status === "denied")
+                : false;
+              return (
+                <div key={f.key} className="flex gap-3 px-5 py-4">
+                  <span
+                    aria-hidden="true"
+                    className={`mt-1.5 h-2 w-2 flex-none rounded-full ${touched ? "bg-accent" : "bg-line"}`}
+                  />
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <span className="text-sm font-bold text-ink">{f.name}</span>
+                      {touched && (
+                        <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
+                          on your record
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-[13px] leading-relaxed text-muted">{f.line}</p>
+                    {f.key === "family" && (
+                      <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
+                        A spouse or family member can build a record here too — set the account type in{" "}
+                        <Link href="/account" className="font-semibold text-brand hover:underline">Account</Link>.
+                      </p>
+                    )}
+                    {f.chapterSlug && (
+                      <Link
+                        href={`/book/${f.chapterSlug}`}
+                        className="mt-1.5 inline-block text-[12px] font-semibold text-brand hover:underline"
+                      >
+                        Read &ldquo;{f.chapterTitle}&rdquo; →
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="border-t border-line px-5 py-3 text-[11px] leading-relaxed text-faint">
+            The floors are a way of understanding what service costs — not a diagnosis, and not a
+            checklist you have to complete. Everything you document here belongs to the first floor and
+            the last: what happened to your body, and the burden of having to prove it.
+          </p>
+        </section>
+      )}
 
       {/* ── Your service timeline — "a veteran is a timeline" ─────────────── */}
       <section className="rounded-2xl border border-line bg-surface p-5">
