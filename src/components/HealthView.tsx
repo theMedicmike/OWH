@@ -5,7 +5,9 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_LABEL } from "@/lib/education";
-import { conditionsBySystem, searchConditions, defFor, CONDITION_BY_LABEL } from "@/lib/conditions";
+import { conditionsBySystem, searchConditions, defFor, CONDITION_BY_LABEL, COMMON_STARTERS } from "@/lib/conditions";
+import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
+import { CONDITION_EXPOSURES } from "@/lib/education";
 import { matchCondition, type TourLite } from "@/lib/conditionMatch";
 import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
 
@@ -78,6 +80,29 @@ export default function HealthView() {
   const [err, setErr] = useState<string | null>(null);
 
   const chosen = useMemo(() => new Set(conditions.map((c) => c.label)), [conditions]);
+
+  // The rail reuses the timeline that already prints on the packet — read-only
+  // here, and only when there's service to draw.
+  const railData: TimelineData = useMemo(() => {
+    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string> }>();
+    for (const t of tours) {
+      if (!t.year) continue;
+      const key = `${t.place}|${t.year}`;
+      const e = byKey.get(key) ?? { place: t.place, startYear: t.year, endYear: null, exposures: new Set<string>() };
+      for (const c of t.classes) e.exposures.add(c);
+      byKey.set(key, e);
+    }
+    return {
+      serviceStart: null,
+      serviceEnd: null,
+      tours: Array.from(byKey.values()).map((t) => ({ ...t, exposures: Array.from(t.exposures) })),
+      conditions: conditions.map((c) => ({
+        label: c.label,
+        onsetYear: c.onset_year,
+        linkedExposures: (CONDITION_EXPOSURES[c.label] ?? []).filter((ec) => tours.some((t) => t.classes.includes(ec))),
+      })),
+    };
+  }, [tours, conditions]);
   const groups = useMemo(() => conditionsBySystem(), []);
   const results = useMemo(() => searchConditions(q), [q]);
   const showsMentalHealth = conditions.some(
@@ -205,6 +230,19 @@ export default function HealthView() {
 
   return (
     <div className="space-y-5">
+      {/* ── The rail: step 2 was where you were; this is what it did to you ─ */}
+      {tours.length > 0 && (
+        <section className="rounded-2xl border border-line bg-surface p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-sm font-bold text-ink">Your service &amp; your health</h2>
+            <span className="text-xs text-muted">The years between are the story</span>
+          </div>
+          <div className="mt-3">
+            <ServiceTimeline data={railData} compact />
+          </div>
+        </section>
+      )}
+
       {/* ── Ask ─────────────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-lg font-bold text-ink">What are you dealing with?</h2>
@@ -243,6 +281,29 @@ export default function HealthView() {
           </div>
         )}
       </div>
+
+      {/* ── One tap for the common case ─────────────────────────────────── */}
+      {!q && (
+        <div>
+          <div className="text-xs font-semibold text-ink">Most veterans start here</div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {COMMON_STARTERS.filter((l) => !chosen.has(l)).map((l) => (
+              <button
+                key={l}
+                type="button"
+                disabled={busy}
+                onClick={() => add(l)}
+                className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-ink transition hover:border-brand hover:bg-brand/5 hover:text-brand"
+              >
+                + {l}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] text-faint">
+            Not here? Search above, or open a body system below — there are far more.
+          </p>
+        </div>
+      )}
 
       {/* ── Browse by body system ───────────────────────────────────────── */}
       {!q && (

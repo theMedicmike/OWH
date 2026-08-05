@@ -194,6 +194,158 @@ export const CONDITIONS: ConditionDef[] = [
   // ── Whole-body symptoms (Gulf War undiagnosed illness lives here) ──
   { label: "Chronic fatigue", system: "Whole-body symptoms", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both" },
   { label: "Undiagnosed symptoms that won't go away", system: "Whole-body symptoms", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both", alt: "Gulf War illness pattern" },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // EXPANDED CAPTURE SET.
+  // A veteran must be able to find what they live with — if it isn't findable,
+  // it doesn't get recorded, and the record is the whole product.
+  //
+  // DELIBERATE: these carry NO `programs` tags and minimal `exposures`. A
+  // presumptive tag is a LEGAL status claim; asserting one without primary-
+  // source verification is the most dangerous thing this file could do. These
+  // exist so the condition can be RECORDED. Associations get added only after
+  // an accuracy audit confirms them.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // ── Breathing & sinuses ──
+  { label: "Allergic rhinitis", system: "Breathing & sinuses", exposures: [], link: "both", alt: "seasonal allergies, hay fever" },
+  { label: "Deviated septum", system: "Breathing & sinuses", exposures: [], link: "event" },
+  { label: "Bronchiectasis", system: "Breathing & sinuses", exposures: [], link: "both" },
+  { label: "Pulmonary hypertension", system: "Breathing & sinuses", exposures: [], link: "both" },
+  { label: "Chronic cough", system: "Breathing & sinuses", exposures: [], link: "both" },
+  { label: "Vocal cord or throat problems", system: "Breathing & sinuses", exposures: [], link: "both", alt: "hoarseness, laryngitis" },
+
+  // ── Hearing ──
+  { label: "Ear pain or recurring ear infections", system: "Hearing", exposures: [], link: "event" },
+  { label: "Meniere's disease", system: "Hearing", exposures: [], link: "event" },
+  { label: "Perforated eardrum", system: "Hearing", exposures: [], link: "event", alt: "ruptured eardrum, blast" },
+
+  // ── Bones, joints & muscles ──
+  { label: "Wrist or hand pain", system: "Bones, joints & muscles", exposures: [], link: "event" },
+  { label: "Elbow pain", system: "Bones, joints & muscles", exposures: [], link: "event", alt: "tennis elbow" },
+  { label: "Carpal tunnel syndrome", system: "Bones, joints & muscles", exposures: [], link: "event" },
+  { label: "Sciatica / radiculopathy", system: "Bones, joints & muscles", exposures: [], link: "event", alt: "shooting leg pain, pinched nerve" },
+  { label: "Degenerative joint disease", system: "Bones, joints & muscles", exposures: [], link: "event", alt: "osteoarthritis, worn joints" },
+  { label: "Limited range of motion", system: "Bones, joints & muscles", exposures: [], link: "event", alt: "can't bend, stiffness" },
+  { label: "Surgical scars or hardware", system: "Bones, joints & muscles", exposures: [], link: "event", alt: "plates, screws, rods" },
+  { label: "Amputation or loss of use", system: "Bones, joints & muscles", exposures: [], link: "event" },
+  { label: "TMJ / jaw problems", system: "Bones, joints & muscles", exposures: [], link: "event", alt: "jaw pain, clicking" },
+  { label: "Chronic pain syndrome", system: "Bones, joints & muscles", exposures: [], link: "both" },
+  { label: "Osteoporosis / bone loss", system: "Bones, joints & muscles", exposures: ["heavy_metal"], link: "both" },
+  { label: "Stress fractures / shin splints", system: "Bones, joints & muscles", exposures: [], link: "event" },
+
+  // ── Head & nerves ──
+  { label: "Post-concussive symptoms", system: "Head & nerves", exposures: [], link: "event", alt: "after a blast or head injury" },
+  { label: "Dizziness / balance problems", system: "Head & nerves", exposures: [], link: "event" },
+  { label: "Restless legs", system: "Head & nerves", exposures: [], link: "both" },
+  { label: "Bell's palsy / facial nerve", system: "Head & nerves", exposures: [], link: "both" },
+  { label: "Multiple sclerosis", system: "Head & nerves", exposures: [], link: "both" },
+  { label: "Nerve damage from injury", system: "Head & nerves", exposures: [], link: "event" },
+
+  // ── Mental health ──
+  { label: "Bipolar disorder", system: "Mental health", exposures: [], link: "event" },
+  { label: "Schizophrenia / psychotic disorder", system: "Mental health", exposures: [], link: "event" },
+  { label: "Eating disorder", system: "Mental health", exposures: [], link: "event" },
+  { label: "Anger / irritability", system: "Mental health", exposures: [], link: "event", alt: "short fuse, rage" },
+  { label: "Grief or moral injury", system: "Mental health", exposures: [], link: "event", alt: "guilt, what I did or saw" },
+  { label: "Isolation / trouble with people", system: "Mental health", exposures: [], link: "event" },
+
+  // ── Sleep ──
+  { label: "Trouble staying asleep", system: "Sleep", exposures: [], link: "both", alt: "waking at 2am" },
+  { label: "Narcolepsy / daytime sleep attacks", system: "Sleep", exposures: [], link: "both" },
+
+  // ── Heart & circulation ──
+  { label: "Irregular heartbeat", system: "Heart & circulation", exposures: [], link: "both", alt: "AFib, arrhythmia, palpitations" },
+  { label: "Heart valve problem or murmur", system: "Heart & circulation", exposures: [], link: "both" },
+  { label: "Varicose veins", system: "Heart & circulation", exposures: [], link: "event" },
+  { label: "Blood clots / DVT", system: "Heart & circulation", exposures: [], link: "both" },
+  { label: "Poor circulation in hands or feet", system: "Heart & circulation", exposures: ["heavy_metal"], link: "both", alt: "Raynaud's, cold hands" },
+  { label: "Heart failure", system: "Heart & circulation", exposures: [], link: "both" },
+
+  // ── Stomach & digestion ──
+  { label: "Gastritis", system: "Stomach & digestion", exposures: [], link: "both" },
+  { label: "Hemorrhoids", system: "Stomach & digestion", exposures: [], link: "event" },
+  { label: "Hernia", system: "Stomach & digestion", exposures: [], link: "event" },
+  { label: "Gallbladder problems", system: "Stomach & digestion", exposures: [], link: "both" },
+  { label: "Pancreatitis", system: "Stomach & digestion", exposures: [], link: "both" },
+  { label: "Diverticulitis", system: "Stomach & digestion", exposures: [], link: "both" },
+  { label: "Crohn's or ulcerative colitis", system: "Stomach & digestion", exposures: [], link: "both", alt: "inflammatory bowel disease" },
+  { label: "Celiac disease", system: "Stomach & digestion", exposures: [], link: "both" },
+  { label: "Fatty liver", system: "Stomach & digestion", exposures: ["chemical_solvent"], link: "both" },
+  { label: "Trouble swallowing", system: "Stomach & digestion", exposures: [], link: "both", alt: "dysphagia" },
+
+  // ── Hormones & metabolism ──
+  { label: "Gout", system: "Hormones & metabolism", exposures: ["heavy_metal"], link: "both" },
+  { label: "Adrenal problems", system: "Hormones & metabolism", exposures: [], link: "both" },
+  { label: "Vitamin or mineral deficiency", system: "Hormones & metabolism", exposures: ["heavy_metal"], link: "both" },
+  { label: "Prediabetes / insulin resistance", system: "Hormones & metabolism", exposures: [], link: "both" },
+  { label: "Metabolic syndrome / obesity", system: "Hormones & metabolism", exposures: [], link: "both" },
+
+  // ── Kidneys & urinary ──
+  { label: "Frequent urination or urgency", system: "Kidneys & urinary", exposures: [], link: "both" },
+  { label: "Urinary incontinence", system: "Kidneys & urinary", exposures: [], link: "both" },
+  { label: "Enlarged prostate (BPH)", system: "Kidneys & urinary", exposures: [], link: "both" },
+  { label: "Recurring urinary infections", system: "Kidneys & urinary", exposures: [], link: "both" },
+  { label: "Interstitial cystitis", system: "Kidneys & urinary", exposures: [], link: "both" },
+
+  // ── Skin ──
+  { label: "Chronic acne or folliculitis", system: "Skin", exposures: [], link: "both" },
+  { label: "Fungal infections", system: "Skin", exposures: [], link: "both", alt: "jungle rot, athlete's foot, tinea" },
+  { label: "Excessive sweating", system: "Skin", exposures: [], link: "both", alt: "hyperhidrosis" },
+  { label: "Hair loss", system: "Skin", exposures: ["heavy_metal"], link: "both", alt: "alopecia" },
+  { label: "Vitiligo / skin discoloration", system: "Skin", exposures: [], link: "both" },
+  { label: "Skin cancer (non-melanoma)", system: "Skin", exposures: ["radiation"], link: "place", alt: "basal cell, squamous cell" },
+  { label: "Sun damage / chronic sunburn", system: "Skin", exposures: [], link: "event" },
+
+  // ── Immune & blood ──
+  { label: "Rheumatoid arthritis", system: "Immune & blood", exposures: ["chemical_solvent"], link: "both" },
+  { label: "Lupus", system: "Immune & blood", exposures: ["chemical_solvent"], link: "both" },
+  { label: "Chronic infections / low immunity", system: "Immune & blood", exposures: [], link: "both" },
+  { label: "Severe allergies", system: "Immune & blood", exposures: [], link: "both" },
+  { label: "Low white or red blood cell counts", system: "Immune & blood", exposures: ["chemical_solvent", "radiation"], link: "place" },
+  { label: "Blood clotting disorder", system: "Immune & blood", exposures: [], link: "both" },
+
+  // ── Cancer ──
+  { label: "Colorectal cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Esophageal cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Stomach cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Testicular cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Ovarian cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Cervical or uterine cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Bladder or urinary tract cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Laryngeal or throat cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Oral cancer", system: "Cancer", exposures: [], link: "place" },
+  { label: "Bone cancer / sarcoma", system: "Cancer", exposures: [], link: "place" },
+  { label: "Salivary gland cancer", system: "Cancer", exposures: [], link: "place" },
+
+  // ── Reproductive & sexual health ──
+  { label: "Endometriosis", system: "Reproductive & sexual health", exposures: [], link: "both" },
+  { label: "PCOS", system: "Reproductive & sexual health", exposures: [], link: "both", alt: "polycystic ovary syndrome" },
+  { label: "Uterine fibroids", system: "Reproductive & sexual health", exposures: [], link: "both" },
+  { label: "Painful intercourse or pelvic pain", system: "Reproductive & sexual health", exposures: [], link: "both" },
+  { label: "Early menopause", system: "Reproductive & sexual health", exposures: [], link: "both" },
+  { label: "Breast condition (non-cancer)", system: "Reproductive & sexual health", exposures: [], link: "both" },
+
+  // ── Vision ──
+  { label: "Cataracts", system: "Vision", exposures: ["radiation"], link: "both" },
+  { label: "Glaucoma", system: "Vision", exposures: [], link: "both" },
+  { label: "Dry eye", system: "Vision", exposures: ["particulate"], link: "both" },
+  { label: "Double or blurred vision", system: "Vision", exposures: [], link: "event" },
+
+  // ── Whole-body symptoms ──
+  { label: "Widespread pain", system: "Whole-body symptoms", exposures: ["gulf_war_agent"], link: "both" },
+  { label: "Trouble regulating temperature", system: "Whole-body symptoms", exposures: [], link: "both", alt: "night sweats, always cold" },
+  { label: "Frequent dizziness or fainting", system: "Whole-body symptoms", exposures: [], link: "both" },
+  { label: "Chemical or smell sensitivity", system: "Whole-body symptoms", exposures: ["chemical_solvent"], link: "both" },
+  { label: "Something else I can't name yet", system: "Whole-body symptoms", exposures: [], link: "both", alt: "not sure what it is" },
+];
+
+// The handful most veterans start with — shown above the fold so the common
+// case takes one tap, not a hunt through sixteen body systems.
+export const COMMON_STARTERS = [
+  "Tinnitus", "Hearing loss", "Back pain / degenerative disc", "PTSD",
+  "Sleep apnea", "Knee pain / instability", "Migraines / chronic headaches",
+  "Anxiety", "Depression", "GERD / acid reflux", "Asthma", "High blood pressure",
 ];
 
 export const CONDITION_BY_LABEL: Record<string, ConditionDef> =
