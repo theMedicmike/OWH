@@ -4,7 +4,7 @@
 
 export type PdfTimelineRow = { year: string; place: string; exposures: string; note?: string };
 export type PdfExposure = { label: string; presumptive: boolean; places: string; basis: string };
-export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string };
+export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string };
 export type PdfContention = { label: string; matches: string; cite?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
 
@@ -248,6 +248,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
       text(`${c.label}${c.tag ? `  —  ${c.tag}` : ""}${c.status !== "none" ? `  (VA claim ${c.status})` : ""}`, { size: 10, style: "bold", gapAfter: 0 });
       if (c.veteranLine) text(`${c.veteranLine}  (Veteran-reported)`, { size: 9, color: INK, indent: 12, gapAfter: 0 });
       if (c.latency) text(c.latency, { size: 9, style: "italic", color: MUTED, indent: 12, gapAfter: 0 });
+      if (c.noiseLine) text(c.noiseLine, { size: 9, color: INK, indent: 12, gapAfter: 0 });
       text(c.matches || "No logged exposure linked yet.", { size: 9, color: MUTED, indent: 12, gapAfter: 0 });
       if (c.cite) text(c.cite, { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;

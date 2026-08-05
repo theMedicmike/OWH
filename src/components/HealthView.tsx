@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_LABEL } from "@/lib/education";
 import { conditionsBySystem, searchConditions, defFor, CONDITION_BY_LABEL } from "@/lib/conditions";
 import { matchCondition, type TourLite } from "@/lib/conditionMatch";
+import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 4 — "Your conditions". Tap sheet + the connection to where you served.
@@ -66,6 +67,8 @@ export default function HealthView() {
   const [ready, setReady] = useState(false);
   const [conditions, setConditions] = useState<Condition[]>([]);
   const [tours, setTours] = useState<TourLite[]>([]);
+  const [memberMos, setMemberMos] = useState<string | null>(null);
+  const [memberBranch, setMemberBranch] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [openSystem, setOpenSystem] = useState<string | null>(null);
   const [detailFor, setDetailFor] = useState<string | null>(null);
@@ -107,6 +110,16 @@ export default function HealthView() {
           ...c, onset_year: null, onset_precision: null, evidence_status: null, secondary_to: null,
         })),
       );
+    }
+
+    // MOS + branch power the noise-listing line (migration 0014, defensive).
+    const mem = await supabase.from("members").select("mos, branch").maybeSingle();
+    if (!mem.error && mem.data) {
+      setMemberMos((mem.data.mos as string) ?? null);
+      setMemberBranch((mem.data.branch as string) ?? null);
+    } else if (mem.error) {
+      const b = await supabase.from("members").select("branch").maybeSingle();
+      if (!b.error && b.data) setMemberBranch((b.data.branch as string) ?? null);
     }
 
     const { data: ci } = await supabase
@@ -333,11 +346,47 @@ export default function HealthView() {
                       {m.ask && <p className="mt-2 text-[12px] font-semibold leading-relaxed text-accent">→ {m.ask}</p>}
                     </div>
                   )}
-                  {m.kind === "event" && (
-                    <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
-                      <p className="text-[13px] leading-relaxed text-muted">{m.sentence}</p>
-                    </div>
-                  )}
+                  {m.kind === "event" && (() => {
+                    // Tinnitus / Hearing loss get the VA's own noise-listing
+                    // line — the event-side version of "documented at your base."
+                    if (!NOISE_CONDITIONS.has(c.label)) {
+                      return (
+                        <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
+                          <p className="text-[13px] leading-relaxed text-muted">{m.sentence}</p>
+                        </div>
+                      );
+                    }
+                    const hit = mosNoiseLookup(memberMos, memberBranch);
+                    if (hit) {
+                      return (
+                        <div className="rounded-r-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
+                          <p className="text-[13px] leading-relaxed text-ink">
+                            One more dot: your job code — {hit.code}, {hit.title} ({memberBranch}) — appears on the
+                            VA&apos;s own Duty MOS Noise Exposure Listing, marked{" "}
+                            <strong>&ldquo;{hit.rating}&rdquo;</strong> for hazardous noise. That&apos;s the same
+                            table VA raters check for tinnitus and hearing loss. It rates the job, not your claim —
+                            bring it to your VSO and mention the listing by name.
+                            {(hit.rating === "Low" || hit.rating === "Moderate") &&
+                              " A lower rating has never closed the door — a specific event you can describe (ranges, the flight line, a blast) still counts, and your own account is evidence."}
+                          </p>
+                          <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
+                            Held more than one job? The listing rates each one — tell your VSO all of them.
+                            Listing as carried {MOS_NOISE_REVIEWED}; veteran-reported MOS — verify against DD-214 Block 11.
+                          </p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
+                        <p className="text-[13px] leading-relaxed text-muted">{m.sentence}</p>
+                        <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
+                          {memberMos
+                            ? "Your job code isn't in the part of the VA's noise listing this app carries — which says nothing about the full listing or your claim. Ask your VSO to look it up by name: the Duty MOS Noise Exposure Listing."
+                            : <>Have a job code (MOS / Rate / AFSC)? Add it in <Link href="/account" className="font-semibold text-brand hover:underline">Account</Link> — the VA keeps a noise-exposure listing by job code that matters for hearing claims.</>}
+                        </p>
+                      </div>
+                    );
+                  })()}
                   {m.kind === "none" && (
                     <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
                       <p className="text-[13px] leading-relaxed text-muted">{m.sentence}</p>

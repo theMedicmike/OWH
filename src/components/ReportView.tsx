@@ -9,6 +9,7 @@ import { ServiceRibbon } from "./Patriotic";
 import { downloadClaimPdf } from "@/lib/claimPdf";
 import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { latencyFor, type TimelineData } from "./ServiceTimeline";
+import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 
 
@@ -286,11 +287,16 @@ export default function ReportView() {
             { label: c.label, onsetYear: condOnset[c.label] ?? null, linkedExposures: matches },
             packetTimeline.tours,
           );
+          // Noise-listing line: HITS ONLY — never print an absence.
+          const noise = NOISE_CONDITIONS.has(c.label) ? mosNoiseLookup(member?.mos, member?.branch) : null;
           return {
             label: c.label,
             tag: basis?.tag,
             presumptive: basis?.presumptive,
             status: c.claim_status,
+            noiseLine: noise
+              ? `Duty noise exposure: veteran-reported MOS ${noise.code}, ${noise.title} (${member?.branch}) appears in VA's Duty MOS Noise Exposure Listing as "${noise.rating}" for hazardous noise. (Veteran-reported MOS — verify against DD-214 Block 11; listing as carried ${MOS_NOISE_REVIEWED}.) Applicability is for the accredited VSO and rater to determine.`
+              : undefined,
             veteranLine: vparts.length ? vparts.join(" · ") : undefined,
             latency: lat
               ? lat.years === 0
