@@ -8,6 +8,8 @@ import { EXPOSURE_LABEL, CONDITION_EXPOSURES } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
 import { recordProgress, conditionNextAction, VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
+import { plusOneYear, isPastOneYear } from "@/lib/nextaction";
+import { isMissingColumnError } from "@/lib/supabaseErrors";
 
 type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: { exposure_class: string }[] | null };
 type Cond = { label: string; claim_status: string };
@@ -44,6 +46,8 @@ export default function JourneyView() {
   const [condStatus, setCondStatus] = useState<Record<string, string>>({});
   const [condFiled, setCondFiled] = useState<Record<string, string>>({});
   const [condOnset, setCondOnset] = useState<Record<string, number>>({});
+  const [condDecision, setCondDecision] = useState<Record<string, string>>({});
+  const [itfOn, setItfOn] = useState<string | null>(null);
   const [svcStart, setSvcStart] = useState<number | null>(null);
   const [svcEnd, setSvcEnd] = useState<number | null>(null);
   const [onsetEdit, setOnsetEdit] = useState<string | null>(null);
@@ -74,14 +78,22 @@ export default function JourneyView() {
       setCondStatus(Object.fromEntries(condList.map((c) => [c.label, c.claim_status])));
       // Filed dates live in an optional column (migration 0010); load defensively
       // so the page still works before the migration is applied.
-      const filed = await supabase.from("conditions").select("label, filed_on");
+      // filed_on (0010) + decision_date (0016), each tier defensive.
+      let filed = await supabase.from("conditions").select("label, filed_on, decision_date");
+      if (filed.error) filed = await supabase.from("conditions").select("label, filed_on");
       if (!filed.error) {
         const fm: Record<string, string> = {};
-        for (const r of (filed.data ?? []) as { label: string; filed_on: string | null }[]) {
+        const dm: Record<string, string> = {};
+        for (const r of (filed.data ?? []) as { label: string; filed_on: string | null; decision_date?: string | null }[]) {
           if (r.filed_on) fm[r.label] = r.filed_on;
+          if (r.decision_date) dm[r.label] = r.decision_date;
         }
         setCondFiled(fm);
+        setCondDecision(dm);
       }
+      // Intent to File date (0016), defensive read.
+      const itf = await supabase.from("members").select("itf_filed_on").eq("auth_id", user.id).maybeSingle();
+      if (!itf.error && itf.data?.itf_filed_on) setItfOn(itf.data.itf_filed_on as string);
       // Onset years live in an optional column (migration 0012); read
       // defensively so the timeline still renders before it's applied.
       const onset = await supabase.from("conditions").select("label, onset_year");
@@ -212,6 +224,31 @@ export default function JourneyView() {
           ? "Onset years need database migration 0012 applied before they'll save."
           : `Couldn't save that year: ${error.message}`
       );
+    }
+  }
+
+  // Deadline dates (migration 0016) — written LOUDLY: a silently dropped
+  // deadline date is worse than a dropped MOS.
+  async function saveItf(date: string) {
+    setOnsetErr(null);
+    const prev = itfOn;
+    setItfOn(date || null);
+    const { error } = await supabase.from("members").update({ itf_filed_on: date || null }).eq("auth_id", user!.id);
+    if (error) {
+      setItfOn(prev);
+      setOnsetErr(isMissingColumnError(error) ? "This needs database migration 0016 applied before it saves." : `Couldn't save that date: ${error.message}`);
+    }
+  }
+  async function saveDecision(label: string, date: string) {
+    setOnsetErr(null);
+    const prev = condDecision;
+    setCondDecision((p) => { const n = { ...p }; if (date) n[label] = date; else delete n[label]; return n; });
+    const { data: mem } = await supabase.from("members").select("id").eq("auth_id", user!.id).maybeSingle();
+    if (!mem?.id) { setCondDecision(prev); setOnsetErr("Couldn't find your record — try again."); return; }
+    const { error } = await supabase.from("conditions").update({ decision_date: date || null }).eq("member_id", mem.id).eq("label", label);
+    if (error) {
+      setCondDecision(prev);
+      setOnsetErr(isMissingColumnError(error) ? "This needs database migration 0016 applied before it saves." : `Couldn't save that date: ${error.message}`);
     }
   }
 
@@ -493,6 +530,23 @@ export default function JourneyView() {
                       {status === "none" && (
                         <>
                           <FormLink form={VA_FORMS.intent} lead="Start with" />
+                          <label className="flex items-center gap-2 text-[11px] font-medium text-ink">
+                            Filed an Intent to File? On
+                            <input
+                              type="date"
+                              value={itfOn ?? ""}
+                              max={new Date().toISOString().slice(0, 10)}
+                              onChange={(e) => saveItf(e.target.value)}
+                              className="rounded-md border border-line bg-canvas px-2 py-1 text-[11px] text-ink"
+                            />
+                          </label>
+                          {itfOn && (
+                            <p className="text-[11px] leading-relaxed text-muted">
+                              {isPastOneYear(itfOn)
+                                ? "That Intent to File may have lapsed — a new one can be filed today, and it's free. Ask your VSO whether the earlier date can still help you."
+                                : `Intent to File on record — ${new Date(itfOn + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} (as you reported it). That's the date your back pay can count from. The VA gives one year from that date to complete the full claim — around ${plusOneYear(itfOn)}. Confirm the exact date on VA.gov or with your VSO.`}
+                            </p>
+                          )}
                           <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-brand hover:underline">
                             Then file the claim (VA Form 21-526EZ) online at VA.gov →
                           </a>
@@ -503,6 +557,23 @@ export default function JourneyView() {
                           <FormLink form={VA_FORMS.supplemental} lead="Option 1 —" />
                           <FormLink form={VA_FORMS.hlr} lead="Option 2 —" />
                           <FormLink form={VA_FORMS.board} lead="Option 3 —" />
+                          <label className="mt-1 flex items-center gap-2 text-[11px] font-medium text-ink">
+                            Decision letter dated
+                            <input
+                              type="date"
+                              value={condDecision[cond.label] ?? ""}
+                              max={new Date().toISOString().slice(0, 10)}
+                              onChange={(e) => saveDecision(cond.label, e.target.value)}
+                              className="rounded-md border border-line bg-canvas px-2 py-1 text-[11px] text-ink"
+                            />
+                          </label>
+                          {condDecision[cond.label] && (
+                            <p className="text-[11px] leading-relaxed text-muted">
+                              {isPastOneYear(condDecision[cond.label])
+                                ? "That one-year window looks like it has passed. That doesn't close every door — a Supplemental Claim with new and relevant evidence can still be filed; what usually changes is the effective date. Ask a VSO what's still open for you."
+                                : `The VA's review forms run on a one-year clock from the date on the decision letter — that window ends around ${plusOneYear(condDecision[cond.label])}. After a year some options close, and a Supplemental Claim with new and relevant evidence generally stays open. The exact date is printed on your letter — a VSO can tell you what's still open.`}
+                            </p>
+                          )}
                         </>
                       )}
                       {status !== "granted" && (

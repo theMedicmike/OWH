@@ -63,6 +63,9 @@ export default function DocumentsCard() {
       <div className="text-sm font-medium text-zinc-900">Your records</div>
       <div className="mt-1 text-xs text-zinc-500">
         Upload your DD-214, medical records, lab results, or claim letters. Private to you.
+        {" "}<span className="font-medium">Tip: your SSN is printed in Box 3 of a DD-214, and image
+        scans print with your claim packet — cover the SSN before you photograph the page. The app
+        never needs it.</span>
       </div>
 
       <label className="mt-3 inline-block cursor-pointer rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-100">

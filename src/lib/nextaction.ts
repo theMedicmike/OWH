@@ -94,6 +94,22 @@ export type RecordStep = {
   cta: string;
 };
 
+// One year from an ISO date, formatted for copy that always says "around" —
+// the decision letter and VA.gov are authoritative, never this app.
+export function plusOneYear(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  d.setUTCFullYear(d.getUTCFullYear() + 1);
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+}
+
+export function isPastOneYear(iso: string): boolean {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return false;
+  d.setUTCFullYear(d.getUTCFullYear() + 1);
+  return d.getTime() < Date.now();
+}
+
 export function recordSteps(s: RecordState): RecordStep[] {
   return [
     { key: "service", label: "Service details", done: s.hasService, href: "/account", cta: "Add your branch and years" },

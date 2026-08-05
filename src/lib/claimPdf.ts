@@ -294,6 +294,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     text("Upload your DD-214 and any service or medical records under Account — they'll be listed here and image scans will print with this packet.", { color: MUTED });
   else {
     text("The following records accompany this packet:", { size: 9.5, color: MUTED, gapAfter: 2 });
+    text("Before sharing, check printed images for your Social Security Number (DD-214 Box 3) — cover it or re-upload a copy with it covered.", { size: 8, color: GOLD, gapAfter: 2 });
     data.attachments.forEach((a) =>
       bullet(`${a.name}${a.isImage ? " (image — printed at the end)" : " — attach this file when you submit"}`, { size: 9.5 })
     );

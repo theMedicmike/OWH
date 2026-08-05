@@ -648,6 +648,10 @@ export default function ReportView() {
           ) : (
             <>
               <p className="text-sm text-muted">The following records accompany this packet:</p>
+              <p className="mt-1 text-xs font-medium text-warn">
+                Before you share this packet, check printed images for your Social Security Number
+                (DD-214 Box 3) — cover it, or re-upload a copy with it covered.
+              </p>
               <ul className="mt-2 space-y-1 text-sm">
                 {records.map((r) => (
                   <li key={r.name} className="text-ink">
