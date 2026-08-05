@@ -6,6 +6,21 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import AuthCard from "./AuthCard";
 import { ServiceRibbon, Anniversary250 } from "./Patriotic";
+import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
+
+// Show the artifact, don't describe it: this is what a finished record looks
+// like — the first page a veteran hands their VSO. Sample data, clearly labeled.
+const SAMPLE: TimelineData = {
+  serviceStart: 2003,
+  serviceEnd: 2011,
+  tours: [
+    { place: "Joint Base Balad", startYear: 2004, endYear: 2005, exposures: ["burn_pit"] },
+    { place: "Camp Lejeune", startYear: 2007, endYear: 2010, exposures: ["water_contamination"] },
+  ],
+  conditions: [
+    { label: "Asthma", onsetYear: 2012, linkedExposures: ["burn_pit"] },
+  ],
+};
 
 const POINTS = [
   { title: "Map where you served", body: "Every base, deployment, and war zone — your whole timeline, from day one." },
@@ -68,9 +83,20 @@ export default function Landing() {
         </div>
 
         <div className="relative space-y-4">
+          {/* The artifact itself — the strongest pitch the app has */}
+          <div className="rounded-xl bg-white p-4 shadow-lg">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wide text-accent">Sample record</span>
+              <span className="text-[11px] text-faint">Page one of what you hand your VSO</span>
+            </div>
+            <div className="mt-2">
+              <ServiceTimeline data={SAMPLE} compact />
+            </div>
+          </div>
           <Anniversary250 className="w-44" />
           <div className="text-xs text-white/55">
-            Operation Whole Health, a Patriot-founded 501(c)(3). An estimate and a record — not a diagnosis.
+            Free. No products. Nothing sold. Operation Whole Health, a Patriot-founded 501(c)(3).
+            A record and an estimate — never a diagnosis.
           </div>
         </div>
       </section>

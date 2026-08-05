@@ -81,6 +81,8 @@ export type RecordState = {
   connectedConditions: number;
   corroborations: number;
   hasDD214: boolean;
+  /** conditions the veteran has marked filed/granted/denied — the record's afterlife */
+  filedConditions?: number;
 };
 
 export type RecordStep = {
@@ -100,6 +102,9 @@ export function recordSteps(s: RecordState): RecordStep[] {
     { key: "link", label: "A documented link", done: s.connectedConditions > 0, href: "/conditions", cta: "Connect a condition to an exposure" },
     { key: "corroboration", label: "Corroboration", done: s.corroborations > 0, href: "/buddies", cta: "Ask a battle buddy to corroborate" },
     { key: "dd214", label: "DD-214 on file", done: s.hasDD214, href: "/account", cta: "Upload your DD-214 (discharge papers)" },
+    // The step after the packet: filing is the point of all of this, and
+    // marking it filed is what lets the record keep walking with the claim.
+    { key: "filed", label: "Claim filed", done: (s.filedConditions ?? 0) > 0, href: "/journey", cta: "When you file, mark the condition Filed" },
   ];
 }
 

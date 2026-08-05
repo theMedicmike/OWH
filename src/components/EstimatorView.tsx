@@ -138,7 +138,9 @@ export default function EstimatorView() {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
   const [logged, setLogged] = useState<string[]>([]);
-  const [role, setRole] = useState("Tank crew / armor");
+  // No pre-built profile: a cook must never open this page to a depleted-
+  // uranium estimate. The numbers only exist once they're built from YOUR role.
+  const [role, setRole] = useState("");
   const [years, setYears] = useState(10);
   const [munRates, setMunRates] = useState<Record<string, number>>({});
 
@@ -149,6 +151,13 @@ export default function EstimatorView() {
       if (data.user) {
         const { data: rows } = await supabase.from("exposures").select("exposure_class");
         if (rows) setLogged(uniq((rows as { exposure_class: string }[]).map((r) => r.exposure_class)));
+        // Seed years-of-service from the record instead of a guess.
+        const { data: m } = await supabase.from("members").select("service_start, service_end").eq("auth_id", data.user.id).maybeSingle();
+        if (m?.service_start) {
+          const start = new Date(m.service_start).getUTCFullYear();
+          const end = m.service_end ? new Date(m.service_end).getUTCFullYear() : new Date().getUTCFullYear();
+          if (end >= start) setYears(Math.max(1, Math.min(40, end - start)));
+        }
       }
     });
   }, [supabase]);
@@ -253,7 +262,7 @@ export default function EstimatorView() {
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink dark:text-zinc-100">Your service profile</div>
+        <div className="text-sm font-medium text-ink">Your service profile</div>
         <div className="mt-1 text-xs text-muted">
           {logged.length > 0
             ? "Built from the exposures you logged on the map, plus the details below."
@@ -263,7 +272,7 @@ export default function EstimatorView() {
         {logged.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {logged.map((e) => (
-              <span key={e} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-xs text-muted dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              <span key={e} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-xs text-muted">
                 {EXPOSURE_LABEL[e] ?? e}
               </span>
             ))}
@@ -273,7 +282,8 @@ export default function EstimatorView() {
         <div className="mt-4 grid gap-3">
           <div className="flex items-center gap-3">
             <label className="w-28 text-xs text-muted">Primary role</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)} className="flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-sm dark:border-zinc-700">
+            <select value={role} onChange={(e) => setRole(e.target.value)} className="flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-sm">
+              <option value="">Select your role…</option>
               {Object.keys(ROLES).map((r) => (
                 <option key={r}>{r}</option>
               ))}
@@ -288,7 +298,7 @@ export default function EstimatorView() {
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink dark:text-zinc-100">Weapons &amp; munitions exposure</div>
+        <div className="text-sm font-medium text-ink">Weapons &amp; munitions exposure</div>
         <div className="mt-1 text-xs text-muted">
           Roughly how much were you around each, across your whole service? No exact numbers needed.
         </div>
@@ -296,15 +306,15 @@ export default function EstimatorView() {
         {MUNITION_GROUPS.map((g) => (
           <div key={g.group} className="mt-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-ink dark:text-zinc-300">{g.group}</span>
+              <span className="text-xs font-medium text-ink">{g.group}</span>
               <span className="text-[11px] text-faint">{g.metals}</span>
             </div>
             {g.items.map((it) => {
               const cur = munRates[it.key] ?? 0;
               return (
-                <div key={it.key} className="flex items-center justify-between gap-3 border-t border-line py-2 dark:border-zinc-800">
-                  <span className="text-sm text-ink dark:text-zinc-200">{it.label}</span>
-                  <div className="flex flex-none overflow-hidden rounded-md border border-line text-xs dark:border-zinc-700">
+                <div key={it.key} className="flex items-center justify-between gap-3 border-t border-line py-2">
+                  <span className="text-sm text-ink">{it.label}</span>
+                  <div className="flex flex-none overflow-hidden rounded-md border border-line text-xs">
                     {RATES.map((label, ri) => {
                       const on = cur === ri;
                       return (
@@ -313,8 +323,8 @@ export default function EstimatorView() {
                           type="button"
                           onClick={() => setMunRates((p) => ({ ...p, [it.key]: ri }))}
                           className={
-                            (on ? "bg-brand/10 text-brand dark:bg-blue-950 dark:text-blue-300 " : "text-muted hover:bg-canvas dark:hover:bg-zinc-800 ") +
-                            (ri > 0 ? "border-l border-line dark:border-zinc-700 " : "") +
+                            (on ? "bg-brand/10 text-brand " : "text-muted hover:bg-canvas ") +
+                            (ri > 0 ? "border-l border-line " : "") +
                             "px-2.5 py-1"
                           }
                         >
@@ -351,7 +361,7 @@ export default function EstimatorView() {
                   )}
                   <span style={{ color: b.text }}>{b.label}</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-canvas dark:bg-zinc-800">
+                <div className="mt-1 h-2 rounded-full bg-canvas">
                   <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
                 </div>
               </div>
@@ -362,7 +372,7 @@ export default function EstimatorView() {
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink dark:text-zinc-100">Chemical &amp; other contaminants</div>
+        <div className="text-sm font-medium text-ink">Chemical &amp; other contaminants</div>
         <div className="mt-1 text-xs text-muted">
           Exposure load from what you logged. Unlike metals, these don&apos;t build up in tissue — they act on organs and the body&apos;s defenses.
         </div>
@@ -385,7 +395,7 @@ export default function EstimatorView() {
                   )}
                   <span className="shrink-0" style={{ color: b.text }}>{b.label}</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-canvas dark:bg-zinc-800">
+                <div className="mt-1 h-2 rounded-full bg-canvas">
                   <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
                 </div>
               </div>
@@ -395,19 +405,19 @@ export default function EstimatorView() {
         {(cSystems.length > 0 || cDepletes.length > 0) && (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
-              <div className="text-xs font-medium text-ink dark:text-zinc-300">Systems at risk</div>
+              <div className="text-xs font-medium text-ink">Systems at risk</div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {cSystems.map((o) => (
-                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted dark:bg-zinc-800 dark:text-zinc-300">{o}</span>
+                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted">{o}</span>
                 ))}
               </div>
             </div>
             {cDepletes.length > 0 && (
               <div>
-                <div className="text-xs font-medium text-ink dark:text-zinc-300">Defenses these can affect</div>
+                <div className="text-xs font-medium text-ink">Defenses these can affect</div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {cDepletes.map((o) => (
-                    <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success dark:bg-emerald-950/50 dark:text-emerald-300">{o}</span>
+                    <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success">{o}</span>
                   ))}
                 </div>
               </div>
@@ -437,7 +447,7 @@ export default function EstimatorView() {
         </div>
 
         <div className={card}>
-          <div className="text-sm font-medium text-ink dark:text-zinc-100">Minerals these metals can displace</div>
+          <div className="text-sm font-medium text-ink">Minerals these metals can displace</div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {minerals.length ? (
               // Plain spans: the nutrient deep-dives were removed from this
@@ -454,10 +464,10 @@ export default function EstimatorView() {
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink dark:text-zinc-100">What to investigate next</div>
+        <div className="text-sm font-medium text-ink">What to investigate next</div>
         <div className="mt-2">
           {tests.map((t) => (
-            <div key={t} className="border-t border-line py-2 text-sm text-ink first:border-t-0 dark:border-zinc-800 dark:text-zinc-300">
+            <div key={t} className="border-t border-line py-2 text-sm text-ink first:border-t-0">
               {t}
             </div>
           ))}

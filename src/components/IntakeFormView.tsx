@@ -195,17 +195,28 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   // Prefill from existing member record
   useEffect(() => {
     if (!user) return;
-    supabase.from("members")
-      .select("display_name, branch, service_start, service_end")
-      .eq("auth_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!data) return;
-        if (data.display_name) setDisplayName(data.display_name);
-        if (data.branch) setBranch(data.branch);
-        if (data.service_start) setStartYear(String(new Date(data.service_start).getUTCFullYear()));
-        if (data.service_end) setEndYear(String(new Date(data.service_end).getUTCFullYear()));
-      });
+    // Prefill EVERYTHING the wizard writes — re-running it is the designed
+    // flow, and a prefill that skips fields turns a re-run into a data wipe
+    // (MOS and VA rating were being overwritten with blanks).
+    (async () => {
+      type M = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; va_healthcare?: boolean | null };
+      let data: M | null = (await supabase.from("members")
+        .select("display_name, branch, service_start, service_end, mos, va_rating, va_healthcare")
+        .eq("auth_id", user.id).maybeSingle()).data;
+      if (!data) {
+        data = (await supabase.from("members")
+          .select("display_name, branch, service_start, service_end")
+          .eq("auth_id", user.id).maybeSingle()).data;
+      }
+      if (!data) return;
+      if (data.display_name) setDisplayName(data.display_name);
+      if (data.branch) setBranch(data.branch);
+      if (data.service_start) setStartYear(String(new Date(data.service_start).getUTCFullYear()));
+      if (data.service_end) setEndYear(String(new Date(data.service_end).getUTCFullYear()));
+      if (data.mos) setMos(data.mos);
+      if (data.va_rating) setVaRating(data.va_rating);
+      if (typeof data.va_healthcare === "boolean") setVaCare(data.va_healthcare);
+    })();
     supabase.from("conditions")
       .select("label")
       .then(({ data }) => {
@@ -228,12 +239,19 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     try {
       const memberId = await ensureMemberId();
       if (!memberId) throw new Error("Could not create account record.");
-      await supabase.from("members").update({
+      const base = {
         display_name: displayName.trim() || null,
         branch: branch || null,
         service_start: startYear ? `${startYear}-01-01` : null,
         service_end: (!currentlyServing && endYear) ? `${endYear}-12-31` : null,
-      }).eq("id", memberId);
+      };
+      // MOS was collected and silently DROPPED for the app's whole life — it
+      // matters (duty-related exposure is weighed by MOS). Write it; if
+      // migration 0014 isn't applied yet, fall back so nothing else is lost.
+      const withMos = await supabase.from("members").update({ ...base, mos: mos.trim() || null }).eq("id", memberId);
+      if (withMos.error && /column .* does not exist/i.test(withMos.error.message)) {
+        await supabase.from("members").update(base).eq("id", memberId);
+      }
       setStep(1);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -245,10 +263,18 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   async function saveStep2() {
     setError(""); setSaving(true);
     try {
-      for (const loc of locations) {
-        if (!loc.name.trim() && loc.exposures.length === 0 && !loc.other.trim()) continue;
+      // A record with an invented date is worse than an incomplete one — never
+      // stamp "this year" into a legal record because a field was left blank.
+      const toSave = locations.filter((l) => l.name.trim() || l.exposures.length > 0 || l.other.trim());
+      const missingYear = toSave.find((l) => !parseInt(l.fromYear));
+      if (missingYear) {
+        setSaving(false);
+        setError(`Add the year you arrived at ${missingYear.name.trim() || "each location"} — your best guess is fine. Even the year matters.`);
+        return;
+      }
+      for (const loc of toSave) {
         const coords = geocode(loc.name.trim(), sites);
-        const year = parseInt(loc.fromYear) || new Date().getFullYear();
+        const year = parseInt(loc.fromYear);
         const { data: newId, error: rpcErr } = await supabase.rpc("log_check_in", {
           // Unknown place → 0,0 marks it unmapped; the note below tells the
           // veteran to place it. We never invent a plausible-looking location.
@@ -261,7 +287,11 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         if (rpcErr) throw new Error(rpcErr.message);
         if (newId) {
           const patch: { place_name?: string; notes?: string; date_end?: string } = {};
-          if (loc.name.trim()) patch.place_name = loc.name.trim();
+          // Fold the typed region into the place name (it was collected and
+          // dropped) so "Balad" saves as "Balad, Iraq".
+          const nm = loc.name.trim();
+          const rg = loc.region.trim();
+          if (nm) patch.place_name = rg && !nm.toLowerCase().includes(rg.toLowerCase()) ? `${nm}, ${rg}` : nm;
           const noteParts: string[] = [];
           if (loc.other.trim()) noteParts.push(`Other exposure noted: ${loc.other.trim()}`);
           if (!coords) noteParts.push("Location not yet pinned — set the exact spot on the map.");
@@ -305,6 +335,12 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
           toAdd.map((label) => ({ member_id: memberId, label, claim_status: "none" }))
         );
       }
+      // The VA rating + healthcare answers were also collected-and-dropped.
+      // Best-effort: pre-migration-0014 this is a harmless no-op.
+      await supabase.from("members").update({
+        va_rating: vaRating || null,
+        va_healthcare: vaCare,
+      }).eq("id", memberId);
       setStep(3);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong saving conditions.");

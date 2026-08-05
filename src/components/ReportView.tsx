@@ -8,14 +8,36 @@ import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
 import { ServiceRibbon } from "./Patriotic";
 import { downloadClaimPdf } from "@/lib/claimPdf";
 import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
-import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
+import ServiceTimeline, { latencyFor, type TimelineData } from "./ServiceTimeline";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 
 
 // Exposure classes that carry a recognized presumptive pathway.
 
 type ExpoRow = { id: string; exposure_class: string };
-type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: ExpoRow[] | null };
+type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; notes?: string | null; exposures: ExpoRow[] | null };
+
+// Machine-generated note lines never print as the veteran's words.
+const MACHINE_NOTE = /^(Location not yet pinned|Location approximate|Other exposure noted:)/;
+function veteranWords(notes: string | null | undefined): string {
+  return (notes ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l && !MACHINE_NOTE.test(l))
+    .join(" ")
+    .trim();
+}
+
+const EVIDENCE_LINE: Record<string, string> = {
+  documented: "diagnosis in writing",
+  probably: "records exist, location uncertain",
+  undocumented: "not yet documented in writing",
+};
+const PRECISION_LINE: Record<string, string> = {
+  in_service: "began during service",
+  after_service: "began after separation",
+  unsure: "onset year not recalled",
+};
 
 function yr(d: string | null) {
   return d ? new Date(d).getUTCFullYear() : null;
@@ -27,7 +49,7 @@ function rangeLabel(ds: string | null, de: string | null): string {
   if (s && e && e !== s) return `${s}–${e}`;
   return String(s ?? e);
 }
-type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null };
+type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; units?: string[] | null };
 type RecordFile = { name: string; url: string; isImage: boolean };
 
 export default function ReportView() {
@@ -42,15 +64,21 @@ export default function ReportView() {
   const [records, setRecords] = useState<RecordFile[]>([]);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [condOnset, setCondOnset] = useState<Record<string, number>>({});
+  const [condDetail, setCondDetail] = useState<Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null }>>({});
+  const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user ?? null);
       setReady(true);
       if (!data.user) return;
-      const [{ data: m }, { data: c }, { data: cond }] = await Promise.all([
-        supabase.from("members").select("display_name, branch, service_start, service_end").maybeSingle(),
-        supabase.from("check_ins").select("place_name, date_start, date_end, exposures(id, exposure_class)").order("date_start"),
+      // Member: widened select (migration 0014) with a defensive fallback —
+      // the packet must carry MOS/rating once they exist.
+      let m: Member | null = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units").maybeSingle()).data as Member | null;
+      if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end").maybeSingle()).data as Member | null;
+      const [{ data: c }, { data: cond }] = await Promise.all([
+        // notes = the veteran's own words; the packet's strongest material.
+        supabase.from("check_ins").select("place_name, date_start, date_end, notes, exposures(id, exposure_class)").order("date_start"),
         supabase.from("conditions").select("label, claim_status").order("created_at"),
       ]);
       setMember((m as Member) ?? null);
@@ -58,15 +86,25 @@ export default function ReportView() {
       setRows(checks);
       setConditions((cond ?? []) as { label: string; claim_status: string }[]);
 
-      // Onset years (migration 0012) — read defensively; the packet still
-      // builds without them, just without the latency line.
-      const onset = await supabase.from("conditions").select("label, onset_year");
-      if (!onset.error) {
+      // Condition detail (migrations 0012/0013) — read defensively; the packet
+      // still builds without it, just thinner.
+      const det = await supabase.from("conditions").select("id, label, onset_year, onset_precision, evidence_status, secondary_to");
+      if (!det.error) {
         const om: Record<string, number> = {};
-        for (const r of (onset.data ?? []) as { label: string; onset_year: number | null }[]) {
+        const dm: Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null }> = {};
+        const idToLabel: Record<string, string> = {};
+        type DetRow = { id: string; label: string; onset_year: number | null; onset_precision: string | null; evidence_status: string | null; secondary_to: string | null };
+        for (const r of (det.data ?? []) as DetRow[]) idToLabel[r.id] = r.label;
+        for (const r of (det.data ?? []) as DetRow[]) {
           if (r.onset_year) om[r.label] = r.onset_year;
+          dm[r.label] = {
+            onset_precision: r.onset_precision,
+            evidence_status: r.evidence_status,
+            secondary_to: r.secondary_to ? idToLabel[r.secondary_to] ?? null : null,
+          };
         }
         setCondOnset(om);
+        setCondDetail(dm);
       }
 
       const map: Record<string, string[]> = {};
@@ -171,6 +209,11 @@ export default function ReportView() {
         name: member?.display_name || user?.email || "Veteran",
         branch: member?.branch ?? null,
         years,
+        subline: [
+          member?.mos ? `MOS ${member.mos}` : "",
+          member?.units?.length ? `Unit(s): ${member.units.join(", ")}` : "",
+          member?.va_rating && member.va_rating !== "Not rated yet" ? `Current VA rating: ${member.va_rating} (veteran-reported)` : "",
+        ].filter(Boolean).join("  ·  ") || undefined,
         today,
         summary: `You logged service at ${rows.length} location${rows.length === 1 ? "" : "s"}. Documented exposures include ${classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.${conditions.length > 0 ? ` Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.` : " Add your conditions to see which carry a recognized presumptive pathway."}`,
         nextStep: "bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to review the hand-off sheet on the last page.",
@@ -178,6 +221,7 @@ export default function ReportView() {
           year: rangeLabel(r.date_start, r.date_end),
           place: r.place_name || "a logged location",
           exposures: (r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", "),
+          note: veteranWords(r.notes) || undefined,
         })),
         exposures: classesPresent.map((c) => ({
           label: EXPOSURE_LABEL[c] ?? c,
@@ -188,11 +232,23 @@ export default function ReportView() {
         conditions: conditions.map((c) => {
           const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
           const basis = CONDITION_BASIS[c.label];
+          const d = condDetail[c.label];
+          const vparts = [
+            condOnset[c.label] ? `since ${condOnset[c.label]}` : d?.onset_precision ? PRECISION_LINE[d.onset_precision] : "",
+            d?.evidence_status ? EVIDENCE_LINE[d.evidence_status] : "",
+            d?.secondary_to ? `claimed secondary to ${d.secondary_to}` : "",
+          ].filter(Boolean);
+          const lat = latencyFor(
+            { label: c.label, onsetYear: condOnset[c.label] ?? null, linkedExposures: matches },
+            packetTimeline.tours,
+          );
           return {
             label: c.label,
             tag: basis?.tag,
             presumptive: basis?.presumptive,
             status: c.claim_status,
+            veteranLine: vparts.length ? vparts.join(" · ") : undefined,
+            latency: lat ? `First reported ${condOnset[c.label]} — ${lat.years} year${lat.years === 1 ? "" : "s"} after documented exposure at ${lat.place} (${lat.year}).` : undefined,
             matches: matches.length ? `Documented association with ${matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.` : "",
             cite: basis?.cite,
           };
@@ -200,13 +256,25 @@ export default function ReportView() {
         corroborations: Object.entries(corroByClass).map(
           ([c, n]) => `${n} fellow service member${n === 1 ? "" : "s"} corroborate${n === 1 ? "s" : ""} exposure to ${EXPOSURE_LABEL[c] ?? c} at ${(expoPlaces[c] ?? []).join("; ")}.`
         ),
-        contentions: contentions.map((c) => ({
-          label: c.label,
-          matches: c.matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", "),
-          cite: CONDITION_BASIS[c.label]?.cite,
-        })),
+        contentions: [
+          ...contentions.map((c) => ({
+            label: c.label,
+            matches: `claimed as connected to ${c.matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}`,
+            cite: CONDITION_BASIS[c.label]?.cite,
+          })),
+          // Secondary service connection — the cascade, stated as the veteran
+          // claims it, for the VSO to weigh.
+          ...conditions
+            .filter((c) => condDetail[c.label]?.secondary_to && !contentions.some((x) => x.label === c.label))
+            .map((c) => ({
+              label: c.label,
+              matches: `claimed as secondary to ${condDetail[c.label]!.secondary_to}`,
+              cite: undefined as string | undefined,
+            })),
+        ],
         attachments: records.map((r) => ({ name: r.name, isImage: r.isImage, url: r.url })),
       });
+      setDownloaded(true);
     } finally {
       setPdfBusy(false);
     }
@@ -234,6 +302,24 @@ export default function ReportView() {
           in-app browser like Gmail&apos;s. On some phones the PDF opens in a viewer first; use the
           share icon there to save or print it. Print works best on a computer.
         </p>
+
+        {/* The afterlife: downloading is the middle of the story, not the end. */}
+        {downloaded && (
+          <div className="mt-3 rounded-xl border border-success/30 bg-success-soft p-4">
+            <div className="text-sm font-bold text-ink">Packet saved. Here&apos;s the road from here:</div>
+            <ol className="mt-2 space-y-1.5 text-sm text-ink">
+              <li>
+                <span className="font-semibold">1.</span> Take it to an accredited VSO —{" "}
+                <a href={VSO_LOCATOR_URL} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">find one near you (free)</a>.
+              </li>
+              <li>
+                <span className="font-semibold">2.</span> When you file, come back and mark each condition{" "}
+                <Link href="/journey" className="font-semibold text-brand hover:underline">Filed</Link> — this record
+                will track the claim with you.
+              </li>
+            </ol>
+          </div>
+        )}
         <Link href="/reviewer" className="mt-2 inline-block text-xs font-medium text-brand hover:underline">
           Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →
         </Link>
@@ -312,7 +398,9 @@ export default function ReportView() {
           <p className="mt-0.5 text-sm text-muted">
             {member?.display_name || user.email}
             {member?.branch ? ` · ${member.branch}` : ""}
+            {member?.mos ? ` · MOS ${member.mos}` : ""}
             {years ? ` · ${years}` : ""}
+            {member?.va_rating && member.va_rating !== "Not rated yet" ? ` · VA rating ${member.va_rating}` : ""}
           </p>
           <div className="mt-2 inline-block rounded-md border border-line bg-canvas px-2.5 py-1 text-[11px] font-semibold text-muted">
             A self-prepared record — not a medical diagnosis or a legal opinion.
@@ -362,17 +450,26 @@ export default function ReportView() {
             <p className="text-sm text-muted">No locations logged yet.</p>
           ) : (
             <ul className="space-y-1.5">
-              {rows.map((r, i) => (
-                <li key={i} className="text-sm">
-                  <span className="font-semibold">{rangeLabel(r.date_start, r.date_end)}</span>
-                  {" · "}
-                  {r.place_name || "a logged location"}
-                  {" — "}
-                  <span className="text-muted">
-                    {(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", ") || "—"}
-                  </span>
-                </li>
-              ))}
+              {rows.map((r, i) => {
+                const words = veteranWords(r.notes);
+                return (
+                  <li key={i} className="text-sm">
+                    <span className="font-semibold">{rangeLabel(r.date_start, r.date_end)}</span>
+                    {" · "}
+                    {r.place_name || "a logged location"}
+                    {" — "}
+                    <span className="text-muted">
+                      {(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", ") || "—"}
+                    </span>
+                    {words && (
+                      <div className="mt-0.5 pl-4 text-[13px] italic leading-relaxed text-ink/85">
+                        In the veteran&apos;s words — &ldquo;{words}&rdquo;{" "}
+                        <span className="not-italic text-[11px] text-faint">Veteran-reported</span>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
@@ -410,6 +507,12 @@ export default function ReportView() {
               {conditions.map((c, i) => {
                 const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
                 const basis = CONDITION_BASIS[c.label];
+                const d = condDetail[c.label];
+                const vparts = [
+                  condOnset[c.label] ? `since ${condOnset[c.label]}` : d?.onset_precision ? PRECISION_LINE[d.onset_precision] : "",
+                  d?.evidence_status ? EVIDENCE_LINE[d.evidence_status] : "",
+                  d?.secondary_to ? `claimed secondary to ${d.secondary_to}` : "",
+                ].filter(Boolean);
                 return (
                   <li key={i} className="text-sm">
                     <div className="flex flex-wrap items-center gap-2">
@@ -421,6 +524,11 @@ export default function ReportView() {
                       )}
                       {c.claim_status !== "none" ? <span className="text-xs text-muted">VA claim {c.claim_status}</span> : null}
                     </div>
+                    {vparts.length > 0 && (
+                      <div className="mt-0.5 text-xs text-ink/80">
+                        {vparts.join(" · ")} <span className="text-[11px] text-faint">· Veteran-reported</span>
+                      </div>
+                    )}
                     {matches.length > 0 ? (
                       <div className="mt-0.5 text-xs leading-relaxed text-muted">
                         Documented association with {matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.

@@ -2,9 +2,9 @@
 // This generates a real file the veteran can save and print from — it does not
 // rely on the browser's print dialog (which in-app browsers like Gmail's block).
 
-export type PdfTimelineRow = { year: string; place: string; exposures: string };
+export type PdfTimelineRow = { year: string; place: string; exposures: string; note?: string };
 export type PdfExposure = { label: string; presumptive: boolean; places: string; basis: string };
-export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string };
+export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string };
 export type PdfContention = { label: string; matches: string; cite?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
 
@@ -12,6 +12,8 @@ export type ClaimPdfData = {
   name: string;
   branch: string | null;
   years: string | null;
+  /** e.g. "MOS 11B · Current VA rating: 70% (veteran-reported)" */
+  subline?: string;
   today: string;
   summary: string;
   nextStep: string;
@@ -174,7 +176,8 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   doc.setTextColor(INK[0], INK[1], INK[2]);
   doc.text("Claim Support Packet", margin, y);
   y += 18;
-  text([data.name, data.branch, data.years].filter(Boolean).join("  ·  "), { size: 10, color: MUTED, gapAfter: 6 });
+  text([data.name, data.branch, data.years].filter(Boolean).join("  ·  "), { size: 10, color: MUTED, gapAfter: data.subline ? 0 : 6 });
+  if (data.subline) text(data.subline, { size: 9, color: MUTED, gapAfter: 6 });
 
   text(
     "Prepared from veteran-entered data. This is a self-reported record with documented-source citations to assist an accredited VSO and a clinician. It is not a diagnosis or a determination of service connection.",
@@ -210,7 +213,9 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   else
     data.timeline.forEach((r) => {
       text(`${r.year}  ·  ${r.place}`, { size: 10, style: "bold", gapAfter: 0 });
-      text(r.exposures || "—", { size: 9, color: MUTED, indent: 12, gapAfter: 4 });
+      text(r.exposures || "—", { size: 9, color: MUTED, indent: 12, gapAfter: r.note ? 0 : 4 });
+      // The veteran's own account is the strongest thing this page carries.
+      if (r.note) text(`In the veteran's words — "${r.note}"  (Veteran-reported)`, { size: 9, style: "italic", color: INK, indent: 12, gapAfter: 4 });
     });
 
   // ---- 2. Documented basis ----
@@ -229,6 +234,8 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   else
     data.conditions.forEach((c) => {
       text(`${c.label}${c.tag ? `  —  ${c.tag}` : ""}${c.status !== "none" ? `  (VA claim ${c.status})` : ""}`, { size: 10, style: "bold", gapAfter: 0 });
+      if (c.veteranLine) text(`${c.veteranLine}  (Veteran-reported)`, { size: 9, color: INK, indent: 12, gapAfter: 0 });
+      if (c.latency) text(c.latency, { size: 9, style: "italic", color: MUTED, indent: 12, gapAfter: 0 });
       text(c.matches || "No logged exposure linked yet.", { size: 9, color: MUTED, indent: 12, gapAfter: 0 });
       if (c.cite) text(c.cite, { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;
@@ -251,7 +258,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   if (data.contentions.length === 0) text("Add conditions and exposures to generate the contentions list.", { color: MUTED });
   else
     data.contentions.forEach((c) => {
-      text(`${c.label} — claimed as connected to ${c.matches}`, { size: 10, style: "bold", gapAfter: 0 });
+      text(`${c.label} — ${c.matches}`, { size: 10, style: "bold", gapAfter: 0 });
       if (c.cite) text(c.cite, { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;
     });

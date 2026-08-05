@@ -23,6 +23,10 @@ export default function AccountView() {
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
   const [layer, setLayer] = useState("veteran");
+  const [mos, setMos] = useState("");
+  const [vaRating, setVaRating] = useState("");
+  const [vaCare, setVaCare] = useState<boolean | null>(null);
+  const [units, setUnits] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -30,11 +34,17 @@ export default function AccountView() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      let { data } = await supabase
-        .from("members")
-        .select("display_name, branch, service_start, service_end, population_layer")
-        .eq("auth_id", user.id)
-        .maybeSingle();
+      // Widened select (migration 0014) with a defensive fallback — these were
+      // write-once-and-invisible before; now they live where they can be fixed.
+      type M = Record<string, unknown> | null;
+      let data: M = (await supabase.from("members")
+        .select("display_name, branch, service_start, service_end, population_layer, mos, va_rating, va_healthcare, units")
+        .eq("auth_id", user.id).maybeSingle()).data;
+      if (!data) {
+        data = (await supabase.from("members")
+          .select("display_name, branch, service_start, service_end, population_layer")
+          .eq("auth_id", user.id).maybeSingle()).data;
+      }
       if (!data) {
         const created = await supabase.from("members").insert({ auth_id: user.id }).select("display_name, branch, service_start, service_end, population_layer").single();
         data = created.data;
@@ -44,6 +54,10 @@ export default function AccountView() {
       setStartYear(data?.service_start ? String(new Date(data.service_start as string).getUTCFullYear()) : "");
       setEndYear(data?.service_end ? String(new Date(data.service_end as string).getUTCFullYear()) : "");
       setLayer((data?.population_layer as string) ?? "veteran");
+      setMos((data?.mos as string) ?? "");
+      setVaRating((data?.va_rating as string) ?? "");
+      if (typeof data?.va_healthcare === "boolean") setVaCare(data.va_healthcare as boolean);
+      setUnits(Array.isArray(data?.units) ? (data.units as string[]).join(", ") : "");
       setLoaded(true);
     })();
   }, [user, supabase]);
@@ -52,16 +66,23 @@ export default function AccountView() {
     if (!user) return;
     setBusy(true);
     setSaved(false);
-    await supabase
-      .from("members")
-      .update({
-        display_name: displayName || null,
-        branch: branch || null,
-        population_layer: layer || "veteran",
-        service_start: startYear ? `${startYear}-01-01` : null,
-        service_end: endYear ? `${endYear}-12-31` : null,
-      })
-      .eq("auth_id", user.id);
+    const base = {
+      display_name: displayName || null,
+      branch: branch || null,
+      population_layer: layer || "veteran",
+      service_start: startYear ? `${startYear}-01-01` : null,
+      service_end: endYear ? `${endYear}-12-31` : null,
+      units: units.split(",").map((u) => u.trim()).filter(Boolean),
+    };
+    const full = await supabase.from("members").update({
+      ...base,
+      mos: mos.trim() || null,
+      va_rating: vaRating || null,
+      va_healthcare: vaCare,
+    }).eq("auth_id", user.id);
+    if (full.error && /column .* does not exist/i.test(full.error.message)) {
+      await supabase.from("members").update(base).eq("auth_id", user.id);
+    }
     setBusy(false);
     setSaved(true);
   }
@@ -114,6 +135,35 @@ export default function AccountView() {
             <div>
               <label className="mb-1 block text-xs font-medium text-muted">Service end</label>
               <input value={endYear} onChange={(e) => setEndYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="YYYY" inputMode="numeric" className={field} />
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">MOS / Rate / AFSC</label>
+            <input value={mos} onChange={(e) => setMos(e.target.value)} placeholder="e.g. 11B, HM, 1N0X1" className={field} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">Unit(s) you served with</label>
+            <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="e.g. 1-502 IN, 101st ABN" className={field} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">Current VA rating</label>
+            <select value={vaRating} onChange={(e) => setVaRating(e.target.value)} className={field}>
+              <option value="">Select…</option>
+              {["Not rated yet","0%","10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"].map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">Receiving VA healthcare?</label>
+            <div className="flex gap-2">
+              {(["Yes", "No"] as const).map((v) => (
+                <button key={v} type="button" aria-pressed={vaCare === (v === "Yes")}
+                  onClick={() => setVaCare(v === "Yes")}
+                  className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-semibold transition ${vaCare === (v === "Yes") ? "border-brand bg-brand text-white" : "border-line text-muted hover:border-brand/30"}`}>
+                  {v}
+                </button>
+              ))}
             </div>
           </div>
         </div>

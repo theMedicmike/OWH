@@ -254,7 +254,7 @@ export default function JourneyView() {
         <div className="mt-2 text-lg font-bold text-ink">Connecting the Dots of Service</div>
         <div className="text-sm text-muted">{[name, branch, years, today].filter(Boolean).join(" · ")}</div>
         <div className="mt-1 text-sm text-ink">
-          Documented {rows.length} location{rows.length === 1 ? "" : "s"}, {classes.length} exposure{classes.length === 1 ? "" : "s"}, and {conditions.length} condition{conditions.length === 1 ? "" : "s"}; {connectedConds.size} connected to a documented exposure.
+          Documented {rows.length} location{rows.length === 1 ? "" : "s"} and {classes.length} exposure{classes.length === 1 ? "" : "s"}; {connectedConds.size} condition{connectedConds.size === 1 ? "" : "s"} connected to a documented exposure.
         </div>
         <hr className="mt-3 border-line" />
       </div>
@@ -333,10 +333,10 @@ export default function JourneyView() {
         <div className="p-6">
           <div className="text-lg font-semibold tracking-tight">Connecting the dots of your service, {greeting}.</div>
           <div className="mt-1 text-sm text-white/75">
-            You&apos;ve documented <strong>{rows.length}</strong> location{rows.length === 1 ? "" : "s"},{" "}
-            <strong>{classes.length}</strong> exposure{classes.length === 1 ? "" : "s"}, and{" "}
-            <strong>{conditions.length}</strong> condition{conditions.length === 1 ? "" : "s"} — and the app has
-            connected <strong>{connectedConds.size}</strong> of them to a documented exposure.
+            {/* Progress on the RECORD, never a tally of what's wrong with you. */}
+            You&apos;ve documented <strong>{rows.length}</strong> location{rows.length === 1 ? "" : "s"} and{" "}
+            <strong>{classes.length}</strong> exposure{classes.length === 1 ? "" : "s"} — and the app has
+            connected <strong>{connectedConds.size}</strong> of your condition{connectedConds.size === 1 ? "" : "s"} to a documented exposure.
           </div>
           <div className="mt-4">
             <div className="flex items-end justify-between">

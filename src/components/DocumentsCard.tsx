@@ -59,13 +59,13 @@ export default function DocumentsCard() {
   if (!user) return null;
 
   return (
-    <div className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">
-      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Your records</div>
+    <div className="rounded-xl border border-zinc-200 p-5">
+      <div className="text-sm font-medium text-zinc-900">Your records</div>
       <div className="mt-1 text-xs text-zinc-500">
         Upload your DD-214, medical records, lab results, or claim letters. Private to you.
       </div>
 
-      <label className="mt-3 inline-block cursor-pointer rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">
+      <label className="mt-3 inline-block cursor-pointer rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-100">
         {busy ? "Uploading…" : "Upload a file"}
         <input type="file" className="hidden" onChange={onUpload} disabled={busy} />
       </label>
@@ -73,10 +73,10 @@ export default function DocumentsCard() {
       {err && <p className="mt-2 text-xs text-rose-500">{err}</p>}
 
       {files.length > 0 && (
-        <ul className="mt-3 divide-y divide-zinc-100 dark:divide-zinc-800">
+        <ul className="mt-3 divide-y divide-zinc-100">
           {files.map((f) => (
             <li key={f.name} className="flex items-center justify-between gap-3 py-2 text-sm">
-              <button onClick={() => view(f.name)} className="truncate text-left text-blue-600 hover:underline dark:text-blue-400">
+              <button onClick={() => view(f.name)} className="truncate text-left text-blue-600 hover:underline">
                 {f.name.replace(/^\d+-/, "")}
               </button>
               <button onClick={() => remove(f.name)} className="flex-none text-xs text-zinc-400 hover:text-rose-500">

@@ -130,6 +130,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // The veteran's own words — the primary evidence field on every check-in.
   const [story, setStory] = useState("");
   const [month, setMonth] = useState(0); // 0 = not sure; months matter for presumptives
+  const [endYear, setEndYear] = useState(""); // optional "left in" — a tour is a span, not a point
   const [searchQ, setSearchQ] = useState("");
   const draftRef = useRef<{ lng: number; lat: number } | null>(null);
   const yearSeeded = useRef(false);
@@ -174,6 +175,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setOtherText("");
     setStory("");
     setMonth(0);
+    setEndYear("");
   }
 
   function closeDraft() {
@@ -442,13 +444,17 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       p_exposures: selected,
     });
     if (!error && newId) {
-      const patch: { place_name?: string; notes?: string; date_start?: string } = {};
+      const patch: { place_name?: string; notes?: string; date_start?: string; date_end?: string } = {};
       if (draftName.trim()) patch.place_name = draftName.trim();
       // The veteran's narrative leads; a free-text "other exposure" follows it.
       const noteParts = [story.trim(), otherText.trim() ? `Other exposure noted: ${otherText.trim()}` : ""].filter(Boolean);
       if (noteParts.length) patch.notes = noteParts.join("\n");
       // Month-level dates when known — presumptive windows can turn on months.
       if (month >= 1 && month <= 12) patch.date_start = `${year}-${String(month).padStart(2, "0")}-01`;
+      // A departure year turns a point into a tour — without it the timeline
+      // draws every map check-in as a sliver.
+      const ey = parseInt(endYear);
+      if (ey && ey >= year && ey <= new Date().getUTCFullYear()) patch.date_end = `${ey}-12-31`;
       if (Object.keys(patch).length > 0) {
         // This patch carries the veteran's OWN WORDS and the month-precision
         // date. If it fails we must not close the panel — the text would be
@@ -590,7 +596,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         )}
       </div>
 
-      <div className="relative">
+      {/* Field desk layout: the map and the check-in sit SIDE BY SIDE on
+          desktop — the panel must never float over the map, hiding the
+          veteran's own pin and fighting the zoom controls. */}
+      <div className="lg:flex lg:items-start lg:gap-4">
+        <div className="relative min-w-0 flex-1">
         <div ref={containerRef} className="h-[520px] w-full overflow-hidden rounded-xl border border-line" />
 
         {/* Confirm chip for a dropped pin — a stray tap never spawns the panel */}
@@ -635,8 +645,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           )}
         </div>
 
+        </div>
+
         {draft && (
-          <div className="mt-3 w-full rounded-xl border border-line bg-white p-4 shadow-lg sm:absolute sm:right-4 sm:top-4 sm:mt-0 sm:w-80 sm:max-h-[calc(100%-2rem)] sm:overflow-auto">
+          <div className="mt-3 w-full rounded-xl border border-line bg-white p-4 shadow-lg lg:mt-0 lg:max-h-[520px] lg:w-[340px] lg:flex-none lg:overflow-y-auto">
             <ServiceRibbon className="mb-3 rounded-full opacity-90" />
             <div className="text-sm font-semibold text-ink">New check-in</div>
 
@@ -664,6 +676,17 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 <option key={m} value={i + 1}>{m}</option>
               ))}
             </select>
+
+            <label className="mt-2 block text-xs text-muted">Left in (year — optional, makes this a tour instead of a moment)</label>
+            <input
+              type="number"
+              min={1945}
+              max={2026}
+              value={endYear}
+              onChange={(e) => setEndYear(e.target.value)}
+              placeholder={`e.g. ${Math.min(year + 1, 2026)}`}
+              className="mt-1 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm tabular-nums text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
+            />
 
             <label className="mt-3 block text-sm font-semibold text-ink">In your own words — what were you doing here?</label>
             <p className="mt-0.5 text-[11px] leading-snug text-faint">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>

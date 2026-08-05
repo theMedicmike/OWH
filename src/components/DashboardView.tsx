@@ -10,7 +10,7 @@ import { recordProgress } from "@/lib/nextaction";
 
 
 type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
-type Conn = { status: string; other_name: string | null; place: string | null; ev_year: number | null };
+type Conn = { id: string; direction: "sent" | "received"; status: string; other_name: string | null; place: string | null; ev_year: number | null };
 
 const QUICK = [
   { href: "/mike", title: "Talk to Medic Mike", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
@@ -30,6 +30,8 @@ export default function DashboardView() {
   const [rows, setRows] = useState<CheckRow[]>([]);
   const [counts, setCounts] = useState({ exposures: 0, conditions: 0, corroborations: 0 });
   const [buddies, setBuddies] = useState<Conn[]>([]);
+  const [pendingReqs, setPendingReqs] = useState<Conn[]>([]);
+  const [filedCount, setFiledCount] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const [classes, setClasses] = useState<string[]>([]);
@@ -50,15 +52,16 @@ export default function DashboardView() {
       const [ci, exprows, cond, conns, files] = await Promise.all([
         supabase.from("check_ins").select("id, place_name, date_start, exposures(exposure_class)").order("date_start", { ascending: false }),
         supabase.from("exposures").select("id, exposure_class"),
-        supabase.from("conditions").select("label").order("created_at"),
+        supabase.from("conditions").select("label, claim_status").order("created_at"),
         supabase.rpc("list_buddy_connections"),
         supabase.storage.from("records").list(user.id),
       ]);
       setRows((ci.data ?? []) as CheckRow[]);
       const exRows = (exprows.data ?? []) as { id: string; exposure_class: string }[];
       setClasses(Array.from(new Set(exRows.map((e) => e.exposure_class))));
-      const condRows = (cond.data ?? []) as { label: string }[];
+      const condRows = (cond.data ?? []) as { label: string; claim_status?: string }[];
       setCondLabels(condRows.map((c) => c.label));
+      setFiledCount(condRows.filter((c) => c.claim_status && c.claim_status !== "none").length);
       let corr = 0;
       const ids = exRows.map((e) => e.id);
       if (ids.length) {
@@ -66,7 +69,10 @@ export default function DashboardView() {
         corr = c.count ?? 0;
       }
       setCounts({ exposures: exRows.length, conditions: condRows.length, corroborations: corr });
-      setBuddies(((conns.data ?? []) as Conn[]).filter((x) => x.status === "accepted"));
+      const allConns = (conns.data ?? []) as Conn[];
+      setBuddies(allConns.filter((x) => x.status === "accepted"));
+      // A human is waiting — that must never be invisible on the home screen.
+      setPendingReqs(allConns.filter((x) => x.direction === "received" && x.status === "pending"));
       setHasDD214(((files.data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder")).length > 0);
       setLoaded(true);
     })();
@@ -85,7 +91,9 @@ export default function DashboardView() {
   const stats = [
     { label: "Locations", value: checkins, href: "/locations" },
     { label: "Exposures", value: counts.exposures, href: "/exposures" },
-    { label: "Conditions", value: counts.conditions, href: "/conditions" },
+    // Never a numeric tally of conditions — "11 conditions" is a picture of
+    // everything wrong with you. State, not score.
+    { label: "Your health", value: counts.conditions > 0 ? "On file" : "Not yet", href: "/health" },
     { label: "Corroborations", value: counts.corroborations, href: "/buddies" },
     { label: "Battle buddies", value: buddies.length, href: "/buddies" },
   ];
@@ -101,7 +109,13 @@ export default function DashboardView() {
     connectedConditions: connectedCount,
     corroborations: counts.corroborations,
     hasDD214,
+    filedConditions: filedCount,
   });
+
+  async function respondReq(id: string, accept: boolean) {
+    await supabase.rpc("respond_buddy_connection", { p_connection_id: id, p_accept: accept });
+    setPendingReqs((prev) => prev.filter((r) => r.id !== id));
+  }
 
   return (
     <div className="space-y-6">
@@ -144,6 +158,25 @@ export default function DashboardView() {
         ))}
       </div>
 
+      {/* A veteran reached out — the human moment outranks everything below it */}
+      {pendingReqs.length > 0 && (
+        <div className="rounded-xl border border-accent/40 bg-accent/5 p-5">
+          <div className="text-xs font-semibold uppercase tracking-wide text-accent">Battle buddies</div>
+          {pendingReqs.map((r) => (
+            <div key={r.id} className="mt-2 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-ink">
+                <strong>{r.other_name || "A veteran"}</strong> who served{r.place ? ` near ${r.place}` : " where you did"}
+                {r.ev_year ? ` around ${r.ev_year}` : ""} asked to connect.
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => respondReq(r.id, true)} className="rounded-lg bg-brand px-3.5 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600">Accept</button>
+                <button onClick={() => respondReq(r.id, false)} className="rounded-lg border border-line px-3.5 py-1.5 text-sm text-muted hover:bg-canvas">Not now</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Start here (brand-new) / Resume (returning) — one lit door either way */}
       <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
         {!loaded ? (
@@ -182,8 +215,10 @@ export default function DashboardView() {
             {prog.next ? (
               <>
                 <p className="mt-3 text-sm text-ink">
-                  You&apos;re <strong>{prog.remaining.length}</strong> step{prog.remaining.length === 1 ? "" : "s"} from a
-                  claim-ready record. Next: {prog.next.label.toLowerCase()}.
+                  {prog.claimReady
+                    ? <>Your record is claim-ready. Make it stronger — next: {prog.next.label.toLowerCase()}.</>
+                    : <>You&apos;re <strong>{prog.remaining.length}</strong> step{prog.remaining.length === 1 ? "" : "s"} from a
+                  claim-ready record. Next: {prog.next.label.toLowerCase()}.</>}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
                   <Link href={prog.next.href} className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
