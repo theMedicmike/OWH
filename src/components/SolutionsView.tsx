@@ -5,11 +5,19 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
-import { EXPOSURE_LABEL, SOLUTION_PILLARS, START_THIS_WEEK, type SolutionPillar } from "@/lib/education";
+import { SOLUTION_PILLARS, START_THIS_WEEK, type SolutionPillar } from "@/lib/education";
 
-function PillarCard({ p, relevant }: { p: SolutionPillar; relevant: boolean }) {
+// 🔴 This page is deliberately NOT personalised. It used to rank pillars against
+// the veteran's own logged exposures and conditions under a heading reading
+// "Tailored to your record" — which meant a man who logged heavy metals was shown
+// "Support natural detox" as advice matched to him. The founder separately sells
+// nutritional supplements; the nonprofit sells nothing and he takes nothing from
+// it, but no transaction is needed for that click path to read as a funnel.
+// Everyone now sees the same pillars in the same order. Do not reintroduce
+// matching here — SolutionPillar no longer carries the fields to do it with.
+function PillarCard({ p }: { p: SolutionPillar }) {
   return (
-    <div className={`overflow-hidden rounded-xl border bg-surface ${relevant ? "border-accent/40" : "border-line"}`}>
+    <div className="overflow-hidden rounded-xl border border-line bg-surface">
       <div className="h-1 bg-accent" />
       <div className="p-5">
         <div className="flex items-center gap-3">
@@ -48,20 +56,14 @@ function PillarCard({ p, relevant }: { p: SolutionPillar; relevant: boolean }) {
 export default function SolutionsView() {
   const [supabase] = useState(() => createClient());
   const [user, setUser] = useState<User | null>(null);
-  const [myClasses, setMyClasses] = useState<string[]>([]);
-  const [myConditions, setMyConditions] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
 
+  // The veteran's exposures and conditions are deliberately NOT read here. This
+  // page shows the same general education to everyone; nothing on it is matched
+  // to a personal record. See the note above PillarCard.
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
+    supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
-      if (!data.user) { setLoaded(true); return; }
-      const [{ data: exp }, { data: cond }] = await Promise.all([
-        supabase.from("exposures").select("exposure_class"),
-        supabase.from("conditions").select("label"),
-      ]);
-      setMyClasses(Array.from(new Set(((exp ?? []) as { exposure_class: string }[]).map((e) => e.exposure_class))));
-      setMyConditions(((cond ?? []) as { label: string }[]).map((c) => c.label));
       setLoaded(true);
     });
   }, [supabase]);
@@ -76,14 +78,6 @@ export default function SolutionsView() {
     );
   }
 
-  const classSet = new Set(myClasses);
-  const condSet = new Set(myConditions);
-  const isRelevant = (p: SolutionPillar) =>
-    p.exposures.some((e) => classSet.has(e)) || p.conditions.some((c) => condSet.has(c));
-
-  const relevant = SOLUTION_PILLARS.filter(isRelevant);
-  const rest = SOLUTION_PILLARS.filter((p) => !isRelevant(p));
-
   return (
     <div className="space-y-4">
       {/* Restoration mindset */}
@@ -93,15 +87,14 @@ export default function SolutionsView() {
           <div className="text-xs font-bold uppercase tracking-wide text-accent">Burden, not broken</div>
           <p className="mt-1.5 text-sm leading-relaxed text-ink">
             Most veterans aren&apos;t broken — they&apos;re carrying a burden that was never measured or
-            addressed. The body is built to heal; it just can&apos;t while it&apos;s still overwhelmed. So
-            restoration isn&apos;t about chasing one symptom or one miracle cure. It&apos;s about
-            rebuilding the terrain — reducing the burden, replenishing what was lost, and giving the body
-            the conditions it needs to repair itself.
+            written down. Nothing on this page undoes an exposure, and nobody here is selling you anything
+            that claims to. What follows is the ordinary, unglamorous ground floor: sleep, movement, blood
+            pressure, blood sugar, smoking. It is not exciting and it is the part that is still movable.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-ink">
-            The mission has changed. It&apos;s no longer survival — it&apos;s restoration. Everything below
-            is general education to explore alongside your medical care. It is not treatment, not a
-            prescription, and never part of your VA claim.
+            This is general education for every veteran — none of it is matched to your record, and none of
+            it is personal advice. It is not treatment, not a prescription, and never part of your VA claim.
+            <span className="font-semibold"> This app is free and sells nothing.</span>
           </p>
         </div>
       </div>
@@ -127,31 +120,8 @@ export default function SolutionsView() {
         </p>
       </div>
 
-      {(myClasses.length > 0 || myConditions.length > 0) && (
-        <div className="rounded-xl border border-line bg-surface p-4">
-          <div className="text-sm font-semibold text-ink">Tailored to your record</div>
-          <p className="mt-1 text-xs text-muted">
-            Based on{" "}
-            {myClasses.length > 0 && <span>{myClasses.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ")}</span>}
-            {myClasses.length > 0 && myConditions.length > 0 && " and "}
-            {myConditions.length > 0 && <span>{myConditions.join(", ")}</span>}.
-          </p>
-        </div>
-      )}
-
-      {relevant.length > 0 && (
-        <>
-          <div className="text-xs font-bold uppercase tracking-widest text-accent">Most relevant to you</div>
-          {relevant.map((p) => <PillarCard key={p.key} p={p} relevant />)}
-        </>
-      )}
-
-      {rest.length > 0 && (
-        <>
-          <div className="pt-2 text-xs font-bold uppercase tracking-widest text-muted">More foundations of healing</div>
-          {rest.map((p) => <PillarCard key={p.key} p={p} relevant={false} />)}
-        </>
-      )}
+      <div className="text-xs font-bold uppercase tracking-widest text-muted">The same ground floor, for everyone</div>
+      {SOLUTION_PILLARS.map((p) => <PillarCard key={p.key} p={p} />)}
 
       <div className="rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
         <div className="font-semibold text-brand">Choosing help wisely</div>

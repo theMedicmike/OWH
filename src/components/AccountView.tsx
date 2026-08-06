@@ -8,6 +8,8 @@ import CohortConsentCard from "./CohortConsentCard";
 import OwnYourRecordCard from "./OwnYourRecordCard";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
 import DD214Assist from "./DD214Assist";
+import { bootCampsFor } from "@/lib/gazetteer";
+import { saveBootCampCheckIn, findBootCampCheckIn } from "@/lib/bootCamp";
 
 const BRANCHES = ["", "Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
 
@@ -29,6 +31,9 @@ export default function AccountView() {
   const [vaRating, setVaRating] = useState("");
   const [vaCare, setVaCare] = useState<boolean | null>(null);
   const [units, setUnits] = useState("");
+  const [bootCamp, setBootCamp] = useState("");
+  const [bootCampYear, setBootCampYear] = useState("");
+  const [existingBootCamp, setExistingBootCamp] = useState<{ place: string; year: number | null } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
@@ -63,6 +68,8 @@ export default function AccountView() {
       setVaRating((data?.va_rating as string) ?? "");
       if (typeof data?.va_healthcare === "boolean") setVaCare(data.va_healthcare as boolean);
       setUnits(Array.isArray(data?.units) ? (data.units as string[]).join(", ") : "");
+      // Show the truth: if a boot-camp pin already exists, offer nothing to fill in.
+      setExistingBootCamp(await findBootCampCheckIn(supabase, (data?.branch as string) ?? ""));
       setLoaded(true);
     })();
   }, [user, supabase]);
@@ -93,11 +100,34 @@ export default function AccountView() {
       // which made this fallback dead code and every save a silent no-op.
       err = (await supabase.from("members").update(base).eq("auth_id", user.id)).error;
     }
-    setBusy(false);
     if (err) {
+      setBusy(false);
       setSaveErr(`Couldn't save: ${err.message}`);
       return;
     }
+
+    // Boot camp is a check-in, not a profile column, so it saves separately — and
+    // only when there isn't one already. A failure here must not report the whole
+    // save as failed: the profile above did save.
+    if (!existingBootCamp && bootCamp && bootCamp !== "__other") {
+      const res = await saveBootCampCheckIn(supabase, {
+        branch,
+        campName: bootCamp,
+        year: bootCampYear,
+        fallbackYear: startYear,
+      });
+      if (res.status === "saved" || res.status === "already-there") {
+        setExistingBootCamp({ place: res.place, year: parseInt(bootCampYear) || parseInt(startYear) || null });
+        setBootCamp("");
+        setBootCampYear("");
+      } else if (res.status === "skipped" && res.reason.includes("year")) {
+        setSaveErr("Saved everything else — boot camp needs the year you shipped before it can go on your map.");
+        setBusy(false);
+        return;
+      }
+    }
+
+    setBusy(false);
     setSaved(true);
   }
 
@@ -150,6 +180,51 @@ export default function AccountView() {
               <label className="mb-1 block text-xs font-medium text-muted">Service end</label>
               <input value={endYear} onChange={(e) => setEndYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="YYYY" inputMode="numeric" className={field} />
             </div>
+          </div>
+          {/* Boot camp. It is asked once in the signup wizard, but the wizard has no
+              back-navigation — so a veteran who skipped it there previously had no
+              way to add it, ever. It is worth having: everybody remembers where
+              they shipped and what year, and several training posts carry
+              documented exposures of their own. Saving creates a real check-in pin
+              via the shared helper in lib/bootCamp.ts, never a duplicate. */}
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">Where you went to boot camp</label>
+            {existingBootCamp ? (
+              <div className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-ink">
+                {existingBootCamp.place}
+                {existingBootCamp.year ? <span className="text-muted"> · {existingBootCamp.year}</span> : null}
+                <span className="mt-0.5 block text-[11px] text-faint">
+                  Already on your map. Edit it there like any other place you served.
+                </span>
+              </div>
+            ) : branch ? (
+              <>
+                <select value={bootCamp} onChange={(e) => setBootCamp(e.target.value)} className={field}>
+                  <option value="">Select…</option>
+                  {bootCampsFor(branch).map((b) => (
+                    <option key={b.name} value={b.name}>{b.name}, {b.region}</option>
+                  ))}
+                  <option value="__other">Somewhere else / I&apos;d rather not say</option>
+                </select>
+                {bootCamp && bootCamp !== "__other" && (
+                  <input
+                    value={bootCampYear}
+                    onChange={(e) => setBootCampYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    placeholder="Year you shipped (YYYY)"
+                    inputMode="numeric"
+                    className={`${field} mt-2`}
+                  />
+                )}
+                <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
+                  Everybody remembers boot camp — and it counts. Some training posts carry documented exposures
+                  of their own. Saving adds it to your map as a place you served.
+                </p>
+              </>
+            ) : (
+              <p className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-xs text-muted">
+                Pick your branch above and the training posts for it will appear here.
+              </p>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">MOS / Rate / AFSC</label>

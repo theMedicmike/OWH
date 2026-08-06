@@ -121,7 +121,12 @@ export function recordSteps(s: RecordState): RecordStep[] {
     { key: "conditions", label: "Conditions", done: s.conditions > 0, href: "/health", cta: "Add the conditions you live with" },
     { key: "link", label: "A documented link", done: s.connectedConditions > 0, href: "/conditions", cta: "Connect a condition to an exposure" },
     { key: "corroboration", label: "Corroboration", done: s.corroborations > 0, href: "/buddies", cta: "Ask a battle buddy to corroborate" },
-    { key: "dd214", label: "DD-214 on file", done: s.hasDD214, href: "/account", cta: "Upload your DD-214 (discharge papers)" },
+    // ⚠️ `hasDD214` is really "any file has been uploaded" — the app never opens a
+    // document and cannot tell a DD-214 from a photo of a lab slip. It used to be
+    // labelled "DD-214 on file", so a veteran who uploaded anything at all got a
+    // green check and could walk into a VSO office without the one document his
+    // rep cannot file without. The label now says only what is actually known.
+    { key: "dd214", label: "A record is on file", done: s.hasDD214, href: "/account", cta: "Upload your DD-214 (discharge papers) — your VSO needs it" },
     // The step after the packet: filing is the point of all of this, and
     // marking it filed is what lets the record keep walking with the claim.
     { key: "filed", label: "Claim filed", done: (s.filedConditions ?? 0) > 0, href: "/journey", cta: "When you file, mark the condition Filed" },

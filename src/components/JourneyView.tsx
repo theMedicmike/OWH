@@ -772,8 +772,9 @@ function Detail({ sel, places }: { sel: { type: "exp" | "cond"; key: string }; p
     <div className="mt-4 rounded-lg border border-success/30 bg-success-soft p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-bold text-ink">{sel.key}</span>
+        {/* Neutral, never warning-coloured — see the note in ReportView. */}
         {basis && (
-          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${basis.presumptive ? "bg-success text-white" : "bg-warn-soft text-warn"}`}>{basis.tag}</span>
+          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${basis.presumptive ? "bg-success text-white" : "bg-canvas text-muted"}`}>{basis.tag}</span>
         )}
       </div>
       {basis && <p className="mt-1.5 text-xs leading-relaxed text-ink">{basis.cite}</p>}

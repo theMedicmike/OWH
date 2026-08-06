@@ -299,13 +299,22 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Trouble swallowing", system: "Stomach & digestion", exposures: [], link: "both", alt: "dysphagia" },
 
   // ── Hormones & metabolism ──
-  { label: "Gout", system: "Hormones & metabolism", exposures: ["heavy_metal"], link: "both" },
+  // ⚠️ NO metal exposure class may appear in this group. Saturnine gout moved to
+  // "Kidneys & urinary" (its mechanism is urate underexcretion via lead
+  // nephropathy) and "Vitamin or mineral deficiency" was deleted outright — it
+  // is a nutrient claim, not a condition, and there is no validated model from
+  // an exposure history to a nutrient deficit in a person. Together they were
+  // the last heavy-metal route into a group that also contains "Low
+  // testosterone", which rendered "metals → low testosterone" as a browsable
+  // path without anyone writing the sentence. Enforced by scripts/coi-firewall.cjs.
   { label: "Adrenal problems", system: "Hormones & metabolism", exposures: [], link: "both" },
-  { label: "Vitamin or mineral deficiency", system: "Hormones & metabolism", exposures: ["heavy_metal"], link: "both" },
   { label: "Prediabetes / insulin resistance", system: "Hormones & metabolism", exposures: [], link: "both" },
   { label: "Metabolic syndrome / obesity", system: "Hormones & metabolism", exposures: [], link: "both" },
 
   // ── Kidneys & urinary ──
+  // Saturnine gout lives here, not under hormones: lead raises urate by
+  // impairing its excretion through the kidney, so the kidney is the mechanism.
+  { label: "Gout", system: "Kidneys & urinary", exposures: ["heavy_metal"], link: "both", alt: "saturnine gout" },
   { label: "Frequent urination or urgency", system: "Kidneys & urinary", exposures: [], link: "both" },
   { label: "Urinary incontinence", system: "Kidneys & urinary", exposures: [], link: "both" },
   { label: "Enlarged prostate (BPH)", system: "Kidneys & urinary", exposures: [], link: "both" },

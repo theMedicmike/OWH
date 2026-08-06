@@ -8,26 +8,31 @@ import { ServiceRibbon } from "./Patriotic";
 import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG } from "@/lib/toxlibrary";
 import { EXPOSURE_LABEL } from "@/lib/education";
 
-// Every service-relevant heavy metal / metalloid, with where it stores and the
-// vital trace minerals/nutrients it displaces or depletes. Heuristic, for the
-// scientific advisory board to validate and calibrate.
-const METALS: { key: string; name: string; organs: string[]; minerals: string[] }[] = [
-  { key: "pb", name: "Lead", organs: ["bone", "brain", "kidney"], minerals: ["calcium", "iron", "zinc"] },
-  { key: "cd", name: "Cadmium", organs: ["kidney", "lungs", "bone"], minerals: ["zinc", "copper", "selenium", "calcium"] },
-  { key: "hg", name: "Mercury", organs: ["brain", "kidney", "nervous system"], minerals: ["selenium", "zinc"] },
-  { key: "as", name: "Arsenic", organs: ["skin", "liver", "peripheral nerves"], minerals: ["selenium", "zinc", "phosphate"] },
-  { key: "u", name: "Depleted uranium", organs: ["kidney", "bone"], minerals: ["calcium", "phosphate"] },
-  { key: "w", name: "Tungsten", organs: ["fragment sites", "bone"], minerals: ["molybdenum", "cobalt"] },
-  { key: "co", name: "Cobalt", organs: ["heart", "thyroid", "lungs"], minerals: ["iron", "iodine"] },
-  { key: "cr", name: "Chromium (VI)", organs: ["lungs", "sinuses", "kidney"], minerals: ["iron", "zinc"] },
-  { key: "mn", name: "Manganese", organs: ["brain (basal ganglia)", "liver"], minerals: ["iron"] },
-  { key: "ni", name: "Nickel", organs: ["lungs", "skin", "sinuses"], minerals: ["zinc", "magnesium", "iron"] },
-  { key: "al", name: "Aluminum", organs: ["brain", "bone"], minerals: ["calcium", "magnesium", "iron", "phosphate"] },
-  { key: "sb", name: "Antimony", organs: ["lungs", "heart"], minerals: ["selenium"] },
-  { key: "be", name: "Beryllium", organs: ["lungs"], minerals: ["magnesium"] },
-  { key: "v", name: "Vanadium", organs: ["lungs", "kidney"], minerals: ["chromium"] },
-  { key: "tl", name: "Thallium", organs: ["nerves", "kidney"], minerals: ["potassium"] },
-  { key: "ba", name: "Barium", organs: ["heart", "bone", "muscle"], minerals: ["potassium", "calcium"] },
+// Every service-relevant heavy metal / metalloid and the organs it targets.
+//
+// ⚠️ The weightings below are HEURISTIC and have never been validated. An earlier
+// version of this file said they would be "reviewed and calibrated by the
+// scientific advisory board." No such board exists, and no one can perform that
+// validation: intake cannot be reconstructed from a questionnaire to better than
+// about two orders of magnitude, so no calibration target exists to calibrate
+// against. Do not reinstate that claim. See the dated correction in the footer.
+const METALS: { key: string; name: string; organs: string[] }[] = [
+  { key: "pb", name: "Lead", organs: ["bone", "brain", "kidney"] },
+  { key: "cd", name: "Cadmium", organs: ["kidney", "lungs", "bone"] },
+  { key: "hg", name: "Mercury", organs: ["brain", "kidney", "nervous system"] },
+  { key: "as", name: "Arsenic", organs: ["skin", "liver", "peripheral nerves"] },
+  { key: "u", name: "Depleted uranium", organs: ["kidney", "bone"] },
+  { key: "w", name: "Tungsten", organs: ["fragment sites", "bone"] },
+  { key: "co", name: "Cobalt", organs: ["heart", "thyroid", "lungs"] },
+  { key: "cr", name: "Chromium (VI)", organs: ["lungs", "sinuses", "kidney"] },
+  { key: "mn", name: "Manganese", organs: ["brain (basal ganglia)", "liver"] },
+  { key: "ni", name: "Nickel", organs: ["lungs", "skin", "sinuses"] },
+  { key: "al", name: "Aluminum", organs: ["brain", "bone"] },
+  { key: "sb", name: "Antimony", organs: ["lungs", "heart"] },
+  { key: "be", name: "Beryllium", organs: ["lungs"] },
+  { key: "v", name: "Vanadium", organs: ["lungs", "kidney"] },
+  { key: "tl", name: "Thallium", organs: ["nerves", "kidney"] },
+  { key: "ba", name: "Barium", organs: ["heart", "bone", "muscle"] },
 ];
 
 type Contribution = Record<string, number>;
@@ -203,7 +208,6 @@ export default function EstimatorView() {
   const present = METALS.filter((m) => idx[m.key] > 0).sort((a, b) => idx[b.key] - idx[a.key]);
   const high = METALS.filter((m) => idx[m.key] >= 45);
   const organs = uniq(high.flatMap((m) => m.organs));
-  const minerals = uniq(high.flatMap((m) => m.minerals));
 
   const tests: string[] = [];
   if (idx.pb >= 45) tests.push("Bone-lead scan (K-XRF) for stored lead");
@@ -426,7 +430,13 @@ export default function EstimatorView() {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* 🔴 A second card here listed "Minerals these metals can displace". It was
+          DELETED on 2026-08-06, not relocated: there is no validated model from an
+          exposure history to a nutrient deficit in a person, so it asserted a
+          calculation that does not exist — and a depletion list one tap from a
+          burden estimate, in an app whose founder separately sells nutritional
+          supplements, is the click path that makes intent irrelevant. */}
+      <div className="grid gap-4">
         <div className={card}>
           <div className="text-sm font-semibold text-ink">Where these metals tend to accumulate</div>
           <p className="mt-1 text-xs text-muted">Documented biology — where each flagged metal is known to settle if exposure occurred.</p>
@@ -446,21 +456,6 @@ export default function EstimatorView() {
           </div>
         </div>
 
-        <div className={card}>
-          <div className="text-sm font-medium text-ink">Minerals these metals can displace</div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {minerals.length ? (
-              // Plain spans: the nutrient deep-dives were removed from this
-              // documentation app, so linking here would 404.
-              minerals.map((o) => (
-                <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success">{o}</span>
-              ))
-            ) : (
-              <span className="text-sm text-muted">No clear depletions to flag yet.</span>
-            )}
-          </div>
-          <p className="mt-2 text-xs text-faint">Nutrients the metals above are known to interfere with — worth reviewing with your clinician.</p>
-        </div>
       </div>
 
       <div className={card}>
@@ -489,8 +484,17 @@ export default function EstimatorView() {
         This is an exposure-history estimate — the lowest tier of evidence — meant to guide testing and a
         conversation with your clinician. It does not measure what is in your body, is not a diagnosis, never
         replaces medical care, and is not part of your VA claim. The exposure-to-toxicant mapping and weighting
-        are heuristic and will be reviewed and calibrated by the scientific advisory board. If anything feels
-        heavy, the Veterans Crisis Line is one tap away: dial 988, then press 1.
+        are heuristic and unvalidated. If anything feels heavy, the Veterans Crisis Line is one tap away:
+        dial 988, then press 1.
+      </p>
+
+      <p className="rounded-lg border border-line bg-canvas px-4 py-3 text-xs leading-relaxed text-muted">
+        <span className="font-semibold text-ink">Corrected 6 August 2026.</span> An earlier version of this page
+        said the mapping and weightings &ldquo;will be reviewed and calibrated by the scientific advisory
+        board.&rdquo; No such board exists, and that validation cannot currently be performed by anyone — there
+        is no way to reconstruct how much of a substance a person absorbed from a description of their service,
+        so there is nothing to calibrate these numbers against. The sentence has been removed. We would rather
+        tell you we got that wrong than quietly delete it.
       </p>
     </div>
   );

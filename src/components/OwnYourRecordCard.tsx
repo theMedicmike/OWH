@@ -179,7 +179,10 @@ ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</
           <div className="text-xs font-bold uppercase tracking-wide text-brand">Also get the government&apos;s copy</div>
           <p className="mt-1 text-sm leading-relaxed text-ink">
             DoD and VA keep an official <strong>Individual Longitudinal Exposure Record (ILER)</strong> on you.
-            Request yours and compare it to this one. Where they agree, your claim is stronger. Where ILER is
+            <strong> You can&apos;t pull it yourself yet</strong> — VA has said veteran read-only access is
+            expected around Fall 2026. For now, ask your VA provider or your accredited VSO to look at it and
+            read it back to you, and write down what it says. When you file an exposure claim, the rater
+            reviews it automatically. Where it agrees with your record, your claim is stronger. Where it is
             missing something you lived, <em>your</em> record is the one that fills the gap.
           </p>
           <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">

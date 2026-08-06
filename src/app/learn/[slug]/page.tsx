@@ -2,7 +2,7 @@ import AppShell from "@/components/AppShell";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  TOXICANTS, TOXICANT_BY_SLUG, ORGAN_BY_SLUG, NUTRIENT_BY_SLUG, prettySlug, LIBRARY_NOTE,
+  TOXICANTS, TOXICANT_BY_SLUG, ORGAN_BY_SLUG, prettySlug, LIBRARY_NOTE,
 } from "@/lib/toxlibrary";
 
 // NOTE: nutrient pages ("the foods that restore them") were removed from this
@@ -53,20 +53,14 @@ export default async function ToxicantPage({ params }: { params: Promise<{ slug:
           </Section>
         )}
 
-        {t.nutrients.length > 0 && (
-          <Section title="Minerals it displaces in the body">
-            <div className="flex flex-wrap gap-1.5">
-              {t.nutrients.map((n) => (
-                <span key={n} className="rounded-md bg-canvas px-2.5 py-1 text-xs text-muted">
-                  {NUTRIENT_BY_SLUG[n]?.name ?? prettySlug(n)}
-                </span>
-              ))}
-            </div>
-            <p className="text-[11px] leading-relaxed text-faint">
-              Documented displacement, not a treatment plan — what to do about it is a conversation with your clinician.
-            </p>
-          </Section>
-        )}
+        {/* 🔴 REMOVED: a "Minerals it displaces in the body" section listing the
+            nutrients each metal interferes with. There is no validated model from
+            an exposure history to a nutrient deficit in a specific person, so the
+            section asserted a calculation that does not exist — and it sat one
+            click from the metal chips in an app whose founder separately sells
+            nutritional supplements. The underlying data has been deleted from
+            toxlibrary.ts rather than unlinked; unlinked data is one refactor away
+            from rendering again. Do not restore this section. */}
 
         <div className="overflow-hidden rounded-xl border border-success/30 bg-success-soft">
           <div className="p-4">

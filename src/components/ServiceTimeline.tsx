@@ -37,7 +37,10 @@ export type TimelineData = {
 
 // Latency: years between the earliest logged exposure that is linked to a
 // condition and that condition's onset. Stated as a fact, never as causation.
-export function latencyFor(cond: TimelineCondition, tours: TimelineTour[]): { years: number; place: string; year: number } | null {
+export function latencyFor(
+  cond: TimelineCondition,
+  tours: TimelineTour[],
+): { kind: "latency" | "aggravation"; years: number; place: string; year: number } | null {
   // Same sanity gate as the drawing code — otherwise one bad year that the
   // chart quietly hides still prints "1821 years after..." into the PDF.
   if (!sane(cond.onsetYear) || cond.linkedExposures.length === 0) return null;
@@ -47,8 +50,17 @@ export function latencyFor(cond: TimelineCondition, tours: TimelineTour[]): { ye
     if (!t.exposures.some((e) => cond.linkedExposures.includes(e))) continue;
     if (!best || t.startYear < best.year) best = { place: t.place, year: t.startYear };
   }
-  if (!best || cond.onsetYear < best.year) return null;
-  return { years: cond.onsetYear - best.year, place: best.place, year: best.year };
+  if (!best) return null;
+  // 🔴 Onset BEFORE the exposure used to return null, which printed nothing at
+  // all — on the timeline and on page one of the packet. But a condition that
+  // pre-dates service, or pre-dates a deployment, is a different legal route,
+  // not a dead end: 38 CFR 3.306 service-connects a pre-existing condition that
+  // service made permanently worse. Returning it as `aggravation` lets both the
+  // chart and the packet say so instead of falling silent.
+  if (cond.onsetYear < best.year) {
+    return { kind: "aggravation", years: best.year - cond.onsetYear, place: best.place, year: best.year };
+  }
+  return { kind: "latency", years: cond.onsetYear - best.year, place: best.place, year: best.year };
 }
 
 // Defensive: any year outside this window is bad data (a typo, a legacy row),
@@ -118,6 +130,12 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
       {/* Service band — caption gets its own row so it can't print over the bar */}
       {(data.serviceStart || data.serviceEnd) && (
         <div className="relative mt-2 h-8">
+          {/* "In service", not "Active duty". This bar is drawn from a single
+              start year and a single end year, so for a Guard or Reserve veteran
+              it spans twenty years of drill weekends and three activations as one
+              solid band. Calling that active duty asserts a false fact into a
+              document a VA rater reads. Until service periods are captured
+              properly, the label must claim only the span, never the status. */}
           <span className="absolute left-0 top-0 text-[10px] font-semibold uppercase tracking-wide text-brand">
             In service
           </span>
@@ -199,7 +217,12 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
                     <span className="tabular-nums text-muted">{c.onsetYear}</span>
                     {lat && (
                       <span className="text-accent">
-                        {" "}· {lat.years === 0 ? "same year as" : `${lat.years} yr${lat.years === 1 ? "" : "s"} after`} {lat.place}
+                        {" "}·{" "}
+                        {lat.kind === "aggravation"
+                          ? `predates ${lat.place} — ask about aggravation`
+                          : lat.years === 0
+                            ? `same year as ${lat.place}`
+                            : `${lat.years} yr${lat.years === 1 ? "" : "s"} after ${lat.place}`}
                       </span>
                     )}
                   </div>

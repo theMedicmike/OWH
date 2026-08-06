@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/navigation";
 import { searchGazetteer, bootCampsFor } from "@/lib/gazetteer";
+import { saveBootCampCheckIn } from "@/lib/bootCamp";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 
@@ -286,37 +287,17 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     }
   }
 
-  // Boot camp becomes the veteran's first check-in — a real pin, with whatever
-  // is documented at that installation already attached. Idempotent: re-running
-  // the wizard must never create a second one.
+  // Boot camp becomes the veteran's first check-in — a real pin, with whatever is
+  // documented at that installation already attached. The logic lives in
+  // lib/bootCamp.ts because Account can now add it too, and two copies would drift.
   async function saveBootCamp() {
-    if (!bootCamp || bootCamp === "__other") return;
-    const entry = bootCampsFor(branch).find((b) => b.name === bootCamp);
-    if (!entry) return;
-    const placeName = `${entry.name}, ${entry.region}`;
-
-    const { data: existing } = await supabase.from("check_ins").select("id").eq("place_name", placeName).limit(1);
-    if (existing?.length) return;
-
-    const year = parseInt(bootCampYear) || parseInt(startYear);
-    const thisYear = new Date().getUTCFullYear();
-    if (!year || year < 1940 || year > thisYear) return; // never invent a date
-
-    // Documented exposures at that installation, if our site list knows it.
-    const site = sites.find(
-      (s) => s.name.toLowerCase().includes(entry.name.toLowerCase().replace(/ \(.*\)/, "")),
-    );
-    const classes = Array.from(new Set(site?.exposure_classes ?? []));
-
-    const { data: newId } = await supabase.rpc("log_check_in", {
-      p_lng: entry.lng, p_lat: entry.lat, p_year: year, p_conflict: null, p_exposures: classes,
+    await saveBootCampCheckIn(supabase, {
+      branch,
+      campName: bootCamp,
+      year: bootCampYear,
+      fallbackYear: startYear,
+      sites,
     });
-    if (newId) {
-      await supabase.from("check_ins").update({
-        place_name: placeName,
-        notes: "Basic training / boot camp.",
-      }).eq("id", newId);
-    }
   }
 
   async function saveStep2() {

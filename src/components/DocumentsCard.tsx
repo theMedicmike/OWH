@@ -90,9 +90,16 @@ export default function DocumentsCard() {
         </ul>
       )}
 
+      {/* ⚠️ An earlier version of this sentence said "the science board reviews
+          documents to verify exposures and conditions." No such board exists and
+          nobody here reviews your files — the same false claim was retracted on
+          the estimator on 2026-08-06 and this second instance survived that pass
+          because it says "science board" rather than "advisory board". Do not
+          reinstate any promise that a person or panel checks these documents. */}
       <p className="mt-3 text-xs text-zinc-400">
-        Stored privately, visible only to you. Uploading records is how a veteran moves beyond self-reported, the
-        science board reviews documents to verify exposures and conditions.
+        Stored privately, visible only to you — nobody here reads them. Uploading records is how you move a
+        claim beyond self-reported: the paper is what a VA rater weighs most heavily, and having it in one
+        place means you can hand it to your VSO in one go.
       </p>
     </div>
   );

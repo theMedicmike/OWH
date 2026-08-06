@@ -97,6 +97,14 @@ export function matchCondition(
   const year = first.tour.year;
 
   const gap = year && onsetYear && onsetYear >= year ? onsetYear - year : null;
+  // 🔴 A condition that STARTED BEFORE the exposure is not a dead end — it is a
+  // different legal route. Under 38 CFR 3.306 a pre-existing condition that was
+  // made permanently worse by service is service-connectable as AGGRAVATION, and
+  // under 38 U.S.C. 1111 a man is presumed to have been sound on entry unless the
+  // condition was noted at his entrance exam. This branch used to fall through to
+  // null and print nothing at all, so the textbook case — asthma since childhood,
+  // wrecked by a year of burn-pit smoke — produced silence.
+  const preExisting = year && onsetYear && onsetYear < year ? year - onsetYear : null;
 
   let sentence = year
     ? `You were at ${place} in ${year}, where ${classNames.toLowerCase()} ${classes.length === 1 ? "is" : "are"} documented.`
@@ -107,6 +115,8 @@ export function matchCondition(
       gap === 0
         ? ` Your ${label.toLowerCase()} began that same year.`
         : ` Your ${label.toLowerCase()} began about ${onsetYear} — a ${gap}-year gap.`;
+  } else if (preExisting !== null) {
+    sentence += ` Your ${label.toLowerCase()} began about ${onsetYear}, ${preExisting} ${preExisting === 1 ? "year" : "years"} before that. Starting earlier does not close the door: VA can service-connect a condition that existed beforehand if service made it permanently worse — that is called aggravation (38 CFR 3.306). Ask your VSO about it by name.`;
   }
 
   sentence += ` ${classNames} and ${label.toLowerCase()} are studied together. That's a question worth asking, not an answer.`;

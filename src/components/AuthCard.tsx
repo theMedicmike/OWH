@@ -6,19 +6,36 @@ import { ServiceRibbon } from "./Patriotic";
 
 export default function AuthCard() {
   const { supabase } = useAuth();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  // 🔴 "forgot" exists because until 2026-08-06 this app had NO password recovery
+  // of any kind. A veteran who forgot his password was permanently locked out of
+  // a record he may have spent hours building — the map pins, the conditions, the
+  // packet, all of it stranded behind a password with no way back. Do not remove
+  // this path without replacing it.
+  const [mode, setMode] = useState<"in" | "up" | "forgot">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setMsg("");
-    if (mode === "in") {
+    if (mode === "forgot") {
+      // Routed through the existing PKCE callback, which exchanges the code for a
+      // session and forwards to /reset, where he sets the new password.
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/reset`,
+      });
+      // Deliberately the SAME response whether or not the address is on file —
+      // otherwise this form tells a stranger which veterans have accounts here.
+      if (error && !/rate|limit|many/i.test(error.message)) setResetSent(true);
+      else if (error) setMsg(error.message);
+      else setResetSent(true);
+    } else if (mode === "in") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setMsg(error.message);
       // On success, AuthProvider updates the user and the page redirects to /dashboard.
@@ -33,8 +50,44 @@ export default function AuthCard() {
     setBusy(false);
   }
 
+  function backToSignIn() {
+    setResetSent(false);
+    setConfirmed(false);
+    setMode("in");
+    setPassword("");
+    setMsg("");
+  }
+
   const field =
     "w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm text-ink outline-none placeholder:text-faint focus:border-brand focus:ring-2 focus:ring-brand/15";
+
+  if (resetSent) {
+    return (
+      <div className="w-full rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-7 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 text-success">
+            <path d="M4 4h16v16H4z" />
+            <path d="m4 7 8 6 8-6" />
+          </svg>
+        </div>
+        <h3 className="text-base font-semibold text-ink">Check your email</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          If <strong className="text-ink">{email}</strong> has an account here, we&apos;ve sent a link to set a
+          new password. It&apos;s good for one hour.
+        </p>
+        <p className="mt-3 text-xs leading-relaxed text-faint">
+          Nothing in your record changes, and nothing is deleted. Check spam if it doesn&apos;t arrive in a few
+          minutes.
+        </p>
+        <button
+          onClick={backToSignIn}
+          className="mt-5 w-full rounded-lg border border-line bg-canvas px-4 py-2 text-sm font-medium text-muted hover:bg-surface"
+        >
+          Back to sign in
+        </button>
+      </div>
+    );
+  }
 
   if (confirmed) {
     return (
@@ -95,34 +148,66 @@ export default function AuthCard() {
             className={field}
           />
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Password</label>
-          <div className="relative">
-            <input
-              type={show ? "text" : "password"}
-              required
-              autoComplete={mode === "in" ? "current-password" : "new-password"}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`${field} pr-14`}
-            />
-            <button
-              type="button"
-              onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-1 text-xs font-medium text-muted hover:text-ink"
-            >
-              {show ? "Hide" : "Show"}
-            </button>
+        {mode === "forgot" ? (
+          <p className="text-xs leading-relaxed text-muted">
+            Enter the email you signed up with and we&apos;ll send you a link to set a new one. Your record stays
+            exactly as it is.
+          </p>
+        ) : (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">Password</label>
+            <div className="relative">
+              <input
+                type={show ? "text" : "password"}
+                required
+                autoComplete={mode === "in" ? "current-password" : "new-password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`${field} pr-14`}
+              />
+              <button
+                type="button"
+                onClick={() => setShow((s) => !s)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-1 text-xs font-medium text-muted hover:text-ink"
+              >
+                {show ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
         <button
           type="submit"
           disabled={busy}
           className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition hover:bg-brand-600 disabled:opacity-60"
         >
-          {busy ? "One moment…" : mode === "in" ? "Sign in" : "Create your account"}
+          {busy
+            ? "One moment…"
+            : mode === "in"
+              ? "Sign in"
+              : mode === "up"
+                ? "Create your account"
+                : "Send me a reset link"}
         </button>
+
+        {mode === "in" && (
+          <button
+            type="button"
+            onClick={() => { setMode("forgot"); setMsg(""); setPassword(""); }}
+            className="w-full pt-1 text-center text-xs font-medium text-brand hover:underline"
+          >
+            Forgot your password?
+          </button>
+        )}
+        {mode === "forgot" && (
+          <button
+            type="button"
+            onClick={backToSignIn}
+            className="w-full pt-1 text-center text-xs font-medium text-muted hover:text-ink hover:underline"
+          >
+            ← Back to sign in
+          </button>
+        )}
       </form>
 
       {msg && <p className="mt-3 text-xs text-muted">{msg}</p>}

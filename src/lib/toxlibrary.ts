@@ -1,12 +1,14 @@
 // The Exposure Library — a cited, mechanistic encyclopedia of the toxicants the
-// app tracks, plus the nutrients they interfere with and the organs they target.
+// app tracks and the organs they target.
 //
 // GUARDRAILS (per council): this is DOCUMENTATION, not treatment. Every entry is
 // grounded in the government's / science's own record — VA presumptive lists
 // (PACT Act, 38 CFR, Camp Lejeune), ATSDR ToxFAQs/tox profiles, IARC, NTP. No
 // products, no doses, no cure claims. Every page ends pointing back to the
-// veteran's clinician and VSO. Content is a first pass, written for the science
-// advisory board to verify and refine before public launch.
+// veteran's clinician and VSO. Content is a first pass and has NOT been
+// externally reviewed — there is no science advisory board (an earlier version of
+// this comment said one would verify it). Needs a named clinical reviewer before
+// anyone describes it as verified.
 
 export type Toxicant = {
   slug: string;
@@ -17,21 +19,11 @@ export type Toxicant = {
   harm: string[];           // documented mechanism of damage
   retention: string;        // how long it persists in the body
   organs: string[];         // organ slugs it targets / stores in
-  nutrients: string[];      // nutrient slugs it depletes / displaces
   conditions: string;       // the conditions the government already links to it
   untreated: string;        // what happens if left unaddressed (with a clinician off-ramp)
   tests: string[];          // tests to ask a clinician about
   iarc?: string;            // carcinogen classification, where applicable
   sources: string[];
-};
-
-export type Nutrient = {
-  slug: string;
-  name: string;
-  role: string;
-  displacedBy: string[];    // toxicant names that deplete/displace it
-  restore: string[];        // foods that help restore it (documented nutrition)
-  hinder: string[];         // foods/factors that worsen depletion or absorption
 };
 
 export type Organ = {
@@ -58,7 +50,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Stored in bone with a half-life measured in decades. It can re-enter the blood years later during bone turnover — aging, illness, or calcium stress — which is why a 'normal' blood lead does not rule out a lifetime burden.",
     organs: ["bone", "bone-marrow", "brain", "kidney"],
-    nutrients: ["calcium", "iron", "zinc"],
     conditions: "ATSDR links lead to chronic kidney disease, high blood pressure, and nervous-system and cognitive effects; it is also studied in peripheral neuropathy. Confirm how any of these applies to your claim with your VSO.",
     untreated: "A high bone-lead burden can keep seeding the bloodstream for years, contributing to rising blood pressure, declining kidney function, and cognitive or nerve symptoms that are easy to mistake for ordinary aging.",
     tests: ["Blood lead (reflects recent exposure)", "Bone-lead K-XRF scan where available (stored lead)", "Kidney function (eGFR, creatinine) and blood pressure"],
@@ -75,7 +66,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Extremely long biological half-life (often 10–30 years) in the kidney and liver; it accumulates across a career.",
     organs: ["kidney", "lungs", "bone"],
-    nutrients: ["zinc", "copper", "selenium", "calcium"],
     conditions: "ATSDR links cadmium to chronic kidney disease and bone weakening; inhaled cadmium is associated with lung cancer.",
     untreated: "Ongoing kidney injury can progress silently for years before it shows on standard labs, and bone loss and lung effects can follow. Early kidney-function monitoring matters.",
     tests: ["Urine cadmium and urine beta-2-microglobulin (kidney tubule marker)", "Kidney function (eGFR, creatinine)"],
@@ -92,7 +82,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Settles in the kidney and bone; embedded fragments can release uranium for years and are tracked long-term.",
     organs: ["kidney", "bone"],
-    nutrients: ["calcium", "phosphate"],
     conditions: "The VA runs a Depleted Uranium Follow-Up Program; DU is monitored for kidney effects and is part of the radiation/heavy-metal exposure picture.",
     untreated: "Unmonitored kidney effects can progress; embedded fragments in particular warrant long-term follow-up.",
     tests: ["VA Depleted Uranium Follow-Up Program (24-hour urine uranium)", "Kidney function (eGFR, creatinine)"],
@@ -108,7 +97,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Cleared from blood within days, but chronic intake produces ongoing low-level body burden; hair and nails reflect past exposure.",
     organs: ["skin", "liver", "nervous-system", "kidney"],
-    nutrients: ["selenium", "zinc", "phosphate"],
     conditions: "ATSDR and IARC link arsenic to cancers of the skin, lung, and bladder, to peripheral neuropathy, and to cardiovascular effects.",
     untreated: "Chronic arsenic exposure raises long-term cancer risk and can produce progressive nerve and skin disease.",
     tests: ["Speciated 24-hour urine arsenic (separates seafood arsenic from toxic forms)", "Skin and neurological evaluation"],
@@ -125,7 +113,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Varies by form; settles in the brain and kidney and can persist for months to years.",
     organs: ["brain", "kidney", "nervous-system"],
-    nutrients: ["selenium", "zinc"],
     conditions: "ATSDR links mercury to nervous-system and kidney effects (tremor, cognitive and mood changes, kidney injury).",
     untreated: "Continued exposure can deepen neurological and kidney injury; removing the source is the first step.",
     tests: ["Blood and 24-hour urine mercury", "Neurological evaluation"],
@@ -141,7 +128,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Cleared relatively quickly, but the airway and DNA damage from inhalation can be lasting.",
     organs: ["lungs", "sinuses", "kidney"],
-    nutrients: ["iron", "zinc"],
     conditions: "IARC lists Cr-VI as a known lung carcinogen; the VA established a Qarmat Ali surveillance program for exposed service members.",
     untreated: "Long-term lung-cancer risk and chronic airway/sinus injury make documentation and screening important.",
     tests: ["Pulmonary function testing and chest imaging", "Enrollment in the VA Qarmat Ali surveillance program if eligible"],
@@ -157,7 +143,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Tightly regulated when intake is normal, but heavy inhalation can overwhelm clearance and deposit in the brain.",
     organs: ["brain", "liver"],
-    nutrients: ["iron"],
     conditions: "ATSDR links high manganese inhalation to a Parkinson-like neurological syndrome.",
     untreated: "Movement, balance, and mood symptoms can progress with continued exposure; a neurological evaluation is warranted.",
     tests: ["Neurological evaluation", "Manganese testing interpreted by a clinician"],
@@ -170,7 +155,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Tungsten heavy-metal alloys are under study for effects on bone, blood, and immune tissue, especially from embedded fragments."],
     retention: "Embedded fragments can release metal over time; tungsten is an emerging, still-studied exposure.",
     organs: ["bone", "fragment-sites"],
-    nutrients: ["molybdenum", "cobalt"],
     conditions: "Tungsten-alloy effects are an emerging area; document the exposure and any embedded fragments.",
     untreated: "Embedded fragments warrant long-term monitoring even when no condition is yet recognized.",
     tests: ["Imaging for retained fragments", "Discuss monitoring with your clinician"],
@@ -183,7 +167,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Inhaled cobalt can inflame and scar the lungs ('hard-metal lung disease') and affect the heart and thyroid."],
     retention: "Cleared over weeks to months; lung injury can be lasting.",
     organs: ["lungs", "heart", "thyroid"],
-    nutrients: ["iron", "iodine"],
     conditions: "ATSDR links inhaled cobalt to lung disease and heart effects.",
     untreated: "Progressive lung scarring is possible with continued inhalation.",
     tests: ["Pulmonary function testing", "Cardiac evaluation if symptomatic"],
@@ -196,7 +179,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Inhaled nickel compounds irritate the airways and sinuses and are linked to respiratory cancer; nickel is also a common skin allergen."],
     retention: "Cleared over days to weeks; inhalation injury can persist.",
     organs: ["lungs", "sinuses", "skin"],
-    nutrients: ["zinc", "magnesium", "iron"],
     conditions: "IARC lists certain nickel compounds as carcinogenic to the respiratory tract.",
     untreated: "Chronic airway injury and elevated respiratory-cancer risk with ongoing inhalation.",
     tests: ["Pulmonary function testing and chest imaging"],
@@ -210,7 +192,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["High aluminum exposure is studied for effects on the brain and bone, particularly when kidney clearance is impaired."],
     retention: "Mostly cleared by healthy kidneys; can accumulate in bone and brain with very high exposure or kidney disease.",
     organs: ["brain", "bone"],
-    nutrients: ["calcium", "magnesium", "iron", "phosphate"],
     conditions: "Aluminum neurotoxicity is an area of ongoing study; document exposure context.",
     untreated: "Most relevant where kidney function is already reduced — worth discussing with a clinician.",
     tests: ["Discuss with a clinician, especially if kidney function is reduced"],
@@ -223,7 +204,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Inhaled antimony irritates the lungs and heart and can act as a marker of firing-range metal exposure."],
     retention: "Cleared over weeks; lung and cardiac effects studied with heavy inhalation.",
     organs: ["lungs", "heart"],
-    nutrients: ["selenium"],
     conditions: "ATSDR links inhaled antimony to lung and heart effects.",
     untreated: "Most relevant alongside lead from range exposure — address them together.",
     tests: ["Discuss with a clinician alongside lead testing"],
@@ -236,7 +216,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Beryllium can trigger an immune-driven, lasting lung disease (chronic beryllium disease) in sensitized people."],
     retention: "The immune sensitization is lifelong once it develops.",
     organs: ["lungs"],
-    nutrients: ["magnesium"],
     conditions: "IARC lists beryllium as a known carcinogen; chronic beryllium disease is a recognized occupational lung disease.",
     untreated: "Progressive lung disease in sensitized individuals — a specific blood test (BeLPT) can identify sensitization.",
     tests: ["Beryllium Lymphocyte Proliferation Test (BeLPT)", "Pulmonary function testing"],
@@ -250,7 +229,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Inhaled vanadium is an airway irritant linked to bronchitis-type symptoms."],
     retention: "Cleared over days to weeks.",
     organs: ["lungs", "kidney"],
-    nutrients: ["chromium"],
     conditions: "ATSDR links inhaled vanadium to respiratory irritation.",
     untreated: "Mostly an airway-irritant concern with ongoing inhalation.",
     tests: ["Pulmonary function testing if symptomatic"],
@@ -263,7 +241,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Thallium disrupts potassium-dependent processes and is toxic to nerves and the kidneys."],
     retention: "Distributes widely; clears over weeks but can injure nerves.",
     organs: ["nervous-system", "kidney"],
-    nutrients: ["potassium"],
     conditions: "ATSDR links thallium to peripheral neuropathy and other effects.",
     untreated: "Nerve injury can progress; a clinician should evaluate suspected exposure.",
     tests: ["Urine thallium", "Neurological evaluation"],
@@ -276,7 +253,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Soluble barium can affect the heart, muscle, and potassium balance; insoluble forms deposit in the lungs as dust."],
     retention: "Insoluble dust can persist in the lungs; soluble forms clear faster.",
     organs: ["heart", "bone", "lungs"],
-    nutrients: ["potassium", "calcium"],
     conditions: "ATSDR links barium to cardiovascular and lung-dust effects depending on form.",
     untreated: "Depends on form and dose — discuss the exposure context with a clinician.",
     tests: ["Discuss with a clinician based on exposure"],
@@ -294,10 +270,12 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Particulate can remain embedded in lung tissue for years; the inflammatory injury can persist long after the deployment ends.",
     organs: ["lungs", "heart", "brain"],
-    nutrients: ["selenium"],
     conditions: "The PACT Act of 2022 makes a long list of respiratory conditions and cancers presumptive for burn-pit / airborne-hazard exposure — the strongest government acknowledgment in this library. Confirm your specific conditions with your VSO.",
     untreated: "Airway disease (asthma, chronic bronchitis, constrictive bronchiolitis) and elevated cancer risk can develop and progress; the VA Airborne Hazards and Open Burn Pit Registry exists to track it.",
-    tests: ["Full pulmonary-function testing (can catch what a chest X-ray misses)", "Join the VA Airborne Hazards and Open Burn Pit Registry", "PACT Act Toxic Exposure Screening"],
+    // Since the 1 Aug 2024 redesign there is no registry questionnaire to fill in —
+    // VA and DoD auto-include eligible veterans from service records, so "join the
+    // registry" is stale advice. Route through the human instead.
+    tests: ["Full pulmonary-function testing (can catch what a chest X-ray misses)", "Ask your VA Environmental Health Coordinator whether a registry evaluation is available for this exposure", "PACT Act Toxic Exposure Screening"],
     sources: ["PACT Act of 2022 (38 U.S.C. §1119–1120)", "VA Airborne Hazards and Open Burn Pit Registry", "ATSDR"],
   },
   {
@@ -310,7 +288,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "The volatile components clear over hours to days, but repeated daily exposure produces ongoing injury, and benzene's marrow effects can be lasting.",
     organs: ["lungs", "bone-marrow", "nervous-system", "liver"],
-    nutrients: [],
     conditions: "Benzene is an established cause of leukemia and other blood/marrow disorders (recognized at Camp Lejeune and by IARC); JP-8 exposure overlaps the burn-pit airborne-hazard picture.",
     untreated: "Marrow and blood effects and airway injury can develop; document fuel exposure alongside burn pits.",
     tests: ["CBC (complete blood count) for marrow effects", "Pulmonary function testing"],
@@ -326,7 +303,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Volatile components clear over days, but the marrow, nerve, and organ injury from sustained exposure can be lasting.",
     organs: ["bone-marrow", "liver", "kidney", "nervous-system"],
-    nutrients: [],
     conditions: "38 CFR §3.309(f) lists eight presumptive diseases for Camp Lejeune / MCAS New River service of 30+ days between Aug 1953 and Dec 1987: adult leukemia, aplastic anemia and other myelodysplastic syndromes, bladder cancer, kidney cancer, liver cancer, multiple myeloma, non-Hodgkin's lymphoma, and Parkinson's disease. ATSDR documents the underlying solvent associations.",
     untreated: "Blood, kidney, liver, and neurological conditions can develop years later; an exposure record matters for both care and a claim.",
     tests: ["CBC for blood/marrow effects", "Kidney and liver panels", "Neurological evaluation if symptomatic"],
@@ -344,7 +320,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Half-life of several years in body fat — a single era of exposure can stay biologically relevant for decades.",
     organs: ["liver", "thyroid", "nervous-system"],
-    nutrients: ["iodine"],
     conditions: "The Agent Orange presumptive list (38 CFR §3.309(e)) recognizes many conditions, including several cancers, type 2 diabetes, ischemic heart disease, hypothyroidism, Parkinson's, and early-onset peripheral neuropathy.",
     untreated: "Recognized chronic diseases can surface decades later; the Agent Orange presumptive list is strong government acknowledgment for a claim.",
     tests: ["Condition-specific screening with your clinician", "Hormone and metabolic markers"],
@@ -360,7 +335,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Years-long half-life; blood levels can stay elevated long after the source is gone.",
     organs: ["thyroid", "kidney", "liver"],
-    nutrients: [],
     conditions: "EPA and federal health agencies link PFAS to thyroid disease, high cholesterol, kidney and testicular cancer, and immune effects; recognition for claims is evolving.",
     untreated: "Thyroid, cholesterol, kidney, and cancer-risk effects warrant monitoring given how long PFAS persist.",
     tests: ["Serum PFAS testing where available", "Thyroid panel, lipid panel, kidney function"],
@@ -375,7 +349,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Silica and particulate can remain in lung tissue for years, driving slow scarring.",
     organs: ["lungs"],
-    nutrients: [],
     conditions: "The PACT Act recognizes airborne-hazard respiratory conditions (incl. constrictive bronchiolitis, asthma, chronic sinusitis/rhinitis); silica is linked to silicosis and autoimmune disease.",
     untreated: "Small-airway disease can progress while imaging looks normal — full lung-function testing matters.",
     tests: ["Full pulmonary-function testing", "Specialist referral for unexplained exertional symptoms"],
@@ -390,7 +363,6 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Fibers can remain in the lung for life; disease latency is often 20–40 years.",
     organs: ["lungs"],
-    nutrients: [],
     conditions: "IARC lists asbestos as a known carcinogen; the VA recognizes asbestos-related disease (asbestosis, lung cancer, mesothelioma) claimed by exposure history — roughly 1 in 3 mesothelioma patients is a veteran.",
     untreated: "Because latency is so long, a documented exposure history is essential even when you feel well today.",
     tests: ["Periodic lung screening given asbestos history", "Chest imaging and pulmonary function testing"],
@@ -404,7 +376,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Ionizing radiation damages DNA, which is why it is linked to a recognized list of cancers; dose and proximity matter."],
     retention: "The exposure is the dose received; the DNA/cancer risk is cumulative over a lifetime.",
     organs: ["bone-marrow", "thyroid"],
-    nutrients: [],
     conditions: "The VA recognizes a list of radiogenic cancers (38 CFR §3.309(d), §3.311) and the Radiation-Exposed Veterans Act — strong government acknowledgment for atomic veterans.",
     untreated: "Cancer risk persists; document your role and environment, and screen per guidance.",
     tests: ["Cancer screening per clinical guidance", "Radiation dose reconstruction where applicable"],
@@ -417,7 +388,6 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["These compounds block an enzyme the body needs to switch off nerve signals; even low-level exposure is studied in the chronic multi-symptom pattern many Gulf War veterans live with."],
     retention: "The agents clear quickly, but the studied health effects can persist as a chronic, multi-system pattern.",
     organs: ["nervous-system", "brain"],
-    nutrients: [],
     conditions: "Gulf War service is recognized under 38 CFR §3.317 for undiagnosed illness and chronic multi-symptom illness (incl. chronic fatigue syndrome, fibromyalgia, functional GI disorders).",
     untreated: "Multi-system symptoms can persist and compound; the Gulf War presumptive framework supports a claim.",
     tests: ["Cholinesterase testing where relevant", "Evaluation under the Gulf War illness framework"],
@@ -426,80 +396,16 @@ export const TOXICANTS: Toxicant[] = [
 ];
 
 // ── Nutrients ─────────────────────────────────────────────────────────────────
-export const NUTRIENTS: Nutrient[] = [
-  {
-    slug: "calcium", name: "Calcium",
-    role: "Builds bone and runs nerve, muscle, and heart signaling. Bone is also the body's calcium bank.",
-    displacedBy: ["Lead", "Cadmium", "Aluminum", "Barium", "Depleted uranium"],
-    restore: ["Dairy or fortified plant milks", "Leafy greens (kale, collards, bok choy)", "Sardines and canned salmon with bones", "Tofu set with calcium", "Almonds"],
-    hinder: ["Very high sodium and excess caffeine increase calcium loss", "Heavy soda intake (phosphoric acid)", "Low vitamin D reduces calcium absorption", "Excess alcohol"],
-  },
-  {
-    slug: "iron", name: "Iron",
-    role: "Carries oxygen in the blood (hemoglobin) and powers cellular energy. Low iron means fatigue and poor recovery.",
-    displacedBy: ["Lead", "Manganese", "Cobalt", "Chromium", "Aluminum", "Nickel"],
-    restore: ["Lean red meat, poultry, and fish (most absorbable form)", "Beans, lentils, and tofu", "Spinach and other greens", "Pair plant iron with vitamin C (citrus, peppers) to boost absorption"],
-    hinder: ["Coffee and tea (tannins) with meals reduce iron absorption", "Calcium supplements taken with iron compete", "Excess whole-grain phytates in large amounts"],
-  },
-  {
-    slug: "zinc", name: "Zinc",
-    role: "Runs hundreds of enzymes, wound healing, immune function, testosterone, and antioxidant defense.",
-    displacedBy: ["Cadmium", "Lead", "Arsenic", "Mercury", "Nickel"],
-    restore: ["Oysters and shellfish (richest source)", "Beef and poultry", "Pumpkin seeds and cashews", "Beans and chickpeas"],
-    hinder: ["Very high-phytate diets (large amounts of unsoaked grains/legumes) reduce absorption", "Excess supplemental iron or copper competes", "Heavy alcohol"],
-  },
-  {
-    slug: "selenium", name: "Selenium",
-    role: "Powers glutathione, the body's master antioxidant, and is essential for thyroid function.",
-    displacedBy: ["Mercury", "Cadmium", "Arsenic", "Antimony"],
-    restore: ["Brazil nuts (very concentrated — a little goes a long way)", "Seafood and tuna", "Eggs", "Whole grains and sunflower seeds"],
-    hinder: ["Selenium is tightly dose-dependent — more is not better; excess is harmful", "Highly processed diets tend to be low"],
-  },
-  {
-    slug: "copper", name: "Copper",
-    role: "Helps form red blood cells and connective tissue and supports antioxidant enzymes.",
-    displacedBy: ["Cadmium", "Excess zinc"],
-    restore: ["Shellfish and organ meats (liver)", "Nuts and seeds", "Dark chocolate", "Beans"],
-    hinder: ["Long-term high-dose zinc supplements can drive copper deficiency", "Excess vitamin C in large doses"],
-  },
-  {
-    slug: "magnesium", name: "Magnesium",
-    role: "A cofactor in hundreds of reactions — energy, nerve and muscle function, sleep, and blood pressure.",
-    displacedBy: ["Aluminum", "Nickel", "Beryllium"],
-    restore: ["Leafy greens", "Nuts, seeds (pumpkin, chia), and legumes", "Whole grains", "Dark chocolate"],
-    hinder: ["Excess alcohol and very high caffeine increase losses", "Highly processed diets are typically low"],
-  },
-  {
-    slug: "phosphate", name: "Phosphate",
-    role: "Part of bone, cellular energy (ATP), and DNA. Usually plentiful — balance with calcium matters.",
-    displacedBy: ["Depleted uranium", "Aluminum", "Arsenic"],
-    restore: ["Protein foods (meat, fish, dairy, legumes)", "Nuts and whole grains"],
-    hinder: ["Excess phosphate from heavy soda/processed-food intake can throw off the calcium balance"],
-  },
-  {
-    slug: "iodine", name: "Iodine",
-    role: "The raw material the thyroid uses to make hormones that set the body's energy and metabolism.",
-    displacedBy: ["Dioxins", "Cobalt (excess)"],
-    restore: ["Iodized salt", "Seafood and seaweed", "Dairy and eggs"],
-    hinder: ["Very low-salt or restrictive diets can run low", "Some raw goitrogenic vegetables in very large amounts (less relevant with adequate iodine)"],
-  },
-  {
-    slug: "potassium", name: "Potassium",
-    role: "Balances fluids and runs the electrical signals of nerves, muscle, and the heart.",
-    displacedBy: ["Thallium", "Barium"],
-    restore: ["Beans, lentils, and potatoes", "Bananas, oranges, and avocados", "Leafy greens", "Yogurt"],
-    hinder: ["High-sodium processed diets work against potassium balance", "(If you have kidney disease, potassium must be managed with your clinician.)"],
-  },
-  {
-    slug: "molybdenum", name: "Molybdenum",
-    role: "A trace mineral that helps enzymes clear certain compounds from the body.",
-    displacedBy: ["Tungsten", "Copper imbalance"],
-    restore: ["Legumes (the richest source)", "Whole grains", "Nuts"],
-    hinder: ["Generally plentiful in a varied diet — deficiency is rare"],
-  },
-];
 
 // ── Organs ────────────────────────────────────────────────────────────────────
+// 🔴 A NUTRIENTS array once lived here — per-nutrient "role", the toxicants that
+// displace it, and a "restore:" list of foods. It was DELETED, not unlinked, on
+// 2026-08-06. Two reasons, either sufficient: there is no validated model from an
+// exposure history to a nutrient deficit in a specific person, so it asserted a
+// calculation that does not exist; and its zinc entry described zinc's role as
+// "immune function, testosterone, and antioxidant defense" while eight of sixteen
+// metals mapped to zinc — rendering "metals → low testosterone" as a data path in
+// an app whose founder separately sells nutritional supplements. Do not restore it.
 export const ORGANS: Organ[] = [
   {
     slug: "bone", name: "Bone",
@@ -547,7 +453,7 @@ export const ORGANS: Organ[] = [
   },
   {
     slug: "liver", name: "Liver",
-    what: "The body's main detox and processing organ — it breaks down chemicals, including the ones service exposed you to.",
+    what: "The body's main chemical-processing organ — it breaks down chemicals, including the ones service exposed you to.",
     targetedBy: ["Solvents (benzene, TCE, PCE)", "Dioxins", "PFAS / AFFF", "Arsenic", "Jet fuel (JP-8) & fuels"],
     mechanism: [
       "Solvents and persistent chemicals are processed by the liver, which can inflame and stress it over time.",
@@ -618,7 +524,6 @@ export const TOXICANT_NAME_TO_SLUG: Record<string, string> = Object.fromEntries(
 export function prettySlug(slug: string): string {
   return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
-export const NUTRIENT_BY_SLUG = Object.fromEntries(NUTRIENTS.map((n) => [n.slug, n]));
 export const ORGAN_BY_SLUG = Object.fromEntries(ORGANS.map((o) => [o.slug, o]));
 
 // Map the estimator's internal keys + display strings to library slugs so chips
@@ -638,9 +543,6 @@ export const ORGAN_NAME_TO_SLUG: Record<string, string> = {
   "nervous system": "nervous-system", "peripheral nerves": "nervous-system", "nerves": "nervous-system",
   heart: "heart", thyroid: "thyroid", skin: "skin",
 };
-export const NUTRIENT_NAME_TO_SLUG: Record<string, string> = Object.fromEntries(
-  NUTRIENTS.map((n) => [n.name.toLowerCase(), n.slug]),
-);
 
 export const LIBRARY_NOTE =
-  "Drafted from the government's and science's own record — VA presumptive lists (PACT Act, 38 CFR, Camp Lejeune), ATSDR ToxFAQs, IARC, and NTP. This is documentation to bring to your clinician and VSO — not a diagnosis, a treatment plan, or a determination of service connection. Pending science advisory board review.";
+  "Drafted from the government's and science's own record — VA presumptive lists (PACT Act, 38 CFR, Camp Lejeune), ATSDR ToxFAQs, IARC, and NTP. This is documentation to bring to your clinician and VSO — not a diagnosis, a treatment plan, or a determination of service connection.";

@@ -288,9 +288,11 @@ export default function ReportView() {
               : undefined,
             veteranLine: vparts.length ? vparts.join(" · ") : undefined,
             latency: lat
-              ? lat.years === 0
-                ? `Began ${condOnset[c.label]} — the same year as exposure logged at ${lat.place}. (Veteran-reported)`
-                : `Began ${condOnset[c.label]} — ${lat.years} year${lat.years === 1 ? "" : "s"} after exposure logged at ${lat.place} (${lat.year}). (Veteran-reported)`
+              ? lat.kind === "aggravation"
+                ? `Began ${condOnset[c.label]} — ${lat.years} year${lat.years === 1 ? "" : "s"} BEFORE exposure logged at ${lat.place} (${lat.year}). A pre-existing condition can still be service-connected if service permanently worsened it (aggravation, 38 CFR 3.310(b) / 3.306). (Veteran-reported)`
+                : lat.years === 0
+                  ? `Began ${condOnset[c.label]} — the same year as exposure logged at ${lat.place}. (Veteran-reported)`
+                  : `Began ${condOnset[c.label]} — ${lat.years} year${lat.years === 1 ? "" : "s"} after exposure logged at ${lat.place} (${lat.year}). (Veteran-reported)`
               : undefined,
             matches: matches.length ? `Documented association with ${matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.` : "",
             cite: basis?.cite,
@@ -565,8 +567,12 @@ export default function ReportView() {
                   <li key={i} className="text-sm">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">{c.label}</span>
+                      {/* The non-presumptive tag is neutral, never warning-coloured: it is
+                          not a problem with the claim, it only means the direct or secondary
+                          route applies. Amber beside a green badge reads as "this one won't
+                          work" and talks veterans out of filing. */}
                       {basis && (
-                        <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${basis.presumptive ? "bg-success-soft text-success" : "bg-warn-soft text-warn"}`}>
+                        <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${basis.presumptive ? "bg-success-soft text-success" : "bg-canvas text-muted"}`}>
                           {basis.tag}
                         </span>
                       )}
@@ -617,10 +623,24 @@ export default function ReportView() {
         {/* 5. Clinician hand-off sheet */}
         <section className="mt-6 break-before-page break-inside-avoid border-t border-line pt-5">
           <h3 className={sectionTitle}>5 · For the reviewing clinician</h3>
+          {/* Keep these three paragraphs in lockstep with lib/claimPdf.ts §5 — the
+              printed page and the downloadable PDF must ask a clinician the same
+              questions. The list below mixes exposure-linked and secondary
+              contentions, and they need DIFFERENT questions answered. */}
           <p className="text-sm leading-relaxed text-ink">
             The veteran requests your medical opinion on whether the following condition(s) are <strong>at least as
-            likely as not</strong> (50% or greater probability) connected to the documented service exposures below. A
-            signed nexus statement, or a completed Disability Benefits Questionnaire (DBQ), supports this claim.
+            likely as not</strong> (50% or greater probability) connected to his service. A signed nexus statement,
+            or a completed Disability Benefits Questionnaire (DBQ), supports this claim.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-ink">
+            <span className="font-semibold">For a condition tied to a documented exposure:</span> is it at least as
+            likely as not (50% or greater) related to the veteran&apos;s documented in-service exposure?
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-ink">
+            <span className="font-semibold">For a condition listed as secondary to another:</span> is it at least as
+            likely as not (50% or greater) proximately due to, <strong>or aggravated by</strong>, the veteran&apos;s
+            service-connected condition? <span className="text-muted">(38 CFR 3.310 — aggravation counts, and is
+            frequently missed.)</span>
           </p>
           {allContentions.length === 0 ? (
             <p className="mt-3 text-sm text-muted">Add conditions and exposures to generate the contentions list.</p>

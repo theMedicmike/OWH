@@ -104,7 +104,7 @@ export const EXPOSURE_EDU: Record<string, ExposureEdu> = {
       "Vietnam, the Thailand base perimeters, the Korean DMZ, and several storage/test sites. Personnel handled, sprayed, or simply lived and worked where these chemicals were used.",
     body: [
       "Agent Orange was contaminated with TCDD, a dioxin that persists in the body and the environment for years. Dioxins interfere with hormone signaling and cellular regulation, which is why the recognized condition list spans cancers, diabetes, heart disease, and nerve injury.",
-      "Many pesticides act on the nervous system and can stress the liver's detoxification pathways. Exposure decades ago can still be relevant because dioxins store in fat tissue.",
+      "Many pesticides act on the nervous system and can stress the liver's chemical-processing pathways. Exposure decades ago can still be relevant because dioxins store in fat tissue.",
     ],
     systems: ["Endocrine / hormones", "Nervous system", "Metabolic (diabetes)", "Multiple cancers"],
     ask: [
@@ -414,17 +414,26 @@ export type SolutionPillar = {
   why: string;
   everyday: string[];
   practitioner: string[];
-  // exposure classes / condition labels this pillar is most relevant to
-  exposures: string[];
-  conditions: string[];
+  // 🔴 DELIBERATELY NO `exposures` / `conditions` FIELDS. These pillars must never
+  // be targeted at a veteran's own record. Targeting is what turned general
+  // wellness copy into a personalised funnel: a veteran who logged heavy metals
+  // was shown "Support natural detox" under a heading reading "Tailored to your
+  // record". The founder separately sells nutritional supplements, the nonprofit
+  // sells nothing, and no money needs to change hands for that click path to be
+  // the story. Removing the FIELDS (rather than emptying the arrays) makes the
+  // targeting unrepresentable instead of merely absent. Do not add them back.
 };
 
-// Root-cause, whole-person education built on the "rebuild the terrain" framework
-// from the book "What Happened to Our Veterans": reduce the burden, signal safety,
-// restore rhythm, replenish what was depleted, repair the barriers, support detox,
-// rebuild capacity, and test before you treat. General wellness education only —
-// not treatment, not a prescription, never a claim. Every pillar points back to
-// "explore with your own clinician or practitioner."
+// General, non-personalised wellness education for veterans. Shown to everyone in
+// the same order, never matched to anyone's exposures or conditions.
+// Not treatment, not a prescription, never part of a VA claim. Every pillar points
+// back to "explore with your own clinician."
+//
+// ⚠️ Banned throughout this array: repair, regenerate, restore (in a health sense),
+// replenish, deplete/depletion, detox as an aspiration, cleanse, chelate, nutrient,
+// vitamin, mineral-as-something-you-lack, supplement, protocol, boost, optimize.
+// "Detox" and "cleanse" survive in exactly one place — inside the warning telling a
+// veteran to avoid them.
 export const SOLUTION_PILLARS: SolutionPillar[] = [
   {
     key: "reduce",
@@ -437,8 +446,6 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
       "Cut the obvious fuel on the fire — ultra-processed food, excess sugar, heavy alcohol.",
     ],
     practitioner: ["Ask whether testing your home water or environment makes sense for your history."],
-    exposures: ["pfas_afff", "water_contamination", "heavy_metal", "chemical_solvent", "particulate"],
-    conditions: ["Kidney disease", "Thyroid disorder", "Asthma / reactive airway"],
   },
   {
     key: "nervous",
@@ -451,8 +458,6 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
       "Protect connection — isolation is a physical risk, not just a mood.",
     ],
     practitioner: ["Ask about trauma-informed care if stress or past trauma is driving symptoms."],
-    exposures: ["nerve_agent", "gulf_war_agent"],
-    conditions: ["PTSD / mental health", "Hypertension", "Gut / GI disorder", "Neurological / cognitive (TBI)"],
   },
   {
     key: "sleep",
@@ -465,50 +470,45 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
       "Build a simple wind-down ritual that tells your body the day is ending.",
     ],
     practitioner: ["Ask about screening for sleep apnea or insomnia if sleep is broken or unrefreshing."],
-    exposures: ["nerve_agent", "gulf_war_agent"],
-    conditions: ["PTSD / mental health", "Neurological / cognitive (TBI)"],
   },
   {
     key: "nutrition",
     icon: "M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2M5 11v11M12 2a4 4 0 0 0-4 4c0 2 2 3 4 3s4-1 4-3a4 4 0 0 0-4-4zM12 9v13M21 15V2a5 5 0 0 0-3 4.5c0 2 1 3 3 3z",
-    title: "Replenish what was depleted",
-    why: "Service drains the body — minerals burned under stress, antioxidants spent neutralizing exposure, the raw materials repair depends on. A depleted body can't rebuild from an empty account. Whole, colorful, nutrient-dense food gives the body permission to rebuild and helps calm the chronic inflammation behind so many conditions.",
+    title: "Eat in a way you can keep up",
+    why: "Nobody eats their way out of an exposure, and this app has nothing to sell you. But blood pressure, blood sugar and weight are the things VA cohorts keep finding alongside worse outcomes — and unlike your service history, they are still movable. Regular meals you can actually sustain do more than any short-lived overhaul.",
     everyday: [
-      "Build meals around vegetables, fruit, fiber, and clean protein; cruciferous vegetables support the body's own detox enzymes.",
-      "Feed the brain the omega-3 fats it's literally built from.",
-      "Reduce ultra-processed foods, sugar, and alcohol; stay well hydrated for the kidneys.",
+      "Build meals around vegetables, fruit, fiber, and protein you like enough to keep eating.",
+      "Go easy on ultra-processed food, sugar, and alcohol, and stay well hydrated.",
+      "Eat on something like a schedule — erratic eating makes blood sugar harder to hold steady.",
     ],
-    practitioner: ["Ask whether checking nutrient status (vitamin D, magnesium, B12, etc.) fits your history."],
-    exposures: ["burn_pit", "particulate", "pesticide", "gulf_war_agent"],
-    conditions: ["Gut / GI disorder", "Autoimmune disorder", "Hypertension", "Thyroid disorder"],
+    practitioner: ["Ask what dietary changes are safe alongside your medications and any kidney or liver condition you already have."],
   },
   {
     key: "gut",
     icon: "M12 2a3 3 0 0 0-3 3v1a4 4 0 0 0-2 7c0 3 2 4 2 6a3 3 0 0 0 6 0c0-2 2-3 2-6a4 4 0 0 0-2-7V5a3 3 0 0 0-3-3z",
-    title: "Repair the barriers — start with the gut",
-    why: "A healthy terrain depends on healthy barriers — the gut, the lungs, the blood-brain barrier. When the gut lining is compromised, the immune system keeps getting inflammatory signals and nutrients don't absorb well. Tend the gut and the whole body often settles — mood, inflammation, and energy included.",
+    title: "Look after your gut",
+    why: "Gut symptoms are among the most common things veterans report and among the least often worked up. Ongoing pain, bloating, reflux or a change in your bowels is worth a real evaluation rather than a diet experiment — some of it is treatable, and some of it is a sign of something that needs finding.",
     everyday: [
-      "Feed beneficial bacteria with fiber and fermented foods.",
-      "Notice and log the foods that trigger symptoms.",
-      "Manage stress — the gut and nervous system are tightly linked.",
+      "Notice and log the foods that trigger symptoms — the pattern is the useful part.",
+      "Fiber and fermented foods suit most people; go by how you actually feel.",
+      "Manage stress where you can — the gut and nervous system are tightly linked.",
     ],
     practitioner: ["Ask about evaluation for ongoing pain, bloating, reflux, or irregular bowels."],
-    exposures: ["gulf_war_agent", "pesticide", "heavy_metal", "water_contamination"],
-    conditions: ["Gut / GI disorder", "Autoimmune disorder"],
   },
   {
-    key: "detox",
+    key: "clearance",
     icon: "M12 2a7 7 0 0 0-7 7c0 3 2 5 2 8a5 5 0 0 0 10 0c0-3 2-5 2-8a7 7 0 0 0-7-7zM9 22h6",
-    title: "Support natural detox — safely",
-    why: "Detox is real, but order matters. Pushing aggressive detox on a body that isn't eliminating well, is mineral-depleted, or under-slept can backfire. The honest version is supporting the organs that already do the work — liver, kidneys, gut, skin — once the foundations are steady underneath.",
+    title: "How your body clears things, and what to avoid",
+    why: "Your liver, kidneys, gut and skin already do this work, and there is no product that does it better. What there is, is an industry selling veterans 'cleanses' and chelation for exactly this fear. Those are not validated, they can be dangerous, and the honest advice is the unglamorous kind below.",
     everyday: [
-      "Prioritize daily bowel movements, hydration, and fiber, which binds waste in the gut.",
-      "Sweat through movement or sauna — one route the body uses to release some toxicants.",
+      "Stay hydrated and keep things regular — fiber does the work in the gut.",
+      "Move your body. Sweating is one ordinary route your body already uses.",
       "Go easy on alcohol so the liver can do its job.",
     ],
-    practitioner: ["Ask before any supplement or 'cleanse' — some interact with medications or stress the kidneys and liver."],
-    exposures: ["heavy_metal", "pesticide", "chemical_solvent", "pfas_afff", "radiation"],
-    conditions: ["Kidney disease", "Peripheral neuropathy"],
+    practitioner: [
+      "Avoid 'provoked' or 'chelation-challenge' urine testing, hair mineral panels, and any unsupervised chelation or 'cleanse' — they are not validated, they mislead, and they have killed people.",
+      "Ask before starting anything sold as a cleanse or a binder — some interact with medications or stress the kidneys and liver.",
+    ],
   },
   {
     key: "movement",
@@ -521,8 +521,6 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
       "Pair movement with morning light and the breathing above.",
     ],
     practitioner: ["Ask what activity level is safe given your heart, lungs, and any conditions."],
-    exposures: ["burn_pit", "particulate"],
-    conditions: ["COPD / chronic bronchitis", "Hypertension", "Asthma / reactive airway"],
   },
   {
     key: "testing",
@@ -532,11 +530,9 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     everyday: [
       "Keep your own copy of every lab, scan, and note — the app stores records too.",
       "Track symptoms over time so patterns show up.",
-      "Build a team you trust: VA primary care, a VSO, and, if you choose, an integrative practitioner who coordinates with them.",
+      "Build a team you trust: VA primary care, an accredited VSO for anything claim-related, and specialists your VA doctor refers you to.",
     ],
     practitioner: ["Ask which baseline labs fit your exposures (kidney, liver, thyroid, inflammation markers), and 'will you test before you treat, and coordinate with my VA doctors?'"],
-    exposures: ["pfas_afff", "heavy_metal", "radiation", "water_contamination"],
-    conditions: ["Kidney disease", "Thyroid disorder", "Hypertension"],
   },
 ];
 
@@ -547,7 +543,7 @@ export const START_THIS_WEEK: string[] = [
   "If you're enrolled in VA care, ask for your PACT Act Toxic Exposure Screening — it's free, takes about 10 minutes, and puts your exposures on the official record.",
   "Move your body daily. A walk counts. It's the closest thing to a free miracle drug a veteran has.",
   "Fight for your sleep like the vital sign it is.",
-  "Feed the repair — real food, and the omega-3 fats the brain is built from.",
+  "If you smoke, ask VA about quitting — it's free, and 1-855-QUIT-VET is staffed by people who work with veterans.",
   "Get sunlight and get outside.",
   "Reach one human being. Connection is medicine; isolation is a physical risk.",
   "Subtract one obvious harm you already know about.",

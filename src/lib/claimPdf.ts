@@ -266,8 +266,20 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   // ---- 5. Clinician hand-off ----
   newPage();
   sectionHeading("5 · For the reviewing clinician");
+  // Two DIFFERENT questions, because the contentions list below mixes two kinds of
+  // claim. Asking only the exposure question left every secondary contention —
+  // a condition caused or worsened by an ALREADY service-connected one — without
+  // the question a clinician has to answer for it under 38 CFR 3.310.
   text(
-    "The veteran requests your medical opinion on whether the following condition(s) are at least as likely as not (50% or greater probability) connected to the documented service exposures below. A signed nexus statement, or a completed Disability Benefits Questionnaire (DBQ), supports this claim.",
+    "The veteran requests your medical opinion on whether the following condition(s) are at least as likely as not (50% or greater probability) connected to his service. A signed nexus statement, or a completed Disability Benefits Questionnaire (DBQ), supports this claim.",
+    { size: 9.5, gapAfter: 4 }
+  );
+  text(
+    "For a condition tied to a documented exposure:  Is the condition at least as likely as not (50% or greater) related to the veteran's documented in-service exposure?",
+    { size: 9.5, gapAfter: 3 }
+  );
+  text(
+    "For a condition listed as secondary to another:  Is the condition at least as likely as not (50% or greater) proximately due to, OR AGGRAVATED BY, the veteran's service-connected condition?  (38 CFR 3.310 — aggravation counts, and is frequently missed.)",
     { size: 9.5, gapAfter: 6 }
   );
   if (data.contentions.length === 0) text("Add conditions and exposures to generate the contentions list.", { color: MUTED });
