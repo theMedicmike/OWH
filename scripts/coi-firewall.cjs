@@ -81,6 +81,18 @@ const fail = (rule, detail) => failures.push({ rule, detail });
 
 // ── 3. No nutrient/supplement/detox vocabulary in veteran-facing content ─────
 {
+  // SCOPE IS DELIBERATE — these are the HEALTH-CONTENT surfaces, the places the
+  // app tells a veteran something about his own body. That is where a nutrient or
+  // "detox" word does damage, because it sits next to his personal data in an app
+  // whose founder separately sells supplements.
+  //
+  // /app/about and /app/help are NOT in this list, and that is a decision, not an
+  // oversight (founder's call, 2026-08-06). Those pages carry Operation Whole
+  // Health's MISSION language — "root-cause healing", "restoring the veteran" —
+  // which is a statement of what the organisation is for, not advice about what to
+  // put in your body. An audit will want to widen this list; widening it would gag
+  // the nonprofit's own mission statement without protecting a single veteran.
+  // Health advice is gated. A mission is not health advice.
   const files = [
     "src/lib/education.ts",
     "src/lib/toxlibrary.ts",

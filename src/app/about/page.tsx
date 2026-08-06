@@ -103,12 +103,17 @@ export default function AboutPage() {
         <h3 className="mt-7 text-base font-bold text-ink">What it does</h3>
         <ul className="mt-2 space-y-2 text-sm text-muted">
           {[
-            "Maps a veteran's entire service history, place by place, year by year.",
-            "Tells them what they were likely exposed to — so they don't have to be a chemist to figure it out.",
-            "Connects those exposures to their health conditions and flags PACT Act presumptives, with the actual citations.",
-            "Lets the people they served with corroborate each other — privately and on their own terms.",
-            "Generates a claim-ready packet, plus a hand-off sheet a doctor can sign.",
+            "Maps a veteran's entire service history, place by place, year by year — starting at boot camp.",
+            "Tells them what was documented where they stood — so they don't have to be a chemist to figure it out.",
+            "Connects those exposures to their health conditions, in plain English, with the actual citations.",
+            "Shows more than one road: a straight line from an exposure to a condition, a condition the PACT Act already presumes is connected, or a condition that grew out of another one.",
+            "Says the thing nobody says: a condition that existed before service can still count if service made it permanently worse.",
+            "Lets the people they served with confirm what they witnessed — privately, only what they actually saw, and only for a veteran who has switched corroboration on.",
+            "Keeps a veteran's own words on the record. What they write about a place becomes a printable statement in their own voice.",
+            "Generates a claim packet, with the documented basis for every line in it, plus a hand-off sheet a doctor can sign.",
+            "Stays with them after they file — where each claim stands, the real VA forms, and the one-year clocks that are easy to miss.",
             "Reconnects veterans with the brothers and sisters they served beside.",
+            "Hands the whole record back. They can download it, print it, or delete it — the locations, the exposures, the conditions, the uploads, all of it — any time, without asking anyone.",
           ].map((item, i) => (
             <li key={i} className="flex gap-2.5">
               <span className="mt-0.5 flex h-4 w-4 flex-none items-center justify-center rounded-full bg-brand/10 text-[10px] font-bold text-brand">
@@ -118,6 +123,39 @@ export default function AboutPage() {
             </li>
           ))}
         </ul>
+
+        <p className="mt-4 text-sm leading-relaxed text-muted">
+          <strong className="text-ink">One thing it does not do.</strong> It never files anything
+          with the VA, and it is not anyone&apos;s representative. Only an accredited Veterans
+          Service Officer can prepare and present a claim — and their help is free. This app exists
+          to hand them a record they can work with.
+        </p>
+
+        <h3 className="mt-7 text-base font-bold text-ink">What it&apos;s grown into</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          It isn&apos;t just the map anymore. There&apos;s a plain-language library of these
+          exposures — where they came from, what they do in the body, what the VA already links them
+          to — so a veteran can read it once and understand what they were standing in.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          My book is in here too, free, chapter by chapter. It will read itself out loud to anyone
+          whose eyes are tired.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          There&apos;s a guide called Medic Mike a veteran can talk to or type to at any hour.
+          He&apos;s a guide — not a doctor, a lawyer, or the VA — and he says so himself. If a night
+          gets dark, the Veterans Crisis Line is one tap away from every screen: dial 988, then press
+          1.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          And the app now says out loud what nobody told most of us: a condition that started before
+          you shipped out is not automatically a dead end, and neither is one that grew out of
+          another one.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          The record belongs to the veteran, not to us. They can take it with them or delete it, on
+          their own, without permission. This app is free, it sells nothing, and it never will.
+        </p>
 
         <h3 className="mt-7 text-base font-bold text-ink">Why it matters — today, and for the future</h3>
         <div className="mt-2 space-y-2 text-sm leading-relaxed text-muted">
@@ -171,8 +209,8 @@ export default function AboutPage() {
         <p className="mt-6 text-xs leading-relaxed text-faint">
           Operation Whole Health is a Patriot-founded 501(c)(3) nonprofit. Connecting the Dots of
           Service assembles a veteran&apos;s own information with documented sources to assist an
-          accredited VSO and a clinician. It is an estimate and a record — not a diagnosis or a
-          determination of service connection.
+          accredited VSO — whose help is always free — and a clinician. It is an estimate and a
+          record — not a diagnosis or a determination of service connection.
         </p>
       </div>
     </AppShell>
