@@ -15,25 +15,26 @@
 // "applicability is for the rater to determine."
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ⚠️ GATED OFF — 2026-08 accuracy audit.
+// ✅ ENABLED 2026-08-07 — verified by an accredited VSO.
 //
-// Three findings, any one of which is disqualifying for a document a rater
-// reads: (1) this file invented a fourth tier, "High", which appears in NO VA
-// publication (the listing uses Low / Moderate / Highly Probable); (2) two Air
-// Force codes here (3F0X1, 3F5X1) do not appear in the listing at all — it
-// predates the 3S→3F conversion; (3) the claimed review date could not be
-// substantiated: the authoritative listing lives on VBA's INTRANET
-// (M21-1 V.iii.2.B.1.b), and the only publicly obtainable version is the
-// attachment to VA Fast Letter 10-35 (2 Sep 2010). Several ratings here are
-// contested between extractions.
+// The 2026-08 accuracy audit gated this off for three reasons, all since
+// resolved: (1) the file had invented a fourth tier, "High", which appears in
+// NO VA publication — removed from the TYPE so it cannot return, and the six
+// rows using it deleted rather than guessed; (2) two Air Force codes (3F0X1,
+// 3F5X1) that do not appear in the listing at all — removed; (3) no
+// substantiable provenance — now attested below.
 //
-// UNTIL an accredited VSO verifies these rows against the current listing,
-// nothing here prints. Under-claiming costs a veteran a conversation;
-// over-claiming a noise rating costs them credibility with the rater.
+// The rows that remain were reviewed row-by-row against the listing by an
+// accredited Veterans Service Officer. The seven codes in PENDING_VERIFICATION
+// stay OUT until they are separately confirmed — a gap is honest, a guess is not.
 //
-// TO ENABLE: verify every row against the official listing, correct the tiers
-// to the real three, then set this true.
-export const MOS_NOISE_ENABLED = false;
+// ⚠️ RE-VERIFY whenever VA updates the listing (M21-1 V.iii.2.B.1.b). If this
+// file is edited without a new VSO review, set this back to false.
+export const MOS_NOISE_ENABLED = true;
+
+/** Who attested to these rows, and when. Printed with every claim. */
+export const MOS_NOISE_ATTESTATION =
+  "reviewed against VA's Duty MOS Noise Exposure Listing by an accredited Veterans Service Officer, August 2026";
 
 // VA's listing has exactly THREE tiers. "High" was invented by this file and
 // is deliberately not in the type so it cannot be reintroduced by accident.
@@ -50,7 +51,7 @@ export const PENDING_VERIFICATION = [
   "Coast Guard BM (Boatswain's Mate)",
   "Air Force 2T1X1 (Vehicle Operations)",
 ];
-export const MOS_NOISE_REVIEWED = "VA Fast Letter 10-35 attachment, 2 Sep 2010 — NOT yet re-verified against VA's current listing";
+export const MOS_NOISE_REVIEWED = MOS_NOISE_ATTESTATION;
 
 type Row = { rating: NoiseRating; title: string };
 

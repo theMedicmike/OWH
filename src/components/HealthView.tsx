@@ -440,7 +440,7 @@ export default function HealthView() {
                           </p>
                           <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
                             Held more than one job? The listing rates each one — tell your VSO all of them.
-                            Listing as carried {MOS_NOISE_REVIEWED}; veteran-reported MOS — verify against DD-214 Block 11.
+                            This listing was {MOS_NOISE_REVIEWED}. Your job code is as you reported it — check it against DD-214 Block 11.
                           </p>
                         </div>
                       );

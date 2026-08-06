@@ -284,7 +284,7 @@ export default function ReportView() {
             presumptive: basis?.presumptive,
             status: c.claim_status,
             noiseLine: noise
-              ? `Duty noise exposure: veteran-reported MOS ${noise.code}, ${noise.title} (${member?.branch}) appears in VA's Duty MOS Noise Exposure Listing as "${noise.rating}" for hazardous noise. (Veteran-reported MOS — verify against DD-214 Block 11; listing as carried ${MOS_NOISE_REVIEWED}.) Applicability is for the accredited VSO and rater to determine.`
+              ? `Duty noise exposure: veteran-reported MOS ${noise.code}, ${noise.title} (${member?.branch}) appears in VA's Duty MOS Noise Exposure Listing as "${noise.rating}" for hazardous noise. (MOS is veteran-reported — verify against DD-214 Block 11. This listing was ${MOS_NOISE_REVIEWED}.) Applicability is for the accredited VSO and rater to determine.`
               : undefined,
             veteranLine: vparts.length ? vparts.join(" · ") : undefined,
             latency: lat
