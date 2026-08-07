@@ -173,12 +173,18 @@ export default function ReportView() {
   // 🔴 A still-serving member used to print as "2018–?" on the header of a
   // document a VA rater reads. That looks like a gap in the record; in fact he
   // answered the question and the answer is that he has not left yet.
+  // This string is the header of the claim packet AND of the signed statement, so
+  // it must never contain a "?". A question mark reads to a VA rater as a gap in
+  // the record, when the truth is simply that he has not told us an end date —
+  // or has told us there isn't one yet.
+  const ssYear = member?.service_start ? new Date(member.service_start).getUTCFullYear() : null;
+  const seYear = member?.service_end ? new Date(member.service_end).getUTCFullYear() : null;
   const years =
-    member?.service_start || member?.service_end
-      ? member?.still_serving
-        ? `${member?.service_start ? new Date(member.service_start).getUTCFullYear() : "?"}–present`
-        : `${member?.service_start ? new Date(member.service_start).getUTCFullYear() : "?"}–${member?.service_end ? new Date(member.service_end).getUTCFullYear() : "?"}`
-      : null;
+    ssYear && member?.still_serving ? `${ssYear}–present`
+    : ssYear && seYear ? `${ssYear}–${seYear}`
+    : ssYear ? `from ${ssYear}`
+    : seYear ? `until ${seYear}`
+    : null;
 
   const classesPresent = Object.keys(expoPlaces);
   const presumptiveConditions = conditions.filter((c) => CONDITION_BASIS[c.label]?.presumptive).length;
