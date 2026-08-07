@@ -41,13 +41,18 @@ export default function DashboardView() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const m = await supabase.from("members").select("display_name, branch, service_start, service_end").eq("auth_id", user.id).maybeSingle();
+      // still_serving is 0017; fall back so the header still renders before it is run.
+      let m = await supabase.from("members").select("display_name, branch, service_start, service_end, still_serving").eq("auth_id", user.id).maybeSingle();
+      if (m.error) m = await supabase.from("members").select("display_name, branch, service_start, service_end").eq("auth_id", user.id).maybeSingle();
       if (!m.data) await supabase.from("members").insert({ auth_id: user.id });
       setName((m.data?.display_name as string) ?? null);
       setBranch((m.data?.branch as string) ?? null);
       const ss = m.data?.service_start ? new Date(m.data.service_start as string).getUTCFullYear() : null;
       const se = m.data?.service_end ? new Date(m.data.service_end as string).getUTCFullYear() : null;
-      setYears(ss || se ? `${ss ?? "?"}–${se ?? "?"}` : null);
+      // A still-serving member reads "2018–present", never "2018–?" — a "?" here
+      // looks like an incomplete record when in fact he answered the question.
+      const serving = m.data?.still_serving === true;
+      setYears(ss || se ? (serving ? `${ss ?? "?"}–present` : `${ss ?? "?"}–${se ?? "?"}`) : null);
 
       const [ci, exprows, cond, conns, files] = await Promise.all([
         supabase.from("check_ins").select("id, place_name, date_start, exposures(exposure_class)").order("date_start", { ascending: false }),

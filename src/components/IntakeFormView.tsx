@@ -206,19 +206,27 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     // flow, and a prefill that skips fields turns a re-run into a data wipe
     // (MOS and VA rating were being overwritten with blanks).
     (async () => {
-      type M = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; va_healthcare?: boolean | null };
-      const wide = await supabase.from("members")
-        .select("display_name, branch, service_start, service_end, mos, va_rating, va_healthcare")
+      type M = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; va_healthcare?: boolean | null; still_serving?: boolean | null };
+      const widest = await supabase.from("members")
+        .select("display_name, branch, service_start, service_end, mos, va_rating, va_healthcare, still_serving")
         .eq("auth_id", user.id).maybeSingle();
-      let data: M | null = wide.data;
-      let ok = !wide.error;
-      if (wide.error) {
-        // Pre-migration-0014 the wide select 42703s; the narrow one must work.
-        const narrow = await supabase.from("members")
-          .select("display_name, branch, service_start, service_end")
+      let data: M | null = widest.data;
+      let ok = !widest.error;
+      if (widest.error) {
+        // Pre-0017: no still_serving column yet.
+        const wide = await supabase.from("members")
+          .select("display_name, branch, service_start, service_end, mos, va_rating, va_healthcare")
           .eq("auth_id", user.id).maybeSingle();
-        data = narrow.data;
-        ok = !narrow.error;
+        data = wide.data;
+        ok = !wide.error;
+        if (wide.error) {
+          // Pre-migration-0014 the wide select 42703s; the narrow one must work.
+          const narrow = await supabase.from("members")
+            .select("display_name, branch, service_start, service_end")
+            .eq("auth_id", user.id).maybeSingle();
+          data = narrow.data;
+          ok = !narrow.error;
+        }
       }
       // No row (brand-new member) is a SUCCESSFUL prefill of nothing; only a
       // failed read blocks saving, because saving over an unread record wipes it.
@@ -228,6 +236,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       if (data.branch) setBranch(data.branch);
       if (data.service_start) setStartYear(String(new Date(data.service_start).getUTCFullYear()));
       if (data.service_end) setEndYear(String(new Date(data.service_end).getUTCFullYear()));
+      // Restore the checkbox. Without this it read as though the save had failed.
+      if (data.still_serving === true) setCurrentlyServing(true);
       if (data.mos) setMos(data.mos);
       if (data.va_rating) setVaRating(data.va_rating);
       if (typeof data.va_healthcare === "boolean") setVaCare(data.va_healthcare);
@@ -272,11 +282,39 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       // (PGRST204 on updates — NOT the 42703 text selects produce), so retry
       // with the base payload and check THAT result too. Any other failure
       // must stop the wizard, not silently advance.
-      const withMos = await supabase.from("members").update({ ...base, mos: mos.trim() || null }).eq("id", memberId);
-      if (withMos.error) {
-        if (!isMissingColumnError(withMos.error)) throw new Error(withMos.error.message);
-        const fallback = await supabase.from("members").update(base).eq("id", memberId);
-        if (fallback.error) throw new Error(fallback.error.message);
+      //
+      // still_serving (0017) rides in the widest payload for the same reason MOS
+      // does: until it existed, ticking "I am currently serving" wrote nothing but
+      // a NULL end date, which is indistinguishable from leaving the box blank —
+      // so the checkbox could never be shown back to him, Account could not offer
+      // it, and his packet header printed "2018–?" as though a date were missing.
+      //
+      // Three tiers, widest first. Each step down drops only the columns that may
+      // not exist yet, so nothing the veteran typed is ever lost to a migration he
+      // hasn't run.
+      // 🔴 Precision must be reset to "year" here, not left alone. This wizard
+      // only ever collects a YEAR, and re-running it is a designed flow — so a
+      // veteran who set "15 March 1968" on Account and later re-ran signup would
+      // end up with 1968-01-01 still labelled day-precision, and Account would
+      // show him "1 January" as though it were his own answer. That is exactly
+      // the invention this feature exists to prevent.
+      const withAll = await supabase.from("members")
+        .update({
+          ...base,
+          mos: mos.trim() || null,
+          still_serving: currentlyServing,
+          service_start_precision: startYear ? "year" : null,
+          service_end_precision: (!currentlyServing && endYear) ? "year" : null,
+        })
+        .eq("id", memberId);
+      if (withAll.error) {
+        if (!isMissingColumnError(withAll.error)) throw new Error(withAll.error.message);
+        const withMos = await supabase.from("members").update({ ...base, mos: mos.trim() || null }).eq("id", memberId);
+        if (withMos.error) {
+          if (!isMissingColumnError(withMos.error)) throw new Error(withMos.error.message);
+          const fallback = await supabase.from("members").update(base).eq("id", memberId);
+          if (fallback.error) throw new Error(fallback.error.message);
+        }
       }
       await saveBootCamp();
       setStep(1);
@@ -561,7 +599,10 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
               <Field label="Service end year">
                 <input className={inputCls} type="number" placeholder="e.g. 2010" min="1940" max={new Date().getFullYear()} value={endYear} disabled={currentlyServing} onChange={(e) => setEndYear(e.target.value)} />
                 <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs text-muted">
-                  <input type="checkbox" checked={currentlyServing} onChange={(e) => { setCurrentlyServing(e.target.checked); if (e.target.checked) setEndYear(""); }} className="rounded" />
+                  {/* Does not clear the year — saveStep1 already writes null when
+                      this is ticked, and clearing it only lost the separation date
+                      of anyone who ticked the box to see what it did. */}
+                  <input type="checkbox" checked={currentlyServing} onChange={(e) => setCurrentlyServing(e.target.checked)} className="rounded" />
                   I am currently serving
                 </label>
               </Field>

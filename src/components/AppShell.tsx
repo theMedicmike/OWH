@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { ServiceRibbon, StarRow, Anniversary250 } from "./Patriotic";
@@ -94,8 +94,20 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
 export default function AppShell({ title, children }: { title: string; children: React.ReactNode }) {
   const { user, ready, signOut } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
+
+  const isDashboard = pathname === "/dashboard";
+  // history.length > 1 means there is somewhere real to go back TO. A veteran who
+  // opened a bookmark or followed a link straight into a deep page has no history,
+  // and router.back() would either do nothing or throw him out of the app
+  // entirely — so he goes to the Dashboard instead. A back button that sometimes
+  // does nothing is worse than none: he taps it twice and decides the app is broken.
+  function goBack() {
+    if (typeof window !== "undefined" && window.history.length > 1) router.back();
+    else router.push("/dashboard");
+  }
 
   if (!ready) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted">Loading…</div>;
@@ -240,6 +252,25 @@ export default function AppShell({ title, children }: { title: string; children:
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
+          {/* Back. Every screen gets one, from the shell, because ad-hoc "←" links
+              on some pages and not others is how a veteran gets stranded — and on
+              a phone the whole menu is hidden behind the button to the left, so
+              without this the only way out of a deep page is to know it is there.
+              Uses real history when there is any, and falls back to the Dashboard
+              when he arrived cold from a link or a bookmark, so it can never be a
+              dead button. Hidden on the Dashboard itself, which is the floor. */}
+          {!isDashboard && (
+            <button
+              onClick={goBack}
+              className="rounded-lg border border-line p-1.5 text-muted transition hover:bg-canvas hover:text-ink"
+              aria-label="Go back"
+              title="Back"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          )}
           <h1 className="text-base font-bold tracking-tight text-ink">{title}</h1>
 
           <Link

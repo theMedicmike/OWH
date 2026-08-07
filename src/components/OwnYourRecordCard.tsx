@@ -100,13 +100,19 @@ export default function OwnYourRecordCard() {
     const locs = b.locations as Record<string, unknown>[];
     const conds = b.conditions as Record<string, unknown>[];
     const yr = (d: unknown) => (d ? new Date(String(d)).getUTCFullYear() : "");
+    // The exported document is one a veteran prints and hands to people, so it
+    // must not end on a dangling dash. Still serving reads "present"; an end date
+    // he simply never filled in says so in words rather than trailing off.
+    const span = m?.service_start
+      ? `${yr(m.service_start)}–${m?.still_serving ? "present" : (yr(m.service_end) || "end date not recorded")}`
+      : "";
     const html = `<!doctype html><meta charset="utf-8"><title>My service record</title>
 <style>body{font:13px/1.5 Georgia,serif;color:#15212e;max-width:760px;margin:32px auto;padding:0 20px}
 h1{font-size:22px;margin:0 0 2px}h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#16314f;border-bottom:1px solid #ccc;padding-bottom:3px;margin:24px 0 8px}
 .meta{color:#555;font-size:12px}table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;padding:4px 6px;border-bottom:1px solid #eee;vertical-align:top}
 .note{background:#f6f3ea;border-left:3px solid #c1873d;padding:8px 12px;font-size:12px;margin:14px 0}</style>
 <h1>My Service &amp; Exposure Record</h1>
-<div class="meta">${esc(m?.display_name ?? (b.account as Record<string, unknown>).email)}${m?.branch ? " · " + esc(m.branch) : ""}${m?.service_start ? " · " + esc(yr(m.service_start)) + "–" + esc(yr(m.service_end)) : ""} · exported ${esc(new Date().toLocaleDateString())}</div>
+<div class="meta">${esc(m?.display_name ?? (b.account as Record<string, unknown>).email)}${m?.branch ? " · " + esc(m.branch) : ""}${span ? " · " + esc(span) : ""} · exported ${esc(new Date().toLocaleDateString())}</div>
 <div class="note">${esc(b.note)}</div>
 <h2>Where I served</h2>
 <table><tr><th>Place</th><th>Years</th><th>Documented exposures</th><th>My words</th></tr>

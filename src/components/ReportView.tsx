@@ -46,7 +46,7 @@ function rangeLabel(ds: string | null, de: string | null): string {
   if (s && e && e !== s) return `${s}–${e}`;
   return String(s ?? e);
 }
-type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; units?: string[] | null };
+type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; units?: string[] | null; still_serving?: boolean | null };
 type RecordFile = { name: string; url: string; isImage: boolean };
 
 export default function ReportView() {
@@ -71,7 +71,10 @@ export default function ReportView() {
       if (!data.user) return;
       // Member: widened select (migration 0014) with a defensive fallback —
       // the packet must carry MOS/rating once they exist.
-      let m: Member | null = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units").maybeSingle()).data as Member | null;
+      // Widest first (0017 adds still_serving), stepping down — migrations are
+      // run by hand here, so the packet must build whether or not 0017 has been.
+      let m: Member | null = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units, still_serving").maybeSingle()).data as Member | null;
+      if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units").maybeSingle()).data as Member | null;
       if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end").maybeSingle()).data as Member | null;
       const [{ data: c }, { data: cond }] = await Promise.all([
         // notes = the veteran's own words; the packet's strongest material.
@@ -167,9 +170,14 @@ export default function ReportView() {
   }
 
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  // 🔴 A still-serving member used to print as "2018–?" on the header of a
+  // document a VA rater reads. That looks like a gap in the record; in fact he
+  // answered the question and the answer is that he has not left yet.
   const years =
     member?.service_start || member?.service_end
-      ? `${member?.service_start ? new Date(member.service_start).getUTCFullYear() : "?"}–${member?.service_end ? new Date(member.service_end).getUTCFullYear() : "?"}`
+      ? member?.still_serving
+        ? `${member?.service_start ? new Date(member.service_start).getUTCFullYear() : "?"}–present`
+        : `${member?.service_start ? new Date(member.service_start).getUTCFullYear() : "?"}–${member?.service_end ? new Date(member.service_end).getUTCFullYear() : "?"}`
       : null;
 
   const classesPresent = Object.keys(expoPlaces);
