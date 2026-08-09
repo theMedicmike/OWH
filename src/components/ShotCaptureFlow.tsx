@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { SHOTS, GROUP_LABEL, type Shot, type ShotGroup } from "@/lib/shotlibrary";
 import { createServiceEvent, type Provenance, type DatePrecision, type ServiceEventKind } from "@/lib/serviceEvents";
@@ -17,7 +17,6 @@ const PROVENANCE_OPTIONS: { value: Provenance; label: string }[] = [
 type Picked = { label: string; refSlug: string | null; kind: ServiceEventKind };
 
 export default function ShotCaptureFlow() {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [openGroup, setOpenGroup] = useState<ShotGroup | null>(null);
   const [picked, setPicked] = useState<Picked | null>(null);
@@ -38,7 +37,7 @@ export default function ShotCaptureFlow() {
     setPicked({ label, refSlug: null, kind: "other" });
   }
 
-  if (picked) return <CaptureSheet picked={picked} onCancel={() => setPicked(null)} onSaved={() => router.push("/shots")} />;
+  if (picked) return <CaptureSheet picked={picked} onCancel={() => setPicked(null)} />;
 
   const Row = ({ s }: { s: Shot }) => (
     <button
@@ -109,7 +108,7 @@ export default function ShotCaptureFlow() {
   );
 }
 
-function CaptureSheet({ picked, onCancel, onSaved }: { picked: Picked; onCancel: () => void; onSaved: () => void }) {
+function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => void }) {
   const { supabase } = useAuth();
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
@@ -118,6 +117,7 @@ function CaptureSheet({ picked, onCancel, onSaved }: { picked: Picked; onCancel:
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [saved, setSaved] = useState(false);
 
   const yearValid = /^\d{4}$/.test(year) && Number(year) >= 1940 && Number(year) <= new Date().getUTCFullYear();
   const canSave = provenance !== null && (unsure || yearValid);
@@ -139,7 +139,32 @@ function CaptureSheet({ picked, onCancel, onSaved }: { picked: Picked; onCancel:
     });
     setBusy(false);
     if (res.status === "error") { setErr(res.message === "not-set-up" ? "This feature isn't switched on yet — nothing was saved." : res.message); return; }
-    onSaved();
+    setSaved(true);
+  }
+
+  if (saved) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-y-auto bg-canvas p-5">
+        <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-6 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 text-success">
+              <path d="m5 13 4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-base font-semibold text-ink">Saved.</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted">{picked.label} is on your shot record now.</p>
+          <Link
+            href="/shots"
+            className="mt-5 block w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition hover:bg-brand-600"
+          >
+            See your shot record →
+          </Link>
+          <button onClick={onCancel} className="mt-2.5 w-full rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-ink hover:bg-canvas">
+            Add another
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
