@@ -14,6 +14,7 @@ import { veteranWords, otherExposure } from "@/lib/veteranWords";
 import { currencyLine } from "@/lib/accuracyOwner";
 import StatementCard from "./StatementCard";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
+import { listStatementRequests } from "@/lib/statementRequests";
 
 
 // Exposure classes that carry a recognized presumptive pathway.
@@ -58,6 +59,7 @@ export default function ReportView() {
   const [conditions, setConditions] = useState<{ label: string; claim_status: string }[]>([]);
   const [expoPlaces, setExpoPlaces] = useState<Record<string, string[]>>({});
   const [corroByClass, setCorroByClass] = useState<Record<string, number>>({});
+  const [witnessRows, setWitnessRows] = useState<{ subject: string; witnessName: string; relationship: string; statement: string }[]>([]);
   const [records, setRecords] = useState<RecordFile[]>([]);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [condOnset, setCondOnset] = useState<Record<string, number>>({});
@@ -141,6 +143,23 @@ export default function ReportView() {
           if (cl) byClass[cl] = (byClass[cl] ?? 0) + 1;
         }
         setCorroByClass(byClass);
+      }
+
+      // Statements from people who aren't on this app at all (a spouse, a
+      // battle buddy, a commander) — distinct from corroByClass above, which
+      // only counts OTHER MEMBERS of this app confirming the same exposure.
+      const wr = await listStatementRequests(supabase);
+      if (!("error" in wr)) {
+        const subjectByRequest: Record<string, string> = {};
+        for (const r of wr.requests) subjectByRequest[r.id] = r.subject_label;
+        setWitnessRows(
+          wr.statements.map((s) => ({
+            subject: subjectByRequest[s.request_id] ?? "their service",
+            witnessName: s.witness_name,
+            relationship: s.relationship,
+            statement: s.statement,
+          })),
+        );
       }
 
       const { data: fileList } = await supabase.storage
@@ -315,6 +334,7 @@ export default function ReportView() {
         corroborations: Object.entries(corroByClass).map(
           ([c, n]) => `${n} fellow service member${n === 1 ? "" : "s"} corroborate${n === 1 ? "s" : ""} exposure to ${EXPOSURE_LABEL[c] ?? c} at ${(expoPlaces[c] ?? []).join("; ")}.`
         ),
+        witnessStatements: witnessRows,
         contentions: allContentions.map((c) => ({ label: c.label, matches: c.line, cite: c.cite })),
         attachments: records.map((r) => ({ name: r.name, isImage: r.isImage, url: r.url })),
       });
@@ -633,6 +653,23 @@ export default function ReportView() {
           )}
           <p className="mt-2 text-xs text-muted">Lay statements consistent with VA Form 21-10210. Corroborators are kept anonymous unless they consent to be named.</p>
         </section>
+
+        {/* 4b. Statements from people who aren't on this app */}
+        {witnessRows.length > 0 && (
+          <section className={sectionWrap}>
+            <h3 className={sectionTitle}>4b · Statements from people who weren&apos;t on this app</h3>
+            <ul className="space-y-3">
+              {witnessRows.map((w, i) => (
+                <li key={i} className="rounded-lg border border-line p-3">
+                  <div className="text-xs font-medium text-muted">Regarding: {w.subject}</div>
+                  <div className="mt-1 text-sm font-semibold text-ink">{w.witnessName} <span className="font-normal text-muted">· {w.relationship}</span></div>
+                  <p className="mt-1 text-sm italic leading-relaxed text-ink/90">&ldquo;{w.statement}&rdquo;</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-muted">Collected via a private, no-login link the veteran sent directly. Not the veteran&apos;s own words — attributed to the person named above.</p>
+          </section>
+        )}
 
         {/* 5. Clinician hand-off sheet */}
         <section className="mt-6 break-before-page break-inside-avoid border-t border-line pt-5">

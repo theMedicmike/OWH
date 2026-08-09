@@ -7,6 +7,7 @@ export type PdfExposure = { label: string; presumptive: boolean; places: string;
 export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string };
 export type PdfContention = { label: string; matches: string; cite?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
+export type PdfWitnessStatement = { subject: string; witnessName: string; relationship: string; statement: string };
 
 export type ClaimPdfData = {
   name: string;
@@ -21,6 +22,7 @@ export type ClaimPdfData = {
   exposures: PdfExposure[];
   conditions: PdfCondition[];
   corroborations: string[];
+  witnessStatements: PdfWitnessStatement[];
   contentions: PdfContention[];
   attachments: PdfAttachment[];
 };
@@ -262,6 +264,22 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     text("No corroboration yet. In Battle buddies, others who served where you did can confirm your exposures — each confirmation strengthens this record.", { color: MUTED });
   else data.corroborations.forEach((c) => bullet(c, { size: 9.5 }));
   text("Lay statements consistent with VA Form 21-10210. Corroborators are kept anonymous unless they consent to be named.", { size: 8, color: FAINT, gapAfter: 4 });
+
+  // ---- 4b. Statements from people who aren't on this app ----
+  // Collected through a private, no-login link the veteran sent directly (see
+  // lib/statementRequests.ts). Deliberately NOT folded into "corroborations"
+  // above — those are anonymous same-location matches between two members of
+  // this app; these are named, attributed statements from someone the veteran
+  // chose, so they must never be presented as the veteran's own words.
+  if (data.witnessStatements.length > 0) {
+    sectionHeading("4b · Statements from people who weren't on this app");
+    data.witnessStatements.forEach((w) => {
+      text(`Regarding: ${w.subject}`, { size: 8.5, color: FAINT, gapAfter: 0 });
+      text(`${w.witnessName}  ·  ${w.relationship}`, { size: 9.5, style: "bold", gapAfter: 0 });
+      text(`"${w.statement}"`, { size: 9, style: "italic", color: INK, indent: 12, gapAfter: 6 });
+    });
+    text("Collected via a private, no-login link the veteran sent directly. Not the veteran's own words.", { size: 8, color: FAINT, gapAfter: 4 });
+  }
 
   // ---- 5. Clinician hand-off ----
   newPage();
