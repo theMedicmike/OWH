@@ -37,6 +37,8 @@ export default function DashboardView() {
   const [classes, setClasses] = useState<string[]>([]);
   const [condLabels, setCondLabels] = useState<string[]>([]);
   const [hasDD214, setHasDD214] = useState(false);
+  const [deniedCount, setDeniedCount] = useState(0);
+  const [stillServing, setStillServing] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -53,6 +55,7 @@ export default function DashboardView() {
       // looks like an incomplete record when in fact he answered the question.
       const serving = m.data?.still_serving === true;
       setYears(ss || se ? (serving ? `${ss ?? "?"}–present` : `${ss ?? "?"}–${se ?? "?"}`) : null);
+      setStillServing(serving);
 
       const [ci, exprows, cond, conns, files] = await Promise.all([
         supabase.from("check_ins").select("id, place_name, date_start, exposures(exposure_class)").order("date_start", { ascending: false }),
@@ -67,6 +70,7 @@ export default function DashboardView() {
       const condRows = (cond.data ?? []) as { label: string; claim_status?: string }[];
       setCondLabels(condRows.map((c) => c.label));
       setFiledCount(condRows.filter((c) => c.claim_status && c.claim_status !== "none").length);
+      setDeniedCount(condRows.filter((c) => c.claim_status === "denied").length);
       let corr = 0;
       const ids = exRows.map((e) => e.id);
       if (ids.length) {
@@ -192,6 +196,24 @@ export default function DashboardView() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* A denial just happened — surface the path forward without waiting to be asked */}
+      {deniedCount > 0 && (
+        <Link href="/denied" className="block rounded-xl border border-line bg-surface p-5 transition hover:border-brand/40">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted">
+            {deniedCount} condition{deniedCount === 1 ? "" : "s"} denied
+          </div>
+          <div className="mt-1 text-sm font-semibold text-ink">A denial isn&apos;t the end — see your next steps →</div>
+        </Link>
+      )}
+
+      {/* Still serving — BDD is the fastest path to benefits with no gap in coverage */}
+      {stillServing && (
+        <Link href="/bdd" className="block rounded-xl border border-line bg-surface p-5 transition hover:border-brand/40">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted">Still serving</div>
+          <div className="mt-1 text-sm font-semibold text-ink">File before you separate — see the BDD timeline →</div>
+        </Link>
       )}
 
       {/* Start here (brand-new) / Resume (returning) — one lit door either way */}

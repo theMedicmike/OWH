@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
 import { ServiceRibbon } from "./Patriotic";
 import { downloadClaimPdf } from "@/lib/claimPdf";
-import { VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
+import { VA_FORMS, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { latencyFor, type TimelineData } from "./ServiceTimeline";
 import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
 import { veteranWords, otherExposure } from "@/lib/veteranWords";
@@ -47,7 +47,7 @@ function rangeLabel(ds: string | null, de: string | null): string {
   if (s && e && e !== s) return `${s}–${e}`;
   return String(s ?? e);
 }
-type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; units?: string[] | null; still_serving?: boolean | null };
+type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; units?: string[] | null; still_serving?: boolean | null; population_layer?: string | null; proxy_relationship?: string | null };
 type RecordFile = { name: string; url: string; isImage: boolean };
 
 export default function ReportView() {
@@ -75,7 +75,8 @@ export default function ReportView() {
       // the packet must carry MOS/rating once they exist.
       // Widest first (0017 adds still_serving), stepping down — migrations are
       // run by hand here, so the packet must build whether or not 0017 has been.
-      let m: Member | null = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units, still_serving").maybeSingle()).data as Member | null;
+      let m: Member | null = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units, still_serving, population_layer, proxy_relationship").maybeSingle()).data as Member | null;
+      if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units, still_serving").maybeSingle()).data as Member | null;
       if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units").maybeSingle()).data as Member | null;
       if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end").maybeSingle()).data as Member | null;
       const [{ data: c }, { data: cond }] = await Promise.all([
@@ -374,7 +375,7 @@ export default function ReportView() {
             <ol className="mt-2 space-y-1.5 text-sm text-ink">
               <li>
                 <span className="font-semibold">1.</span> Take it to an accredited VSO —{" "}
-                <a href={VSO_LOCATOR_URL} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">find one near you (free)</a>.
+                <Link href="/vso" className="font-semibold text-brand hover:underline">find one near you (free)</Link>.
               </li>
               <li>
                 <span className="font-semibold">2.</span> When you file, come back and mark each condition{" "}
@@ -389,11 +390,19 @@ export default function ReportView() {
         </Link>
       </div>
 
-      {/* The veteran's own words as a standalone deliverable — verbatim, VSO-routed */}
+      {/* The veteran's own words as a standalone deliverable — verbatim, VSO-routed.
+          When a spouse or caregiver is filling this out (population_layer), the
+          same words are NOT the veteran's own — StatementCard relabels the whole
+          document rather than let a proxy's notes print as his sworn statement. */}
       <StatementCard
         name={member?.display_name || user.email || "Veteran"}
         branch={member?.branch ?? null}
         years={years}
+        proxyRelationship={
+          member?.population_layer === "family" || member?.population_layer === "civilian"
+            ? member?.proxy_relationship ?? "a family member"
+            : null
+        }
         rows={rows.map((r) => ({
           place: r.place_name || "A place I served",
           range: rangeLabel(r.date_start, r.date_end),
@@ -433,9 +442,9 @@ export default function ReportView() {
                 A Veterans Service Officer (VSO) — through DAV, VFW, or the American Legion — reviews your packet and
                 files with you at no cost. Bring the 5-question cover sheet above.
               </p>
-              <a href={VSO_LOCATOR_URL} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand hover:underline">
+              <Link href="/vso" className="text-xs font-semibold text-brand hover:underline">
                 Find an accredited VSO near you →
-              </a>
+              </Link>
             </div>
           </li>
           <li className="flex gap-3">

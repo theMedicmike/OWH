@@ -6,7 +6,7 @@ import { useAuth } from "./AuthProvider";
 import { ServiceRibbon } from "./Patriotic";
 import { EXPOSURE_LABEL, CONDITION_EXPOSURES } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
-import { recordProgress, conditionNextAction, VA_FORMS, VSO_LOCATOR_URL, FILE_ONLINE_URL } from "@/lib/nextaction";
+import { recordProgress, conditionNextAction, VA_FORMS, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 import { plusOneYear, isPastOneYear } from "@/lib/nextaction";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
@@ -646,9 +646,9 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                         </>
                       )}
                       {status !== "granted" && (
-                        <a href={VSO_LOCATOR_URL} target="_blank" rel="noreferrer" className="text-[11px] font-semibold text-brand hover:underline">
+                        <Link href="/vso" className="text-[11px] font-semibold text-brand hover:underline">
                           Find an accredited VSO near you (free help filing) →
-                        </a>
+                        </Link>
                       )}
                     </div>
                   </div>

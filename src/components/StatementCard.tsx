@@ -27,13 +27,17 @@ type Props = {
   years: string | null;
   rows: StatementRow[];
   conditions: StatementCondition[];
+  /** Set when a spouse/caregiver (population_layer) is building this record — the
+   *  document is no longer "in my own words," and every label on it must say so. */
+  proxyRelationship?: string | null;
 };
 
 function sanitize(s: string): string {
   return s.replace(/[‘’ʼ]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/…/g, "...").replace(/[^\x00-\xFF]/g, "");
 }
 
-export default function StatementCard({ name, branch, years, rows, conditions }: Props) {
+export default function StatementCard({ name, branch, years, rows, conditions, proxyRelationship }: Props) {
+  const isProxy = !!proxyRelationship;
   const usable = useMemo(
     () => rows.map((r, i) => ({ ...r, words: veteranWords(r.notes), other: otherExposure(r.notes), i })).filter((r) => r.words || r.other),
     [rows],
@@ -56,10 +60,10 @@ export default function StatementCard({ name, branch, years, rows, conditions }:
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(138, 151, 165);
-        const f = doc.splitTextToSize(
-          "Assembled word-for-word from what this veteran wrote in Connecting the Dots of Service. Nothing was written or reworded by AI or by anyone but the veteran. Not a VA form. Veterans Crisis Line: dial 988, then press 1.",
-          contentW,
-        ) as string[];
+        const footerLine = isProxy
+          ? `Assembled word-for-word from what ${proxyRelationship} wrote in Connecting the Dots of Service, on behalf of the veteran named above. Nothing was written or reworded by AI. Not a VA form. Veterans Crisis Line: dial 988, then press 1.`
+          : "Assembled word-for-word from what this veteran wrote in Connecting the Dots of Service. Nothing was written or reworded by AI or by anyone but the veteran. Not a VA form. Veterans Crisis Line: dial 988, then press 1.";
+        const f = doc.splitTextToSize(footerLine, contentW) as string[];
         let fy = pageH - margin + 14;
         for (const ln of f) { doc.text(ln, margin, fy); fy += 9; }
       };
@@ -75,15 +79,23 @@ export default function StatementCard({ name, branch, years, rows, conditions }:
         y += gap;
       };
 
-      text("My Statement — In My Own Words", 18, "bold", [21, 33, 46], 4);
-      text([name, branch, years].filter(Boolean).join("  ·  ") + `  ·  prepared ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`, 9.5, "normal", [92, 107, 122], 8);
+      text(isProxy ? `Statement — Prepared by ${proxyRelationship}` : "My Statement — In My Own Words", 18, "bold", [21, 33, 46], 4);
+      text(
+        [isProxy ? `For ${name}` : name, branch, years].filter(Boolean).join("  ·  ") +
+          `  ·  prepared ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`,
+        9.5, "normal", [92, 107, 122], 8,
+      );
 
       // The boxed draft label — what keeps this unmistakably not-the-form.
       ensure(52);
       doc.setDrawColor(193, 135, 61);
       doc.setLineWidth(1);
       const label = doc.splitTextToSize(
-        sanitize("DRAFT for your accredited VSO — this is not a VA form and has not been filed with VA. Your VSO can help you move it onto the right official form (often VA Form 21-4138, or 21-10210 for a witness)."),
+        sanitize(
+          isProxy
+            ? `DRAFT for your accredited VSO — prepared by ${proxyRelationship}, not the veteran, and not yet filed with VA. Review it with ${name} before it goes anywhere near VA Form 21-4138 or 21-10210.`
+            : "DRAFT for your accredited VSO — this is not a VA form and has not been filed with VA. Your VSO can help you move it onto the right official form (often VA Form 21-4138, or 21-10210 for a witness).",
+        ),
         contentW - 20,
       ) as string[];
       const boxH = label.length * 12 + 16;
@@ -135,14 +147,16 @@ export default function StatementCard({ name, branch, years, rows, conditions }:
     }
   }
 
+  const heading = isProxy ? `Statement, prepared by ${proxyRelationship}` : "My statement, in my words";
+
   if (usable.length === 0) {
     return (
       <div className="mb-4 rounded-xl border border-line bg-surface p-5 print:hidden">
-        <div className="text-[13px] font-bold uppercase tracking-wide text-brand">My statement, in my words</div>
+        <div className="text-[13px] font-bold uppercase tracking-wide text-brand">{heading}</div>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">
-          Your statement builds from what you write on your check-ins — even two sentences about what you
-          were around is a statement.{" "}
-          <Link href="/map" className="font-semibold text-brand hover:underline">Add your words on the map →</Link>
+          {isProxy ? "This statement builds from what you write on the check-ins you add" : "Your statement builds from what you write on your check-ins"} — even two sentences about what
+          {isProxy ? " they were" : " you were"} around is a statement.{" "}
+          <Link href="/map" className="font-semibold text-brand hover:underline">Add {isProxy ? "their" : "your"} words on the map →</Link>
         </p>
       </div>
     );
@@ -150,15 +164,21 @@ export default function StatementCard({ name, branch, years, rows, conditions }:
 
   return (
     <div className="mb-4 rounded-xl border border-line bg-surface p-5 print:hidden">
-      <div className="text-[13px] font-bold uppercase tracking-wide text-brand">My statement, in my words</div>
+      <div className="text-[13px] font-bold uppercase tracking-wide text-brand">{heading}</div>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">
-        Assembled from what you&apos;ve already written here, <strong className="text-ink">exactly as you wrote
-        it</strong>. A draft to review with your accredited VSO.
+        {isProxy ? (
+          <>Assembled from what you&apos;ve entered here, <strong className="text-ink">exactly as you wrote
+          it</strong> — labeled as coming from you, not from {name}. A draft to review with an accredited VSO.</>
+        ) : (
+          <>Assembled from what you&apos;ve already written here, <strong className="text-ink">exactly as you wrote
+          it</strong>. A draft to review with your accredited VSO.</>
+        )}
       </p>
 
       <p className="mt-3 text-xs leading-relaxed text-muted">
-        These are your words from your check-ins. Uncheck anything you don&apos;t want in this statement.
-        To change the words themselves, edit the check-in note — the statement always prints them exactly as written.
+        {isProxy
+          ? "These are the words you've entered on the check-ins you added. Uncheck anything you don't want in this statement. To change the words themselves, edit the check-in note — the statement always prints them exactly as written."
+          : "These are your words from your check-ins. Uncheck anything you don't want in this statement. To change the words themselves, edit the check-in note — the statement always prints them exactly as written."}
       </p>
       <ul className="mt-2 space-y-2">
         {usable.map((r) => (

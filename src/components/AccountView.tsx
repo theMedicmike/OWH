@@ -88,6 +88,7 @@ export default function AccountView() {
   const [startParts, setStartParts] = useState<ServiceDateParts>({ ...EMPTY_PARTS });
   const [endParts, setEndParts] = useState<ServiceDateParts>({ ...EMPTY_PARTS });
   const [stillServing, setStillServing] = useState(false);
+  const [proxyRelationship, setProxyRelationship] = useState("");
   // Boot camp falls back to the service start year when he doesn't give it one.
   const startYear = startParts.year;
   const [layer, setLayer] = useState("veteran");
@@ -130,6 +131,7 @@ export default function AccountView() {
       // Now: step down ONLY for a missing column. Any other error stops the load
       // dead, exactly as the intake wizard's prefillOk guard does.
       const selects = [
+        "display_name, branch, service_start, service_end, population_layer, mos, va_rating, va_healthcare, units, still_serving, service_start_precision, service_end_precision, proxy_relationship",
         "display_name, branch, service_start, service_end, population_layer, mos, va_rating, va_healthcare, units, still_serving, service_start_precision, service_end_precision",
         "display_name, branch, service_start, service_end, population_layer, mos, va_rating, va_healthcare, units",
         "display_name, branch, service_start, service_end, population_layer, units",
@@ -170,6 +172,7 @@ export default function AccountView() {
       setStartParts(toParts(data?.service_start as string | null, (data?.service_start_precision as string | null) ?? null));
       setEndParts(toParts(data?.service_end as string | null, (data?.service_end_precision as string | null) ?? null));
       setStillServing(data?.still_serving === true);
+      setProxyRelationship((data?.proxy_relationship as string) ?? "");
       setLayer((data?.population_layer as string) ?? "veteran");
       setMos((data?.mos as string) ?? "");
       setVaRating((data?.va_rating as string) ?? "");
@@ -221,8 +224,21 @@ export default function AccountView() {
       service_start_precision: start?.precision ?? null,
       service_end_precision: end?.precision ?? null,
     };
-    const full = await supabase.from("members").update(wide).eq("auth_id", user.id);
+    // 0020: WHO is filling this out, when population_layer already says
+    // someone other than the veteran is. Newest tier, so it falls off first —
+    // the account behind it still saves everything else.
+    const isProxy = layer === "family" || layer === "civilian";
+    const widest = {
+      ...wide,
+      proxy_relationship: isProxy ? proxyRelationship.trim() || null : null,
+    };
+    const full = await supabase.from("members").update(widest).eq("auth_id", user.id);
     let err = full.error;
+    if (err && isMissingColumnError(err)) {
+      // Migration 0020 hasn't been run yet — drop the proxy fields and retry
+      // with everything 0017 already covers.
+      err = (await supabase.from("members").update(wide).eq("auth_id", user.id)).error;
+    }
     if (err && isMissingColumnError(err)) {
       // Migration 0017 hasn't been run yet. Drop the three new columns — and
       // store the dates YEAR-ONLY, because without a precision column there is
@@ -317,10 +333,23 @@ export default function AccountView() {
               ))}
             </select>
             {(layer === "family" || layer === "civilian") && (
-              <p className="mt-1.5 text-xs leading-relaxed text-muted">
-                Thank you for standing in the gap. You can build this record on behalf of the veteran
-                you&apos;re helping — fill in their service, locations, and health as you would your own.
-              </p>
+              <div className="mt-1.5">
+                <p className="text-xs leading-relaxed text-muted">
+                  Thank you for standing in the gap. You can build this record on behalf of the veteran
+                  you&apos;re helping — fill in their service, locations, and health as you would your own.
+                </p>
+                <label className="mb-1 mt-2 block text-xs font-medium text-muted">Your relationship to them</label>
+                <input
+                  value={proxyRelationship}
+                  onChange={(e) => setProxyRelationship(e.target.value)}
+                  placeholder="Spouse, mother, caregiver…"
+                  className={field}
+                />
+                <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
+                  This is how their statement and claim packet will identify you — so anything you write is
+                  never mistaken for the veteran&apos;s own words.
+                </p>
+              </div>
             )}
           </div>
           <div>
