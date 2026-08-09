@@ -86,7 +86,7 @@ const CORE_STEPS: Step[] = [
       "In the menu, tap 6 “Claim packet.”",
       "Two buttons at the top: “Download PDF” and “Print.” That is your whole record, assembled — your timeline, each exposure with the documented source behind it, your conditions and how they line up, anything your battle buddies confirmed, and a sheet for a doctor to sign.",
       "Further down is a second thing worth having: “My statement, in my words.” It takes everything you wrote in those “in your own words” boxes and lays it out as a plain draft statement for your VSO, in your voice, with a tick-box beside each passage so you can leave anything out. Then tap “Save my statement (PDF).” If it is not there yet, that is because you have not written in one of those boxes — go back to the map and write.",
-      "Now take it to a VSO. That is the whole point of the packet. A VSO is an accredited representative who can actually prepare and file a claim, and it costs you nothing: DAV, VFW, American Legion, your county veterans office. Further down that same page, under “How to file this,” there is a link reading “Find an accredited VSO near you →”. There is also a cover sheet you can print and clip on top — the link reads “Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →” — so they know what they are looking at in ten seconds.",
+      "Now take it to a VSO. That is the whole point of the packet. A VSO is an accredited representative who can actually prepare and file a claim, and it costs you nothing: DAV, VFW, American Legion, your county veterans office. Further down that same page, under “How to file this,” there is a link reading “Find an accredited VSO near you →”. That opens its own page now — “Find a VSO” — with a button straight to VA's official search plus what to bring with you. There is also a cover sheet you can print and clip on top — the link reads “Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →” — so they know what they are looking at in ten seconds.",
       "Bring the packet, hand it over, and ask what applies to you. That is their job, and they are good at it.",
     ],
   },
@@ -146,6 +146,18 @@ const MORE_STEPS: Step[] = [
     tip: "When someone's service overlaps yours you can tap “I was there too.” That is a real corroboration and it adds a witness to both records — theirs and yours. Confirm only what you actually witnessed; that is the rule the page states, and it is the right one.",
   },
   {
+    title: "Not everyone who can vouch for you is on this app",
+    body: [
+      "Further down that same “Battle buddies” page is a second section: “Not on this app? Ask them directly.” This is for a spouse, a battle buddy who never signed up, or a commander — nobody needs an account to help you here.",
+      "Pick what it's about — a specific exposure you logged, a specific condition, or your service in general — add a short note to jog their memory if you want, and tap “Create a link.” You'll get a private link to send however you'd actually reach them: text, email, whatever.",
+      "They open it, write what they themselves remember in their own words, and it's done. No login, no app for them to install.",
+    ],
+    warn: {
+      label: "What comes back",
+      text: "Their statement is attributed to them by name — never printed as though it were your own words. It shows up in this same section, and in your claim packet, clearly labeled as theirs.",
+    },
+  },
+  {
     title: "Your DD-214, boot camp, and taking your record with you",
     caution: "Before you photograph anything: cover Box 3 on your DD-214. That box has your Social Security number in it, and anything you upload prints inside your packet. A strip of tape or a folded piece of paper over that box is all it takes.",
     body: [
@@ -153,7 +165,7 @@ const MORE_STEPS: Step[] = [
       "Under “Your records,” tap “Upload a file.” A clear photo works fine.",
       "Then open “Read it off your DD-214.” It puts your document up on screen next to a panel called “Where each answer lives,” telling you exactly which block holds what — Branch is Block 2, your job is Block 11, service start is 12a, end is 12b, unit is 8a. No more squinting at a fifty-year-old form wondering which number is which. Your DD-214 never leaves this app: nothing reads it, and nothing is sent anywhere.",
       "Missed boot camp during signup? It is on this same page under “Where you went to boot camp.” Pick the post, add the year, tap “Save profile,” and it lands on your map as a real place. It will not save without the year.",
-      "Helping a veteran rather than being one? Also on this page: “Who is this account for?” has an option for a family member or caregiver.",
+      "Helping a veteran rather than being one? Also on this page: “Who is this account for?” has an option for a family member or caregiver. Pick it and a box opens asking “Your relationship to them” — spouse, mother, caregiver, whatever fits. That's not just a label: it changes how “My statement, in my words” prints. Once you say you're filling this out for someone, that document retitles itself “Statement — Prepared by [you]” and says so on every page, so nothing you write is ever mistaken for the veteran's own sworn words.",
       "Further down is a box headed “This record is yours.” Not ours.",
     ],
     points: [
@@ -165,6 +177,39 @@ const MORE_STEPS: Step[] = [
       label: "Before you tap delete",
       text: "You have to type DELETE in capital letters into the box. The red button stays dead until you do. That is deliberate — nobody deletes their own record by fumbling a tap.",
     },
+  },
+  {
+    title: "Your shot record — the paperwork nobody gave you",
+    body: [
+      "In the menu, right under “Where you served” — no number on this one, just its own icon — “Your shot record.”",
+      "This isn't about what a shot did to you. Nobody can tell you that from a service history, and this app won't pretend to. It's about the dates nobody wrote down.",
+    ],
+    points: [
+      "“Where your record actually is” — two questions, your branch and the year you separated (or “I'm still serving”), and it tells you which office actually holds your shot record. milConnect gets you your DD-214, not this — it's a different file in a different building.",
+      "“＋ Add a shot” — search for it or pick from a short list grouped by when you'd have gotten it. Say when (year, or “I'm not sure”), and how you know — “I remember it,” “It's in my record,” or “I have the document.” That last part matters: remembered isn't worse than documented, it's just different, and whoever reads this later needs to know which is which.",
+      "“What these shots were — the library →” — every one has the actual FDA label, word for word, plus what the government said about it and when.",
+      "“What the rules said, and when →” — the timeline of military vaccine policy, and a section headed “What we could and could not confirm” that says plainly where the record has real gaps.",
+    ],
+    warn: {
+      label: "If it says the feature isn't switched on yet",
+      text: "That's a database update on our end, not something you did. Check back soon.",
+    },
+  },
+  {
+    title: "If your claim gets denied",
+    body: [
+      "If one of your conditions on “Connect the dots” is marked Denied, your Dashboard shows a card: “A denial isn't the end — see your next steps →.” Tap it any time, or find it by going to that condition directly.",
+      "That page explains why claims usually get denied, lays out your three real lanes — Supplemental Claim, Higher-Level Review, or Board Appeal — in plain language, and links straight to the parts of this app that build a stronger case: checking your documented links, asking someone to corroborate, and rebuilding your packet.",
+    ],
+    tip: "This app doesn't tell you which lane to pick. That's exactly the call an accredited VSO is there to help you make.",
+  },
+  {
+    title: "Still serving? File before you separate",
+    body: [
+      "If your Account says you're still serving, your Dashboard shows a card: “File before you separate — see the BDD timeline →.”",
+      "Benefits Delivery at Discharge lets you file your VA claim while you're still in — between 180 and 90 days before you separate — instead of waiting until you're already out. That page lays out the window and what VA requires before you leave.",
+    ],
+    tip: "Missed the window? Nothing here is worse for having waited — you just file the standard way once you're out.",
   },
   {
     title: "Read the book — free, all of it",

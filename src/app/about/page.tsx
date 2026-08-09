@@ -109,9 +109,14 @@ export default function AboutPage() {
             "Shows more than one road: a straight line from an exposure to a condition, a condition the PACT Act already presumes is connected, or a condition that grew out of another one.",
             "Says the thing nobody says: a condition that existed before service can still count if service made it permanently worse.",
             "Lets the people they served with confirm what they witnessed — privately, only what they actually saw, and only for a veteran who has switched corroboration on.",
+            "Lets a veteran ask anyone to confirm their record — on this app or not. A private link, no account needed, for a spouse, a battle buddy who never signed up, or a commander.",
             "Keeps a veteran's own words on the record. What they write about a place becomes a printable statement in their own voice.",
+            "Tracks the shots and vaccines a veteran received — with the actual FDA label for each one, word for word, and the dated paperwork trail nobody handed them at the time.",
             "Generates a claim packet, with the documented basis for every line in it, plus a hand-off sheet a doctor can sign.",
             "Stays with them after they file — where each claim stands, the real VA forms, and the one-year clocks that are easy to miss.",
+            "Explains what to do next after a denial — the three real paths forward, in plain language, and points them straight to VA's own directory of free accredited representatives.",
+            "Gives active-duty service members a timeline for filing before they separate — Benefits Delivery at Discharge — so a rating decision can be close to ready the day they're out, not months later.",
+            "Lets a spouse or caregiver build the whole record for a veteran who can't or won't do it themselves — clearly labeled as their own words, never mistaken for the veteran's.",
             "Reconnects veterans with the brothers and sisters they served beside.",
             "Hands the whole record back. They can download it, print it, or delete it — the locations, the exposures, the conditions, the uploads, all of it — any time, without asking anyone.",
           ].map((item, i) => (
@@ -151,6 +156,24 @@ export default function AboutPage() {
           And the app now says out loud what nobody told most of us: a condition that started before
           you shipped out is not automatically a dead end, and neither is one that grew out of
           another one.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          This isn&apos;t only for veterans who already separated. If you&apos;re still serving, there&apos;s
+          a timeline for filing before you&apos;re out — Benefits Delivery at Discharge — so your rating can
+          be close to ready the day you leave, instead of a fight you start from scratch months later. Log it
+          now, while your memory and your unit are both close.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          There&apos;s a shot record now too — because ten combat veterans told us, independently, that
+          nobody ever told them what was in the syringe or wrote down that it happened. It holds the actual
+          FDA label for what a veteran was given, in plain language, plus a locator for the office that
+          holds the paperwork the military never handed them.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          And if a claim gets denied, this app doesn&apos;t leave a veteran standing there. It explains why
+          claims usually get denied, lays out the three real paths forward, and points straight to VA&apos;s
+          own directory of free accredited representatives — the same free help this app has pointed to
+          from day one.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           The record belongs to the veteran, not to us. They can take it with them or delete it, on
