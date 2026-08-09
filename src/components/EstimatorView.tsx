@@ -27,7 +27,6 @@ const METALS: { key: string; name: string; organs: string[] }[] = [
   { key: "cr", name: "Chromium (VI)", organs: ["lungs", "sinuses", "kidney"] },
   { key: "mn", name: "Manganese", organs: ["brain (basal ganglia)", "liver"] },
   { key: "ni", name: "Nickel", organs: ["lungs", "skin", "sinuses"] },
-  { key: "al", name: "Aluminum", organs: ["brain", "bone"] },
   { key: "sb", name: "Antimony", organs: ["lungs", "heart"] },
   { key: "be", name: "Beryllium", organs: ["lungs"] },
   { key: "v", name: "Vanadium", organs: ["lungs", "kidney"] },
@@ -59,7 +58,7 @@ const EXPOSURE_METALS: Record<string, Contribution> = {
   nerve_agent: {},
   asbestos_silica: {},
   pfas_afff: {},
-  gulf_war_agent: { as: 5, al: 5 },
+  gulf_war_agent: { as: 5 },
 };
 
 type Munition = { key: string; label: string; m: Contribution };

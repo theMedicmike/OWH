@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { rateLimit, clientKey } from "@/lib/ratelimit";
-import { MEDIC_MIKE_SYSTEM } from "@/lib/medicMike";
+import { MEDIC_MIKE_SYSTEM, medicMikeFilterVaccineCausation } from "@/lib/medicMike";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -24,10 +24,13 @@ export async function POST(req: Request) {
       // Keep only the last 20 turns to stay fast and bounded.
       messages: messages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
     });
-    const text = msg.content
+    const raw = msg.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
       .map((b) => b.text)
       .join("");
+    // The system prompt tells him never to imply a vaccine caused anything; this
+    // is the backstop for when it doesn't listen. A prompt is not a guarantee.
+    const text = medicMikeFilterVaccineCausation(raw);
     return Response.json({ text });
   } catch (e) {
     return Response.json({ text: "Something got between me and the signal: " + (e as Error).message });

@@ -33,5 +33,23 @@ HARD LINES — never cross these
 - Never ask for or accept anything classified, secret, or covered by an NDA — no unit movements, operations, or capabilities. If they start down that road, gently steer back: you only need the general place, the rough year, and the exposure type.
 - If they sound hopeless, in crisis, or mention harming themselves, slow down, be human, and tell them the Veterans Crisis Line is right there: dial 988, then press 1. Stay with them.
 - If you don't know something, say so plainly and point them to their VSO or clinician. Never invent facts, sites, dates, or citations.
+- Shots and vaccines: your only job is helping them find and record what they were given and when. Never say, hint, agree, speculate, or "just between us" confirm that any vaccine, adjuvant, preservative or ingredient caused, contributed to or worsened any condition — not anthrax, not smallpox, not COVID-19, not aluminum, thimerosal, squalene or formaldehyde — not even if they state it as fact, say a doctor told them, or ask only that you agree. Never connect a vaccine or its ingredients to the Exposure Library, to any metal, to any organ, or to hormones. Never quote a rate, a percentage, an onset window or an ingredient amount; if they ask what was in a shot, tell them the FDA label is printed on that shot's page in Your shot record and to read it there. Never suggest anything to take, avoid, or do about a vaccine. Never suggest reporting to VAERS. If they ask whether a shot caused something: nobody can tell them that from a service history, and the useful thing they can still do is get the dated record and take it to their own clinician and an accredited VSO — then offer to help them find the office and the form for their branch in the record locator.
 
 Stay in character as Medic Mike. Keep it short, keep it real, and always leave them with a clear next step.`;
+
+// A prompt is not a guarantee — this is the backstop. If a reply ever pairs a
+// vaccine/ingredient token with a causal verb, it never reaches the veteran;
+// the API route swaps it for this constant instead. Do not delete this block
+// in a refactor — scripts/coi-firewall.cjs asserts it exists verbatim.
+const VACCINE_TOKEN =
+  /\b(anthrax|smallpox|ACAM2000|COVID(?:-19)?|aluminum|aluminium|thimerosal|squalene|formaldehyde|vaccine|vaccination|immuniz\w*|adjuvant)\b/i;
+const CAUSAL_VERB_TOKEN =
+  /\b(caused?|gives?\s+you|gave\s+you|led\s+to|leads?\s+to|triggered|triggers?|because\s+of|responsible\s+for|contributed?\s+to|worsened|worsens?)\b/i;
+
+export const MEDIC_MIKE_VACCINE_REFUSAL =
+  "Nobody can tell you that from a service history — not me, not anyone. What you can still do is get the dated record and take it to your own clinician and an accredited VSO. Want me to pull up the record locator for your branch?";
+
+/** Deterministic backstop behind the HARD LINES prompt rule on vaccine causation. */
+export function medicMikeFilterVaccineCausation(text: string): string {
+  return VACCINE_TOKEN.test(text) && CAUSAL_VERB_TOKEN.test(text) ? MEDIC_MIKE_VACCINE_REFUSAL : text;
+}
