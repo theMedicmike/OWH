@@ -27,7 +27,7 @@ export default async function ToxicantPage({ params }: { params: Promise<{ slug:
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-ink">{t.name}</h1>
-            <span className="rounded-md bg-brand/5 px-2 py-0.5 text-xs font-medium text-brand">{t.kind === "metal" ? "Heavy metal" : "Contaminant"}</span>
+            <span className="rounded-md bg-brand/5 px-2 py-0.5 text-xs font-medium text-brand">{t.kind === "metal" ? "Heavy metal" : t.kind === "contaminant" ? "Contaminant" : "Topic guide"}</span>
             {t.iarc && <span className="rounded-md bg-warn-soft px-2 py-0.5 text-xs font-medium text-warn">{t.iarc.split("(")[0].trim()}</span>}
           </div>
           <p className="mt-1.5 text-sm font-medium text-muted">{t.short}</p>

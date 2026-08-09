@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
-import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG } from "@/lib/toxlibrary";
+import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG, TOXICANT_BY_SLUG } from "@/lib/toxlibrary";
 import { EXPOSURE_LABEL } from "@/lib/education";
 
 // Every service-relevant heavy metal / metalloid and the organs it targets.
@@ -147,6 +147,7 @@ export default function EstimatorView() {
   const [role, setRole] = useState("");
   const [years, setYears] = useState(10);
   const [munRates, setMunRates] = useState<Record<string, number>>({});
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -354,11 +355,14 @@ export default function EstimatorView() {
           {present.map((m) => {
             const v = idx[m.key];
             const b = band(v);
+            const slug = METAL_KEY_TO_SLUG[m.key];
+            const tox = slug ? TOXICANT_BY_SLUG[slug] : undefined;
+            const open = expanded.has(m.key);
             return (
               <div key={m.key}>
                 <div className="flex justify-between text-sm">
-                  {METAL_KEY_TO_SLUG[m.key] ? (
-                    <Link href={`/learn/${METAL_KEY_TO_SLUG[m.key]}`} className="font-medium text-brand hover:underline">{m.name} →</Link>
+                  {slug ? (
+                    <Link href={`/learn/${slug}`} className="font-medium text-brand hover:underline">{m.name} →</Link>
                   ) : (
                     <span className="text-ink">{m.name}</span>
                   )}
@@ -367,6 +371,21 @@ export default function EstimatorView() {
                 <div className="mt-1 h-2 rounded-full bg-canvas">
                   <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
                 </div>
+                {tox && (
+                  <button
+                    onClick={() => setExpanded((prev) => { const n = new Set(prev); n.has(m.key) ? n.delete(m.key) : n.add(m.key); return n; })}
+                    className="mt-1 text-[11px] font-medium text-muted hover:text-brand"
+                  >
+                    {open ? "Hide why this is flagged ▲" : "Why is this flagged? ▼"}
+                  </button>
+                )}
+                {tox && open && (
+                  <div className="mt-1.5 rounded-lg bg-canvas p-2.5 text-xs leading-relaxed text-muted">
+                    <p><span className="font-semibold text-ink">Why it&apos;s flagged:</span> {tox.where}</p>
+                    <p className="mt-1.5"><span className="font-semibold text-ink">How sure is this:</span> Not sure at the level of an individual — this reflects documented sources for your role, not a measurement of what&apos;s actually in your body. There is no model that turns a service history into a body-burden number.</p>
+                    <p className="mt-1.5"><span className="font-semibold text-ink">What a real test involves:</span> {tox.tests[0]}</p>
+                  </div>
+                )}
               </div>
             );
           })}

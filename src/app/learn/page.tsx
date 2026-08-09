@@ -7,6 +7,7 @@ export const metadata = { title: "Exposure library" };
 
 const metals = TOXICANTS.filter((t) => t.kind === "metal");
 const contaminants = TOXICANTS.filter((t) => t.kind === "contaminant");
+const topics = TOXICANTS.filter((t) => t.kind === "topic");
 
 function Group({ title, blurb, items, base }: { title: string; blurb: string; items: { slug: string; name: string; short: string }[]; base: string }) {
   return (
@@ -41,7 +42,19 @@ export default function LearnIndex() {
 
         <Group title="Heavy metals" blurb="The 16 metals the app tracks — where they store and what they do." base="/learn" items={metals} />
         <Group title="Chemicals & contaminants" blurb="Burn pits, jet fuel, solvents, PFAS, dioxins, asbestos, radiation, and more." base="/learn" items={contaminants} />
+        <Group title="Topic guides" blurb="TBI, hearing, cancer screening, and sleep apnea — cross-cutting topics, same documented, cited approach." base="/learn" items={topics} />
         <Group title="Organs & systems" blurb="What these exposures do to bone, marrow, brain, kidney, lungs, and more." base="/learn/organ" items={ORGANS.map((o) => ({ slug: o.slug, name: o.name, short: o.what }))} />
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Link href="/learn/timeline" className="block rounded-xl border border-brand/30 bg-brand/5 p-4 transition hover:border-brand/50">
+            <div className="text-sm font-semibold text-ink">Building your exposure timeline →</div>
+            <div className="mt-1 text-xs text-muted">Deck logs, NARA requests, the burn pit registry.</div>
+          </Link>
+          <Link href="/learn/women-veterans" className="block rounded-xl border border-brand/30 bg-brand/5 p-4 transition hover:border-brand/50">
+            <div className="text-sm font-semibold text-ink">Women veterans &amp; service →</div>
+            <div className="mt-1 text-xs text-muted">Deployment roles, MST care, and where the real resources are.</div>
+          </Link>
+        </div>
 
         <p className="border-t border-line pt-4 text-xs leading-relaxed text-faint">{LIBRARY_NOTE} Veterans Crisis Line: dial 988, then press 1.</p>
       </div>

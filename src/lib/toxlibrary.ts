@@ -13,7 +13,7 @@
 export type Toxicant = {
   slug: string;
   name: string;
-  kind: "metal" | "contaminant";
+  kind: "metal" | "contaminant" | "topic";
   short: string;
   where: string;            // service exposure pathway
   harm: string[];           // documented mechanism of damage
@@ -45,12 +45,12 @@ export const TOXICANTS: Toxicant[] = [
     short: "A heavy metal in ammunition primers, firing-range air, fuels, paints, and industrial work.",
     where: "Firing ranges (especially indoors), armorers and range cadre, demolition, vehicle/aircraft maintenance, and lead-based paint on older installations and ships.",
     harm: [
-      "Lead has no known safe level. It blocks enzymes the body needs to build hemoglobin (the oxygen carrier in red blood cells) and to run the nervous system.",
+      "Lead has no known safe level. It blocks ALAD (delta-aminolevulinic acid dehydratase), an enzyme the body needs to build hemoglobin (the oxygen carrier in red blood cells) — which is why a blood lead test is often read alongside blood-count markers, not alone.",
       "Because it mimics calcium, lead crosses into bone and the brain and disrupts the calcium-dependent signaling those tissues rely on.",
     ],
     retention: "Stored in bone with a half-life measured in decades. It can re-enter the blood years later during bone turnover — aging, illness, or calcium stress — which is why a 'normal' blood lead does not rule out a lifetime burden.",
-    organs: ["bone", "bone-marrow", "brain", "kidney"],
-    conditions: "ATSDR links lead to chronic kidney disease, high blood pressure, and nervous-system and cognitive effects; it is also studied in peripheral neuropathy. Confirm how any of these applies to your claim with your VSO.",
+    organs: ["bone", "bone-marrow", "brain", "kidney", "heart"],
+    conditions: "ATSDR links lead to chronic kidney disease, high blood pressure and other cardiovascular effects, and nervous-system and cognitive effects; it is also studied in peripheral neuropathy. Confirm how any of these applies to your claim with your VSO.",
     untreated: "A high bone-lead burden can keep seeding the bloodstream for years, contributing to rising blood pressure, declining kidney function, and cognitive or nerve symptoms that are easy to mistake for ordinary aging.",
     tests: ["Blood lead (reflects recent exposure)", "Bone-lead K-XRF scan where available (stored lead)", "Kidney function (eGFR, creatinine) and blood pressure"],
     iarc: "IARC Group 2A (inorganic lead, probably carcinogenic to humans).",
@@ -68,7 +68,7 @@ export const TOXICANTS: Toxicant[] = [
     organs: ["kidney", "lungs", "bone"],
     conditions: "ATSDR links cadmium to chronic kidney disease and bone weakening; inhaled cadmium is associated with lung cancer.",
     untreated: "Ongoing kidney injury can progress silently for years before it shows on standard labs, and bone loss and lung effects can follow. Early kidney-function monitoring matters.",
-    tests: ["Urine cadmium and urine beta-2-microglobulin (kidney tubule marker)", "Kidney function (eGFR, creatinine)"],
+    tests: ["Urine cadmium testing", "Kidney function markers your clinician chooses (eGFR, creatinine, and others as indicated)"],
     iarc: "IARC Group 1 (carcinogenic to humans).",
     sources: ["ATSDR ToxFAQs: Cadmium", "IARC Group 1", "VA / ATSDR"],
   },
@@ -270,7 +270,7 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Particulate can remain embedded in lung tissue for years; the inflammatory injury can persist long after the deployment ends.",
     organs: ["lungs", "heart", "brain"],
-    conditions: "The PACT Act of 2022 makes a long list of respiratory conditions and cancers presumptive for burn-pit / airborne-hazard exposure — the strongest government acknowledgment in this library. Confirm your specific conditions with your VSO.",
+    conditions: "The PACT Act of 2022 makes a long list of respiratory conditions and cancers presumptive for burn-pit / airborne-hazard exposure — the strongest government acknowledgment in this library. The presumptive cancer list includes respiratory cancer of any type, gastrointestinal cancer of any type, reproductive cancer of any type, lymphoma of any type, melanoma, pancreatic cancer, kidney cancer, brain cancer, head cancer of any type, and neck cancer of any type. Unlike many exposures in this library, the listed respiratory conditions and cancers carry no minimum latency period or minimum exposure duration under the statute — you do not have to show how much you were exposed to. Confirm the current list and your specific conditions with your VSO; VA has amended this list before and can again.",
     untreated: "Airway disease (asthma, chronic bronchitis, constrictive bronchiolitis) and elevated cancer risk can develop and progress; the VA Airborne Hazards and Open Burn Pit Registry exists to track it.",
     // Since the 1 Aug 2024 redesign there is no registry questionnaire to fill in —
     // VA and DoD auto-include eligible veterans from service records, so "join the
@@ -297,9 +297,9 @@ export const TOXICANTS: Toxicant[] = [
   {
     slug: "solvents-and-fuels", name: "Solvents (benzene, TCE, PCE)", kind: "contaminant",
     short: "Industrial degreasers and cleaning solvents — TCE, PCE, and benzene — common in maintenance and contaminated water.",
-    where: "Motor pools, flight lines, parts cleaning, and contaminated base water supplies (e.g., Camp Lejeune).",
+    where: "Motor pools, flight lines, parts cleaning, and contaminated base water supplies — most documented at Camp Lejeune and MCAS New River, North Carolina, where trichloroethylene (TCE), tetrachloroethylene (PCE), benzene, and vinyl chloride reached the drinking water supply between August 1953 and December 1987.",
     harm: [
-      "Solvents are absorbed through the lungs and skin and travel everywhere the blood goes. Benzene injures the bone marrow; TCE and PCE affect the nervous system, kidneys, liver, and immune system.",
+      "Solvents are absorbed through the lungs and skin and travel everywhere the blood goes. Benzene injures the bone marrow; TCE, PCE, and vinyl chloride affect the nervous system, kidneys, liver, and immune system, and vinyl chloride is a recognized liver carcinogen in its own right.",
     ],
     retention: "Volatile components clear over days, but the marrow, nerve, and organ injury from sustained exposure can be lasting.",
     organs: ["bone-marrow", "liver", "kidney", "nervous-system"],
@@ -346,9 +346,10 @@ export const TOXICANTS: Toxicant[] = [
     where: "Sandstorms, vehicle and rotor wash, demolition, and abrasive work; often alongside burn-pit smoke and diesel exhaust.",
     harm: [
       "The smallest particles reach the deepest airways and can scar them, sometimes producing breathlessness that a standard chest X-ray misses. Silica also raises cancer and autoimmune risk.",
+      "Fine particulate specifically (PM2.5) is small enough to reach the deepest part of the lung and cross into the bloodstream, driving body-wide inflammation. ATSDR documents this fine-particulate pathway as distinct from silica or combustion-toxicant exposure, and links it to cardiovascular strain in addition to airway injury.",
     ],
     retention: "Silica and particulate can remain in lung tissue for years, driving slow scarring.",
-    organs: ["lungs"],
+    organs: ["lungs", "heart"],
     conditions: "The PACT Act recognizes airborne-hazard respiratory conditions (incl. constrictive bronchiolitis, asthma, chronic sinusitis/rhinitis); silica is linked to silicosis and autoimmune disease.",
     untreated: "Small-airway disease can progress while imaging looks normal — full lung-function testing matters.",
     tests: ["Full pulmonary-function testing", "Specialist referral for unexplained exertional symptoms"],
@@ -392,6 +393,69 @@ export const TOXICANTS: Toxicant[] = [
     untreated: "Multi-system symptoms can persist and compound; the Gulf War presumptive framework supports a claim.",
     tests: ["Cholinesterase testing where relevant", "Evaluation under the Gulf War illness framework"],
     sources: ["38 CFR §3.317 (Gulf War)", "ATSDR ToxFAQs: Nerve Agents", "VA Gulf War programs"],
+  },
+
+  // ── Topic guides ──────────────────────────────────────────────────────────
+  // Not a chemical or metal exposure — a condition/topic page in the same
+  // documented, cited, non-treatment shape as the toxicant pages above.
+  {
+    slug: "tbi-blast", name: "TBI & blast exposure", kind: "topic",
+    short: "Blast overpressure and repeated concussion — among the most common invisible injuries of the post-9/11 wars.",
+    where: "IED and mortar/rocket blast overpressure, breacher and heavy-weapons concussive exposure, vehicle rollovers and crashes, and repeated lower-level blast exposure from training (breaching, artillery, heavy weapons) that was rarely logged as an injury at the time.",
+    harm: [
+      "A blast wave can injure brain tissue without any visible wound — the pressure wave itself disrupts brain chemistry and small blood vessels, which is why a normal-looking head and a real brain injury can coexist.",
+      "Repeated lower-level blast exposure (breaching, artillery, close-range heavy weapons over a career) is a documented, separate concern from a single diagnosed concussion, and is harder to connect to any one incident.",
+    ],
+    retention: "Symptoms — headaches, memory and concentration trouble, sleep disruption, mood change, noise/light sensitivity — can persist for years after the initial injury and are easy to mistake for stress or aging.",
+    organs: ["brain"],
+    conditions: "TBI is claimed by direct service connection under 38 CFR 3.303 when the in-service event, a current diagnosis, and a medical link are documented. VA also recognizes certain conditions as secondary to a service-connected TBI (including some mental-health and endocrine conditions) under 38 CFR 3.310.",
+    untreated: "Cognitive, mood, and sleep symptoms can compound over time and are frequently misattributed to unrelated causes. A full cognitive and neurological evaluation — not just a checklist screen — is the right step.",
+    tests: ["Full cognitive and neurological evaluation (not just a screening checklist)", "Ask specifically about evaluation through VA's Polytrauma/TBI System of Care"],
+    sources: ["38 CFR 3.303, 3.310", "VA Polytrauma/TBI System of Care", "VA/DoD Clinical Practice Guideline for TBI"],
+  },
+  {
+    slug: "hearing-tinnitus", name: "Hearing loss & tinnitus", kind: "topic",
+    short: "Among the most commonly reported service-connected conditions — from firing ranges, flight lines, and blast exposure.",
+    where: "Firing ranges, artillery and armor crews, flight lines and engine rooms, and any blast exposure — often without hearing protection available or worn consistently.",
+    harm: [
+      "Sustained loud noise damages the small hair cells in the inner ear that convert sound into nerve signals; once those cells are destroyed, the hearing loss is permanent.",
+      "Some solvents (including some already in this library) are separately documented as ototoxic — capable of injuring hearing on their own or worsening noise-induced damage — so hearing and chemical exposure can compound each other.",
+    ],
+    retention: "Noise-induced hearing loss and tinnitus are permanent once the inner-ear damage has occurred; the ringing or loss does not resolve on its own.",
+    organs: [],
+    conditions: "Hearing loss and tinnitus are both commonly claimed and recognized service-connected disabilities, rated under VA's schedule based on audiometric testing.",
+    untreated: "Untreated hearing loss is also linked to fall risk and social withdrawal over time — it is worth documenting even if it feels minor.",
+    tests: ["A full audiology workup, not just a hearing-aid fitting", "Ask what day-to-day tinnitus management actually helps, separate from hearing loss itself"],
+    sources: ["VA disability rating schedule, hearing loss and tinnitus", "VA National Center for Rehabilitative Auditory Research (NCRAR)"],
+  },
+  {
+    slug: "cancer-screening", name: "Cancer risk & screening", kind: "topic",
+    short: "What's presumptive under the PACT Act, and what to ask about — one place for a worry that otherwise has nowhere general to land.",
+    where: "Cross-cutting — burn pits, particulate, Agent Orange/dioxins, asbestos, ionizing radiation, and several metals in this library are each independently linked to specific cancers. This page is the general index; each exposure's own page carries its specific citations.",
+    harm: [
+      "Cancer risk from these exposures develops over years to decades, which is exactly why a documented exposure history — not just a diagnosis — matters for both your care and a claim.",
+    ],
+    retention: "Not applicable — see the specific exposure page for retention and latency information.",
+    organs: [],
+    conditions: "The PACT Act of 2022 makes a range of cancers presumptive for burn-pit/airborne-hazard exposure; the Agent Orange list (38 CFR 3.309(e)) recognizes several additional cancers; Camp Lejeune service (38 CFR 3.309(f)) recognizes kidney, liver, and bladder cancer among others; radiation-exposed veterans have a separate presumptive cancer list (38 CFR 3.309(d)). Which list applies depends on your specific service — confirm with your VSO.",
+    untreated: "Screening recommendations depend on the specific cancer type, your age, and your exposure history — there is no single general answer, which is why this page routes to a conversation rather than a checklist.",
+    tests: ["Ask your clinician which cancer screenings fit your specific documented exposures and age", "Ask your VA Environmental Health Coordinator about exposure-specific surveillance programs you may be eligible for"],
+    sources: ["PACT Act of 2022", "38 CFR 3.309(d), (e), (f)", "ATSDR / IARC classifications cited on individual exposure pages"],
+  },
+  {
+    slug: "sleep-apnea-cardiovascular", name: "Sleep apnea & cardiovascular risk", kind: "topic",
+    short: "One of the most commonly claimed secondary conditions — a specific, gettable diagnosis, not just 'sleep hygiene.'",
+    where: "Not a service exposure pathway on its own — sleep apnea and cardiovascular risk are documented as connected to service through two separate routes: as secondary to PTSD and other service-connected mental-health conditions, and through the airborne-hazard/burn-pit exposure pathway.",
+    harm: [
+      "Sleep apnea repeatedly interrupts breathing during sleep, which drives poor-quality sleep, daytime fatigue, and — over years — measurable strain on the cardiovascular system.",
+      "This is a distinct, diagnosable condition from ordinary poor sleep or insomnia, and it requires a sleep study to identify, not a habit change.",
+    ],
+    retention: "Untreated sleep apnea's cardiovascular strain accumulates over years; it does not resolve by improving sleep habits alone if the underlying airway obstruction isn't addressed.",
+    organs: ["heart"],
+    conditions: "Sleep apnea is commonly claimed as secondary to PTSD and other service-connected mental-health conditions (38 CFR 3.310), and hypertension is on the airborne-hazard presumptive list. Confirm which pathway fits your record with your VSO.",
+    untreated: "Cardiovascular strain from untreated sleep apnea compounds over years — a sleep study is the diagnostic step, not a lifestyle change.",
+    tests: ["Ask for a sleep study if you snore heavily, wake unrefreshed, or have daytime fatigue", "Ask whether your sleep apnea could be claimed as secondary to an existing service-connected condition"],
+    sources: ["38 CFR 3.310 (secondary service connection)", "PACT Act airborne-hazard presumptive list"],
   },
 ];
 
