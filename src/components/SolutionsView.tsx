@@ -5,7 +5,10 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
-import { SOLUTION_PILLARS, START_THIS_WEEK, type SolutionPillar } from "@/lib/education";
+import {
+  SOLUTION_PILLARS, START_THIS_WEEK, VA_WHOLE_HEALTH_NOTE, SOLUTION_CATEGORY_ORDER,
+  RESOURCE_POINTERS, type SolutionPillar,
+} from "@/lib/education";
 
 // 🔴 This page is deliberately NOT personalised. It used to rank pillars against
 // the veteran's own logged exposures and conditions under a heading reading
@@ -120,8 +123,40 @@ export default function SolutionsView() {
         </p>
       </div>
 
-      <div className="text-xs font-bold uppercase tracking-widest text-muted">The same ground floor, for everyone</div>
-      {SOLUTION_PILLARS.map((p) => <PillarCard key={p.key} p={p} />)}
+      {/* VA runs its own real clinical "Whole Health" program — say so once, plainly, before this looks comprehensive enough to be mistaken for it. */}
+      <div className="rounded-lg border border-line bg-canvas px-4 py-3 text-xs leading-relaxed text-muted">
+        {VA_WHOLE_HEALTH_NOTE}
+      </div>
+
+      {/* Cascade order: know what you're carrying, THEN reduce the burden, THEN
+          the daily-habit work, THEN a guard against exploitation, THEN extend
+          the circle. Same order, same content, for every visitor — grouping is
+          display-only and never computed from a veteran's record. */}
+      {SOLUTION_CATEGORY_ORDER.map((cat) => {
+        const pillars = SOLUTION_PILLARS.filter((p) => p.category === cat);
+        const resources = RESOURCE_POINTERS.filter((r) => r.category === cat);
+        if (!pillars.length) return null;
+        return (
+          <div key={cat} className="space-y-3">
+            <div className="mt-2 text-xs font-bold uppercase tracking-widest text-muted">{cat}</div>
+            {pillars.map((p) => <PillarCard key={p.key} p={p} />)}
+            {resources.length > 0 && (
+              <div className="rounded-xl border border-line bg-surface p-4">
+                <div className="text-[11px] font-bold uppercase tracking-wide text-accent">Real, free help</div>
+                <ul className="mt-2 space-y-2.5">
+                  {resources.map((r) => (
+                    <li key={r.name} className="text-sm leading-relaxed">
+                      <a href={r.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">{r.name}</a>
+                      {r.partner && <span className="ml-1.5 rounded bg-canvas px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted">Partner nonprofit, not VA</span>}
+                      <div className="text-muted">{r.what}</div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       <div className="rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
         <div className="font-semibold text-brand">Choosing help wisely</div>

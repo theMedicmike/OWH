@@ -27,15 +27,21 @@ const SECTIONS: NavSection[] = [
     items: [
       { step: 1, href: "/intake",  label: "Your service",     d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
       { step: 2, href: "/map",     label: "Where you served", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
-      // Unnumbered on purpose — council ruling 2026-08-07. Renumbering breaks the
-      // help page, which hardcodes step numbers in prose in six places. "Your shot
-      // record," not "Vaccines": it puts the app on the side of the paperwork
-      // instead of the argument.
-      { href: "/shots", label: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
       { step: 3, href: "/journey", label: "Connect the dots", d: "M5 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM7.5 10.5l9-5M7.5 13l9 5" },
       { step: 4, href: "/health",  label: "Your conditions",  d: "M19 14c1.5-1.6 3-3.3 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5C2 10.7 3.5 12.4 5 14l7 7 7-7z" },
       { step: 5, href: "/buddies", label: "Battle buddies",   d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
       { step: 6, href: "/report",  label: "Claim packet",     d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM9 13h6M9 17h6" },
+    ],
+  },
+  {
+    // Its own section, deliberately NOT nested inside "Learn & live well" —
+    // council ruling 2026-08-07/2026-08-09: discoverable ALONGSIDE the Exposure
+    // Library and Whole Health, never visually equated as a sibling card under
+    // the same heading. No step number: renumbering breaks the help page, which
+    // hardcodes step numbers in prose in six places. "Your shot record," not
+    // "Vaccines" — it puts the app on the side of the paperwork, not the argument.
+    items: [
+      { href: "/shots", label: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
     ],
   },
   {

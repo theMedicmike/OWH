@@ -407,10 +407,18 @@ export const CONDITION_EXPOSURES: Record<string, string[]> = {
   ),
 };
 
+export type SolutionCategory =
+  | "Know what you're carrying"
+  | "Reduce the burden"
+  | "Regulate and rebuild"
+  | "Guard against exploitation"
+  | "Extend the circle";
+
 export type SolutionPillar = {
   key: string;
   icon: string; // svg path
   title: string;
+  category: SolutionCategory;
   why: string;
   everyday: string[];
   practitioner: string[];
@@ -422,7 +430,27 @@ export type SolutionPillar = {
   // sells nothing, and no money needs to change hands for that click path to be
   // the story. Removing the FIELDS (rather than emptying the arrays) makes the
   // targeting unrepresentable instead of merely absent. Do not add them back.
+  //
+  // `category` groups pillars for display ONLY — it is the same for every
+  // visitor, never computed from a veteran's record. It also encodes the
+  // cascade sequence Michael asked for (2026-08-09): know what you're actually
+  // carrying BEFORE the daily-habit content, not after — "test before you
+  // treat" used to be the very last pillar on the page, which reads backwards.
 };
+
+// Real, free programs this app points to rather than rebuilding. Every entry
+// is a pointer — name, who it's for, one link — never reproduced content.
+// wounded-warrior-project is the one non-government/non-VA name on this list;
+// label it as a partner nonprofit, never implied as an official VA program.
+export type ResourcePointer = { name: string; what: string; url: string; category: SolutionCategory; partner?: boolean };
+export const RESOURCE_POINTERS: ResourcePointer[] = [
+  { name: "National Center for PTSD", what: "Free PTSD Self-Screen, PTSD Coach Online, and a treatment Decision Aid — VA's own clinical research center.", url: "https://www.ptsd.va.gov/gethelp/", category: "Know what you're carrying" },
+  { name: "Vet Centers", what: "300+ community-based counseling centers, separate from VA medical facilities — individual, group, and family counseling. Eligibility keys off combat-zone service, not disability rating.", url: "https://www.vetcenter.va.gov/", category: "Know what you're carrying" },
+  { name: "VA Polytrauma / TBI System of Care", what: "A 110+ facility network for TBI evaluation, rehabilitation, and case management.", url: "https://www.va.gov/rehab/", category: "Know what you're carrying" },
+  { name: "VA Women's Health", what: "Reproductive health, MST-related counseling, and a Women Veterans Program contact — start with the Women Veterans Call Center.", url: "https://www.womenshealth.va.gov/", category: "Extend the circle" },
+  { name: "SAMHSA National Helpline", what: "Free, confidential, 24/7 treatment referral for substance use — 1-800-662-4357.", url: "https://www.samhsa.gov/find-help/national-helpline", category: "Guard against exploitation" },
+  { name: "Wounded Warrior Project", what: "A partner nonprofit — not VA, not government — offering free mental-health and physical-wellness programming for post-9/11 injured veterans and their families.", url: "https://www.woundedwarriorproject.org/programs", category: "Know what you're carrying", partner: true },
+];
 
 // General, non-personalised wellness education for veterans. Shown to everyone in
 // the same order, never matched to anyone's exposures or conditions.
@@ -435,10 +463,95 @@ export type SolutionPillar = {
 // "Detox" and "cleanse" survive in exactly one place — inside the warning telling a
 // veteran to avoid them.
 export const SOLUTION_PILLARS: SolutionPillar[] = [
+  // ── Know what you're carrying — assessment before habit change, per the ──────
+  // cascade sequence: name what's actually going on before the daily-habit
+  // content, not after. "Test before you treat" used to be the last pillar on
+  // this page; it's the anchor of the first category now.
+  {
+    key: "testing",
+    icon: "M9 2h6M10 2v4.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 6.5V2",
+    title: "Test before you treat — build a team",
+    category: "Know what you're carrying",
+    why: "Real information and the right people come first. Baseline and follow-up testing turns 'I feel off' into a tracked picture you can act on. And remember the Gulf War lesson: 'your tests look normal' is the beginning of the conversation, not the end of it.",
+    everyday: [
+      "Keep your own copy of every lab, scan, and note — the app stores records too.",
+      "Track symptoms over time so patterns show up.",
+      "Build a team you trust: VA primary care, an accredited VSO for anything claim-related, and specialists your VA doctor refers you to.",
+    ],
+    practitioner: ["Ask which baseline labs fit your exposures (kidney, liver, thyroid, inflammation markers), and 'will you test before you treat, and coordinate with my VA doctors?'"],
+  },
+  {
+    key: "tbi",
+    icon: "M12 2a9 9 0 0 0-9 9c0 3.5 2 6 2 9h14c0-3 2-5.5 2-9a9 9 0 0 0-9-9zM9 21h6",
+    title: "Know a hit that mattered",
+    category: "Know what you're carrying",
+    why: "Many service members took hits to the head — blasts, falls, crashes, sports — that were never treated as head injuries at the time. Concussion symptoms (headaches, memory slips, sound/light sensitivity, mood swings) can persist for years and get mistaken for stress or aging. Recognizing the pattern is the first step toward getting it looked at.",
+    everyday: [
+      "Keep a simple week-long log of headaches, memory lapses, or sound/light sensitivity — patterns are easier to see on paper than to recall.",
+      "Build in recovery time after activities that spike symptoms (screens, noise, heat) instead of pushing through.",
+      "Loop in people close to you — mood or memory changes are often easier for others to notice first.",
+    ],
+    practitioner: ["Ask for a full cognitive and neurological evaluation, not just a checklist screen — what does that involve, and where do I get one?"],
+  },
+  {
+    key: "hearing",
+    icon: "M4 12a8 8 0 0 1 8-8M12 4a8 8 0 0 1 8 8c0 5-3 6-3 9M9 12a3 3 0 0 1 6 0c0 2-2 2-2 4",
+    title: "Protect the hearing you have left",
+    category: "Know what you're carrying",
+    why: "Hearing loss and tinnitus are among the most commonly reported service-connected conditions, and both tend to worsen with continued noise exposure while going unaddressed for years because ringing 'isn't an emergency.' Hearing loss is also linked to fall risk and social withdrawal over time.",
+    everyday: [
+      "Wear hearing protection anywhere you'd have worn it in uniform — concerts, power tools, firearms.",
+      "Get a baseline hearing test even if nothing feels urgent, so you have something to compare against later.",
+      "Lower background noise before raising your voice or asking others to repeat themselves.",
+    ],
+    practitioner: ["Ask for a full audiology workup, and what actually helps day-to-day tinnitus management, not just hearing loss."],
+  },
+  {
+    key: "chronic-pain",
+    icon: "M12 2v6M12 16v6M4.2 4.2l4.2 4.2M15.6 15.6l4.2 4.2M2 12h6M16 12h6M4.2 19.8l4.2-4.2M15.6 8.4l4.2-4.2",
+    title: "Live around pain without letting it run the day",
+    category: "Know what you're carrying",
+    why: "Pain from joints, backs, or old injuries changes daily decisions in ways that compound — less movement, worse sleep, lower mood, each making the next harder. Pain lasting months behaves differently in the body than a fresh injury and responds to a different kind of plan.",
+    everyday: [
+      "Track pain alongside sleep, stress, and activity for two weeks — the connections are often clearer on paper than day to day.",
+      "Build movement in small, repeatable amounts rather than all-or-nothing pushes that trigger flare-and-crash cycles.",
+      "Learn one or two pacing or grounding techniques for flare days, so pain isn't the only plan for the day.",
+    ],
+    practitioner: ["Ask whether there's a pain management team here that works across specialties — PT, behavioral health, and medication — instead of just one."],
+  },
+  {
+    key: "mental-health",
+    icon: "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z",
+    title: "Know where to reach",
+    category: "Know what you're carrying",
+    why: "PTSD, anxiety, and depression are common after service and treatable — but the hardest part is often knowing where to start. Having the actual door in hand before a bad week makes it easier to walk through when it counts.",
+    everyday: [
+      "Save the Veterans Crisis Line (988, press 1; or text 838255) now, not for later.",
+      "Ask your VA facility about same-week mental health access — many offer walk-in or expedited options for veterans.",
+      "If therapy feels like a wall, ask about peer support specialists — veterans trained to help you find the next step.",
+    ],
+    practitioner: ["Ask what evidence-based therapies are offered for PTSD, and how you'd figure out together which one fits."],
+  },
+  {
+    key: "cardiovascular",
+    icon: "M20.8 8.6a5.5 5.5 0 0 0-9.3-4A5.5 5.5 0 0 0 2 8.6c0 5.6 5.5 8.4 9.5 12.4 4-4 9.3-6.8 9.3-12.4z",
+    title: "Keep your heart in the loop",
+    category: "Know what you're carrying",
+    why: "Risk factors like blood pressure, cholesterol, and blood sugar can climb for years without symptoms, and service-related stress and sleep disruption are documented cardiovascular risk factors in their own right — which makes regular checks worth more than they feel like in the moment.",
+    everyday: [
+      "Get blood pressure and basic labs checked on a regular schedule, not only when something feels wrong.",
+      "Build movement into the week in a sustainable form — consistency matters more than intensity.",
+      "Track family history of heart disease and bring it to your provider — it changes when screening should start.",
+    ],
+    practitioner: ["Ask what cardiovascular screening schedule is actually recommended given your service history, not a generic one."],
+  },
+
+  // ── Reduce the burden ─────────────────────────────────────────────────────
   {
     key: "reduce",
     icon: "M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10",
     title: "Reduce the burden first",
+    category: "Reduce the burden",
     why: "The body can't heal while it's still under attack. Often the first move isn't to do more — it's to stop losing so much. Reducing what keeps draining you (ongoing exposure, inflammatory inputs, poor sleep) frees the body to redirect its energy toward repair. Every burden removed is energy returned to the system.",
     everyday: [
       "Have your home water tested if you're near a known contaminated site, and consider a certified filter.",
@@ -447,10 +560,13 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     ],
     practitioner: ["Ask whether testing your home water or environment makes sense for your history."],
   },
+
+  // ── Regulate and rebuild ──────────────────────────────────────────────────
   {
     key: "nervous",
     icon: "M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8",
     title: "Signal safety to the body",
+    category: "Regulate and rebuild",
     why: "For many veterans the war didn't end inside the body when the deployment ended — the nervous system stayed on guard. But deep sleep, digestion, hormones, and tissue repair all require the body to sense safety first. Teaching it, gradually and repeatedly, that it's safe enough to repair is real medicine, not a soft add-on.",
     everyday: [
       "Practice slow breathing, prayer, or meditation — even a few minutes daily.",
@@ -463,6 +579,7 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     key: "sleep",
     icon: "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z",
     title: "Restore sleep and rhythm",
+    category: "Regulate and rebuild",
     why: "The body runs on rhythm, and service scrambles it — night ops, shift work, vigilance, time zones. Predictability creates safety, and over time rhythm becomes medicine. Deep sleep is when the brain and body clear waste and rebuild, so protecting it pays off across almost every condition.",
     everyday: [
       "Keep a consistent wake time, even on weekends, and get morning light.",
@@ -475,6 +592,7 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     key: "nutrition",
     icon: "M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2M5 11v11M12 2a4 4 0 0 0-4 4c0 2 2 3 4 3s4-1 4-3a4 4 0 0 0-4-4zM12 9v13M21 15V2a5 5 0 0 0-3 4.5c0 2 1 3 3 3z",
     title: "Eat in a way you can keep up",
+    category: "Regulate and rebuild",
     why: "Nobody eats their way out of an exposure, and this app has nothing to sell you. But blood pressure, blood sugar and weight are the things VA cohorts keep finding alongside worse outcomes — and unlike your service history, they are still movable. Regular meals you can actually sustain do more than any short-lived overhaul.",
     everyday: [
       "Build meals around vegetables, fruit, fiber, and protein you like enough to keep eating.",
@@ -487,6 +605,7 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     key: "gut",
     icon: "M12 2a3 3 0 0 0-3 3v1a4 4 0 0 0-2 7c0 3 2 4 2 6a3 3 0 0 0 6 0c0-2 2-3 2-6a4 4 0 0 0-2-7V5a3 3 0 0 0-3-3z",
     title: "Look after your gut",
+    category: "Regulate and rebuild",
     why: "Gut symptoms are among the most common things veterans report and among the least often worked up. Ongoing pain, bloating, reflux or a change in your bowels is worth a real evaluation rather than a diet experiment — some of it is treatable, and some of it is a sign of something that needs finding.",
     everyday: [
       "Notice and log the foods that trigger symptoms — the pattern is the useful part.",
@@ -499,6 +618,7 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     key: "clearance",
     icon: "M12 2a7 7 0 0 0-7 7c0 3 2 5 2 8a5 5 0 0 0 10 0c0-3 2-5 2-8a7 7 0 0 0-7-7zM9 22h6",
     title: "How your body clears things, and what to avoid",
+    category: "Guard against exploitation",
     why: "Your liver, kidneys, gut and skin already do this work, and there is no product that does it better. What there is, is an industry selling veterans 'cleanses' and chelation for exactly this fear. Those are not validated, they can be dangerous, and the honest advice is the unglamorous kind below.",
     everyday: [
       "Stay hydrated and keep things regular — fiber does the work in the gut.",
@@ -514,6 +634,7 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     key: "movement",
     icon: "M13 4a2 2 0 1 0 0-.01M19 9l-4 2-3-2-3 4M9 13l-2 7M14 13l2 3 3 1",
     title: "Rebuild capacity through movement",
+    category: "Regulate and rebuild",
     why: "The deeper goal isn't just fewer symptoms — it's capacity: a body that handles stress without collapsing. Movement is the closest thing to a free miracle drug a veteran has. It raises the brain's own repair signal, lowers inflammation, and rebuilds the very systems the cascade tore down. A walk counts — start there.",
     everyday: [
       "Aim for daily walking and gentle strength work you can sustain.",
@@ -522,18 +643,56 @@ export const SOLUTION_PILLARS: SolutionPillar[] = [
     ],
     practitioner: ["Ask what activity level is safe given your heart, lungs, and any conditions."],
   },
+
+  // ── Guard against exploitation ────────────────────────────────────────────
   {
-    key: "testing",
-    icon: "M9 2h6M10 2v4.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 6.5V2",
-    title: "Test before you treat — build a team",
-    why: "Restoration works best with real information and the right people. Baseline and follow-up testing turns 'I feel off' into a tracked picture you can act on. And remember the Gulf War lesson: 'your tests look normal' is the beginning of the conversation, not the end of it.",
+    key: "substance-use",
+    icon: "M8 2h8M9 2v6l-5.5 9.5A2 2 0 0 0 5.2 21h13.6a2 2 0 0 0 1.7-3.5L15 8V2",
+    title: "If drinking or using has become the plan",
+    category: "Guard against exploitation",
+    why: "Alcohol and other substances often start as a way to sleep, unwind, or turn the volume down — and for many veterans that use quietly becomes the plan itself. Naming it honestly opens the door to help built for exactly this.",
     everyday: [
-      "Keep your own copy of every lab, scan, and note — the app stores records too.",
-      "Track symptoms over time so patterns show up.",
-      "Build a team you trust: VA primary care, an accredited VSO for anything claim-related, and specialists your VA doctor refers you to.",
+      "Notice whether the original reason (sleep, pain, memories) is still the reason, or the substance has become its own habit.",
+      "Ask about VA substance use treatment confidentially — separate from disciplinary or legal processes, built for veterans specifically.",
+      "If you're not ready for treatment, harm-reduction resources exist too — reducing risk counts as progress.",
     ],
-    practitioner: ["Ask which baseline labs fit your exposures (kidney, liver, thyroid, inflammation markers), and 'will you test before you treat, and coordinate with my VA doctors?'"],
+    practitioner: ["Ask whether you can talk honestly about your drinking or use without it going anywhere you don't want it to — what are the options?"],
   },
+
+  // ── Extend the circle ─────────────────────────────────────────────────────
+  {
+    key: "women-veterans",
+    icon: "M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 14v7M9 18h6",
+    title: "Health care built for your body too",
+    category: "Extend the circle",
+    why: "Women veterans have their own service-connected health picture — reproductive health, MST-related care, and conditions that can present differently in women — and many report VA care feeling designed around someone else.",
+    everyday: [
+      "Ask for the Women Veterans Program contact at your VA facility — that role exists to help you navigate care.",
+      "Bring your full service and reproductive health history to your first visit, even if it feels unrelated.",
+      "If a provider isn't the right fit, you can ask for a different one — that's a normal request.",
+    ],
+    practitioner: ["Ask what screenings or services are specific to women veterans that you might not know to ask for."],
+  },
+];
+
+// This app's "Whole health" section shares its name with a real, separate VA
+// clinical program (coaching, acupuncture, yoga, VA FARMS, the Live Whole
+// Health app), delivered by VA staff inside VA facilities. Said once, plainly,
+// at the top of the page — not buried in a pillar.
+export const VA_WHOLE_HEALTH_NOTE =
+  "This is general education from a nonprofit, not VA's official Whole Health clinical program. VA runs its own free Whole Health coaching and services — find yours at va.gov/wholehealthlibrary.";
+
+// The cascade order this page renders in, top to bottom — assessment before
+// habit change. Michael, 2026-08-09: "test before you treat" used to be the
+// last pillar on the page; that reads backwards for a page meant to mirror the
+// cascade. Category display order lives here, once, so SolutionsView and any
+// future page never have to guess the sequence.
+export const SOLUTION_CATEGORY_ORDER: SolutionCategory[] = [
+  "Know what you're carrying",
+  "Reduce the burden",
+  "Regulate and rebuild",
+  "Guard against exploitation",
+  "Extend the circle",
 ];
 
 // Free, first-step actions drawn from the book's "What To Do Monday Morning"

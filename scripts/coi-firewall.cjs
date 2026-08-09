@@ -174,6 +174,12 @@ const LEARN_FILES = [
     // compensation route ships) and NOT law.cornell.edu (regulations cite to
     // ecfr.gov instead).
     "fda.gov", "gao.gov", "tricare.mil",
+    // Added for the Whole Health resource-pointer cards (council ruling
+    // 2026-08-09) — real, free, veteran-relevant programs pointed TO, never
+    // rebuilt. samhsa.gov: the National Helpline. woundedwarriorproject.org:
+    // the one non-government name on the list, explicitly approved by the
+    // founder and rendered with a "Partner nonprofit, not VA" label in the UI.
+    "samhsa.gov", "woundedwarriorproject.org",
   ];
   const walk = (dir) =>
     fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {

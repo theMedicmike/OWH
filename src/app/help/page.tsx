@@ -181,7 +181,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "Your shot record — the paperwork nobody gave you",
     body: [
-      "In the menu, right under “Where you served” — no number on this one, just its own icon — “Your shot record.”",
+      "In the menu, its own line below “Claim packet” — no number on this one, just its own icon — “Your shot record.”",
       "This isn't about what a shot did to you. Nobody can tell you that from a service history, and this app won't pretend to. It's about the dates nobody wrote down.",
     ],
     points: [
