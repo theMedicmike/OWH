@@ -122,6 +122,29 @@ export const SHOTS: Shot[] = [
     labelSource: { product: "Adacel", manufacturer: "Sanofi Pasteur / Sanofi Vaccines US Inc.", setId: "a41b7601-34f2-4a88-a406-f53011fb7de1", url: "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a41b7601-34f2-4a88-a406-f53011fb7de1", retrieved: RETRIEVED },
   },
   {
+    slug: "hpv",
+    name: "HPV",
+    hook: "A 2- or 3-dose series in the arm — the same shot given outside the military too.",
+    group: "basic",
+    circumstance: "Basic training",
+    policyContext: "Part of the routine adult/adolescent immunization schedule (ages 9-45) that DoD administers alongside civilian practice, not a military-specific program.",
+    labelVerbatim:
+      "Each 0.5 mL dose of GARDASIL 9 (Human Papillomavirus 9-valent Vaccine, Recombinant) contains approximately 30 mcg of HPV Type 6 L1 protein, 40 mcg of HPV Type 11 L1 protein, 60 mcg of HPV Type 16 L1 protein, 40 mcg of HPV Type 18 L1 protein, and 20 mcg each of HPV Types 31, 33, 45, 52, and 58 L1 protein, adsorbed on Merck's proprietary amorphous aluminum hydroxyphosphate sulfate (AAHS) adjuvant. Each dose also contains approximately 500 mcg of aluminum (as AAHS), 9.56 mg of sodium chloride, 0.78 mg of L-histidine, 50 mcg of polysorbate 80, 35 mcg of sodium borate, and less than 7 mcg of residual yeast protein.",
+    labelSource: { product: "GARDASIL 9", manufacturer: "Merck Sharp & Dohme LLC", setId: "a21f4f4b-b891-4f25-b747-cb9ec7d865d6", url: "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=a21f4f4b-b891-4f25-b747-cb9ec7d865d6&type=display", retrieved: RETRIEVED },
+    labelWarning: "The label advises that appropriate medical treatment and supervision must be readily available in case of an anaphylactic reaction, and recommends observation for 15 minutes after the shot because fainting (syncope) has been reported.",
+  },
+  {
+    slug: "poliovirus",
+    name: "Poliovirus (IPV)",
+    hook: "One shot in the arm, not the sugar-cube drops.",
+    group: "basic",
+    circumstance: "Basic training",
+    policyContext: "DoD Health Affairs directed the shift from oral polio vaccine to the injected, inactivated form for the accession schedule under a policy dated 22 October 1999.",
+    labelVerbatim:
+      "IPOL, Poliovirus Vaccine Inactivated, is a sterile suspension of three types of poliovirus: Type 1 (Mahoney), Type 2 (MEF-1), and Type 3 (Saukett). Each 0.5 mL dose contains 40 D antigen units of Type 1, 8 D antigen units of Type 2, and 32 D antigen units of Type 3 poliovirus, with 0.5% of 2-phenoxyethanol and a maximum of 0.02% of formaldehyde per dose as preservatives. From the manufacturing process, each dose also contains less than 5 ng neomycin, 200 ng streptomycin, and 25 ng polymyxin B, and residual calf bovine serum albumin of less than 50 ng/dose.",
+    labelSource: { product: "IPOL", manufacturer: "Sanofi Pasteur Inc.", setId: "34a647f5-8728-451b-b918-94c8acd15974", url: "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=34a647f5-8728-451b-b918-94c8acd15974&type=display", retrieved: RETRIEVED },
+  },
+  {
     slug: "meningococcal",
     name: "Meningococcal (MCV4)",
     hook: "The meningitis shot.",
@@ -131,6 +154,18 @@ export const SHOTS: Shot[] = [
     labelVerbatim:
       "Menactra is a sterile, intramuscularly administered vaccine that contains N. meningitidis serogroup A, C, Y, and W-135 capsular polysaccharide antigens individually conjugated to diphtheria toxoid protein, in sodium phosphate buffered isotonic sodium chloride solution. Each 0.5 mL dose contains 4 mcg each of the four polysaccharides conjugated to approximately 48 mcg of diphtheria toxoid protein carrier, and may contain residual formaldehyde of less than 2.66 mcg. No preservative or adjuvant is added during manufacture. The vial stopper is not made with natural rubber latex.",
     labelSource: { product: "Menactra", manufacturer: "Sanofi Vaccines US Inc.", setId: "4d8781ff-9366-462c-8161-6e958f44fcb4", url: "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=4d8781ff-9366-462c-8161-6e958f44fcb4", retrieved: RETRIEVED },
+  },
+  {
+    slug: "meningococcal-b",
+    name: "Meningococcal B",
+    hook: "Only shows up if there's an outbreak on base, not part of routine intake shots.",
+    group: "basic",
+    circumstance: "By assignment",
+    policyContext: "Not part of the routine accession series — given in response to specific meningococcal disease outbreaks or case clusters at an installation, separate from the routine quadrivalent (MCV4) shot every recruit gets.",
+    labelVerbatim:
+      "BEXSERO (Meningococcal Group B Vaccine) is a sterile, white, opalescent, injectable suspension for intramuscular use. Each 0.5 mL dose is formulated to contain 50 mcg each of recombinant proteins Neisserial adhesin A (NadA), Neisserial Heparin Binding Antigen (NHBA), and factor H binding protein (fHbp), and 25 mcg of Outer Membrane Vesicles (OMV), with 1.5 mg aluminum hydroxide (0.519 mg of Al3+), 3.125 mg sodium chloride, 0.776 mg histidine, and 10 mg sucrose. Each dose contains less than 0.01 mcg kanamycin (by calculation).",
+    labelSource: { product: "BEXSERO", manufacturer: "GlaxoSmithKline Biologicals SA", setId: "f70cf2fc-6e6d-4a74-9f7a-db8fec072fd7", url: "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=f70cf2fc-6e6d-4a74-9f7a-db8fec072fd7&type=display", retrieved: RETRIEVED },
+    labelWarning: "The label advises that appropriate medical treatment must be immediately available to manage a possible anaphylactic reaction, and notes that fainting (syncope) can occur after the shot.",
   },
 
   // ── Where you were posted, or before you deployed ───────────────────────────
@@ -208,6 +243,20 @@ export const SHOTS: Shot[] = [
     labelWarning:
       "The label states: anaphylaxis, meningitis; neuroparalytic events such as encephalitis, transient paralysis; Guillain-Barré syndrome; myelitis; retrobulbar neuritis; and multiple sclerosis have been reported to be temporally associated with the use of RabAvert. \"Temporally associated\" is the label's own language for \"occurred after\" — it is not a statement that the vaccine caused these things.",
   },
+  {
+    slug: "botulinum-toxoid",
+    name: "Botulinum toxoid",
+    hook: "A series of shots some Gulf War veterans got, separate from anthrax.",
+    group: "posted",
+    circumstance: "Gulf War era",
+    policyContext:
+      "Given to roughly 8,000 U.S. troops during the 1990-1991 Gulf War as protection against botulinum toxin, under the same FDA informed-consent waiver for investigational products as pyridostigmine bromide (interim rule, 21 December 1990, 21 CFR 50.23(d)). It was never fully licensed by the FDA — it remained an investigational (IND) product for its entire history and was discontinued on 30 November 2011 after its single manufacturer's decades-old stock could no longer be supplied.",
+    labelVerbatim:
+      "There is no FDA-approved label for this product. It was never licensed — it remained in Investigational New Drug (IND) status from its first large-scale production in 1958 until the Department of Defense discontinued its use in 2011, so there is no DailyMed or FDA prescribing information to quote.",
+    labelSource: { product: "Pentavalent Botulinum Toxoid (never FDA-licensed)", manufacturer: "Michigan Department of Public Health / BioPort Corporation", setId: "No FDA license — investigational (IND) status only", url: "https://www.ncbi.nlm.nih.gov/books/NBK222854/", retrieved: RETRIEVED },
+    established:
+      "The National Academies (Institute of Medicine), in Gulf War and Health, Vol. 1, reviewed CDC surveillance data on 16,676 injections given 1970-1997: local reactions were none or mild in 91.2%, moderate in 7.2%, and severe in 0.4%; systemic reactions recorded included swelling, lumps, itching or hives, malaise, chills or fever, headache, nausea, and blurred vision. The committee found sufficient evidence linking the toxoid to these transient, short-term effects, and inadequate or insufficient evidence to say anything about long-term health effects one way or the other.",
+  },
 
   // ── Every year ───────────────────────────────────────────────────────────────
   {
@@ -221,6 +270,20 @@ export const SHOTS: Shot[] = [
     labelVerbatim:
       "Fluzone (Influenza Vaccine) for intramuscular use is an inactivated influenza vaccine, prepared from influenza viruses propagated in embryonated chicken eggs. Each 0.5 mL dose contains not more than 100 mcg formaldehyde and not more than 250 mcg octylphenol ethoxylate (used to chemically disrupt the virus). The single-dose, pre-filled syringe presentation is manufactured and formulated without thimerosal or any other preservative. The 5 mL multiple-dose vial presentation contains thimerosal, a mercury derivative, added as a preservative.",
     labelSource: { product: "Fluzone", manufacturer: "Sanofi Vaccines US Inc.", setId: "5fe0ce14-bc11-4b43-b002-7efdca0d3003", url: "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5fe0ce14-bc11-4b43-b002-7efdca0d3003", retrieved: RETRIEVED },
+  },
+  {
+    slug: "covid-19-mrna",
+    name: "COVID-19 (mRNA vaccine)",
+    hook: "The Pfizer (Comirnaty) or Moderna (Spikevax) shot, given as an initial series plus boosters.",
+    group: "yearly",
+    circumstance: "By assignment",
+    policyContext:
+      "The Department of Defense mandated COVID-19 vaccination for the Armed Forces on 24 August 2021. Secretary of Defense Lloyd J. Austin III rescinded the mandate on 10 January 2023, as required by the FY2023 National Defense Authorization Act.",
+    labelVerbatim:
+      "COMIRNATY (COVID-19 Vaccine, mRNA), current formula: each 0.3 mL dose is formulated to contain 30 mcg of a nucleoside-modified messenger RNA (modRNA) encoding a SARS-CoV-2 spike glycoprotein, plus lipids (0.43 mg ((4-hydroxybutyl)azanediyl)bis(hexane-6,1-diyl)bis(2-hexyldecanoate), 0.05 mg 2-(polyethylene glycol 2000)-N,N-ditetradecylacetamide, 0.09 mg 1,2-distearoyl-sn-glycero-3-phosphocholine, and 0.19 mg cholesterol), 0.06 mg tromethamine, 0.4 mg tromethamine hydrochloride, and 31 mg sucrose. COMIRNATY does not contain preservatives.\n\nSPIKEVAX (COVID-19 Vaccine, mRNA), current formula: each 0.5 mL dose contains 50 mcg nucleoside-modified mRNA encoding a SARS-CoV-2 spike glycoprotein, a total lipid content of 1.01 mg (SM-102, polyethylene glycol [PEG] 2000 dimyristoyl glycerol [DMG], cholesterol, and 1,2-distearoyl-sn-glycero-3-phosphocholine [DSPC]), 0.25 mg tromethamine, 1.2 mg tromethamine hydrochloride, 0.021 mg acetic acid, and 0.10 mg sodium acetate trihydrate, and 43.5 mg sucrose. SPIKEVAX does not contain a preservative.\n\nThe formula changes over time to match circulating strains — the excipient amounts above are current, not necessarily what was in the specific dose given during the 2021-2023 mandate period.",
+    labelSource: { product: "COMIRNATY (Pfizer-BioNTech) and SPIKEVAX (Moderna)", manufacturer: "Pfizer Inc. / ModernaTX, Inc.", setId: "COMIRNATY 48c86164-de07-4041-b9dc-f2b5744714e5 · SPIKEVAX f96b315c-fa57-4876-a7e5-a9b584d8e6e6", url: "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=48c86164-de07-4041-b9dc-f2b5744714e5&type=display", retrieved: RETRIEVED },
+    labelWarning:
+      "Both labels carry the same warning under Warnings and Precautions (neither carries a boxed warning): \"Analyses of postmarketing data from use of authorized or approved mRNA COVID-19 vaccines... have demonstrated increased risks of myocarditis and pericarditis, with onset of symptoms typically in the first week following vaccination. The observed risk has been highest in males 12 years through 24 years of age.\" Surveillance data cited on the label estimated roughly 8 cases per million doses overall, and roughly 27 cases per million doses in males 12 through 24, in the 7 days following a dose.",
   },
 
   // ── Pills, tablets, and shots that weren't vaccines ─────────────────────────
@@ -236,6 +299,19 @@ export const SHOTS: Shot[] = [
     labelSource: { product: "Mefloquine hydrochloride", manufacturer: "Multiple (generic; originally Lariam, Roche)", setId: "See current FDA-approved prescribing information", url: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2013/019591s024s025lbl.pdf", retrieved: RETRIEVED },
     labelWarning:
       "FDA issued a boxed warning on 29 July 2013: neurologic and psychiatric side effects can occur with mefloquine use and may persist or become permanent after the drug is stopped. If you took it, record when — a clinician taking your history should know what you were prescribed.",
+  },
+  {
+    slug: "doxycycline",
+    name: "Doxycycline (malaria prevention)",
+    hook: "The daily malaria pill, taken instead of the once-a-week one.",
+    group: "other",
+    circumstance: "By assignment",
+    policyContext: "A daily alternative to weekly mefloquine for malaria prevention on deployment, used where a daily-pill routine or mefloquine's side-effect profile made it the better fit.",
+    labelVerbatim:
+      "Doxycycline Hyclate Tablets USP contain doxycycline hyclate, a tetracycline-class drug synthetically derived from oxytetracycline, in an immediate-release formulation for oral use.",
+    labelSource: { product: "Doxycycline Hyclate Tablets, USP", manufacturer: "Multiple (generic)", setId: "f234f419-42da-4a6d-82c6-92106cd77c67", url: "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f234f419-42da-4a6d-82c6-92106cd77c67", retrieved: RETRIEVED },
+    labelWarning:
+      "No boxed warning. The label's Warnings and Precautions state that use during tooth development — the last half of pregnancy, infancy, and childhood to age 8 — may cause permanent yellow-gray-brown tooth discoloration, that it carries a potential risk to a fetus if used during pregnancy, and that it can cause an exaggerated sunburn reaction (photosensitivity) in some people.",
   },
   {
     slug: "pyridostigmine-bromide",
