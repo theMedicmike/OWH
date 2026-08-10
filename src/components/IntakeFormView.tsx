@@ -7,6 +7,7 @@ import { searchGazetteer, bootCampsFor } from "@/lib/gazetteer";
 import { saveBootCampCheckIn } from "@/lib/bootCamp";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
+import MonthYearWheel from "./MonthYearWheel";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -45,7 +46,9 @@ type LocationEntry = {
   name: string;
   region: string;
   fromYear: string;
+  fromMonth: number; // 0 = not sure, 1-12
   toYear: string;
+  toMonth: number;
   exposures: string[];
   confirmed: string[];      // documented exposure classes for the matched site
   matchedSite: string | null;
@@ -55,7 +58,7 @@ type LocationEntry = {
 function makeLocation(): LocationEntry {
   return {
     id: crypto.randomUUID(),
-    name: "", region: "", fromYear: "", toYear: "",
+    name: "", region: "", fromYear: "", fromMonth: 0, toYear: "", toMonth: 0,
     exposures: [], confirmed: [], matchedSite: null, other: "",
   };
 }
@@ -184,11 +187,14 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   const [displayName, setDisplayName] = useState("");
   const [branch, setBranch] = useState("");
   const [startYear, setStartYear] = useState("");
+  const [startMonth, setStartMonth] = useState(0);
   const [endYear, setEndYear] = useState("");
+  const [endMonth, setEndMonth] = useState(0);
   const [currentlyServing, setCurrentlyServing] = useState(false);
   const [mos, setMos] = useState("");
   const [bootCamp, setBootCamp] = useState("");
   const [bootCampYear, setBootCampYear] = useState("");
+  const [bootCampMonth, setBootCampMonth] = useState(0);
 
   // Step 2 state
   const [locations, setLocations] = useState<LocationEntry[]>([makeLocation()]);
@@ -269,8 +275,12 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       const base = {
         display_name: displayName.trim() || null,
         branch: branch || null,
-        service_start: startYear ? `${startYear}-01-01` : null,
-        service_end: (!currentlyServing && endYear) ? `${endYear}-12-31` : null,
+        service_start: startYear
+          ? `${startYear}-${startMonth >= 1 && startMonth <= 12 ? String(startMonth).padStart(2, "0") : "01"}-01`
+          : null,
+        service_end: (!currentlyServing && endYear)
+          ? (endMonth >= 1 && endMonth <= 12 ? `${endYear}-${String(endMonth).padStart(2, "0")}-01` : `${endYear}-12-31`)
+          : null,
       };
       // A failed prefill means we'd be overwriting fields we never read —
       // that's how a save becomes a wipe. Refuse.
@@ -292,19 +302,20 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       // Three tiers, widest first. Each step down drops only the columns that may
       // not exist yet, so nothing the veteran typed is ever lost to a migration he
       // hasn't run.
-      // 🔴 Precision must be reset to "year" here, not left alone. This wizard
-      // only ever collects a YEAR, and re-running it is a designed flow — so a
-      // veteran who set "15 March 1968" on Account and later re-ran signup would
-      // end up with 1968-01-01 still labelled day-precision, and Account would
-      // show him "1 January" as though it were his own answer. That is exactly
-      // the invention this feature exists to prevent.
+      // 🔴 Precision must be set from what he actually gave here, not left at
+      // whatever Account previously recorded. The wizard now collects a month
+      // via the same wheel Account uses, so it can honestly report "month" —
+      // but re-running the wizard is still a designed flow, so a veteran who
+      // set day-precision on Account and re-ran signup with only a year must
+      // NOT keep the stale day-precision label. Always write what was chosen
+      // here, never invent finer precision than the wheel actually gave.
       const withAll = await supabase.from("members")
         .update({
           ...base,
           mos: mos.trim() || null,
           still_serving: currentlyServing,
-          service_start_precision: startYear ? "year" : null,
-          service_end_precision: (!currentlyServing && endYear) ? "year" : null,
+          service_start_precision: startYear ? (startMonth >= 1 && startMonth <= 12 ? "month" : "year") : null,
+          service_end_precision: (!currentlyServing && endYear) ? (endMonth >= 1 && endMonth <= 12 ? "month" : "year") : null,
         })
         .eq("id", memberId);
       if (withAll.error) {
@@ -334,6 +345,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       campName: bootCamp,
       year: bootCampYear,
       fallbackYear: startYear,
+      month: bootCampMonth,
       sites,
     });
   }
@@ -378,7 +390,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         });
         if (rpcErr) throw new Error(rpcErr.message);
         if (newId) {
-          const patch: { place_name?: string; notes?: string; date_end?: string } = {};
+          const patch: { place_name?: string; notes?: string; date_start?: string; date_end?: string } = {};
           // Fold the typed region into the place name (it was collected and
           // dropped) so "Balad" saves as "Balad, Iraq".
           const nm = loc.name.trim();
@@ -388,8 +400,15 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
           if (loc.other.trim()) noteParts.push(`Other exposure noted: ${loc.other.trim()}`);
           if (!coords) noteParts.push("Location not yet pinned — set the exact spot on the map.");
           if (noteParts.length) patch.notes = noteParts.join("\n");
+          // Month-level arrival date when known — presumptive windows can turn on months.
+          if (loc.fromMonth >= 1 && loc.fromMonth <= 12) patch.date_start = `${year}-${String(loc.fromMonth).padStart(2, "0")}-01`;
           // Keep the tour span so the timeline can draw a real bar, not a point.
-          if (loc.toYear && parseInt(loc.toYear)) patch.date_end = `${parseInt(loc.toYear)}-12-31`;
+          if (loc.toYear && parseInt(loc.toYear)) {
+            const ty = parseInt(loc.toYear);
+            patch.date_end = loc.toMonth >= 1 && loc.toMonth <= 12
+              ? `${ty}-${String(loc.toMonth).padStart(2, "0")}-01`
+              : `${ty}-12-31`;
+          }
           if (Object.keys(patch).length > 0) {
             await supabase.from("check_ins").update(patch).eq("id", newId);
           }
@@ -573,18 +592,15 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                   <option value="__other">Somewhere else / I&apos;ll add it on the map</option>
                 </select>
                 {bootCamp && bootCamp !== "__other" && (
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <label className="text-xs text-muted">What year?</label>
-                    <input
-                      className="w-28 rounded-xl border border-line bg-canvas px-3 py-2 text-sm tabular-nums text-ink focus:border-brand focus:bg-white focus:outline-none"
-                      type="number"
-                      min="1940"
-                      max={new Date().getFullYear()}
-                      placeholder={startYear || "YYYY"}
-                      value={bootCampYear}
-                      onChange={(e) => setBootCampYear(e.target.value)}
+                  <div className="mt-2">
+                    <label className="mb-1 block text-xs text-muted">When?</label>
+                    <MonthYearWheel
+                      month={bootCampMonth}
+                      year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
+                      onMonthChange={setBootCampMonth}
+                      onYearChange={(y) => setBootCampYear(String(y))}
                     />
-                    <span className="text-[11px] text-faint">
+                    <span className="mt-1 block text-[11px] text-faint">
                       We&apos;ll drop your first pin here — you can move or remove it any time.
                     </span>
                   </div>
@@ -593,18 +609,31 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
             )}
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Service start year">
-                <input className={inputCls} type="number" placeholder="e.g. 1998" min="1940" max={new Date().getFullYear()} value={startYear} onChange={(e) => setStartYear(e.target.value)} />
+              <Field label="Service start">
+                <MonthYearWheel
+                  month={startMonth}
+                  year={parseInt(startYear) || new Date().getUTCFullYear()}
+                  onMonthChange={setStartMonth}
+                  onYearChange={(y) => setStartYear(String(y))}
+                />
               </Field>
-              <Field label="Service end year">
-                <input className={inputCls} type="number" placeholder="e.g. 2010" min="1940" max={new Date().getFullYear()} value={endYear} disabled={currentlyServing} onChange={(e) => setEndYear(e.target.value)} />
-                <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs text-muted">
+              <Field label="Service end">
+                <label className="mb-2 flex cursor-pointer items-center gap-2 text-xs text-muted">
                   {/* Does not clear the year — saveStep1 already writes null when
                       this is ticked, and clearing it only lost the separation date
                       of anyone who ticked the box to see what it did. */}
                   <input type="checkbox" checked={currentlyServing} onChange={(e) => setCurrentlyServing(e.target.checked)} className="rounded" />
                   I am currently serving
                 </label>
+                {!currentlyServing && (
+                  <MonthYearWheel
+                    month={endMonth}
+                    year={parseInt(endYear) || new Date().getUTCFullYear()}
+                    onMonthChange={setEndMonth}
+                    onYearChange={(y) => setEndYear(String(y))}
+                    minYear={parseInt(startYear) || 1945}
+                  />
+                )}
               </Field>
             </div>
 
@@ -744,12 +773,37 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="From year">
-                        <input className={inputCls} type="number" placeholder="e.g. 2004" min="1940" max={new Date().getFullYear()} value={loc.fromYear} onChange={(e) => updateLocation(loc.id, { fromYear: e.target.value })} />
+                      <Field label="When did you arrive?">
+                        <MonthYearWheel
+                          month={loc.fromMonth}
+                          year={parseInt(loc.fromYear) || new Date().getUTCFullYear()}
+                          onMonthChange={(m) => updateLocation(loc.id, { fromMonth: m })}
+                          onYearChange={(y) => updateLocation(loc.id, { fromYear: String(y) })}
+                        />
                       </Field>
-                      <Field label="To year">
-                        <input className={inputCls} type="number" placeholder="e.g. 2006" min="1940" max={new Date().getFullYear()} value={loc.toYear} onChange={(e) => updateLocation(loc.id, { toYear: e.target.value })} />
-                      </Field>
+                      <div>
+                        <label className="flex items-center gap-2 text-xs text-muted">
+                          <input
+                            type="checkbox"
+                            checked={loc.toYear.trim() !== ""}
+                            onChange={(e) => updateLocation(loc.id, e.target.checked
+                              ? { toYear: String(parseInt(loc.fromYear) || new Date().getUTCFullYear()), toMonth: 0 }
+                              : { toYear: "", toMonth: 0 })}
+                          />
+                          I know when I left
+                        </label>
+                        {loc.toYear.trim() !== "" && (
+                          <div className="mt-1.5">
+                            <MonthYearWheel
+                              month={loc.toMonth}
+                              year={parseInt(loc.toYear) || new Date().getUTCFullYear()}
+                              onMonthChange={(m) => updateLocation(loc.id, { toMonth: m })}
+                              onYearChange={(y) => updateLocation(loc.id, { toYear: String(y) })}
+                              minYear={parseInt(loc.fromYear) || 1945}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <Field

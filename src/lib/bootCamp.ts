@@ -40,10 +40,12 @@ export async function saveBootCampCheckIn(
     campName: string;
     year: string | number | null | undefined;
     fallbackYear?: string | number | null | undefined;
+    /** 0 or omitted = not sure/not given. Everybody remembers the year; the month is a bonus, never required. */
+    month?: number | null | undefined;
     sites?: BootCampSite[];
   },
 ): Promise<BootCampSaveResult> {
-  const { branch, campName, year, fallbackYear, sites = [] } = opts;
+  const { branch, campName, year, fallbackYear, month, sites = [] } = opts;
 
   if (!campName || campName === "__other") return { status: "skipped", reason: "no camp selected" };
 
@@ -81,10 +83,13 @@ export async function saveBootCampCheckIn(
 
   if (!newId) return { status: "skipped", reason: "check-in was not created" };
 
-  await supabase
-    .from("check_ins")
-    .update({ place_name: placeName, notes: "Basic training / boot camp." })
-    .eq("id", newId);
+  const patch: { place_name: string; notes: string; date_start?: string } = {
+    place_name: placeName,
+    notes: "Basic training / boot camp.",
+  };
+  if (month && month >= 1 && month <= 12) patch.date_start = `${parsed}-${String(month).padStart(2, "0")}-01`;
+
+  await supabase.from("check_ins").update(patch).eq("id", newId);
 
   return { status: "saved", place: placeName };
 }
@@ -93,7 +98,7 @@ export async function saveBootCampCheckIn(
 export async function findBootCampCheckIn(
   supabase: SupabaseClient,
   branch: string | null | undefined,
-): Promise<{ place: string; year: number | null } | null> {
+): Promise<{ place: string; year: number | null; month: number | null } | null> {
   const camps = bootCampsFor(branch);
   if (camps.length === 0) return null;
   const names = camps.map((c) => `${c.name}, ${c.region}`);
@@ -106,8 +111,14 @@ export async function findBootCampCheckIn(
 
   const row = data?.[0] as { place_name: string; date_start: string | null } | undefined;
   if (!row) return null;
+  const d = row.date_start ? new Date(row.date_start) : null;
   return {
     place: row.place_name,
-    year: row.date_start ? new Date(row.date_start).getUTCFullYear() : null,
+    year: d ? d.getUTCFullYear() : null,
+    // check_ins has no precision column (unlike members.service_start_precision),
+    // so a year-only save and a real January save are stored identically as
+    // "-01-01" and can't be told apart here — same limitation this app already
+    // accepts everywhere else it reads date_start back. Not a new gap.
+    month: d ? d.getUTCMonth() + 1 : null,
   };
 }

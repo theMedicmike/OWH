@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import WheelPicker from "./WheelPicker";
 import {
   officeFor, LOCATOR_SOURCE_STAMP, LOCATOR_MILCONNECT_LINE, LOCATOR_EXPECTATION_LINE,
   LOCATOR_NO_FEE_LINE, LOCATOR_MHS_GENESIS_NOTE, LOCATOR_STATE_REGISTRY_NOTE, LOCATOR_VA_FORM_NOTE,
@@ -11,6 +12,7 @@ import {
 
 const BRANCHES = ["Army", "Navy", "Marine Corps", "Air Force", "Space Force", "Coast Guard"];
 const card = "rounded-xl border border-line bg-surface p-5";
+const SEPARATION_YEARS = Array.from({ length: new Date().getUTCFullYear() - 1945 + 1 }, (_, i) => String(1945 + i));
 
 export default function LocatorCard() {
   const { user, supabase } = useAuth();
@@ -47,15 +49,16 @@ export default function LocatorCard() {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">{stillServing ? "Still serving" : "Year you separated"}</label>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={stillServing ? "" : year}
-              onChange={(e) => setYear(e.target.value)}
-              disabled={stillServing}
-              placeholder="YYYY"
-              className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-faint focus:border-brand focus:ring-2 focus:ring-brand/15 disabled:opacity-50"
-            />
+            {stillServing ? (
+              <div className="flex h-[104px] items-center rounded-lg border border-line bg-white px-3 text-sm text-faint opacity-50">Still serving</div>
+            ) : (
+              <WheelPicker
+                options={SEPARATION_YEARS}
+                index={year ? parseInt(year, 10) - 1945 : SEPARATION_YEARS.length - 1}
+                onChange={(i) => setYear(SEPARATION_YEARS[i])}
+                ariaLabel="Year you separated"
+              />
+            )}
           </div>
         </div>
         <label className="mt-3 flex items-center gap-2 text-xs text-muted">

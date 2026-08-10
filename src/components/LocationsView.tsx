@@ -6,6 +6,20 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_LABEL } from "@/lib/education";
 import { EXPOSURE_BASIS } from "@/lib/citations";
+import MonthYearWheel from "./MonthYearWheel";
+
+// check_ins has no precision column, so a year-only save (stamped Jan 1 /
+// Dec 31 by convention) and a genuine "arrived January 1st" / "left December
+// 31st" are stored identically. Reading either boundary date back as "not
+// sure" is wrong far less often than reading every year-only save back as a
+// fake precise month — same tradeoff bootCamp.ts accepts, applied here
+// because this screen can otherwise silently DESTROY a real month a veteran
+// already entered on the map (an unconditional overwrite used to wipe it).
+function monthOrUnsure(d: Date | null, boundaryMonth: number, boundaryDay: number): number {
+  if (!d) return 0;
+  if (d.getUTCMonth() + 1 === boundaryMonth && d.getUTCDate() === boundaryDay) return 0;
+  return d.getUTCMonth() + 1;
+}
 
 type Expo = { exposure_class: string; confirmed: boolean };
 type Row = {
@@ -44,7 +58,10 @@ export default function LocationsView() {
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [edStart, setEdStart] = useState("");
+  const [edStartMonth, setEdStartMonth] = useState(0);
   const [edEnd, setEdEnd] = useState("");
+  const [edEndMonth, setEdEndMonth] = useState(0);
+  const [edHasEnd, setEdHasEnd] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -85,14 +102,26 @@ export default function LocationsView() {
 
   function startEdit(r: Row) {
     setEditId(r.id);
-    setEdStart(yearOf(r.date_start)?.toString() ?? "");
-    setEdEnd(yearOf(r.date_end)?.toString() ?? "");
+    const ds = r.date_start ? new Date(r.date_start) : null;
+    const de = r.date_end ? new Date(r.date_end) : null;
+    setEdStart(yearOf(r.date_start)?.toString() ?? String(new Date().getUTCFullYear()));
+    setEdStartMonth(monthOrUnsure(ds, 1, 1));
+    setEdHasEnd(!!r.date_end);
+    setEdEnd(yearOf(r.date_end)?.toString() ?? String(new Date().getUTCFullYear()));
+    setEdEndMonth(monthOrUnsure(de, 12, 31));
   }
   async function saveDates(id: string) {
-    const sy = edStart.trim() ? parseInt(edStart, 10) : null;
-    const ey = edEnd.trim() ? parseInt(edEnd, 10) : null;
-    const date_start = sy ? `${sy}-01-01` : null;
-    const date_end = ey ? `${ey}-12-31` : null;
+    const sy = parseInt(edStart, 10);
+    const date_start = sy
+      ? (edStartMonth >= 1 && edStartMonth <= 12 ? `${sy}-${String(edStartMonth).padStart(2, "0")}-01` : `${sy}-01-01`)
+      : null;
+    let date_end: string | null = null;
+    if (edHasEnd) {
+      const ey = parseInt(edEnd, 10);
+      date_end = ey
+        ? (edEndMonth >= 1 && edEndMonth <= 12 ? `${ey}-${String(edEndMonth).padStart(2, "0")}-01` : `${ey}-12-31`)
+        : null;
+    }
     await supabase.from("check_ins").update({ date_start, date_end }).eq("id", id);
     setRows((prev) => prev.map((x) => (x.id === id ? { ...x, date_start, date_end } : x)));
     setEditId(null);
@@ -152,19 +181,30 @@ export default function LocationsView() {
 
                 {/* How long were you here? — duration nuance */}
                 {editId === r.id ? (
-                  <div className="mt-3 flex flex-wrap items-end gap-2 rounded-lg border border-line bg-canvas p-3">
-                    <label className="text-xs font-medium text-ink">
-                      Arrived (year)
-                      <input type="number" inputMode="numeric" min={1940} max={2030} value={edStart} onChange={(e) => setEdStart(e.target.value)} placeholder="—"
-                        className="mt-1 block w-24 rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink" />
-                    </label>
-                    <label className="text-xs font-medium text-ink">
-                      Departed (year)
-                      <input type="number" inputMode="numeric" min={1940} max={2030} value={edEnd} onChange={(e) => setEdEnd(e.target.value)} placeholder="—"
-                        className="mt-1 block w-24 rounded-md border border-line bg-surface px-2 py-1 text-sm text-ink" />
-                    </label>
-                    <button onClick={() => saveDates(r.id)} className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600">Save</button>
-                    <button onClick={() => setEditId(null)} className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-muted hover:bg-canvas">Cancel</button>
+                  <div className="mt-3 rounded-lg border border-line bg-canvas p-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <div className="text-xs font-medium text-ink">Arrived</div>
+                        <div className="mt-1">
+                          <MonthYearWheel month={edStartMonth} year={parseInt(edStart) || new Date().getUTCFullYear()} onMonthChange={setEdStartMonth} onYearChange={(y) => setEdStart(String(y))} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2 text-xs font-medium text-ink">
+                          <input type="checkbox" checked={edHasEnd} onChange={(e) => setEdHasEnd(e.target.checked)} />
+                          Departed
+                        </label>
+                        {edHasEnd && (
+                          <div className="mt-1">
+                            <MonthYearWheel month={edEndMonth} year={parseInt(edEnd) || new Date().getUTCFullYear()} onMonthChange={setEdEndMonth} onYearChange={(y) => setEdEnd(String(y))} minYear={parseInt(edStart) || 1945} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button onClick={() => saveDates(r.id)} className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600">Save</button>
+                      <button onClick={() => setEditId(null)} className="rounded-md border border-line px-3 py-1.5 text-xs font-medium text-muted hover:bg-canvas">Cancel</button>
+                    </div>
                   </div>
                 ) : (
                   <button onClick={() => startEdit(r)} className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline">

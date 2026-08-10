@@ -14,8 +14,12 @@ import {
   EMPTY_PARTS, MONTHS, clampDay, daysInMonth, fromParts, serviceYears, toParts,
   type ServiceDateParts,
 } from "@/lib/serviceDates";
+import WheelPicker from "./WheelPicker";
+import MonthYearWheel from "./MonthYearWheel";
 
 const BRANCHES = ["", "Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
+const YEAR_WHEEL_OPTIONS = [...serviceYears()].reverse().map(String); // oldest first — scrolls forward through a career
+const MONTH_WHEEL_OPTIONS = ["Not set", ...MONTHS];
 
 const LAYERS = [
   { v: "veteran", label: "A veteran or service member (me)" },
@@ -24,10 +28,11 @@ const LAYERS = [
   { v: "civilian", label: "Someone supporting a veteran" },
 ];
 
-// Three dropdowns: year (required), month and day (optional, in that order of
-// usefulness). Typing a year into a text box is the single most error-prone thing
-// an older user does on a phone, and a bad year silently distorts his timeline
-// and his packet — so this offers a list he cannot mistype.
+// Three wheels: year (required), month and day (optional, in that order of
+// usefulness) — same "spin to select" control as the map and the wizard, so a
+// veteran doesn't meet a different date control on every screen. A bad year
+// silently distorts his timeline and his packet, so this is still a list he
+// cannot mistype, just spun instead of dropped down.
 function DatePickers({
   parts,
   onChange,
@@ -35,46 +40,40 @@ function DatePickers({
   parts: ServiceDateParts;
   onChange: (p: ServiceDateParts) => void;
 }) {
-  const sel =
-    "rounded-lg border border-line bg-white px-2.5 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15";
   const maxDay = daysInMonth(parts.year, parts.month);
+  const dayOptions = ["Not set", ...Array.from({ length: maxDay }, (_, i) => String(i + 1))];
+  const yearIndex = Math.max(0, YEAR_WHEEL_OPTIONS.indexOf(parts.year || String(new Date().getUTCFullYear())));
+  const monthIndex = parts.month ? parseInt(parts.month) : 0;
+  const dayIndex = parts.day ? Math.min(maxDay, parseInt(parts.day)) : 0;
   return (
     <div className="grid grid-cols-3 gap-2">
-      <select
-        aria-label="Year"
-        value={parts.year}
-        onChange={(e) => onChange(clampDay({ ...parts, year: e.target.value }))}
-        className={sel}
-      >
-        <option value="">Year</option>
-        {serviceYears().map((y) => (
-          <option key={y} value={String(y)}>{y}</option>
-        ))}
-      </select>
-      <select
-        aria-label="Month (optional)"
-        value={parts.month}
-        onChange={(e) => onChange(clampDay({ ...parts, month: e.target.value }))}
-        className={sel}
-        disabled={!parts.year}
-      >
-        <option value="">Month</option>
-        {MONTHS.map((m, i) => (
-          <option key={m} value={String(i + 1)}>{m}</option>
-        ))}
-      </select>
-      <select
-        aria-label="Day (optional)"
-        value={parts.day}
-        onChange={(e) => onChange({ ...parts, day: e.target.value })}
-        className={sel}
-        disabled={!parts.month}
-      >
-        <option value="">Day</option>
-        {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
-          <option key={d} value={String(d)}>{d}</option>
-        ))}
-      </select>
+      <div>
+        <div className="mb-1 text-center text-[11px] font-medium text-muted">Year</div>
+        <WheelPicker
+          options={YEAR_WHEEL_OPTIONS}
+          index={yearIndex}
+          onChange={(i) => onChange(clampDay({ ...parts, year: YEAR_WHEEL_OPTIONS[i] }))}
+          ariaLabel="Year"
+        />
+      </div>
+      <div>
+        <div className="mb-1 text-center text-[11px] font-medium text-muted">Month</div>
+        <WheelPicker
+          options={MONTH_WHEEL_OPTIONS}
+          index={monthIndex}
+          onChange={(i) => onChange(clampDay({ ...parts, month: i === 0 ? "" : String(i) }))}
+          ariaLabel="Month"
+        />
+      </div>
+      <div>
+        <div className="mb-1 text-center text-[11px] font-medium text-muted">Day</div>
+        <WheelPicker
+          options={dayOptions}
+          index={dayIndex}
+          onChange={(i) => onChange({ ...parts, day: i === 0 ? "" : String(i) })}
+          ariaLabel="Day"
+        />
+      </div>
     </div>
   );
 }
@@ -98,7 +97,8 @@ export default function AccountView() {
   const [units, setUnits] = useState("");
   const [bootCamp, setBootCamp] = useState("");
   const [bootCampYear, setBootCampYear] = useState("");
-  const [existingBootCamp, setExistingBootCamp] = useState<{ place: string; year: number | null } | null>(null);
+  const [bootCampMonth, setBootCampMonth] = useState(0);
+  const [existingBootCamp, setExistingBootCamp] = useState<{ place: string; year: number | null; month: number | null } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
@@ -275,11 +275,13 @@ export default function AccountView() {
         campName: bootCamp,
         year: bootCampYear,
         fallbackYear: startYear,
+        month: bootCampMonth,
       });
       if (res.status === "saved" || res.status === "already-there") {
-        setExistingBootCamp({ place: res.place, year: parseInt(bootCampYear) || parseInt(startYear) || null });
+        setExistingBootCamp({ place: res.place, year: parseInt(bootCampYear) || parseInt(startYear) || null, month: bootCampMonth || null });
         setBootCamp("");
         setBootCampYear("");
+        setBootCampMonth(0);
       } else if (res.status === "skipped" && res.reason.includes("year")) {
         setSaveErr("Saved everything else — boot camp needs the year you shipped before it can go on your map.");
         setBusy(false);
@@ -408,7 +410,13 @@ export default function AccountView() {
             {existingBootCamp ? (
               <div className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-ink">
                 {existingBootCamp.place}
-                {existingBootCamp.year ? <span className="text-muted"> · {existingBootCamp.year}</span> : null}
+                {existingBootCamp.year ? (
+                  <span className="text-muted">
+                    {" · "}
+                    {existingBootCamp.month ? `${MONTHS[existingBootCamp.month - 1]} ` : ""}
+                    {existingBootCamp.year}
+                  </span>
+                ) : null}
                 <span className="mt-0.5 block text-[11px] text-faint">
                   Already on your map. Edit it there like any other place you served.
                 </span>
@@ -423,13 +431,14 @@ export default function AccountView() {
                   <option value="__other">Somewhere else / I&apos;d rather not say</option>
                 </select>
                 {bootCamp && bootCamp !== "__other" && (
-                  <input
-                    value={bootCampYear}
-                    onChange={(e) => setBootCampYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                    placeholder="Year you shipped (YYYY)"
-                    inputMode="numeric"
-                    className={`${field} mt-2`}
-                  />
+                  <div className="mt-2">
+                    <MonthYearWheel
+                      month={bootCampMonth}
+                      year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
+                      onMonthChange={setBootCampMonth}
+                      onYearChange={(y) => setBootCampYear(String(y))}
+                    />
+                  </div>
                 )}
                 <p className="mt-1.5 text-[11px] leading-relaxed text-faint">
                   Everybody remembers boot camp — and it counts. Some training posts carry documented exposures

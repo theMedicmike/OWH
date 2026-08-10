@@ -134,7 +134,9 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // The veteran's own words — the primary evidence field on every check-in.
   const [story, setStory] = useState("");
   const [month, setMonth] = useState(0); // 0 = not sure; months matter for presumptives
-  const [endYear, setEndYear] = useState(""); // optional "left in" — a tour is a span, not a point
+  const [hasEndDate, setHasEndDate] = useState(false); // optional "left in" — a tour is a span, not a point
+  const [endYear, setEndYear] = useState(year);
+  const [endMonth, setEndMonth] = useState(0);
   const [searchQ, setSearchQ] = useState("");
   const draftRef = useRef<{ lng: number; lat: number } | null>(null);
   const yearSeeded = useRef(false);
@@ -180,7 +182,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setOtherText("");
     setStory("");
     setMonth(0);
-    setEndYear("");
+    setHasEndDate(false);
+    setEndMonth(0);
   }
 
   function closeDraft() {
@@ -449,11 +452,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
   async function addCheckin() {
     if (!draft || !user || (selected.length === 0 && !otherText.trim() && !story.trim())) return;
-    // A typed-but-invalid departure year must block the save, not vanish.
-    if (endYear.trim() !== "") {
-      const ey = parseInt(endYear);
-      if (!ey || ey < year || ey > new Date().getUTCFullYear()) return;
-    }
+    // A departure date earlier than the arrival must block the save, not vanish.
+    if (hasEndDate && endYear < year) return;
     setSaving(true);
     const { data: newId, error } = await supabase.rpc("log_check_in", {
       p_lng: draft.lng,
@@ -470,10 +470,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       if (noteParts.length) patch.notes = noteParts.join("\n");
       // Month-level dates when known — presumptive windows can turn on months.
       if (month >= 1 && month <= 12) patch.date_start = `${year}-${String(month).padStart(2, "0")}-01`;
-      // A departure year turns a point into a tour — without it the timeline
+      // A departure date turns a point into a tour — without it the timeline
       // draws every map check-in as a sliver.
-      const ey = parseInt(endYear);
-      if (ey && ey >= year && ey <= new Date().getUTCFullYear()) patch.date_end = `${ey}-12-31`;
+      if (hasEndDate && endYear >= year) {
+        patch.date_end = endMonth >= 1 && endMonth <= 12
+          ? `${endYear}-${String(endMonth).padStart(2, "0")}-01`
+          : `${endYear}-12-31`;
+      }
       if (Object.keys(patch).length > 0) {
         // This patch carries the veteran's OWN WORDS and the month-precision
         // date. If it fails we must not close the panel — the text would be
@@ -698,26 +701,27 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               <MonthYearWheel month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
             </div>
 
-            <label className="mt-2 block text-xs text-muted">Left in (year — optional, makes this a tour instead of a moment)</label>
-            <input
-              type="number"
-              min={1945}
-              max={new Date().getUTCFullYear()}
-              value={endYear}
-              onChange={(e) => setEndYear(e.target.value)}
-              placeholder={`e.g. ${Math.min(year + 1, new Date().getUTCFullYear())}`}
-              className="mt-1 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm tabular-nums text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
-            />
-            {endYear.trim() !== "" && (() => {
-              const ey = parseInt(endYear);
-              const bad = !ey || ey < year || ey > new Date().getUTCFullYear();
-              // Silently discarding a typed year is how records lie — say it.
-              return bad ? (
-                <p role="status" className="mt-1 text-[11px] font-medium text-red-600">
-                  The year you left needs to be between {year} and {new Date().getUTCFullYear()}.
-                </p>
-              ) : null;
-            })()}
+            <label className="mt-3 flex items-center gap-2 text-xs text-muted">
+              <input
+                type="checkbox"
+                checked={hasEndDate}
+                onChange={(e) => {
+                  setHasEndDate(e.target.checked);
+                  if (e.target.checked) { setEndYear((y) => Math.max(y, year)); setEndMonth(0); }
+                }}
+              />
+              I know when I left — makes this a tour instead of a moment
+            </label>
+            {hasEndDate && (
+              <div className="mt-1">
+                <MonthYearWheel month={endMonth} year={endYear} onMonthChange={setEndMonth} onYearChange={setEndYear} minYear={year} />
+                {endYear < year && (
+                  <p role="status" className="mt-1 text-[11px] font-medium text-red-600">
+                    The date you left can&apos;t be before {year}.
+                  </p>
+                )}
+              </div>
+            )}
 
             <label className="mt-3 block text-sm font-semibold text-ink">In your own words — what were you doing here?</label>
             <p className="mt-0.5 text-[11px] leading-snug text-faint">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>

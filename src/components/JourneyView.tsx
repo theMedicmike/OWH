@@ -32,6 +32,7 @@ const EXPOSURE_TO_LEARN: Record<string, string> = {
 };
 
 const ROW_H = 64;
+const ONSET_YEAR_OPTIONS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => new Date().getUTCFullYear() - i);
 
 export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }) {
   const { user, supabase } = useAuth();
@@ -403,20 +404,20 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                 return editing ? (
                   <span key={c.label} className="inline-flex items-center gap-1 rounded-full border border-brand bg-white px-2 py-1">
                     <span className="text-[11px] font-medium text-ink">{c.label}</span>
-                    <input
-                      type="number"
+                    {/* A full spin wheel doesn't fit this inline chip — same
+                        "cannot mistype" benefit via a native select instead.
+                        The full wheel lives on Your conditions if this feels
+                        cramped. */}
+                    <select
                       autoFocus
-                      min={1940}
-                      max={new Date().getUTCFullYear()}
                       defaultValue={y ?? ""}
-                      placeholder="Year"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") saveOnset(c.label, parseInt((e.target as HTMLInputElement).value) || null);
-                        if (e.key === "Escape") setOnsetEdit(null);
-                      }}
-                      onBlur={(e) => saveOnset(c.label, parseInt(e.target.value) || null)}
-                      className="w-16 rounded border border-line px-1 py-0.5 text-[11px] tabular-nums text-ink focus:border-brand focus:outline-none"
-                    />
+                      onChange={(e) => saveOnset(c.label, parseInt(e.target.value) || null)}
+                      onKeyDown={(e) => { if (e.key === "Escape") setOnsetEdit(null); }}
+                      className="w-20 rounded border border-line px-1 py-0.5 text-[11px] tabular-nums text-ink focus:border-brand focus:outline-none"
+                    >
+                      <option value="">Year</option>
+                      {ONSET_YEAR_OPTIONS.map((yr) => <option key={yr} value={yr}>{yr}</option>)}
+                    </select>
                   </span>
                 ) : (
                   <button

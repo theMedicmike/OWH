@@ -11,6 +11,9 @@ import { CONDITION_EXPOSURES } from "@/lib/education";
 import { matchCondition, type TourLite } from "@/lib/conditionMatch";
 import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
 import { asthmaPostServiceNote } from "@/lib/presumptive";
+import WheelPicker from "./WheelPicker";
+
+const ONSET_YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => String(1940 + i));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 4 — "Your conditions". Tap sheet + the connection to where you served.
@@ -484,19 +487,15 @@ export default function HealthView() {
                     <div>
                       <div className="text-xs font-semibold text-ink">About when did this start?</div>
                       <p className="mt-0.5 text-[11px] text-faint">Roughly is fine. This is what puts it on your timeline.</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <input
-                          type="number" min={1940} max={new Date().getUTCFullYear()}
-                          defaultValue={c.onset_year ?? ""} placeholder="Year"
-                          onBlur={(e) => {
-                            const v = parseInt(e.target.value);
-                            const yr = Number.isFinite(v) ? v : null;
-                            const now = new Date().getUTCFullYear();
-                            if (yr !== null && (yr < 1940 || yr > now)) { setErr(`Enter a year between 1940 and ${now}.`); return; }
-                            if (yr !== c.onset_year) patch(c.id, { onset_year: yr, onset_precision: yr ? "year" : null });
-                          }}
-                          className="w-24 rounded-lg border border-line bg-white px-3 py-2 text-sm tabular-nums text-ink focus:border-brand focus:outline-none"
-                        />
+                      <div className="mt-2 flex flex-wrap items-start gap-2">
+                        <div className="w-20">
+                          <WheelPicker
+                            options={ONSET_YEARS}
+                            index={c.onset_year ? c.onset_year - 1940 : ONSET_YEARS.length - 1}
+                            onChange={(i) => patch(c.id, { onset_year: 1940 + i, onset_precision: "year" })}
+                            ariaLabel="Year it started"
+                          />
+                        </div>
                         {PRECISION.map((p) => (
                           <button key={p.v} type="button" aria-pressed={c.onset_precision === p.v}
                             onClick={() => patch(c.id, { onset_precision: p.v, onset_year: null })}

@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import MonthYearWheel from "./MonthYearWheel";
 import { SHOTS, GROUP_LABEL, type Shot, type ShotGroup } from "@/lib/shotlibrary";
 import { createServiceEvent, INFORMED_CONSENT_OPTIONS, type Provenance, type InformedConsent, type DatePrecision, type ServiceEventKind } from "@/lib/serviceEvents";
 
 const GROUPS: ShotGroup[] = ["basic", "posted", "yearly", "other"];
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const PROVENANCE_OPTIONS: { value: Provenance; label: string }[] = [
   { value: "recalled", label: "I remember it" },
   { value: "in_record", label: "It's in my record" },
@@ -110,8 +110,8 @@ export default function ShotCaptureFlow() {
 
 function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => void }) {
   const { supabase } = useAuth();
-  const [year, setYear] = useState("");
-  const [month, setMonth] = useState("");
+  const [year, setYear] = useState(new Date().getUTCFullYear());
+  const [month, setMonth] = useState(0); // 0 = not sure, 1-12
   const [unsure, setUnsure] = useState(false);
   const [provenance, setProvenance] = useState<Provenance | null>(null);
   const [informedConsent, setInformedConsent] = useState<InformedConsent | null>(null);
@@ -120,8 +120,7 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const yearValid = /^\d{4}$/.test(year) && Number(year) >= 1940 && Number(year) <= new Date().getUTCFullYear();
-  const canSave = provenance !== null && informedConsent !== null && (unsure || yearValid);
+  const canSave = provenance !== null && informedConsent !== null;
 
   async function save() {
     if (!canSave || !provenance || !informedConsent) return;
@@ -132,8 +131,8 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
       kind: picked.kind,
       refSlug: picked.refSlug,
       label: picked.label,
-      eventYear: unsure ? null : Number(year),
-      eventMonth: unsure || !month ? null : MONTHS.indexOf(month) + 1,
+      eventYear: unsure ? null : year,
+      eventMonth: unsure || !month ? null : month,
       datePrecision,
       provenance,
       informedConsent,
@@ -177,19 +176,13 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
 
         <div className="mt-5">
           <label className="mb-1 block text-xs font-medium text-muted">When?</label>
-          <div className="flex gap-2">
-            <input
-              type="number" inputMode="numeric" value={year} disabled={unsure}
-              onChange={(e) => setYear(e.target.value)} placeholder="Year"
-              className="w-28 rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none placeholder:text-faint focus:border-brand focus:ring-2 focus:ring-brand/15 disabled:opacity-50"
-            />
-            <select value={month} disabled={unsure} onChange={(e) => setMonth(e.target.value)} className="flex-1 rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 disabled:opacity-50">
-              <option value="">Month (optional)</option>
-              {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
+          {unsure ? (
+            <div className="flex h-[104px] items-center rounded-lg border border-line bg-white px-3 text-sm text-faint opacity-50">Not sure</div>
+          ) : (
+            <MonthYearWheel month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} minYear={1940} />
+          )}
           <label className="mt-2 flex items-center gap-2 text-xs text-muted">
-            <input type="checkbox" checked={unsure} onChange={(e) => { setUnsure(e.target.checked); if (e.target.checked) { setYear(""); setMonth(""); } }} />
+            <input type="checkbox" checked={unsure} onChange={(e) => { setUnsure(e.target.checked); if (e.target.checked) { setMonth(0); } }} />
             I&apos;m not sure of the year
           </label>
         </div>
