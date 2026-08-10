@@ -7,6 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
 import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG, TOXICANT_BY_SLUG } from "@/lib/toxlibrary";
 import { EXPOSURE_LABEL } from "@/lib/education";
+import WheelPicker from "./WheelPicker";
+
+// A duration (0-50 years), not a calendar date, so this gets the same wheel
+// mechanism as the map's date pickers but only one wheel, not month+year —
+// "how many years" has no month to pick.
+const YEARS_OF_SERVICE = Array.from({ length: 51 }, (_, i) => String(i));
 
 // Every service-relevant heavy metal / metalloid and the organs it targets.
 //
@@ -36,14 +42,37 @@ const METALS: { key: string; name: string; organs: string[] }[] = [
 
 type Contribution = Record<string, number>;
 
+// Heuristic occupational-exposure patterns, one row per role. Expanded
+// 2026-08-09 (Michael: "there needs to be a lot more options... a lot of
+// other roles in military") — the original 8 skewed heavily toward Army
+// ground combat and left out most of the Navy, Air Force, and support/trades
+// roles a real veteran population actually served in. Every new row maps
+// ONLY to metals already in METALS above — no new metal, no new organ, and
+// nothing touching hormones/endocrine, same discipline as the original list.
 const ROLES: Record<string, Contribution> = {
   "Infantry / small arms": { pb: 20, sb: 6 },
   "Tank crew / armor": { u: 30, w: 20, pb: 15, co: 8 },
   "Artillery / mortars": { pb: 25, as: 8, ba: 6 },
-  "Aviation door gunner": { pb: 25, v: 6, ni: 4 },
+  "Combat engineer / demolition": { pb: 15, as: 8, ba: 10 },
+  "Military police / security forces": { pb: 12, sb: 3 },
   "Range cadre / weapons instructor": { pb: 45, sb: 10 },
   "EOD / ordnance disposal": { pb: 20, as: 18, cd: 10, ba: 8 },
+  "Munitions / ammunition handling": { pb: 15, as: 10, ba: 6 },
   "Mechanic / motor pool": { mn: 18, cr: 12, ni: 10, co: 8, cd: 12, pb: 10 },
+  "Welder / machinist": { mn: 22, cr: 15, ni: 12, co: 6 },
+  "Painter / abrasive blaster (shipboard)": { pb: 30, cd: 5 },
+  "Aviation door gunner": { pb: 25, v: 6, ni: 4 },
+  "Aircrew (fixed or rotary wing)": { pb: 10, v: 5, ni: 4 },
+  "Aviation maintenance / flight line": { pb: 8, cd: 6, v: 6 },
+  "Shipboard engineering / boiler & fireroom": { pb: 10, mn: 10, cr: 8, ni: 6 },
+  "Submarine service": { pb: 10, cd: 5 },
+  "Fuel handling / POL": { pb: 6, v: 4 },
+  "Firefighter (crash/structural)": { pb: 4 },
+  "Combat medic / corpsman": { pb: 5 },
+  "Communications / IT / cyber": { pb: 2 },
+  "Logistics / supply": { pb: 3 },
+  "Culinary / food service": { pb: 2 },
+  "Admin / intelligence / other support": { pb: 3 },
   "Support / other": { pb: 5 },
 };
 
@@ -295,8 +324,9 @@ export default function EstimatorView() {
           </div>
           <div className="flex items-center gap-3">
             <label className="w-28 text-xs text-muted">Years of service</label>
-            <input type="range" min={0} max={50} step={1} value={years} onChange={(e) => setYears(+e.target.value)} className="flex-1" />
-            <span className="w-14 text-right text-sm font-medium">{years}</span>
+            <div className="w-28">
+              <WheelPicker options={YEARS_OF_SERVICE} index={years} onChange={setYears} ariaLabel="Years of service" />
+            </div>
           </div>
         </div>
       </div>
