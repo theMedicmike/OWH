@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
-import { listServiceEvents, deleteServiceEvent, PROVENANCE_LABEL, type ServiceEvent } from "@/lib/serviceEvents";
+import { listServiceEvents, deleteServiceEvent, PROVENANCE_LABEL, INFORMED_CONSENT_LABEL, type ServiceEvent } from "@/lib/serviceEvents";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 
@@ -58,6 +58,12 @@ export default function ShotsListCard() {
                   {e.date_precision === "unsure" ? "Year not sure" : e.event_year ?? "—"}
                   {" · "}
                   <span className="text-faint">{PROVENANCE_LABEL[e.provenance]}</span>
+                  {e.informed_consent && (
+                    <>
+                      {" · "}
+                      <span className="text-faint">{INFORMED_CONSENT_LABEL[e.informed_consent]}</span>
+                    </>
+                  )}
                 </div>
               </div>
               <button onClick={() => remove(e.id)} className="rounded-md border border-line px-2 py-1 text-xs text-muted hover:bg-canvas">Remove</button>

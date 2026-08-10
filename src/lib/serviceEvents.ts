@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isMissingTableError } from "./supabaseErrors";
+import { isMissingTableError, isMissingColumnError } from "./supabaseErrors";
 
 // The ONE file allowed to say "service_events" — enforced by
 // scripts/coi-firewall.cjs's query-isolation rule. A shot must never be
@@ -9,6 +9,7 @@ import { isMissingTableError } from "./supabaseErrors";
 export type ServiceEventKind = "vaccination" | "medication" | "blast" | "head_injury" | "injury" | "other";
 export type DatePrecision = "year" | "month" | "unsure";
 export type Provenance = "recalled" | "in_record" | "document_held";
+export type InformedConsent = "informed_choice" | "informed_mandatory" | "not_informed_mandatory" | "not_informed" | "unsure";
 
 export type ServiceEvent = {
   id: string;
@@ -19,6 +20,7 @@ export type ServiceEvent = {
   event_month: number | null;
   date_precision: DatePrecision;
   provenance: Provenance;
+  informed_consent: InformedConsent | null;
   note: string | null;
   created_at: string;
 };
@@ -28,6 +30,20 @@ export const PROVENANCE_LABEL: Record<Provenance, string> = {
   in_record: "Your service record shows this",
   document_held: "You hold the document",
 };
+
+// Order matters here — it's the order the pills render in, chosen so the two
+// axes (told anything at all / had a real choice) read as a spectrum rather
+// than a random list.
+export const INFORMED_CONSENT_OPTIONS: { value: InformedConsent; label: string }[] = [
+  { value: "informed_choice", label: "Yes — told what it was, could ask questions" },
+  { value: "informed_mandatory", label: "Told what it was, but mandatory" },
+  { value: "not_informed_mandatory", label: "Mandatory, nothing explained" },
+  { value: "not_informed", label: "Nobody explained anything" },
+  { value: "unsure", label: "I don't remember" },
+];
+export const INFORMED_CONSENT_LABEL: Record<InformedConsent, string> = Object.fromEntries(
+  INFORMED_CONSENT_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<InformedConsent, string>;
 
 export async function listServiceEvents(
   supabase: SupabaseClient,
@@ -47,10 +63,11 @@ export async function createServiceEvent(
     eventMonth: number | null;
     datePrecision: DatePrecision;
     provenance: Provenance;
+    informedConsent: InformedConsent;
     note: string;
   },
 ): Promise<{ status: "saved" } | { status: "error"; message: string }> {
-  const { error } = await supabase.from("service_events").insert({
+  const wide = {
     kind: opts.kind,
     ref_slug: opts.refSlug,
     label: opts.label,
@@ -58,8 +75,17 @@ export async function createServiceEvent(
     event_month: opts.eventMonth,
     date_precision: opts.datePrecision,
     provenance: opts.provenance,
+    informed_consent: opts.informedConsent,
     note: opts.note.trim() || null,
-  });
+  };
+  let error = (await supabase.from("service_events").insert(wide)).error;
+  if (error && isMissingColumnError(error)) {
+    // Migration 0021 hasn't been run yet — drop informed_consent and save the
+    // rest. His answer is lost for this entry, not silently guessed at.
+    const { informed_consent: _ic, ...rest } = wide;
+    void _ic;
+    error = (await supabase.from("service_events").insert(rest)).error;
+  }
   if (error) return { status: "error", message: isMissingTableError(error) ? "not-set-up" : error.message };
   return { status: "saved" };
 }

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { SHOTS, GROUP_LABEL, type Shot, type ShotGroup } from "@/lib/shotlibrary";
-import { createServiceEvent, type Provenance, type DatePrecision, type ServiceEventKind } from "@/lib/serviceEvents";
+import { createServiceEvent, INFORMED_CONSENT_OPTIONS, type Provenance, type InformedConsent, type DatePrecision, type ServiceEventKind } from "@/lib/serviceEvents";
 
 const GROUPS: ShotGroup[] = ["basic", "posted", "yearly", "other"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -114,16 +114,17 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
   const [month, setMonth] = useState("");
   const [unsure, setUnsure] = useState(false);
   const [provenance, setProvenance] = useState<Provenance | null>(null);
+  const [informedConsent, setInformedConsent] = useState<InformedConsent | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState(false);
 
   const yearValid = /^\d{4}$/.test(year) && Number(year) >= 1940 && Number(year) <= new Date().getUTCFullYear();
-  const canSave = provenance !== null && (unsure || yearValid);
+  const canSave = provenance !== null && informedConsent !== null && (unsure || yearValid);
 
   async function save() {
-    if (!canSave || !provenance) return;
+    if (!canSave || !provenance || !informedConsent) return;
     setBusy(true);
     setErr("");
     const datePrecision: DatePrecision = unsure ? "unsure" : month ? "month" : "year";
@@ -135,6 +136,7 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
       eventMonth: unsure || !month ? null : MONTHS.indexOf(month) + 1,
       datePrecision,
       provenance,
+      informedConsent,
       note,
     });
     setBusy(false);
@@ -209,6 +211,26 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-faint">
             Remembered isn&apos;t worse than documented — it&apos;s just different, and whoever reads this later needs to know which is which.
+          </p>
+        </div>
+
+        <div className="mt-5">
+          <label className="mb-1 block text-xs font-medium text-muted">Were you told what it was, beforehand?</label>
+          <div className="flex flex-wrap gap-2">
+            {INFORMED_CONSENT_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                onClick={() => setInformedConsent(o.value)}
+                className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+                  informedConsent === o.value ? "border-brand bg-brand text-brand-foreground" : "border-line bg-white text-ink hover:bg-canvas"
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-faint">
+            This is about what you were told, not what was actually in it — the label for that is on this shot&apos;s library page. Most of the military is mandatory either way; what varies is whether anyone explained it.
           </p>
         </div>
 
