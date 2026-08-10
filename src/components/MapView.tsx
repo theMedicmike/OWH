@@ -9,6 +9,9 @@ import { ServiceRibbon } from "./Patriotic";
 import { searchGazetteer, nearestPlace, type GazEntry } from "@/lib/gazetteer";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 import MonthYearWheel from "./MonthYearWheel";
+import WheelPicker from "./WheelPicker";
+
+const FILTER_YEARS = Array.from({ length: 2026 - 1945 + 1 }, (_, i) => String(1945 + i));
 
 export type Site = {
   name: string;
@@ -564,9 +567,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               Filter by year
             </label>
             {yearOn && (
-              <div className="mt-2 flex items-center gap-2">
-                <span className="w-10 text-xs font-medium text-ink">{filterYear}</span>
-                <input type="range" min={1945} max={2026} value={filterYear} onChange={(e) => setFilterYear(+e.target.value)} className="flex-1" />
+              <div className="mt-2 w-32">
+                <WheelPicker
+                  options={FILTER_YEARS}
+                  index={filterYear - 1945}
+                  onChange={(i) => setFilterYear(1945 + i)}
+                  ariaLabel="Filter by year"
+                />
               </div>
             )}
 
