@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
 import { searchGazetteer, nearestPlace, type GazEntry } from "@/lib/gazetteer";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
+import MonthYearWheel from "./MonthYearWheel";
 
 export type Site = {
   name: string;
@@ -682,20 +683,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             />
             <div className="mt-1 text-xs text-faint">{fmt(draft.lat, draft.lng)}</div>
 
-            <label className="mt-3 block text-xs text-muted">Service year: {year}</label>
-            <input type="range" min={1945} max={2026} value={year} onChange={(e) => setYear(+e.target.value)} className="w-full" />
-
-            <label className="mt-1 block text-xs text-muted">Month, if you remember — months can matter for presumptive windows</label>
-            <select
-              value={month}
-              onChange={(e) => setMonth(+e.target.value)}
-              className="mt-1 w-full cursor-pointer appearance-none rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink focus:border-brand focus:bg-white focus:outline-none"
-            >
-              <option value={0}>Not sure</option>
-              {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
-                <option key={m} value={i + 1}>{m}</option>
-              ))}
-            </select>
+            <label className="mt-3 block text-xs text-muted">
+              When were you here? Spin to the month and year — this is the one that matters if you hit more than
+              one place in the same year.
+            </label>
+            <div className="mt-1">
+              <MonthYearWheel month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
+            </div>
 
             <label className="mt-2 block text-xs text-muted">Left in (year — optional, makes this a tour instead of a moment)</label>
             <input
