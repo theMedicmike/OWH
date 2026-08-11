@@ -13,14 +13,15 @@ import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosN
 import { veteranWords, otherExposure } from "@/lib/veteranWords";
 import { currencyLine } from "@/lib/accuracyOwner";
 import StatementCard from "./StatementCard";
-import { CONDITION_EXPOSURES, EXPOSURE_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
+import { CONDITION_EXPOSURES, CONDITION_INCIDENTS, EXPOSURE_LABEL, INCIDENT_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
 import { listStatementRequests } from "@/lib/statementRequests";
 
 
 // Exposure classes that carry a recognized presumptive pathway.
 
 type ExpoRow = { id: string; exposure_class: string };
-type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; notes?: string | null; exposures: ExpoRow[] | null };
+type IncRow = { id: string; incident_class: string };
+type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; notes?: string | null; exposures: ExpoRow[] | null; incidents?: IncRow[] | null };
 
 // veteranWords/otherExposure live in lib/veteranWords.ts — shared with the
 // standalone statement so the two can never filter differently.
@@ -35,6 +36,16 @@ const PRECISION_LINE: Record<string, string> = {
   in_service: "began during service",
   after_service: "began after separation",
   unsure: "onset year not recalled",
+};
+
+// Element 1 of a VA claim — a current diagnosis. Printed plainly so a rater
+// sees it without hunting, and so a missing diagnosis reads as a flag, not
+// a silence.
+const DIAGNOSIS_LINE: Record<string, string> = {
+  va: "Diagnosed by a VA doctor.",
+  civilian: "Diagnosed by a civilian doctor.",
+  military: "Diagnosed while in service.",
+  not_yet: "NEEDS DIAGNOSIS — no doctor has diagnosed this yet.",
 };
 
 function yr(d: string | null) {
@@ -63,7 +74,8 @@ export default function ReportView() {
   const [records, setRecords] = useState<RecordFile[]>([]);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [condOnset, setCondOnset] = useState<Record<string, number>>({});
-  const [condDetail, setCondDetail] = useState<Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null }>>({});
+  const [condDetail, setCondDetail] = useState<Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null; diagnosed_by: string | null }>>({});
+  const [incidentPlaces, setIncidentPlaces] = useState<Record<string, string[]>>({});
   const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
@@ -79,35 +91,45 @@ export default function ReportView() {
       if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units, still_serving").maybeSingle()).data as Member | null;
       if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end, mos, va_rating, units").maybeSingle()).data as Member | null;
       if (!m) m = (await supabase.from("members").select("display_name, branch, service_start, service_end").maybeSingle()).data as Member | null;
-      const [{ data: c }, { data: cond }] = await Promise.all([
-        // notes = the veteran's own words; the packet's strongest material.
-        supabase.from("check_ins").select("place_name, date_start, date_end, notes, exposures(id, exposure_class)").order("date_start"),
-        supabase.from("conditions").select("label, claim_status").order("created_at"),
-      ]);
+      // incidents (migration 0022) read defensively — an unrun migration
+      // fails the whole check_ins query, so fall back to exposures-only.
+      let checks: CheckRow[];
+      const withIncidents = await supabase.from("check_ins").select("place_name, date_start, date_end, notes, exposures(id, exposure_class), incidents(id, incident_class)").order("date_start");
+      if (!withIncidents.error) {
+        checks = (withIncidents.data ?? []) as CheckRow[];
+      } else {
+        const fallback = await supabase.from("check_ins").select("place_name, date_start, date_end, notes, exposures(id, exposure_class)").order("date_start");
+        checks = ((fallback.data ?? []) as Omit<CheckRow, "incidents">[]).map((r) => ({ ...r, incidents: [] }));
+      }
+      const { data: cond } = await supabase.from("conditions").select("label, claim_status").order("created_at");
       setMember((m as Member) ?? null);
-      const checks = (c ?? []) as CheckRow[];
       setRows(checks);
       setConditions((cond ?? []) as { label: string; claim_status: string }[]);
 
-      // Condition detail (migrations 0012/0013) — read defensively; the packet
-      // still builds without it, just thinner.
-      type DetRow = { id: string; label: string; onset_year: number | null; onset_precision: string | null; evidence_status: string | null; secondary_to: string | null };
+      // Condition detail (migrations 0012/0013/0022) — read defensively; the
+      // packet still builds without it, just thinner.
+      type DetRow = { id: string; label: string; onset_year: number | null; onset_precision: string | null; evidence_status: string | null; secondary_to: string | null; diagnosed_by: string | null };
       let detRows: DetRow[] | null = null;
-      const det = await supabase.from("conditions").select("id, label, onset_year, onset_precision, evidence_status, secondary_to");
+      const det = await supabase.from("conditions").select("id, label, onset_year, onset_precision, evidence_status, secondary_to, diagnosed_by");
       if (!det.error) {
         detRows = (det.data ?? []) as DetRow[];
       } else {
-        // 0012-applied-but-not-0013 databases still have onset years — don't
-        // let the widened select silently erase the latency line there.
-        const onsetOnly = await supabase.from("conditions").select("id, label, onset_year");
-        if (!onsetOnly.error) {
-          detRows = ((onsetOnly.data ?? []) as { id: string; label: string; onset_year: number | null }[])
-            .map((r) => ({ ...r, onset_precision: null, evidence_status: null, secondary_to: null }));
+        // Step down a tier at a time — migrations are run by hand here, so
+        // the packet must build no matter which prefix has landed.
+        const withoutDiagnosis = await supabase.from("conditions").select("id, label, onset_year, onset_precision, evidence_status, secondary_to");
+        if (!withoutDiagnosis.error) {
+          detRows = ((withoutDiagnosis.data ?? []) as Omit<DetRow, "diagnosed_by">[]).map((r) => ({ ...r, diagnosed_by: null }));
+        } else {
+          const onsetOnly = await supabase.from("conditions").select("id, label, onset_year");
+          if (!onsetOnly.error) {
+            detRows = ((onsetOnly.data ?? []) as { id: string; label: string; onset_year: number | null }[])
+              .map((r) => ({ ...r, onset_precision: null, evidence_status: null, secondary_to: null, diagnosed_by: null }));
+          }
         }
       }
       if (detRows) {
         const om: Record<string, number> = {};
-        const dm: Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null }> = {};
+        const dm: Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null; diagnosed_by: string | null }> = {};
         const idToLabel: Record<string, string> = {};
         for (const r of detRows) idToLabel[r.id] = r.label;
         for (const r of detRows) {
@@ -116,6 +138,7 @@ export default function ReportView() {
             onset_precision: r.onset_precision,
             evidence_status: r.evidence_status,
             secondary_to: r.secondary_to ? idToLabel[r.secondary_to] ?? null : null,
+            diagnosed_by: r.diagnosed_by,
           };
         }
         setCondOnset(om);
@@ -125,6 +148,7 @@ export default function ReportView() {
       const map: Record<string, string[]> = {};
       const classOfExposure: Record<string, string> = {};
       const ids: string[] = [];
+      const incMap: Record<string, string[]> = {};
       for (const row of checks) {
         const place = row.place_name || "a logged location";
         for (const e of row.exposures ?? []) {
@@ -133,8 +157,13 @@ export default function ReportView() {
           classOfExposure[e.id] = e.exposure_class;
           ids.push(e.id);
         }
+        for (const i of row.incidents ?? []) {
+          (incMap[i.incident_class] ??= []);
+          if (!incMap[i.incident_class].includes(place)) incMap[i.incident_class].push(place);
+        }
       }
       setExpoPlaces(map);
+      setIncidentPlaces(incMap);
 
       if (ids.length) {
         const { data: corr } = await supabase.from("corroborations").select("exposure_id").in("exposure_id", ids);
@@ -207,27 +236,36 @@ export default function ReportView() {
     : null;
 
   const classesPresent = Object.keys(expoPlaces);
+  const incidentClassesPresent = Object.keys(incidentPlaces);
   const presumptiveConditions = conditions.filter((c) => CONDITION_BASIS[c.label]?.presumptive).length;
+
+  // Element 1 (current diagnosis), as a printable line — shared by the
+  // browser-print view and the PDF builder below.
+  function diagnosisLineFor(label: string): string | undefined {
+    const d = condDetail[label]?.diagnosed_by;
+    return d ? DIAGNOSIS_LINE[d] : undefined;
+  }
 
   // Page one of the packet: the longitudinal record (SEC. 309's whole idea).
   const packetTimeline: TimelineData = (() => {
-    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string> }>();
+    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string>; incidents: Set<string> }>();
     for (const r of rows) {
       if (!r.date_start) continue;
       const sy = new Date(r.date_start).getUTCFullYear();
       const ey = r.date_end ? new Date(r.date_end).getUTCFullYear() : null;
       const place = r.place_name || "Unnamed location";
       const key = `${place}|${sy}`;
-      const entry = byKey.get(key) ?? { place, startYear: sy, endYear: ey, exposures: new Set<string>() };
+      const entry = byKey.get(key) ?? { place, startYear: sy, endYear: ey, exposures: new Set<string>(), incidents: new Set<string>() };
       if (ey && (!entry.endYear || ey > entry.endYear)) entry.endYear = ey;
       for (const e of r.exposures ?? []) entry.exposures.add(e.exposure_class);
+      for (const i of r.incidents ?? []) entry.incidents.add(i.incident_class);
       byKey.set(key, entry);
     }
     return {
       serviceStart: member?.service_start ? new Date(member.service_start).getUTCFullYear() : null,
       serviceEnd: member?.service_end ? new Date(member.service_end).getUTCFullYear() : null,
       tours: Array.from(byKey.values()).map((t) => ({
-        place: t.place, startYear: t.startYear, endYear: t.endYear, exposures: Array.from(t.exposures),
+        place: t.place, startYear: t.startYear, endYear: t.endYear, exposures: Array.from(t.exposures), incidents: Array.from(t.incidents),
       })),
       conditions: conditions.map((c) => ({
         label: c.label,
@@ -237,29 +275,38 @@ export default function ReportView() {
     };
   })();
 
-  // Contentions: conditions that line up with at least one logged exposure.
+  // Contentions: conditions that line up with at least one logged exposure OR
+  // a logged incident — most VA claims (tinnitus, backs, PTSD) run on the
+  // second kind, not the first.
   const contentions = conditions
     .map((c) => {
       const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
-      return { label: c.label, matches };
+      const incidentMatches = (CONDITION_INCIDENTS[c.label] ?? []).filter((e) => (incidentPlaces[e] ?? []).length > 0);
+      return { label: c.label, matches, incidentMatches };
     })
-    .filter((c) => c.matches.length > 0);
+    .filter((c) => c.matches.length > 0 || c.incidentMatches.length > 0);
 
   // ONE contentions list for both deliverables. The browser-printed clinician
   // sheet and the downloaded PDF must never disagree — and a condition claimed
-  // under BOTH theories (exposure + secondary) keeps both, merged, not deduped.
-  const allContentions: { label: string; line: string; cite: string | undefined }[] = conditions
+  // under multiple theories (exposure + event + secondary) keeps all of them,
+  // merged, not deduped.
+  const allContentions: { label: string; line: string; cite: string | undefined; elementLine: string }[] = conditions
     .map((c) => {
       const matched = contentions.find((x) => x.label === c.label);
       const secondary = condDetail[c.label]?.secondary_to ?? null;
       const parts: string[] = [];
-      if (matched) parts.push(`claimed as connected to ${matched.matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}`);
-      if (secondary) parts.push(`${matched ? "also " : ""}claimed as secondary to ${secondary}`);
-      return parts.length
-        ? { label: c.label, line: parts.join("; "), cite: (CONDITION_BASIS[c.label]?.cite ?? undefined) as string | undefined }
-        : null;
+      if (matched?.matches.length) parts.push(`claimed as connected to ${matched.matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}`);
+      if (matched?.incidentMatches.length) parts.push(`${parts.length ? "also " : ""}claimed as connected to the reported ${matched.incidentMatches.map((e) => (INCIDENT_LABEL[e] ?? e).toLowerCase()).join(", ")}`);
+      if (secondary) parts.push(`${parts.length ? "also " : ""}claimed as secondary to ${secondary}`);
+      if (!parts.length) return null;
+      const diag = diagnosisLineFor(c.label);
+      const elementLine =
+        `Current diagnosis: ${diag ?? "not yet answered"}` +
+        `  ·  In-service link: ${(matched?.matches.length || matched?.incidentMatches.length) ? "documented above" : "not yet documented"}` +
+        `  ·  Medical nexus: pending clinician signature below`;
+      return { label: c.label, line: parts.join("; "), cite: (CONDITION_BASIS[c.label]?.cite ?? undefined) as string | undefined, elementLine };
     })
-    .filter((x): x is { label: string; line: string; cite: string | undefined } => x !== null);
+    .filter((x): x is { label: string; line: string; cite: string | undefined; elementLine: string } => x !== null);
 
   async function handleDownload() {
     setPdfBusy(true);
@@ -283,6 +330,7 @@ export default function ReportView() {
             place: r.place_name || "a logged location",
             exposures: [
               ...(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class),
+              ...(r.incidents ?? []).map((i) => INCIDENT_LABEL[i.incident_class] ?? i.incident_class),
               ...(other ? [`Other (veteran-reported): ${other}`] : []),
             ].join(", "),
             note: veteranWords(r.notes) || undefined,
@@ -299,6 +347,7 @@ export default function ReportView() {
         })),
         conditions: conditions.map((c) => {
           const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
+          const incidentMatches = (CONDITION_INCIDENTS[c.label] ?? []).filter((e) => (incidentPlaces[e] ?? []).length > 0);
           const basis = CONDITION_BASIS[c.label];
           const d = condDetail[c.label];
           const vparts = [
@@ -312,11 +361,16 @@ export default function ReportView() {
           );
           // Noise-listing line: HITS ONLY — never print an absence.
           const noise = NOISE_CONDITIONS.has(c.label) ? mosNoiseLookup(member?.mos, member?.branch) : null;
+          const matchParts = [
+            matches.length ? `Documented association with ${matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.` : "",
+            incidentMatches.length ? `Reported event association with ${incidentMatches.map((e) => (INCIDENT_LABEL[e] ?? e).toLowerCase()).join(", ")}.` : "",
+          ].filter(Boolean);
           return {
             label: c.label,
             tag: basis?.tag,
             presumptive: basis?.presumptive,
             status: c.claim_status,
+            diagnosisLine: diagnosisLineFor(c.label),
             noiseLine: noise
               ? `Duty noise exposure: veteran-reported MOS ${noise.code}, ${noise.title} (${member?.branch}) appears in VA's Duty MOS Noise Exposure Listing as "${noise.rating}" for hazardous noise. (MOS is veteran-reported — verify against DD-214 Block 11. This listing was ${MOS_NOISE_REVIEWED}.) Applicability is for the accredited VSO and rater to determine.`
               : undefined,
@@ -328,7 +382,7 @@ export default function ReportView() {
                   ? `Began ${condOnset[c.label]} — the same year as exposure logged at ${lat.place}. (Veteran-reported)`
                   : `Began ${condOnset[c.label]} — ${lat.years} year${lat.years === 1 ? "" : "s"} after exposure logged at ${lat.place} (${lat.year}). (Veteran-reported)`
               : undefined,
-            matches: matches.length ? `Documented association with ${matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.` : "",
+            matches: matchParts.join(" ") || "",
             cite: basis?.cite,
           };
         }),
@@ -336,7 +390,7 @@ export default function ReportView() {
           ([c, n]) => `${n} fellow service member${n === 1 ? "" : "s"} corroborate${n === 1 ? "s" : ""} exposure to ${EXPOSURE_LABEL[c] ?? c} at ${(expoPlaces[c] ?? []).join("; ")}.`
         ),
         witnessStatements: witnessRows,
-        contentions: allContentions.map((c) => ({ label: c.label, matches: c.line, cite: c.cite })),
+        contentions: allContentions.map((c) => ({ label: c.label, matches: c.line, cite: c.cite, elementLine: c.elementLine })),
         attachments: records.map((r) => ({ name: r.name, isImage: r.isImage, url: r.url })),
       });
       setDownloaded(true);
@@ -546,6 +600,7 @@ export default function ReportView() {
                 const other = otherExposure(r.notes);
                 const expoLine = [
                   ...(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class),
+                  ...(r.incidents ?? []).map((inc) => INCIDENT_LABEL[inc.incident_class] ?? inc.incident_class),
                   ...(other ? [`Other (veteran-reported): ${other}`] : []),
                 ].join(", ");
                 return (
@@ -568,25 +623,27 @@ export default function ReportView() {
           )}
         </section>
 
-        {/* 2. Documented exposure basis (citations) */}
+        {/* 2. Documented exposures — facts only. The science/legal basis that
+            EXPLAINS the association reads as advocacy inline; it moves to
+            Appendix A so this section stays a record, not an essay. */}
         <section className={sectionWrap}>
-          <h3 className={sectionTitle}>2 · Documented basis for each exposure</h3>
+          <h3 className={sectionTitle}>2 · Exposures documented at your locations</h3>
           {classesPresent.length === 0 ? (
             <p className="text-sm text-muted">Log exposures on the map to populate this.</p>
           ) : (
-            <ul className="space-y-2.5">
-              {classesPresent.map((c) => (
-                <li key={c} className="text-sm">
-                  <div className="flex flex-wrap items-center gap-2">
+            <>
+              <ul className="space-y-1.5">
+                {classesPresent.map((c) => (
+                  <li key={c} className="text-sm">
                     <span className="font-semibold">{EXPOSURE_LABEL[c] ?? c}</span>
                     {/* No badge from the class alone — scope decides, and the
                         packet must not imply eligibility it can't verify. */}
-                    <span className="text-xs text-muted">({(expoPlaces[c] ?? []).join("; ")})</span>
-                  </div>
-                  <div className="mt-0.5 text-xs leading-relaxed text-muted">{EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}</div>
-                </li>
-              ))}
-            </ul>
+                    <span className="text-xs text-muted"> ({(expoPlaces[c] ?? []).join("; ")})</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-muted">The documented basis for each of these is in Appendix A.</p>
+            </>
           )}
         </section>
 
@@ -599,8 +656,10 @@ export default function ReportView() {
             <ul className="space-y-2">
               {conditions.map((c, i) => {
                 const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
+                const incidentMatches = (CONDITION_INCIDENTS[c.label] ?? []).filter((e) => (incidentPlaces[e] ?? []).length > 0);
                 const basis = CONDITION_BASIS[c.label];
                 const d = condDetail[c.label];
+                const diag = diagnosisLineFor(c.label);
                 const vparts = [
                   condOnset[c.label] ? `since ${condOnset[c.label]}` : d?.onset_precision ? PRECISION_LINE[d.onset_precision] : "",
                   d?.evidence_status ? EVIDENCE_LINE[d.evidence_status] : "",
@@ -621,19 +680,32 @@ export default function ReportView() {
                       )}
                       {c.claim_status !== "none" ? <span className="text-xs text-muted">VA claim {c.claim_status}</span> : null}
                     </div>
+                    {/* Element 1 — current diagnosis. The single fact every VA
+                        rater, C&P doctor, and VSO named as the packet's
+                        biggest gap: a self-picked label with no way to say
+                        whether a doctor ever actually diagnosed it. */}
+                    <div className={`mt-0.5 text-xs font-semibold ${diag?.startsWith("NEEDS") ? "text-warn" : "text-ink"}`}>
+                      {diag ?? "Diagnosis status not yet answered — see Your conditions."}
+                    </div>
                     {vparts.length > 0 && (
                       <div className="mt-0.5 text-xs text-ink/80">
                         {vparts.join(" · ")} <span className="text-[11px] text-faint">· Veteran-reported</span>
                       </div>
                     )}
-                    {matches.length > 0 ? (
+                    {matches.length > 0 && (
                       <div className="mt-0.5 text-xs leading-relaxed text-muted">
                         Documented association with {matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.
                       </div>
-                    ) : (
-                      <div className="mt-0.5 text-xs text-muted">No logged exposure linked yet.</div>
                     )}
-                    {basis && <div className="mt-0.5 text-xs leading-relaxed text-faint">{basis.cite}</div>}
+                    {incidentMatches.length > 0 && (
+                      <div className="mt-0.5 text-xs leading-relaxed text-muted">
+                        Reported event association with {incidentMatches.map((e) => (INCIDENT_LABEL[e] ?? e).toLowerCase()).join(", ")}.
+                      </div>
+                    )}
+                    {matches.length === 0 && incidentMatches.length === 0 && (
+                      <div className="mt-0.5 text-xs text-muted">No logged exposure or event linked yet.</div>
+                    )}
+                    {basis && <div className="mt-0.5 text-xs leading-relaxed text-faint">See Appendix A for the documented basis.</div>}
                   </li>
                 );
               })}
@@ -711,7 +783,8 @@ export default function ReportView() {
                   <li key={c.label} className="text-sm">
                     <span className="font-semibold">{c.label}</span>
                     <span className="text-muted"> — {c.line}</span>
-                    {c.cite && <div className="mt-0.5 text-xs text-faint">{c.cite}</div>}
+                    <div className="mt-0.5 text-xs text-muted">{c.elementLine}</div>
+                    {c.cite && <div className="mt-0.5 text-xs text-faint">See Appendix A for the documented basis.</div>}
                   </li>
                 );
               })}
@@ -768,6 +841,47 @@ export default function ReportView() {
             </>
           )}
         </section>
+
+        {/* Appendix A — the science/legal citation that EXPLAINS an
+            association, pulled out of the fact sections above so nothing on
+            pages one through six reads like an essay arguing the veteran's
+            case instead of a record of what happened to him. */}
+        {(classesPresent.length > 0 || conditions.some((c) => CONDITION_BASIS[c.label]?.cite)) && (
+          <section className="mt-6 break-before-page break-inside-avoid border-t border-line pt-5">
+            <h3 className={sectionTitle}>Appendix A · Documented associations (educational reference)</h3>
+            <p className="text-xs leading-relaxed text-faint">
+              The following explains WHY an association is studied — the toxicological and legal source. It is
+              background reading, not a sworn statement by the veteran, and it is separate from the factual record
+              on the pages above.
+            </p>
+            {classesPresent.length > 0 && (
+              <div className="mt-3">
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Exposures</div>
+                <ul className="mt-1.5 space-y-2">
+                  {classesPresent.map((c) => (
+                    <li key={c} className="text-sm">
+                      <span className="font-semibold">{EXPOSURE_LABEL[c] ?? c}</span>
+                      <div className="mt-0.5 text-xs leading-relaxed text-muted">{EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}</div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {conditions.some((c) => CONDITION_BASIS[c.label]?.cite) && (
+              <div className="mt-4">
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Conditions</div>
+                <ul className="mt-1.5 space-y-2">
+                  {conditions.filter((c) => CONDITION_BASIS[c.label]?.cite).map((c) => (
+                    <li key={c.label} className="text-sm">
+                      <span className="font-semibold">{c.label}</span>
+                      <div className="mt-0.5 text-xs leading-relaxed text-muted">{CONDITION_BASIS[c.label]?.cite}</div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
 
         <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-faint">
           This packet assembles veteran-entered facts with documented sources. It states documented{" "}

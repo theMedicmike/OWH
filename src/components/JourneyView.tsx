@@ -13,7 +13,7 @@ import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { CONDITION_BY_LABEL } from "@/lib/conditions";
 import type { CascadeFloor } from "@/content/cascadeFloors";
 
-type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: { exposure_class: string }[] | null };
+type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; exposures: { exposure_class: string }[] | null; incidents?: { incident_class: string }[] | null };
 type Cond = { label: string; claim_status: string };
 
 // Each logged exposure class points to its deep-dive page in the Exposure Library.
@@ -73,12 +73,19 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
       setSvcStart(ss); setSvcEnd(se);
 
       const [ci, ex, co, files] = await Promise.all([
-        supabase.from("check_ins").select("place_name, date_start, date_end, exposures(exposure_class)").order("date_start", { ascending: true }),
+        supabase.from("check_ins").select("place_name, date_start, date_end, exposures(exposure_class), incidents(incident_class)").order("date_start", { ascending: true }),
         supabase.from("exposures").select("id, exposure_class"),
         supabase.from("conditions").select("label, claim_status").order("created_at"),
         supabase.storage.from("records").list(user.id),
       ]);
-      setRows((ci.data ?? []) as CheckRow[]);
+      // incidents (migration 0022) read defensively — an unrun migration fails
+      // the whole check_ins query, so fall back to exposures-only.
+      if (ci.error) {
+        const fallback = await supabase.from("check_ins").select("place_name, date_start, date_end, exposures(exposure_class)").order("date_start", { ascending: true });
+        setRows(((fallback.data ?? []) as Omit<CheckRow, "incidents">[]).map((r) => ({ ...r, incidents: [] })));
+      } else {
+        setRows((ci.data ?? []) as CheckRow[]);
+      }
       const exRows = (ex.data ?? []) as { id: string; exposure_class: string }[];
       setClasses(Array.from(new Set(exRows.map((e) => e.exposure_class))));
       const condList = (co.data ?? []) as Cond[];
@@ -175,23 +182,24 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
   // ── The timeline: the mission rendered as a screen ────────────────────────
   // Tours collapse repeat check-ins at the same place+year into one bar.
   const timeline: TimelineData = (() => {
-    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string> }>();
+    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string>; incidents: Set<string> }>();
     for (const r of rows) {
       if (!r.date_start) continue;
       const sy = new Date(r.date_start).getUTCFullYear();
       const ey = r.date_end ? new Date(r.date_end).getUTCFullYear() : null;
       const place = r.place_name || "Unnamed location";
       const key = `${place}|${sy}`;
-      const entry = byKey.get(key) ?? { place, startYear: sy, endYear: ey, exposures: new Set<string>() };
+      const entry = byKey.get(key) ?? { place, startYear: sy, endYear: ey, exposures: new Set<string>(), incidents: new Set<string>() };
       if (ey && (!entry.endYear || ey > entry.endYear)) entry.endYear = ey;
       for (const e of r.exposures ?? []) entry.exposures.add(e.exposure_class);
+      for (const e of r.incidents ?? []) entry.incidents.add(e.incident_class);
       byKey.set(key, entry);
     }
     return {
       serviceStart: svcStart,
       serviceEnd: svcEnd,
       tours: Array.from(byKey.values()).map((t) => ({
-        place: t.place, startYear: t.startYear, endYear: t.endYear, exposures: Array.from(t.exposures),
+        place: t.place, startYear: t.startYear, endYear: t.endYear, exposures: Array.from(t.exposures), incidents: Array.from(t.incidents),
       })),
       conditions: conditions.map((c) => ({
         label: c.label,
@@ -464,6 +472,16 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
         <div className="text-sm font-bold text-ink">How your service connects to your health</div>
         <p className="mt-1 text-xs text-muted">
           Every line is a link the VA already recognizes. Tap any dot to see the connection and its citation.
+        </p>
+        {/* Tinnitus, PTSD, TBI, backs, knees — most VA claims connect to WHAT
+            HAPPENED, not to bad air or bad water, so this map (built from
+            exposures) will never draw a line for them. That's not a rejection
+            — it's this graph's honest limit. */}
+        <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[11px] leading-relaxed text-muted">
+          This map only draws lines for exposures — bad air, bad water, chemicals. If what you&apos;re dealing with
+          traces back to something that <em>happened</em> to you instead — a blast, a fall, an assault, hearing
+          damage — that belongs on the map too: log it as an event on <Link href="/map" className="font-semibold text-brand hover:underline">Where you served</Link>, and it will get
+          its own connection under <Link href="/health" className="font-semibold text-brand hover:underline">Your conditions</Link>.
         </p>
 
         {!canMap ? (

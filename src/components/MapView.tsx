@@ -7,7 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { ServiceRibbon } from "./Patriotic";
 import { searchGazetteer, nearestPlace, type GazEntry } from "@/lib/gazetteer";
-import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
+import { EXPOSURES, EXPOSURE_LABEL, INCIDENTS } from "@/lib/education";
 import MonthYearWheel from "./MonthYearWheel";
 import WheelPicker from "./WheelPicker";
 
@@ -121,6 +121,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const [draftName, setDraftName] = useState("");
   const [year, setYear] = useState(2007);
   const [selected, setSelected] = useState<string[]>([]);
+  const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
   const [otherText, setOtherText] = useState("");
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [saving, setSaving] = useState(false);
@@ -165,6 +166,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setSelected((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
   }
 
+  function toggleIncident(value: string) {
+    setSelectedIncidents((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+  }
+
   function toggleClass(value: string) {
     setActiveClasses((prev) => {
       const next = new Set(prev);
@@ -179,6 +184,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // next one's record.
   function resetDraftFields() {
     setSelected([]);
+    setSelectedIncidents([]);
     setOtherText("");
     setStory("");
     setMonth(0);
@@ -451,7 +457,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   }, [checkins, mapLoaded, activeClasses, yearOn, filterYear]);
 
   async function addCheckin() {
-    if (!draft || !user || (selected.length === 0 && !otherText.trim() && !story.trim())) return;
+    if (!draft || !user || (selected.length === 0 && selectedIncidents.length === 0 && !otherText.trim() && !story.trim())) return;
     // A departure date earlier than the arrival must block the save, not vanish.
     if (hasEndDate && endYear < year) return;
     setSaving(true);
@@ -461,6 +467,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       p_year: year,
       p_conflict: null,
       p_exposures: selected,
+      p_incidents: selectedIncidents,
     });
     if (!error && newId) {
       const patch: { place_name?: string; notes?: string; date_start?: string; date_end?: string } = {};
@@ -789,14 +796,52 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               <p className="mt-1.5 text-[11px] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
             </div>
 
+            {/* Most claims — tinnitus, backs, knees, PTSD, TBI — connect to WHAT
+                HAPPENED, not to bad air or bad water. The map had no way to
+                record that at all until now. */}
+            <div className="mt-4 border-t border-line pt-3">
+              <div className="text-sm font-semibold text-ink">Did anything happen to you here? (optional)</div>
+              <p className="mb-2 text-xs text-muted">A blast, a fall, an injury, an assault — tap what applies.</p>
+              <div className="flex flex-wrap gap-1.5">
+                {INCIDENTS.map((x) => {
+                  const on = selectedIncidents.includes(x.value);
+                  return (
+                    <button
+                      key={x.value}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => toggleIncident(x.value)}
+                      className={on ? `${chipBase} border-brand bg-brand/10 font-medium text-brand` : `${chipBase} border-line text-muted hover:bg-canvas`}
+                    >
+                      {x.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedIncidents.includes("military_sexual_trauma") && (
+                <div className="mt-2 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2.5 text-xs leading-relaxed text-ink">
+                  This is logged like any other event — a place and a year, nothing more. If you want to talk to
+                  someone, every VA medical center has an MST coordinator, and care for MST-related conditions is
+                  free at the VA regardless of disability rating or discharge status. Your VSO can also walk you
+                  through the &ldquo;markers&rdquo; VA looks for when there&apos;s no official record.{" "}
+                  <a href="tel:988" className="font-semibold text-brand hover:underline">988, then press 1</a> is
+                  there any hour.
+                </div>
+              )}
+            </div>
+
             <div className="mt-4 flex gap-2">
               {user ? (
                 <button
                   onClick={addCheckin}
-                  disabled={saving || (selected.length === 0 && !otherText.trim() && !story.trim())}
+                  disabled={saving || (selected.length === 0 && selectedIncidents.length === 0 && !otherText.trim() && !story.trim())}
                   className="flex-1 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
                 >
-                  {saving ? "Saving…" : (selected.length || otherText.trim() || story.trim()) ? `Save check-in${selected.length ? ` (${selected.length})` : ""}` : "Add your words or an exposure"}
+                  {saving
+                    ? "Saving…"
+                    : (selected.length || selectedIncidents.length || otherText.trim() || story.trim())
+                      ? `Save check-in${selected.length + selectedIncidents.length ? ` (${selected.length + selectedIncidents.length})` : ""}`
+                      : "Add your words, an exposure, or an event"}
                 </button>
               ) : (
                 <div className="flex-1 text-xs text-muted">Sign in above to save this pin to your record.</div>

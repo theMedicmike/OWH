@@ -47,6 +47,27 @@ export const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(
   EXPOSURES.map((e) => [e.value, e.label]),
 );
 
+// The injury/event taxonomy — a sibling to EXPOSURES for the majority of VA
+// claims (tinnitus, PTSD, TBI, backs, knees) that connect to WHAT HAPPENED,
+// not to where the air or water was bad. Same "one brain, everywhere"
+// discipline: the map, Your conditions, Connect the dots, and the claim
+// packet all read this list and nowhere else.
+export const INCIDENTS: { label: string; value: string }[] = [
+  { label: "Blast / IED / artillery", value: "blast_ied" },
+  { label: "Vehicle accident", value: "vehicle_accident" },
+  { label: "Fall", value: "fall" },
+  { label: "Noise — weapons, aircraft, machinery", value: "noise_acoustic" },
+  { label: "Training injury", value: "training_injury" },
+  { label: "Physical assault", value: "physical_assault" },
+  { label: "Military sexual trauma", value: "military_sexual_trauma" },
+  { label: "Fire / burn", value: "fire_burn" },
+  { label: "Other injury or event", value: "other" },
+];
+
+export const INCIDENT_LABEL: Record<string, string> = Object.fromEntries(
+  INCIDENTS.map((i) => [i.value, i.label]),
+);
+
 // Exposure classes that CAN lead to a presumption for SOME veterans — never a
 // determination on its own.
 //
@@ -406,6 +427,13 @@ export const CONDITION_EXPOSURES: Record<string, string[]> = {
     CONDITION_CATALOG.filter((c) => c.exposures.length > 0).map((c) => [c.label, c.exposures]),
   ),
 };
+
+// The event-side mirror of CONDITION_EXPOSURES — derived the same way, from
+// the same catalog, so adding an `incidents` list to a condition in
+// lib/conditions.ts is the only place that ever needs editing.
+export const CONDITION_INCIDENTS: Record<string, string[]> = Object.fromEntries(
+  CONDITION_CATALOG.filter((c) => (c.incidents?.length ?? 0) > 0).map((c) => [c.label, c.incidents as string[]]),
+);
 
 export type SolutionCategory =
   | "Know what you're carrying"

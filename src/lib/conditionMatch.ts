@@ -1,4 +1,4 @@
-import { EXPOSURE_LABEL } from "@/lib/education";
+import { EXPOSURE_LABEL, INCIDENT_LABEL } from "@/lib/education";
 import { defFor, PROGRAM_LABEL, type LinkType } from "@/lib/conditions";
 import { scopeFor, LEJEUNE_HEALTHCARE_NOTE } from "@/lib/presumptive";
 
@@ -16,9 +16,11 @@ import { scopeFor, LEJEUNE_HEALTHCARE_NOTE } from "@/lib/presumptive";
 //   • Never asserts causation. "Studied alongside", "documented at", never
 //     "caused by" and never "you qualify".
 //   • Never a verdict. Presumptive programs produce a QUESTION for a VSO.
-//   • Event-linked conditions (tinnitus, PTSD, TBI, bad backs) never show a
-//     dead end — they get an honest sentence about why the map can't speak to
-//     them, because that failure hits a huge share of veterans.
+//   • Event-linked conditions (tinnitus, PTSD, TBI, bad backs) now match
+//     against logged INCIDENTS the same honest way place-linked conditions
+//     match against logged exposures — they only fall back to the generic
+//     "a map pin can't speak to it" sentence when no incident mechanism is
+//     defined for that condition, or none has been logged yet.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type TourLite = {
@@ -26,15 +28,17 @@ export type TourLite = {
   year: number | null;
   note: string | null;
   classes: string[];
+  /** injury/event classes logged at this same check-in, if any */
+  incidentClasses?: string[];
 };
 
 export type MatchResult = {
-  kind: "place" | "event" | "none" | "no-locations";
+  kind: "place" | "incident" | "event" | "none" | "no-locations";
   /** the main plain-English sentence */
   sentence: string;
   /** the veteran's own words from that check-in, quoted back */
   quote?: string;
-  /** years between the exposure and onset, when both are known */
+  /** years between the exposure/event and onset, when both are known */
   gapYears?: number | null;
   /** "Ask an accredited VSO whether this falls under …" */
   ask?: string;
@@ -48,6 +52,22 @@ function list(items: string[]): string {
   return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
 
+// Shared by the exposure and incident branches — same latency/aggravation
+// language either way, just fed a different "what happened" label.
+function latencySuffix(label: string, year: number | null, onsetYear: number | null): string {
+  const gap = year && onsetYear && onsetYear >= year ? onsetYear - year : null;
+  const preExisting = year && onsetYear && onsetYear < year ? year - onsetYear : null;
+  if (gap !== null) {
+    return gap === 0
+      ? ` Your ${label.toLowerCase()} began that same year.`
+      : ` Your ${label.toLowerCase()} began about ${onsetYear} — a ${gap}-year gap.`;
+  }
+  if (preExisting !== null) {
+    return ` Your ${label.toLowerCase()} began about ${onsetYear}, ${preExisting} ${preExisting === 1 ? "year" : "years"} before that. Starting earlier does not close the door: VA can service-connect a condition that existed beforehand if service made it permanently worse — that is called aggravation (38 CFR 3.306). Ask your VSO about it by name.`;
+  }
+  return "";
+}
+
 export function matchCondition(
   label: string,
   onsetYear: number | null,
@@ -56,23 +76,65 @@ export function matchCondition(
   const def = defFor(label);
   const link: LinkType = def?.link ?? "both";
   const assoc = def?.exposures ?? [];
+  const assocIncidents = def?.incidents ?? [];
 
-  // A condition that attaches to what HAPPENED, not where the air was bad.
-  // This is the honest answer, not a rejection — and it's a large share of the
-  // most-claimed disabilities.
   const eventSentence =
     "This one usually connects to what happened to you — a blast, noise, an injury, or what you carried home — not to where the air or water was bad. A map pin can't speak to it. An accredited VSO will ask you about it directly, and your own account is the evidence that matters most.";
-
-  if (link === "event" || assoc.length === 0) {
-    return { kind: "event", sentence: eventSentence };
-  }
 
   if (tours.length === 0) {
     return {
       kind: "no-locations",
       sentence:
-        "Your service isn't on the record yet. Add where you served and this will line up against what's documented at those places.",
+        "Your service isn't on the record yet. Add where you served — and what happened to you, if anything did — and this will line up against what's documented.",
     };
+  }
+
+  // ── Try the event/incident route first when this condition has one ────────
+  if (assocIncidents.length > 0) {
+    const hits = tours
+      .map((t) => ({ tour: t, shared: (t.incidentClasses ?? []).filter((c) => assocIncidents.includes(c)) }))
+      .filter((h) => h.shared.length > 0);
+
+    if (hits.length > 0) {
+      hits.sort((a, b) => (a.tour.year ?? 9999) - (b.tour.year ?? 9999));
+      const first = hits[0];
+      const classes = Array.from(new Set(hits.flatMap((h) => h.shared)));
+      const classNames = list(classes.map((c) => INCIDENT_LABEL[c] ?? c));
+      const place = first.tour.place;
+      const year = first.tour.year;
+
+      let sentence = year
+        ? `You reported ${classNames.toLowerCase()} at ${place} in ${year}.`
+        : `You reported ${classNames.toLowerCase()} at ${place}.`;
+      sentence += latencySuffix(label, year, onsetYear);
+      sentence += ` ${classNames} and ${label.toLowerCase()} are commonly connected. That's a question worth asking, not an answer.`;
+
+      const otherPlaces = Array.from(new Set(hits.slice(1).map((h) => h.tour.place)));
+      if (otherPlaces.length > 0) sentence += ` The same is logged at ${list(otherPlaces)}.`;
+
+      return {
+        kind: "incident",
+        sentence,
+        quote: first.tour.note?.trim() || undefined,
+        gapYears: year && onsetYear && onsetYear >= year ? onsetYear - year : null,
+        classes,
+      };
+    }
+
+    // This condition has a real event mechanism, but nothing logged matches
+    // it yet — an honest nudge, not a dead end.
+    const anyIncidentsLogged = tours.some((t) => (t.incidentClasses ?? []).length > 0);
+    if (!anyIncidentsLogged) {
+      return {
+        kind: "event",
+        sentence: `${label} usually connects to a specific event — ${list(assocIncidents.map((c) => (INCIDENT_LABEL[c] ?? c).toLowerCase()))}, for example. Log it on the map (there's now a place for injuries and events, not just exposures) and this will line up against it.`,
+      };
+    }
+  }
+
+  // ── Fall through to the place/exposure route ───────────────────────────────
+  if (link === "event" || assoc.length === 0) {
+    return { kind: "event", sentence: eventSentence };
   }
 
   // Find the tours whose documented exposures overlap this condition's.

@@ -1,6 +1,6 @@
 "use client";
 
-import { EXPOSURE_LABEL } from "@/lib/education";
+import { EXPOSURE_LABEL, INCIDENT_LABEL } from "@/lib/education";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // THE SERVICE TIMELINE — the mission rendered as a screen.
@@ -20,6 +20,8 @@ export type TimelineTour = {
   startYear: number;
   endYear: number | null;
   exposures: string[];
+  /** injury/event classes logged at this same stop, if any */
+  incidents?: string[];
 };
 
 export type TimelineCondition = {
@@ -176,6 +178,9 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
                 </span>
                 {t.exposures.length > 0 && !compact && (
                   <span className="text-muted"> · {t.exposures.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}</span>
+                )}
+                {t.incidents && t.incidents.length > 0 && !compact && (
+                  <span className="text-muted"> · {t.incidents.map((e) => INCIDENT_LABEL[e] ?? e).join(", ")}</span>
                 )}
               </div>
             </div>

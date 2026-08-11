@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { EXPOSURE_LABEL } from "@/lib/education";
+import { EXPOSURE_LABEL, INCIDENT_LABEL } from "@/lib/education";
 import { conditionsBySystem, searchConditions, defFor, CONDITION_BY_LABEL, COMMON_STARTERS } from "@/lib/conditions";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 import { CONDITION_EXPOSURES } from "@/lib/education";
@@ -40,18 +40,31 @@ type Condition = {
   onset_precision: string | null;
   evidence_status: string | null;
   secondary_to: string | null;
+  diagnosed_by: string | null;
 };
 type CheckRow = {
   place_name: string | null;
   date_start: string | null;
   notes: string | null;
   exposures: { exposure_class: string }[] | null;
+  incidents: { incident_class: string }[] | null;
 };
 
 const EVIDENCE = [
   { v: "documented", label: "Yes, I have papers" },
   { v: "probably", label: "Somewhere, probably" },
   { v: "undocumented", label: "Nobody wrote it down" },
+];
+// Element 1 of a VA claim is a CURRENT DIAGNOSIS. The app used to let a
+// veteran tap a condition onto their record with no way to say whether a
+// doctor had ever actually diagnosed it — the single gap every VA rater, C&P
+// doctor, and VSO in the council audit independently named as the packet's
+// biggest weakness.
+const DIAGNOSIS = [
+  { v: "va", label: "Yes — VA doctor" },
+  { v: "civilian", label: "Yes — civilian doctor" },
+  { v: "military", label: "Yes — while I was in" },
+  { v: "not_yet", label: "Not yet — no doctor has said it" },
 ];
 const CLAIMS = [
   { v: "none", label: "Not yet" },
@@ -88,18 +101,19 @@ export default function HealthView() {
   // The rail reuses the timeline that already prints on the packet — read-only
   // here, and only when there's service to draw.
   const railData: TimelineData = useMemo(() => {
-    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string> }>();
+    const byKey = new Map<string, { place: string; startYear: number; endYear: number | null; exposures: Set<string>; incidents: Set<string> }>();
     for (const t of tours) {
       if (!t.year) continue;
       const key = `${t.place}|${t.year}`;
-      const e = byKey.get(key) ?? { place: t.place, startYear: t.year, endYear: null, exposures: new Set<string>() };
+      const e = byKey.get(key) ?? { place: t.place, startYear: t.year, endYear: null, exposures: new Set<string>(), incidents: new Set<string>() };
       for (const c of t.classes) e.exposures.add(c);
+      for (const c of t.incidentClasses ?? []) e.incidents.add(c);
       byKey.set(key, e);
     }
     return {
       serviceStart: null,
       serviceEnd: null,
-      tours: Array.from(byKey.values()).map((t) => ({ ...t, exposures: Array.from(t.exposures) })),
+      tours: Array.from(byKey.values()).map((t) => ({ ...t, exposures: Array.from(t.exposures), incidents: Array.from(t.incidents) })),
       conditions: conditions.map((c) => ({
         label: c.label,
         onsetYear: c.onset_year,
@@ -124,21 +138,31 @@ export default function HealthView() {
   }
 
   async function load() {
-    // Optional columns (migrations 0012/0013) are read defensively so the page
-    // works before they're applied.
+    // Optional columns (migrations 0012/0013/0022) are read defensively so the
+    // page works before they're applied.
     const full = await supabase
       .from("conditions")
-      .select("id, label, claim_status, onset_year, onset_precision, evidence_status, secondary_to")
+      .select("id, label, claim_status, onset_year, onset_precision, evidence_status, secondary_to, diagnosed_by")
       .order("created_at");
     if (!full.error) {
       setConditions((full.data ?? []) as Condition[]);
     } else {
-      const basic = await supabase.from("conditions").select("id, label, claim_status").order("created_at");
-      setConditions(
-        ((basic.data ?? []) as { id: string; label: string; claim_status: string }[]).map((c) => ({
-          ...c, onset_year: null, onset_precision: null, evidence_status: null, secondary_to: null,
-        })),
-      );
+      const withoutDiagnosis = await supabase
+        .from("conditions")
+        .select("id, label, claim_status, onset_year, onset_precision, evidence_status, secondary_to")
+        .order("created_at");
+      if (!withoutDiagnosis.error) {
+        setConditions(
+          ((withoutDiagnosis.data ?? []) as Omit<Condition, "diagnosed_by">[]).map((c) => ({ ...c, diagnosed_by: null })),
+        );
+      } else {
+        const basic = await supabase.from("conditions").select("id, label, claim_status").order("created_at");
+        setConditions(
+          ((basic.data ?? []) as { id: string; label: string; claim_status: string }[]).map((c) => ({
+            ...c, onset_year: null, onset_precision: null, evidence_status: null, secondary_to: null, diagnosed_by: null,
+          })),
+        );
+      }
     }
 
     // MOS + branch power the noise-listing line (migration 0014, defensive).
@@ -151,16 +175,26 @@ export default function HealthView() {
       if (!b.error && b.data) setMemberBranch((b.data.branch as string) ?? null);
     }
 
-    const { data: ci } = await supabase
+    // incidents (migration 0022) read defensively — join fails as a whole
+    // query if the table doesn't exist yet, so fall back to exposures-only.
+    let ci = (await supabase
       .from("check_ins")
-      .select("place_name, date_start, notes, exposures(exposure_class)")
-      .order("date_start");
+      .select("place_name, date_start, notes, exposures(exposure_class), incidents(incident_class)")
+      .order("date_start")).data as CheckRow[] | null;
+    if (ci === null) {
+      const fallback = await supabase
+        .from("check_ins")
+        .select("place_name, date_start, notes, exposures(exposure_class)")
+        .order("date_start");
+      ci = ((fallback.data ?? []) as Omit<CheckRow, "incidents">[]).map((r) => ({ ...r, incidents: [] }));
+    }
     setTours(
       ((ci ?? []) as CheckRow[]).map((r) => ({
         place: r.place_name || "a place you logged",
         year: r.date_start ? new Date(r.date_start).getUTCFullYear() : null,
         note: r.notes,
         classes: (r.exposures ?? []).map((e) => e.exposure_class),
+        incidentClasses: (r.incidents ?? []).map((e) => e.incident_class),
       })),
     );
   }
@@ -201,7 +235,7 @@ export default function HealthView() {
     if (error) {
       setErr(
         /column .* does not exist/i.test(error.message)
-          ? "These details need database migration 0013 applied before they'll save."
+          ? "This detail needs a database migration applied before it'll save."
           : `Couldn't save that: ${error.message}`,
       );
       return;
@@ -390,6 +424,8 @@ export default function HealthView() {
                         : c.onset_precision ? <span>{PRECISION.find((p) => p.v === c.onset_precision)?.label}</span>
                         : <span className="text-faint">no start date yet</span>}
                       {c.evidence_status === "documented" && <span className="rounded bg-success-soft px-1.5 py-0.5 font-medium text-success">in writing</span>}
+                      {c.diagnosed_by && c.diagnosed_by !== "not_yet" && <span className="rounded bg-success-soft px-1.5 py-0.5 font-medium text-success">diagnosed</span>}
+                      {c.diagnosed_by === "not_yet" && <span className="rounded bg-warn-soft px-1.5 py-0.5 font-medium text-warn">needs diagnosis</span>}
                       {c.claim_status !== "none" && <span className="rounded bg-canvas px-1.5 py-0.5">claim {c.claim_status}</span>}
                       {!def && <span className="text-faint">your words</span>}
                     </div>
@@ -416,6 +452,16 @@ export default function HealthView() {
                           {asthmaPostServiceNote(c.onset_precision)}
                         </p>
                       )}
+                    </div>
+                  )}
+                  {m.kind === "incident" && (
+                    <div className="rounded-r-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
+                      {m.quote && (
+                        <p className="mb-1.5 text-[12px] italic leading-relaxed text-muted">
+                          You wrote: &ldquo;{m.quote}&rdquo;
+                        </p>
+                      )}
+                      <p className="text-[13px] leading-relaxed text-ink">{m.sentence}</p>
                     </div>
                   )}
                   {m.kind === "event" && (() => {
@@ -484,6 +530,23 @@ export default function HealthView() {
                 {/* Optional detail sheet — skippable, one question per line */}
                 {open && (
                   <div className="space-y-4 border-t border-line bg-canvas p-4">
+                    <div>
+                      <div className="text-xs font-semibold text-ink">Has a doctor diagnosed this?</div>
+                      <p className="mt-0.5 text-[11px] leading-relaxed text-faint">
+                        VA calls this element one — a current diagnosis. A condition you named yourself is real, but
+                        a rater still needs to see this answered before the claim can move.
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {DIAGNOSIS.map((d) => (
+                          <button key={d.v} type="button" aria-pressed={c.diagnosed_by === d.v}
+                            onClick={() => patch(c.id, { diagnosed_by: d.v })}
+                            className={`rounded-full border px-3 py-1.5 text-xs transition ${c.diagnosed_by === d.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            {d.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div>
                       <div className="text-xs font-semibold text-ink">About when did this start?</div>
                       <p className="mt-0.5 text-[11px] text-faint">Roughly is fine. This is what puts it on your timeline.</p>

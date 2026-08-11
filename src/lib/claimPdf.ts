@@ -4,8 +4,8 @@
 
 export type PdfTimelineRow = { year: string; place: string; exposures: string; note?: string };
 export type PdfExposure = { label: string; presumptive: boolean; places: string; basis: string };
-export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string };
-export type PdfContention = { label: string; matches: string; cite?: string };
+export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string; diagnosisLine?: string };
+export type PdfContention = { label: string; matches: string; cite?: string; elementLine?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
 export type PdfWitnessStatement = { subject: string; witnessName: string; relationship: string; statement: string };
 
@@ -235,14 +235,18 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     });
 
   // ---- 2. Documented basis ----
-  sectionHeading("2 · Documented basis for each exposure");
+  // Facts only: what the veteran logged and where. The science and legal
+  // citation that EXPLAINS why an association is studied moves to Appendix A
+  // — inline, this paragraph reads to a rater as advocacy, not a record.
+  sectionHeading("2 · Exposures documented at your locations");
   if (data.exposures.length === 0) text("Log exposures on the map to populate this.", { color: MUTED });
-  else
+  else {
     data.exposures.forEach((e) => {
       text(`${e.label}${e.presumptive ? "  (presumptive pathway)" : ""}`, { size: 10, style: "bold", gapAfter: 0 });
-      if (e.places) text(e.places, { size: 8.5, color: FAINT, indent: 12, gapAfter: 0 });
-      text(e.basis, { size: 9, color: MUTED, indent: 12, gapAfter: 5 });
+      text(e.places || "—", { size: 8.5, color: FAINT, indent: 12, gapAfter: 5 });
     });
+    text("The documented basis for each of these — the toxicological and legal source — is in Appendix A.", { size: 8, color: FAINT, gapAfter: 4 });
+  }
 
   // ---- 3. Conditions ----
   sectionHeading("3 · Conditions & their documented links");
@@ -250,11 +254,16 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   else
     data.conditions.forEach((c) => {
       text(`${c.label}${c.tag ? `  —  ${c.tag}` : ""}${c.status !== "none" ? `  (VA claim ${c.status})` : ""}`, { size: 10, style: "bold", gapAfter: 0 });
+      // Element 1 (current diagnosis) — the single fact that most decides
+      // whether a claim survives, printed where a rater looks first.
+      if (c.diagnosisLine) {
+        text(c.diagnosisLine, { size: 9, style: "bold", color: c.diagnosisLine.startsWith("NEEDS DIAGNOSIS") ? GOLD : INK, indent: 12, gapAfter: 0 });
+      }
       if (c.veteranLine) text(`${c.veteranLine}  (Veteran-reported)`, { size: 9, color: INK, indent: 12, gapAfter: 0 });
       if (c.latency) text(c.latency, { size: 9, style: "italic", color: MUTED, indent: 12, gapAfter: 0 });
       if (c.noiseLine) text(c.noiseLine, { size: 9, color: INK, indent: 12, gapAfter: 0 });
-      text(c.matches || "No logged exposure linked yet.", { size: 9, color: MUTED, indent: 12, gapAfter: 0 });
-      if (c.cite) text(c.cite, { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
+      text(c.matches || "No logged exposure or event linked yet.", { size: 9, color: MUTED, indent: 12, gapAfter: 0 });
+      if (c.cite) text("See Appendix A for the documented basis.", { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;
     });
 
@@ -304,7 +313,8 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   else
     data.contentions.forEach((c) => {
       text(`${c.label} — ${c.matches}`, { size: 10, style: "bold", gapAfter: 0 });
-      if (c.cite) text(c.cite, { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
+      if (c.elementLine) text(c.elementLine, { size: 8.5, color: MUTED, indent: 12, gapAfter: 0 });
+      if (c.cite) text("See Appendix A for the documented basis.", { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;
     });
   y += 24;
@@ -331,6 +341,36 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     data.attachments.forEach((a) =>
       bullet(`${a.name}${a.isImage ? " (image — printed at the end)" : " — attach this file when you submit"}`, { size: 9.5 })
     );
+  }
+
+  // ---- Appendix A: Documented Associations (Educational Reference) ----
+  // The science and legal citation that EXPLAIN why an association is
+  // studied — pulled out of the fact sections above and gathered here, under
+  // its own label, so nothing on pages one through six reads like an essay
+  // arguing the veteran's case instead of a record of what happened to him.
+  const appendixExposures = data.exposures.filter((e) => e.basis);
+  const appendixConditions = data.conditions.filter((c) => c.cite);
+  if (appendixExposures.length > 0 || appendixConditions.length > 0) {
+    newPage();
+    sectionHeading("Appendix A · Documented associations (educational reference)");
+    text(
+      "The following explains WHY an association is studied — the toxicological and legal source. It is background reading, not a sworn statement by the veteran, and it does not appear in the factual record on the pages above.",
+      { size: 8.5, color: FAINT, gapAfter: 8 }
+    );
+    if (appendixExposures.length > 0) {
+      text("Exposures", { size: 9.5, style: "bold", color: NAVY, gapAfter: 3 });
+      appendixExposures.forEach((e) => {
+        text(e.label, { size: 9.5, style: "bold", gapAfter: 0 });
+        text(e.basis, { size: 8.5, color: MUTED, indent: 12, gapAfter: 5 });
+      });
+    }
+    if (appendixConditions.length > 0) {
+      text("Conditions", { size: 9.5, style: "bold", color: NAVY, gapAfter: 3 });
+      appendixConditions.forEach((c) => {
+        text(c.label, { size: 9.5, style: "bold", gapAfter: 0 });
+        text(c.cite as string, { size: 8.5, color: MUTED, indent: 12, gapAfter: 5 });
+      });
+    }
   }
 
   // ---- Footer disclaimer ----
@@ -366,6 +406,18 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     const h = img.h * scale;
     const fmt = img.data.includes("image/png") ? "PNG" : "JPEG";
     doc.addImage(img.data, fmt, margin, iy, w, h);
+  }
+
+  // ---- Page footer: prepared date + page number, stamped last so the total
+  // page count is known (a rater citing "page 4" needs the number to be real). ----
+  const totalPages = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(FAINT[0], FAINT[1], FAINT[2]);
+    doc.text(`Prepared ${data.today}`, margin, pageH - 20);
+    doc.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 20, { align: "right" });
   }
 
   doc.save(`Claim-Support-Packet-${data.today.replace(/[ ,]+/g, "-")}.pdf`);
