@@ -10,6 +10,7 @@ import { searchGazetteer, nearestPlace, type GazEntry } from "@/lib/gazetteer";
 import { EXPOSURES, EXPOSURE_LABEL, INCIDENTS } from "@/lib/education";
 import MonthYearWheel from "./MonthYearWheel";
 import WheelPicker from "./WheelPicker";
+import { isMissingColumnError } from "@/lib/supabaseErrors";
 
 const FILTER_YEARS = Array.from({ length: 2026 - 1945 + 1 }, (_, i) => String(1945 + i));
 
@@ -135,9 +136,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   // The veteran's own words — the primary evidence field on every check-in.
   const [story, setStory] = useState("");
   const [month, setMonth] = useState(0); // 0 = not sure; months matter for presumptives
+  const [approxStart, setApproxStart] = useState(false); // "I don't remember exactly" — different from month unknown
   const [hasEndDate, setHasEndDate] = useState(false); // optional "left in" — a tour is a span, not a point
   const [endYear, setEndYear] = useState(year);
   const [endMonth, setEndMonth] = useState(0);
+  const [approxEnd, setApproxEnd] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const draftRef = useRef<{ lng: number; lat: number } | null>(null);
   const yearSeeded = useRef(false);
@@ -188,8 +191,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setOtherText("");
     setStory("");
     setMonth(0);
+    setApproxStart(false);
     setHasEndDate(false);
     setEndMonth(0);
+    setApproxEnd(false);
   }
 
   function closeDraft() {
@@ -470,25 +475,34 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       p_incidents: selectedIncidents,
     });
     if (!error && newId) {
-      const patch: { place_name?: string; notes?: string; date_start?: string; date_end?: string } = {};
+      const patch: { place_name?: string; notes?: string; date_start?: string; date_end?: string; date_start_precision?: string; date_end_precision?: string } = {};
       if (draftName.trim()) patch.place_name = draftName.trim();
       // The veteran's narrative leads; a free-text "other exposure" follows it.
       const noteParts = [story.trim(), otherText.trim() ? `Other exposure noted: ${otherText.trim()}` : ""].filter(Boolean);
       if (noteParts.length) patch.notes = noteParts.join("\n");
       // Month-level dates when known — presumptive windows can turn on months.
       if (month >= 1 && month <= 12) patch.date_start = `${year}-${String(month).padStart(2, "0")}-01`;
+      patch.date_start_precision = approxStart ? "approximate" : month >= 1 && month <= 12 ? "month" : "year";
       // A departure date turns a point into a tour — without it the timeline
       // draws every map check-in as a sliver.
       if (hasEndDate && endYear >= year) {
         patch.date_end = endMonth >= 1 && endMonth <= 12
           ? `${endYear}-${String(endMonth).padStart(2, "0")}-01`
           : `${endYear}-12-31`;
+        patch.date_end_precision = approxEnd ? "approximate" : endMonth >= 1 && endMonth <= 12 ? "month" : "year";
       }
       if (Object.keys(patch).length > 0) {
         // This patch carries the veteran's OWN WORDS and the month-precision
         // date. If it fails we must not close the panel — the text would be
         // gone for good, and nothing else in the app can re-enter it.
-        const { error: patchErr } = await supabase.from("check_ins").update(patch).eq("id", newId);
+        let { error: patchErr } = await supabase.from("check_ins").update(patch).eq("id", newId);
+        // date_*_precision (migration 0023) may not have landed yet — retry
+        // without it rather than lose the place name and the veteran's words.
+        if (patchErr && isMissingColumnError(patchErr)) {
+          const { date_start_precision: _dsp, date_end_precision: _dep, ...corePatch } = patch;
+          void _dsp; void _dep;
+          ({ error: patchErr } = await supabase.from("check_ins").update(corePatch).eq("id", newId));
+        }
         if (patchErr) {
           setSaving(false);
           alert(
@@ -705,7 +719,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               one place in the same year.
             </label>
             <div className="mt-1">
-              <MonthYearWheel month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} />
+              <MonthYearWheel month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} approximate={approxStart} onApproximateChange={setApproxStart} />
             </div>
 
             <label className="mt-3 flex items-center gap-2 text-xs text-muted">
@@ -721,7 +735,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             </label>
             {hasEndDate && (
               <div className="mt-1">
-                <MonthYearWheel month={endMonth} year={endYear} onMonthChange={setEndMonth} onYearChange={setEndYear} minYear={year} />
+                <MonthYearWheel month={endMonth} year={endYear} onMonthChange={setEndMonth} onYearChange={setEndYear} minYear={year} approximate={approxEnd} onApproximateChange={setApproxEnd} />
                 {endYear < year && (
                   <p role="status" className="mt-1 text-[11px] font-medium text-red-600">
                     The date you left can&apos;t be before {year}.

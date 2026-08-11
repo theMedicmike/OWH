@@ -9,8 +9,10 @@ import { ServiceRibbon, Anniversary250 } from "./Patriotic";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 
 // Show the artifact, don't describe it: this is what a finished record looks
-// like — the first page a veteran hands their VSO. Sample data, clearly labeled.
-const SAMPLE: TimelineData = {
+// like — the first page a veteran hands their VSO. Sample data, clearly
+// labeled. Exported so /welcome can show the same artifact without a second,
+// driftable copy.
+export const SAMPLE: TimelineData = {
   serviceStart: 2003,
   serviceEnd: 2011,
   tours: [

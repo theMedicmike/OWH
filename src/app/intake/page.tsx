@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import IntakeFormView from "@/components/IntakeFormView";
@@ -5,6 +6,23 @@ import Link from "next/link";
 
 export default async function IntakePage() {
   const supabase = await createClient();
+
+  // Page zero: a brand-new veteran with no service data yet and who has never
+  // confirmed the /welcome screen sees it once, before the wizard. Reading
+  // this defensively (migration 0023) — any error here means "don't gate,
+  // just show intake" so a migration that hasn't run yet never blocks anyone.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: m, error } = await supabase
+      .from("members")
+      .select("branch, service_start, intro_seen_at")
+      .eq("auth_id", user.id)
+      .maybeSingle();
+    if (!error && (!m || (!m.branch && !m.service_start && !m.intro_seen_at))) {
+      redirect("/welcome");
+    }
+  }
+
   const { data: sites } = await supabase
     .from("known_exposure_sites")
     .select("name, geom, exposure_classes, date_from, date_to")

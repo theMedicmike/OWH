@@ -47,8 +47,10 @@ type LocationEntry = {
   region: string;
   fromYear: string;
   fromMonth: number; // 0 = not sure, 1-12
+  fromApprox: boolean; // "I don't remember exactly" — different from month unknown
   toYear: string;
   toMonth: number;
+  toApprox: boolean;
   exposures: string[];
   confirmed: string[];      // documented exposure classes for the matched site
   matchedSite: string | null;
@@ -58,7 +60,7 @@ type LocationEntry = {
 function makeLocation(): LocationEntry {
   return {
     id: crypto.randomUUID(),
-    name: "", region: "", fromYear: "", fromMonth: 0, toYear: "", toMonth: 0,
+    name: "", region: "", fromYear: "", fromMonth: 0, fromApprox: false, toYear: "", toMonth: 0, toApprox: false,
     exposures: [], confirmed: [], matchedSite: null, other: "",
   };
 }
@@ -188,13 +190,16 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   const [branch, setBranch] = useState("");
   const [startYear, setStartYear] = useState("");
   const [startMonth, setStartMonth] = useState(0);
+  const [startApprox, setStartApprox] = useState(false);
   const [endYear, setEndYear] = useState("");
   const [endMonth, setEndMonth] = useState(0);
+  const [endApprox, setEndApprox] = useState(false);
   const [currentlyServing, setCurrentlyServing] = useState(false);
   const [mos, setMos] = useState("");
   const [bootCamp, setBootCamp] = useState("");
   const [bootCampYear, setBootCampYear] = useState("");
   const [bootCampMonth, setBootCampMonth] = useState(0);
+  const [bootCampApprox, setBootCampApprox] = useState(false);
 
   // Step 2 state
   const [locations, setLocations] = useState<LocationEntry[]>([makeLocation()]);
@@ -314,8 +319,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
           ...base,
           mos: mos.trim() || null,
           still_serving: currentlyServing,
-          service_start_precision: startYear ? (startMonth >= 1 && startMonth <= 12 ? "month" : "year") : null,
-          service_end_precision: (!currentlyServing && endYear) ? (endMonth >= 1 && endMonth <= 12 ? "month" : "year") : null,
+          service_start_precision: startYear ? (startApprox ? "approximate" : startMonth >= 1 && startMonth <= 12 ? "month" : "year") : null,
+          service_end_precision: (!currentlyServing && endYear) ? (endApprox ? "approximate" : endMonth >= 1 && endMonth <= 12 ? "month" : "year") : null,
         })
         .eq("id", memberId);
       if (withAll.error) {
@@ -346,6 +351,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       year: bootCampYear,
       fallbackYear: startYear,
       month: bootCampMonth,
+      approximate: bootCampApprox,
       sites,
     });
   }
@@ -390,7 +396,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         });
         if (rpcErr) throw new Error(rpcErr.message);
         if (newId) {
-          const patch: { place_name?: string; notes?: string; date_start?: string; date_end?: string } = {};
+          const patch: { place_name?: string; notes?: string; date_start?: string; date_end?: string; date_start_precision?: string; date_end_precision?: string } = {};
           // Fold the typed region into the place name (it was collected and
           // dropped) so "Balad" saves as "Balad, Iraq".
           const nm = loc.name.trim();
@@ -402,15 +408,22 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
           if (noteParts.length) patch.notes = noteParts.join("\n");
           // Month-level arrival date when known — presumptive windows can turn on months.
           if (loc.fromMonth >= 1 && loc.fromMonth <= 12) patch.date_start = `${year}-${String(loc.fromMonth).padStart(2, "0")}-01`;
+          patch.date_start_precision = loc.fromApprox ? "approximate" : loc.fromMonth >= 1 && loc.fromMonth <= 12 ? "month" : "year";
           // Keep the tour span so the timeline can draw a real bar, not a point.
           if (loc.toYear && parseInt(loc.toYear)) {
             const ty = parseInt(loc.toYear);
             patch.date_end = loc.toMonth >= 1 && loc.toMonth <= 12
               ? `${ty}-${String(loc.toMonth).padStart(2, "0")}-01`
               : `${ty}-12-31`;
+            patch.date_end_precision = loc.toApprox ? "approximate" : loc.toMonth >= 1 && loc.toMonth <= 12 ? "month" : "year";
           }
           if (Object.keys(patch).length > 0) {
-            await supabase.from("check_ins").update(patch).eq("id", newId);
+            const { error: patchErr } = await supabase.from("check_ins").update(patch).eq("id", newId);
+            if (patchErr && isMissingColumnError(patchErr)) {
+              const { date_start_precision: _dsp, date_end_precision: _dep, ...corePatch } = patch;
+              void _dsp; void _dep;
+              await supabase.from("check_ins").update(corePatch).eq("id", newId);
+            }
           }
         }
       }
@@ -599,6 +612,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                       year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
                       onMonthChange={setBootCampMonth}
                       onYearChange={(y) => setBootCampYear(String(y))}
+                      approximate={bootCampApprox}
+                      onApproximateChange={setBootCampApprox}
                     />
                     <span className="mt-1 block text-[11px] text-faint">
                       We&apos;ll drop your first pin here — you can move or remove it any time.
@@ -615,6 +630,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                   year={parseInt(startYear) || new Date().getUTCFullYear()}
                   onMonthChange={setStartMonth}
                   onYearChange={(y) => setStartYear(String(y))}
+                  approximate={startApprox}
+                  onApproximateChange={setStartApprox}
                 />
               </Field>
               <Field label="Service end">
@@ -632,6 +649,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                     onMonthChange={setEndMonth}
                     onYearChange={(y) => setEndYear(String(y))}
                     minYear={parseInt(startYear) || 1945}
+                    approximate={endApprox}
+                    onApproximateChange={setEndApprox}
                   />
                 )}
               </Field>
@@ -779,6 +798,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                           year={parseInt(loc.fromYear) || new Date().getUTCFullYear()}
                           onMonthChange={(m) => updateLocation(loc.id, { fromMonth: m })}
                           onYearChange={(y) => updateLocation(loc.id, { fromYear: String(y) })}
+                          approximate={loc.fromApprox}
+                          onApproximateChange={(v) => updateLocation(loc.id, { fromApprox: v })}
                         />
                       </Field>
                       <div>
@@ -800,6 +821,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                               onMonthChange={(m) => updateLocation(loc.id, { toMonth: m })}
                               onYearChange={(y) => updateLocation(loc.id, { toYear: String(y) })}
                               minYear={parseInt(loc.fromYear) || 1945}
+                              approximate={loc.toApprox}
+                              onApproximateChange={(v) => updateLocation(loc.id, { toApprox: v })}
                             />
                           </div>
                         )}

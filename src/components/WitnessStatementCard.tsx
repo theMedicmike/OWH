@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { ServiceRibbon } from "./Patriotic";
-import { RELATIONSHIP_OPTIONS, getPublicStatementRequest, submitWitnessStatement, type PublicStatementRequest } from "@/lib/statementRequests";
+import { RELATIONSHIP_OPTIONS, WITNESS_TYPE_OPTIONS, getPublicStatementRequest, submitWitnessStatement, type PublicStatementRequest } from "@/lib/statementRequests";
+
+const YEAR_OPTIONS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => new Date().getUTCFullYear() - i);
 
 // The other end of a link a veteran sent someone who isn't on this app — a
 // spouse, a battle buddy, a commander. No account needed: the token in the URL
@@ -15,10 +17,16 @@ export default function WitnessStatementCard({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [req, setReq] = useState<PublicStatementRequest | null>(null);
 
+  const [witnessType, setWitnessType] = useState("");
   const [witnessName, setWitnessName] = useState("");
   const [relationship, setRelationship] = useState(RELATIONSHIP_OPTIONS[0]);
+  const [relationshipDetail, setRelationshipDetail] = useState("");
+  const [knewFrom, setKnewFrom] = useState("");
+  const [knewTo, setKnewTo] = useState("");
   const [statement, setStatement] = useState("");
   const [contact, setContact] = useState("");
+  const [firsthandConfirmed, setFirsthandConfirmed] = useState(false);
+  const [attested, setAttested] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [done, setDone] = useState(false);
@@ -37,10 +45,19 @@ export default function WitnessStatementCard({ token }: { token: string }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr("");
+    if (!witnessType) { setErr("Let them know how you know them — served together, or from home/family life."); return; }
     if (witnessName.trim().length < 2) { setErr("Let them know who you are."); return; }
     if (statement.trim().length < 20) { setErr("Say a little more — a sentence or two about what you remember."); return; }
+    if (!firsthandConfirmed) { setErr("Please confirm you're describing only what you personally saw, heard, or were told at the time."); return; }
+    if (!attested) { setErr("Please confirm your statement is true to the best of your knowledge."); return; }
     setBusy(true);
-    const result = await submitWitnessStatement(supabase, { token, witnessName, relationship, statement, contact });
+    const result = await submitWitnessStatement(supabase, {
+      token, witnessName, relationship, statement, contact,
+      witnessType, relationshipDetail,
+      knewFrom: knewFrom ? parseInt(knewFrom, 10) : null,
+      knewTo: knewTo ? parseInt(knewTo, 10) : null,
+      firsthandConfirmed, attested,
+    });
     setBusy(false);
     if (result === "ok") setDone(true);
     else if (result === "submitted") setReq((r) => (r ? { ...r, status: "submitted" } : r));
@@ -128,30 +145,79 @@ export default function WitnessStatementCard({ token }: { token: string }) {
 
       <form onSubmit={submit} className="mt-5 space-y-3">
         <div>
+          <label className="mb-1 block text-xs font-medium text-muted">How do you know them?</label>
+          <div className="space-y-1.5">
+            {WITNESS_TYPE_OPTIONS.map((o) => (
+              <label key={o.v} className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm ${witnessType === o.v ? "border-brand bg-brand/5" : "border-line"}`}>
+                <input type="radio" name="witnessType" checked={witnessType === o.v} onChange={() => setWitnessType(o.v)} className="mt-0.5" />
+                <span className="text-ink">{o.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div>
           <label className="mb-1 block text-xs font-medium text-muted">Your name</label>
           <input value={witnessName} onChange={(e) => setWitnessName(e.target.value)} placeholder="First and last name" className={field} />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">How do you know them?</label>
+          <label className="mb-1 block text-xs font-medium text-muted">Relationship</label>
           <select value={relationship} onChange={(e) => setRelationship(e.target.value)} className={field}>
             {RELATIONSHIP_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
+          <input
+            value={relationshipDetail}
+            onChange={(e) => setRelationshipDetail(e.target.value)}
+            placeholder="Optional detail — e.g. &quot;his squad leader, 2009–2011&quot; or &quot;wife of 12 years&quot;"
+            className={`${field} mt-1.5`}
+          />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">What do you remember or witness yourself?</label>
+          <label className="mb-1 block text-xs font-medium text-muted">
+            {witnessType === "same_unit" ? "What years did you serve together?" : "What years have you known them?"} (optional)
+          </label>
+          <div className="flex items-center gap-2">
+            <select value={knewFrom} onChange={(e) => setKnewFrom(e.target.value)} className={field}>
+              <option value="">From…</option>
+              {YEAR_OPTIONS.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+            <span className="text-xs text-muted">to</span>
+            <select value={knewTo} onChange={(e) => setKnewTo(e.target.value)} className={field}>
+              <option value="">To… (or now)</option>
+              {YEAR_OPTIONS.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">
+            {witnessType === "same_unit"
+              ? "What did you see or experience together?"
+              : "What have you noticed change in them — and since when?"}
+          </label>
           <textarea
             value={statement}
             onChange={(e) => setStatement(e.target.value)}
             rows={5}
             maxLength={4000}
-            placeholder="Write it in your own words — what you saw, noticed, or were told at the time."
+            placeholder={
+              witnessType === "same_unit"
+                ? "Write it in your own words — what you saw, noticed, or were told at the time."
+                : "Write it in your own words — what's different now, when you first noticed it, and what it looks like."
+            }
             className={field}
           />
         </div>
+        <label className="flex items-start gap-2 text-xs leading-relaxed text-muted">
+          <input type="checkbox" checked={firsthandConfirmed} onChange={(e) => setFirsthandConfirmed(e.target.checked)} className="mt-0.5" />
+          I&apos;m only describing what I personally saw, heard, or was told at the time — not assumptions or hearsay.
+        </label>
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">Your contact info (optional, in case they need to reach you)</label>
           <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="email or phone" className={field} />
         </div>
+        <label className="flex items-start gap-2 text-xs leading-relaxed text-muted">
+          <input type="checkbox" checked={attested} onChange={(e) => setAttested(e.target.checked)} className="mt-0.5" />
+          I confirm this statement is true to the best of my knowledge.
+        </label>
         <button
           type="submit"
           disabled={busy}

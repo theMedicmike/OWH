@@ -16,7 +16,7 @@
 // never render more precision than he actually gave us.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type DatePrecision = "year" | "month" | "day";
+export type DatePrecision = "year" | "month" | "day" | "approximate";
 
 export type ServiceDateParts = {
   year: string;
@@ -64,7 +64,7 @@ export function toParts(stored: string | null | undefined, precision?: string | 
   const d = new Date(stored);
   if (Number.isNaN(d.getTime())) return { ...EMPTY_PARTS };
   const year = String(d.getUTCFullYear());
-  if (!precision || precision === "year") return { year, month: "", day: "" };
+  if (!precision || precision === "year" || precision === "approximate") return { year, month: "", day: "" };
   const month = String(d.getUTCMonth() + 1);
   if (precision === "month") return { year, month, day: "" };
   return { year, month, day: String(d.getUTCDate()) };
@@ -81,12 +81,20 @@ export function toParts(stored: string | null | undefined, precision?: string | 
 export function fromParts(
   parts: ServiceDateParts,
   edge: "start" | "end",
+  approximate?: boolean,
 ): { date: string; precision: DatePrecision } | null {
   const { year, month, day } = clampDay(parts);
   if (!year) return null;
   const y = parseInt(year);
   const thisYear = new Date().getUTCFullYear();
   if (!y || y < 1940 || y > thisYear) return null; // never store an impossible year
+
+  // "I don't remember exactly" is a different, honest answer from "I know the
+  // year but not the month" — it outranks whatever else was picked, because a
+  // month chosen before the veteran realized they weren't sure isn't real.
+  if (approximate) {
+    return { date: edge === "start" ? `${year}-01-01` : `${year}-12-31`, precision: "approximate" };
+  }
 
   if (!month) {
     return { date: edge === "start" ? `${year}-01-01` : `${year}-12-31`, precision: "year" };
@@ -104,6 +112,7 @@ export function fromParts(
 export function formatDate(stored: string | null | undefined, precision?: string | null): string {
   const p = toParts(stored, precision);
   if (!p.year) return "";
+  if (precision === "approximate") return `circa ${p.year}`;
   if (!p.month) return p.year;
   const name = MONTHS[parseInt(p.month) - 1] ?? "";
   return p.day ? `${p.day} ${name} ${p.year}` : `${name} ${p.year}`;

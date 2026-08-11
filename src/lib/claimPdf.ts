@@ -7,7 +7,7 @@ export type PdfExposure = { label: string; presumptive: boolean; places: string;
 export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string; diagnosisLine?: string };
 export type PdfContention = { label: string; matches: string; cite?: string; elementLine?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
-export type PdfWitnessStatement = { subject: string; witnessName: string; relationship: string; statement: string };
+export type PdfWitnessStatement = { subject: string; witnessName: string; relationship: string; statement: string; detail?: string };
 
 export type ClaimPdfData = {
   name: string;
@@ -285,6 +285,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     data.witnessStatements.forEach((w) => {
       text(`Regarding: ${w.subject}`, { size: 8.5, color: FAINT, gapAfter: 0 });
       text(`${w.witnessName}  ·  ${w.relationship}`, { size: 9.5, style: "bold", gapAfter: 0 });
+      if (w.detail) text(w.detail, { size: 8.5, color: MUTED, gapAfter: 0 });
       text(`"${w.statement}"`, { size: 9, style: "italic", color: INK, indent: 12, gapAfter: 6 });
     });
     text("Collected via a private, no-login link the veteran sent directly. Not the veteran's own words.", { size: 8, color: FAINT, gapAfter: 4 });

@@ -36,9 +36,13 @@ const LAYERS = [
 function DatePickers({
   parts,
   onChange,
+  approximate,
+  onApproximateChange,
 }: {
   parts: ServiceDateParts;
   onChange: (p: ServiceDateParts) => void;
+  approximate?: boolean;
+  onApproximateChange?: (v: boolean) => void;
 }) {
   const maxDay = daysInMonth(parts.year, parts.month);
   const dayOptions = ["Not set", ...Array.from({ length: maxDay }, (_, i) => String(i + 1))];
@@ -46,34 +50,42 @@ function DatePickers({
   const monthIndex = parts.month ? parseInt(parts.month) : 0;
   const dayIndex = parts.day ? Math.min(maxDay, parseInt(parts.day)) : 0;
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <div>
-        <div className="mb-1 text-center text-[11px] font-medium text-muted">Year</div>
-        <WheelPicker
-          options={YEAR_WHEEL_OPTIONS}
-          index={yearIndex}
-          onChange={(i) => onChange(clampDay({ ...parts, year: YEAR_WHEEL_OPTIONS[i] }))}
-          ariaLabel="Year"
-        />
+    <div>
+      <div className={`grid grid-cols-3 gap-2 ${approximate ? "opacity-40" : ""}`}>
+        <div className={approximate ? "pointer-events-none" : ""}>
+          <div className="mb-1 text-center text-[11px] font-medium text-muted">Year</div>
+          <WheelPicker
+            options={YEAR_WHEEL_OPTIONS}
+            index={yearIndex}
+            onChange={(i) => onChange(clampDay({ ...parts, year: YEAR_WHEEL_OPTIONS[i] }))}
+            ariaLabel="Year"
+          />
+        </div>
+        <div className={approximate ? "pointer-events-none" : ""}>
+          <div className="mb-1 text-center text-[11px] font-medium text-muted">Month</div>
+          <WheelPicker
+            options={MONTH_WHEEL_OPTIONS}
+            index={monthIndex}
+            onChange={(i) => onChange(clampDay({ ...parts, month: i === 0 ? "" : String(i) }))}
+            ariaLabel="Month"
+          />
+        </div>
+        <div className={approximate ? "pointer-events-none" : ""}>
+          <div className="mb-1 text-center text-[11px] font-medium text-muted">Day</div>
+          <WheelPicker
+            options={dayOptions}
+            index={dayIndex}
+            onChange={(i) => onChange({ ...parts, day: i === 0 ? "" : String(i) })}
+            ariaLabel="Day"
+          />
+        </div>
       </div>
-      <div>
-        <div className="mb-1 text-center text-[11px] font-medium text-muted">Month</div>
-        <WheelPicker
-          options={MONTH_WHEEL_OPTIONS}
-          index={monthIndex}
-          onChange={(i) => onChange(clampDay({ ...parts, month: i === 0 ? "" : String(i) }))}
-          ariaLabel="Month"
-        />
-      </div>
-      <div>
-        <div className="mb-1 text-center text-[11px] font-medium text-muted">Day</div>
-        <WheelPicker
-          options={dayOptions}
-          index={dayIndex}
-          onChange={(i) => onChange({ ...parts, day: i === 0 ? "" : String(i) })}
-          ariaLabel="Day"
-        />
-      </div>
+      {onApproximateChange && (
+        <label className="mt-1.5 flex items-center gap-2 text-[11px] text-muted">
+          <input type="checkbox" checked={!!approximate} onChange={(e) => onApproximateChange(e.target.checked)} />
+          I&apos;m not sure of the exact date — this is my best guess
+        </label>
+      )}
     </div>
   );
 }
@@ -85,7 +97,9 @@ export default function AccountView() {
   // Day/month/year, not a bare year — and "still serving", which the signup
   // wizard has always offered and this screen never did.
   const [startParts, setStartParts] = useState<ServiceDateParts>({ ...EMPTY_PARTS });
+  const [startApprox, setStartApprox] = useState(false);
   const [endParts, setEndParts] = useState<ServiceDateParts>({ ...EMPTY_PARTS });
+  const [endApprox, setEndApprox] = useState(false);
   const [stillServing, setStillServing] = useState(false);
   const [proxyRelationship, setProxyRelationship] = useState("");
   // Boot camp falls back to the service start year when he doesn't give it one.
@@ -98,7 +112,8 @@ export default function AccountView() {
   const [bootCamp, setBootCamp] = useState("");
   const [bootCampYear, setBootCampYear] = useState("");
   const [bootCampMonth, setBootCampMonth] = useState(0);
-  const [existingBootCamp, setExistingBootCamp] = useState<{ place: string; year: number | null; month: number | null } | null>(null);
+  const [bootCampApprox, setBootCampApprox] = useState(false);
+  const [existingBootCamp, setExistingBootCamp] = useState<{ place: string; year: number | null; month: number | null; approximate?: boolean } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
@@ -170,7 +185,9 @@ export default function AccountView() {
       // before this shipped carry no precision and are year-only by definition —
       // showing "1 January" for them would be reading back an answer he never gave.
       setStartParts(toParts(data?.service_start as string | null, (data?.service_start_precision as string | null) ?? null));
+      setStartApprox((data?.service_start_precision as string | null) === "approximate");
       setEndParts(toParts(data?.service_end as string | null, (data?.service_end_precision as string | null) ?? null));
+      setEndApprox((data?.service_end_precision as string | null) === "approximate");
       setStillServing(data?.still_serving === true);
       setProxyRelationship((data?.proxy_relationship as string) ?? "");
       setLayer((data?.population_layer as string) ?? "veteran");
@@ -197,8 +214,8 @@ export default function AccountView() {
     if (!loaded) return;
     setBusy(true);
     setSaved(false);
-    const start = fromParts(startParts, "start");
-    const end = stillServing ? null : fromParts(endParts, "end");
+    const start = fromParts(startParts, "start", startApprox);
+    const end = stillServing ? null : fromParts(endParts, "end", endApprox);
     // Each date carries its OWN precision. Sharing one value meant storing the
     // coarser of the two — so a man who knows the exact day he shipped but only
     // the year he got out would watch his ship date disappear from the screen,
@@ -276,12 +293,19 @@ export default function AccountView() {
         year: bootCampYear,
         fallbackYear: startYear,
         month: bootCampMonth,
+        approximate: bootCampApprox,
       });
       if (res.status === "saved" || res.status === "already-there") {
-        setExistingBootCamp({ place: res.place, year: parseInt(bootCampYear) || parseInt(startYear) || null, month: bootCampMonth || null });
+        setExistingBootCamp({
+          place: res.place,
+          year: parseInt(bootCampYear) || parseInt(startYear) || null,
+          month: bootCampApprox ? null : bootCampMonth || null,
+          approximate: bootCampApprox,
+        });
         setBootCamp("");
         setBootCampYear("");
         setBootCampMonth(0);
+        setBootCampApprox(false);
       } else if (res.status === "skipped" && res.reason.includes("year")) {
         setSaveErr("Saved everything else — boot camp needs the year you shipped before it can go on your map.");
         setBusy(false);
@@ -369,7 +393,7 @@ export default function AccountView() {
               date he never gave. */}
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Service start</label>
-            <DatePickers parts={startParts} onChange={setStartParts} />
+            <DatePickers parts={startParts} onChange={setStartParts} approximate={startApprox} onApproximateChange={setStartApprox} />
           </div>
 
           <div>
@@ -379,7 +403,7 @@ export default function AccountView() {
                 Still serving — no end date.
               </div>
             ) : (
-              <DatePickers parts={endParts} onChange={setEndParts} />
+              <DatePickers parts={endParts} onChange={setEndParts} approximate={endApprox} onApproximateChange={setEndApprox} />
             )}
             <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-ink">
               <input
@@ -413,8 +437,9 @@ export default function AccountView() {
                 {existingBootCamp.year ? (
                   <span className="text-muted">
                     {" · "}
-                    {existingBootCamp.month ? `${MONTHS[existingBootCamp.month - 1]} ` : ""}
-                    {existingBootCamp.year}
+                    {existingBootCamp.approximate
+                      ? `circa ${existingBootCamp.year}`
+                      : `${existingBootCamp.month ? `${MONTHS[existingBootCamp.month - 1]} ` : ""}${existingBootCamp.year}`}
                   </span>
                 ) : null}
                 <span className="mt-0.5 block text-[11px] text-faint">
@@ -437,6 +462,8 @@ export default function AccountView() {
                       year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
                       onMonthChange={setBootCampMonth}
                       onYearChange={(y) => setBootCampYear(String(y))}
+                      approximate={bootCampApprox}
+                      onApproximateChange={setBootCampApprox}
                     />
                   </div>
                 )}

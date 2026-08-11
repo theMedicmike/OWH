@@ -22,6 +22,14 @@ export const RELATIONSHIP_OPTIONS = [
   "Other",
 ];
 
+// Which kind of witness this is — drives which prompt they see, since
+// "what did you see happen" and "what have you noticed change" are different
+// questions that need different answers.
+export const WITNESS_TYPE_OPTIONS: { v: string; label: string }[] = [
+  { v: "same_unit", label: "I served with them — I saw it happen" },
+  { v: "family_or_after", label: "I know them from home or family life — I've seen the change" },
+];
+
 export type StatementSubjectType = "exposure" | "condition" | "general";
 
 export type StatementRequest = {
@@ -43,6 +51,12 @@ export type WitnessStatement = {
   contact: string | null;
   statement: string;
   created_at: string;
+  witness_type?: string | null;
+  relationship_detail?: string | null;
+  knew_from?: number | null;
+  knew_to?: number | null;
+  firsthand_confirmed?: boolean | null;
+  attested?: boolean | null;
 };
 
 /** True when the error means "migration 0018 hasn't been run yet," not a real failure. */
@@ -98,7 +112,11 @@ export async function getPublicStatementRequest(supabase: SupabaseClient, token:
 
 export async function submitWitnessStatement(
   supabase: SupabaseClient,
-  opts: { token: string; witnessName: string; relationship: string; statement: string; contact: string },
+  opts: {
+    token: string; witnessName: string; relationship: string; statement: string; contact: string;
+    witnessType: string; relationshipDetail: string; knewFrom: number | null; knewTo: number | null;
+    firsthandConfirmed: boolean; attested: boolean;
+  },
 ): Promise<"ok" | "invalid" | "expired" | "submitted" | "revoked"> {
   const { data, error } = await supabase.rpc("submit_witness_statement", {
     p_token: opts.token,
@@ -106,6 +124,12 @@ export async function submitWitnessStatement(
     p_relationship: opts.relationship,
     p_statement: opts.statement,
     p_contact: opts.contact || null,
+    p_witness_type: opts.witnessType || null,
+    p_relationship_detail: opts.relationshipDetail || null,
+    p_knew_from: opts.knewFrom,
+    p_knew_to: opts.knewTo,
+    p_firsthand_confirmed: opts.firsthandConfirmed,
+    p_attested: opts.attested,
   });
   if (error) return "invalid";
   return data as "ok" | "invalid" | "expired" | "submitted" | "revoked";

@@ -14,14 +14,29 @@ import { veteranWords, otherExposure } from "@/lib/veteranWords";
 import { currencyLine } from "@/lib/accuracyOwner";
 import StatementCard from "./StatementCard";
 import { CONDITION_EXPOSURES, CONDITION_INCIDENTS, EXPOSURE_LABEL, INCIDENT_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
-import { listStatementRequests } from "@/lib/statementRequests";
+import { listStatementRequests, type WitnessStatement } from "@/lib/statementRequests";
 
+const WITNESS_TYPE_LABEL: Record<string, string> = {
+  same_unit: "Served together",
+  family_or_after: "Family/after-service witness",
+};
+
+// A single printable line combining witness type, relationship detail, and
+// overlap years — none of it asserts anything the witness didn't submit.
+function witnessDetailLine(s: WitnessStatement): string | undefined {
+  const bits: string[] = [];
+  if (s.relationship_detail) bits.push(s.relationship_detail);
+  if (s.knew_from) bits.push(s.knew_to ? `knew each other ${s.knew_from}–${s.knew_to}` : `knows them since ${s.knew_from}`);
+  const typeLabel = s.witness_type ? WITNESS_TYPE_LABEL[s.witness_type] : undefined;
+  const line = [typeLabel, bits.join(" · ")].filter(Boolean).join(" — ");
+  return line || undefined;
+}
 
 // Exposure classes that carry a recognized presumptive pathway.
 
 type ExpoRow = { id: string; exposure_class: string };
 type IncRow = { id: string; incident_class: string };
-type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; notes?: string | null; exposures: ExpoRow[] | null; incidents?: IncRow[] | null };
+type CheckRow = { place_name: string | null; date_start: string | null; date_end: string | null; date_start_precision?: string | null; date_end_precision?: string | null; notes?: string | null; exposures: ExpoRow[] | null; incidents?: IncRow[] | null };
 
 // veteranWords/otherExposure live in lib/veteranWords.ts — shared with the
 // standalone statement so the two can never filter differently.
@@ -52,11 +67,13 @@ function yr(d: string | null) {
   return d ? new Date(d).getUTCFullYear() : null;
 }
 // A year or a year-range, so a brief stop reads differently than a long tour.
-function rangeLabel(ds: string | null, de: string | null): string {
+function rangeLabel(ds: string | null, de: string | null, dsPrecision?: string | null, dePrecision?: string | null): string {
   const s = yr(ds), e = yr(de);
   if (!s && !e) return "—";
-  if (s && e && e !== s) return `${s}–${e}`;
-  return String(s ?? e);
+  const sLabel = s ? (dsPrecision === "approximate" ? `circa ${s}` : String(s)) : null;
+  const eLabel = e ? (dePrecision === "approximate" ? `circa ${e}` : String(e)) : null;
+  if (s && e && e !== s) return `${sLabel}–${eLabel}`;
+  return (sLabel ?? eLabel) as string;
 }
 type Member = { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos?: string | null; va_rating?: string | null; units?: string[] | null; still_serving?: boolean | null; population_layer?: string | null; proxy_relationship?: string | null };
 type RecordFile = { name: string; url: string; isImage: boolean };
@@ -70,7 +87,7 @@ export default function ReportView() {
   const [conditions, setConditions] = useState<{ label: string; claim_status: string }[]>([]);
   const [expoPlaces, setExpoPlaces] = useState<Record<string, string[]>>({});
   const [corroByClass, setCorroByClass] = useState<Record<string, number>>({});
-  const [witnessRows, setWitnessRows] = useState<{ subject: string; witnessName: string; relationship: string; statement: string }[]>([]);
+  const [witnessRows, setWitnessRows] = useState<{ subject: string; witnessName: string; relationship: string; statement: string; detail?: string }[]>([]);
   const [records, setRecords] = useState<RecordFile[]>([]);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [condOnset, setCondOnset] = useState<Record<string, number>>({});
@@ -94,7 +111,7 @@ export default function ReportView() {
       // incidents (migration 0022) read defensively — an unrun migration
       // fails the whole check_ins query, so fall back to exposures-only.
       let checks: CheckRow[];
-      const withIncidents = await supabase.from("check_ins").select("place_name, date_start, date_end, notes, exposures(id, exposure_class), incidents(id, incident_class)").order("date_start");
+      const withIncidents = await supabase.from("check_ins").select("place_name, date_start, date_end, date_start_precision, date_end_precision, notes, exposures(id, exposure_class), incidents(id, incident_class)").order("date_start");
       if (!withIncidents.error) {
         checks = (withIncidents.data ?? []) as CheckRow[];
       } else {
@@ -188,6 +205,7 @@ export default function ReportView() {
             witnessName: s.witness_name,
             relationship: s.relationship,
             statement: s.statement,
+            detail: witnessDetailLine(s),
           })),
         );
       }
@@ -326,7 +344,7 @@ export default function ReportView() {
         timeline: rows.map((r) => {
           const other = otherExposure(r.notes);
           return {
-            year: rangeLabel(r.date_start, r.date_end),
+            year: rangeLabel(r.date_start, r.date_end, r.date_start_precision, r.date_end_precision),
             place: r.place_name || "a logged location",
             exposures: [
               ...(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class),
@@ -459,7 +477,7 @@ export default function ReportView() {
         }
         rows={rows.map((r) => ({
           place: r.place_name || "A place I served",
-          range: rangeLabel(r.date_start, r.date_end),
+          range: rangeLabel(r.date_start, r.date_end, r.date_start_precision, r.date_end_precision),
           exposures: (r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", "),
           notes: r.notes ?? null,
         }))}
@@ -605,7 +623,7 @@ export default function ReportView() {
                 ].join(", ");
                 return (
                   <li key={i} className="text-sm">
-                    <span className="font-semibold">{rangeLabel(r.date_start, r.date_end)}</span>
+                    <span className="font-semibold">{rangeLabel(r.date_start, r.date_end, r.date_start_precision, r.date_end_precision)}</span>
                     {" · "}
                     {r.place_name || "a logged location"}
                     {" — "}
@@ -744,6 +762,7 @@ export default function ReportView() {
                 <li key={i} className="rounded-lg border border-line p-3">
                   <div className="text-xs font-medium text-muted">Regarding: {w.subject}</div>
                   <div className="mt-1 text-sm font-semibold text-ink">{w.witnessName} <span className="font-normal text-muted">· {w.relationship}</span></div>
+                  {w.detail && <div className="mt-0.5 text-xs text-muted">{w.detail}</div>}
                   <p className="mt-1 text-sm italic leading-relaxed text-ink/90">&ldquo;{w.statement}&rdquo;</p>
                 </li>
               ))}

@@ -7,14 +7,16 @@ import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_LABEL } from "@/lib/education";
 import { EXPOSURE_BASIS } from "@/lib/citations";
 import MonthYearWheel from "./MonthYearWheel";
+import { isMissingColumnError } from "@/lib/supabaseErrors";
 
-// check_ins has no precision column, so a year-only save (stamped Jan 1 /
-// Dec 31 by convention) and a genuine "arrived January 1st" / "left December
-// 31st" are stored identically. Reading either boundary date back as "not
-// sure" is wrong far less often than reading every year-only save back as a
-// fake precise month — same tradeoff bootCamp.ts accepts, applied here
-// because this screen can otherwise silently DESTROY a real month a veteran
-// already entered on the map (an unconditional overwrite used to wipe it).
+// Rows written before migration 0023 (or read before it's applied) carry no
+// date_*_precision at all, so a year-only save (stamped Jan 1 / Dec 31 by
+// convention) and a genuine "arrived January 1st" / "left December 31st" are
+// stored identically. Reading either boundary date back as "not sure" is
+// wrong far less often than reading every year-only save back as a fake
+// precise month — same tradeoff bootCamp.ts accepts, applied here because
+// this screen can otherwise silently DESTROY a real month a veteran already
+// entered on the map (an unconditional overwrite used to wipe it).
 function monthOrUnsure(d: Date | null, boundaryMonth: number, boundaryDay: number): number {
   if (!d) return 0;
   if (d.getUTCMonth() + 1 === boundaryMonth && d.getUTCDate() === boundaryDay) return 0;
@@ -27,6 +29,8 @@ type Row = {
   place_name: string | null;
   date_start: string | null;
   date_end: string | null;
+  date_start_precision?: string | null;
+  date_end_precision?: string | null;
   conflict: string | null;
   notes: string | null;
   exposures: Expo[] | null;
@@ -59,19 +63,31 @@ export default function LocationsView() {
   const [editId, setEditId] = useState<string | null>(null);
   const [edStart, setEdStart] = useState("");
   const [edStartMonth, setEdStartMonth] = useState(0);
+  const [edStartApprox, setEdStartApprox] = useState(false);
   const [edEnd, setEdEnd] = useState("");
   const [edEndMonth, setEdEndMonth] = useState(0);
+  const [edEndApprox, setEdEndApprox] = useState(false);
   const [edHasEnd, setEdHasEnd] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user ?? null);
       if (!data.user) { setLoaded(true); return; }
-      const { data: ci } = await supabase
+      // date_*_precision (migration 0023) read defensively — fall back to the
+      // plain columns if it hasn't landed yet.
+      const withPrecision = await supabase
         .from("check_ins")
-        .select("id, place_name, date_start, date_end, conflict, notes, exposures(exposure_class, confirmed)")
+        .select("id, place_name, date_start, date_end, date_start_precision, date_end_precision, conflict, notes, exposures(exposure_class, confirmed)")
         .order("date_start", { ascending: true });
-      setRows((ci ?? []) as Row[]);
+      if (!withPrecision.error) {
+        setRows((withPrecision.data ?? []) as Row[]);
+      } else {
+        const fallback = await supabase
+          .from("check_ins")
+          .select("id, place_name, date_start, date_end, conflict, notes, exposures(exposure_class, confirmed)")
+          .order("date_start", { ascending: true });
+        setRows((fallback.data ?? []) as Row[]);
+      }
       setLoaded(true);
     });
   }, [supabase]);
@@ -105,25 +121,33 @@ export default function LocationsView() {
     const ds = r.date_start ? new Date(r.date_start) : null;
     const de = r.date_end ? new Date(r.date_end) : null;
     setEdStart(yearOf(r.date_start)?.toString() ?? String(new Date().getUTCFullYear()));
-    setEdStartMonth(monthOrUnsure(ds, 1, 1));
+    setEdStartApprox(r.date_start_precision === "approximate");
+    setEdStartMonth(r.date_start_precision === "approximate" ? 0 : monthOrUnsure(ds, 1, 1));
     setEdHasEnd(!!r.date_end);
     setEdEnd(yearOf(r.date_end)?.toString() ?? String(new Date().getUTCFullYear()));
-    setEdEndMonth(monthOrUnsure(de, 12, 31));
+    setEdEndApprox(r.date_end_precision === "approximate");
+    setEdEndMonth(r.date_end_precision === "approximate" ? 0 : monthOrUnsure(de, 12, 31));
   }
   async function saveDates(id: string) {
     const sy = parseInt(edStart, 10);
     const date_start = sy
       ? (edStartMonth >= 1 && edStartMonth <= 12 ? `${sy}-${String(edStartMonth).padStart(2, "0")}-01` : `${sy}-01-01`)
       : null;
+    const date_start_precision = !sy ? null : edStartApprox ? "approximate" : edStartMonth >= 1 && edStartMonth <= 12 ? "month" : "year";
     let date_end: string | null = null;
+    let date_end_precision: string | null = null;
     if (edHasEnd) {
       const ey = parseInt(edEnd, 10);
       date_end = ey
         ? (edEndMonth >= 1 && edEndMonth <= 12 ? `${ey}-${String(edEndMonth).padStart(2, "0")}-01` : `${ey}-12-31`)
         : null;
+      date_end_precision = !ey ? null : edEndApprox ? "approximate" : edEndMonth >= 1 && edEndMonth <= 12 ? "month" : "year";
     }
-    await supabase.from("check_ins").update({ date_start, date_end }).eq("id", id);
-    setRows((prev) => prev.map((x) => (x.id === id ? { ...x, date_start, date_end } : x)));
+    let { error } = await supabase.from("check_ins").update({ date_start, date_end, date_start_precision, date_end_precision }).eq("id", id);
+    if (error && isMissingColumnError(error)) {
+      ({ error } = await supabase.from("check_ins").update({ date_start, date_end }).eq("id", id));
+    }
+    setRows((prev) => prev.map((x) => (x.id === id ? { ...x, date_start, date_end, date_start_precision, date_end_precision } : x)));
     setEditId(null);
   }
 
@@ -186,7 +210,7 @@ export default function LocationsView() {
                       <div>
                         <div className="text-xs font-medium text-ink">Arrived</div>
                         <div className="mt-1">
-                          <MonthYearWheel month={edStartMonth} year={parseInt(edStart) || new Date().getUTCFullYear()} onMonthChange={setEdStartMonth} onYearChange={(y) => setEdStart(String(y))} />
+                          <MonthYearWheel month={edStartMonth} year={parseInt(edStart) || new Date().getUTCFullYear()} onMonthChange={setEdStartMonth} onYearChange={(y) => setEdStart(String(y))} approximate={edStartApprox} onApproximateChange={setEdStartApprox} />
                         </div>
                       </div>
                       <div>
@@ -196,7 +220,7 @@ export default function LocationsView() {
                         </label>
                         {edHasEnd && (
                           <div className="mt-1">
-                            <MonthYearWheel month={edEndMonth} year={parseInt(edEnd) || new Date().getUTCFullYear()} onMonthChange={setEdEndMonth} onYearChange={(y) => setEdEnd(String(y))} minYear={parseInt(edStart) || 1945} />
+                            <MonthYearWheel month={edEndMonth} year={parseInt(edEnd) || new Date().getUTCFullYear()} onMonthChange={setEdEndMonth} onYearChange={(y) => setEdEnd(String(y))} minYear={parseInt(edStart) || 1945} approximate={edEndApprox} onApproximateChange={setEdEndApprox} />
                           </div>
                         )}
                       </div>

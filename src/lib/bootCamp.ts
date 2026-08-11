@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { bootCampsFor } from "./gazetteer";
+import { isMissingColumnError } from "./supabaseErrors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOT CAMP — ONE BRAIN.
@@ -42,10 +43,12 @@ export async function saveBootCampCheckIn(
     fallbackYear?: string | number | null | undefined;
     /** 0 or omitted = not sure/not given. Everybody remembers the year; the month is a bonus, never required. */
     month?: number | null | undefined;
+    /** "I don't remember exactly" — a different, honest answer from "I know the year but not the month." */
+    approximate?: boolean | null | undefined;
     sites?: BootCampSite[];
   },
 ): Promise<BootCampSaveResult> {
-  const { branch, campName, year, fallbackYear, month, sites = [] } = opts;
+  const { branch, campName, year, fallbackYear, month, approximate, sites = [] } = opts;
 
   if (!campName || campName === "__other") return { status: "skipped", reason: "no camp selected" };
 
@@ -83,13 +86,21 @@ export async function saveBootCampCheckIn(
 
   if (!newId) return { status: "skipped", reason: "check-in was not created" };
 
-  const patch: { place_name: string; notes: string; date_start?: string } = {
+  const patch: { place_name: string; notes: string; date_start?: string; date_start_precision?: string } = {
     place_name: placeName,
     notes: "Basic training / boot camp.",
   };
   if (month && month >= 1 && month <= 12) patch.date_start = `${parsed}-${String(month).padStart(2, "0")}-01`;
+  patch.date_start_precision = approximate ? "approximate" : month && month >= 1 && month <= 12 ? "month" : "year";
 
-  await supabase.from("check_ins").update(patch).eq("id", newId);
+  const { error: patchErr } = await supabase.from("check_ins").update(patch).eq("id", newId);
+  // date_start_precision (migration 0023) may not have landed yet — retry
+  // without it rather than lose the pin's place name and date entirely.
+  if (patchErr && isMissingColumnError(patchErr)) {
+    const { date_start_precision: _p, ...corePatch } = patch;
+    void _p;
+    await supabase.from("check_ins").update(corePatch).eq("id", newId);
+  }
 
   return { status: "saved", place: placeName };
 }
@@ -98,27 +109,32 @@ export async function saveBootCampCheckIn(
 export async function findBootCampCheckIn(
   supabase: SupabaseClient,
   branch: string | null | undefined,
-): Promise<{ place: string; year: number | null; month: number | null } | null> {
+): Promise<{ place: string; year: number | null; month: number | null; approximate: boolean } | null> {
   const camps = bootCampsFor(branch);
   if (camps.length === 0) return null;
   const names = camps.map((c) => `${c.name}, ${c.region}`);
 
-  const { data } = await supabase
+  // date_start_precision (migration 0023) read defensively — pre-migration
+  // rows (or a database that hasn't run it yet) fall back to the same
+  // "-01-01 reads as year-only" heuristic this file used before it existed.
+  const withPrecision = await supabase
     .from("check_ins")
-    .select("place_name, date_start")
+    .select("place_name, date_start, date_start_precision")
     .in("place_name", names)
     .limit(1);
-
-  const row = data?.[0] as { place_name: string; date_start: string | null } | undefined;
+  let row = withPrecision.data?.[0] as { place_name: string; date_start: string | null; date_start_precision: string | null } | undefined;
+  if (withPrecision.error) {
+    const fallback = await supabase.from("check_ins").select("place_name, date_start").in("place_name", names).limit(1);
+    const r = fallback.data?.[0] as { place_name: string; date_start: string | null } | undefined;
+    row = r ? { ...r, date_start_precision: null } : undefined;
+  }
   if (!row) return null;
   const d = row.date_start ? new Date(row.date_start) : null;
+  const approximate = row.date_start_precision === "approximate";
   return {
     place: row.place_name,
     year: d ? d.getUTCFullYear() : null,
-    // check_ins has no precision column (unlike members.service_start_precision),
-    // so a year-only save and a real January save are stored identically as
-    // "-01-01" and can't be told apart here — same limitation this app already
-    // accepts everywhere else it reads date_start back. Not a new gap.
-    month: d ? d.getUTCMonth() + 1 : null,
+    month: !d || approximate ? null : d.getUTCMonth() + 1,
+    approximate,
   };
 }
