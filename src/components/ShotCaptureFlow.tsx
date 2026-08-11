@@ -177,7 +177,7 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
         <div className="mt-5">
           <label className="mb-1 block text-xs font-medium text-muted">When?</label>
           {unsure ? (
-            <div className="flex h-[104px] items-center rounded-lg border border-line bg-white px-3 text-sm text-faint opacity-50">Not sure</div>
+            <div className="rounded-lg border border-line bg-white px-3 py-2.5 text-center text-sm text-faint opacity-50">Not sure</div>
           ) : (
             <MonthYearWheel month={month} year={year} onMonthChange={setMonth} onYearChange={setYear} minYear={1940} />
           )}

@@ -49,13 +49,14 @@ export default function MonthYearWheel({
   return (
     <div>
       <div className="flex gap-2">
-        <div className={`flex-1 ${approximate ? "pointer-events-none opacity-40" : ""}`}>
+        <div className="flex-1">
           <div className="mb-1 text-center text-[11px] font-medium text-muted">Month</div>
           <WheelPicker
             options={MONTH_LABELS}
             index={monthIndex}
             onChange={(i) => onMonthChange(i)}
             ariaLabel="Month"
+            disabled={approximate}
           />
         </div>
         <div className="flex-[1.2]">

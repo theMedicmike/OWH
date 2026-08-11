@@ -50,7 +50,7 @@ export default function LocatorCard() {
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">{stillServing ? "Still serving" : "Year you separated"}</label>
             {stillServing ? (
-              <div className="flex h-[104px] items-center rounded-lg border border-line bg-white px-3 text-sm text-faint opacity-50">Still serving</div>
+              <div className="rounded-lg border border-line bg-white px-3 py-2.5 text-center text-sm text-faint opacity-50">Still serving</div>
             ) : (
               <WheelPicker
                 options={SEPARATION_YEARS}
