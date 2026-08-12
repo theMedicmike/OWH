@@ -537,6 +537,19 @@ export default function ReportView() {
               </a>
             </div>
           </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">4</span>
+            <div>
+              <div className="text-sm font-semibold text-ink">Watch for a C&amp;P exam letter</div>
+              <p className="text-xs leading-relaxed text-muted">
+                VA usually schedules a Compensation &amp; Pension exam before deciding — a different clinician than
+                your own, asking VA&apos;s specific medical questions.
+              </p>
+              <Link href="/cp-exam" className="text-xs font-semibold text-brand hover:underline">
+                What to expect at a C&amp;P exam →
+              </Link>
+            </div>
+          </li>
         </ol>
         <p className="mt-3 border-t border-brand/15 pt-3 text-xs leading-relaxed text-muted">
           Denied before, or expecting a denial? It is common, even for strong claims — and it isn&apos;t the end. You
@@ -779,11 +792,14 @@ export default function ReportView() {
         {/* 5. Clinician hand-off sheet */}
         <section className="mt-6 break-before-page break-inside-avoid border-t border-line pt-5">
           <h3 className={sectionTitle}>5 · For the reviewing clinician</h3>
+          <p className="text-xs leading-relaxed text-muted print:hidden">
+            New to DBQs and nexus letters? <Link href="/clinician" className="font-semibold text-brand hover:underline">Print a one-page primer for your clinician →</Link>
+          </p>
           {/* Keep these three paragraphs in lockstep with lib/claimPdf.ts §5 — the
               printed page and the downloadable PDF must ask a clinician the same
               questions. The list below mixes exposure-linked and secondary
               contentions, and they need DIFFERENT questions answered. */}
-          <p className="text-sm leading-relaxed text-ink">
+          <p className="mt-2 text-sm leading-relaxed text-ink">
             The veteran requests your medical opinion on whether the following condition(s) are <strong>at least as
             likely as not</strong> (50% or greater probability) connected to his service. A signed nexus statement,
             or a completed Disability Benefits Questionnaire (DBQ), supports this claim.

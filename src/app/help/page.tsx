@@ -116,12 +116,14 @@ const MORE_STEPS: Step[] = [
     points: [
       "When did it start? If something started before you shipped, or before an exposure, that is not a dead end. The VA can still connect a condition that already existed if service made it permanently worse — that is called aggravation, and the app now says so in plain English. Ask your VSO whether that applies to you.",
       "“Did this come from another one of these?” If one of your conditions grew out of another one, say so here. That is a real route, and your VSO will know what to do with it.",
+      "Further down in that same panel is “How this has affected you — dated.” Tap “+ Add how this has affected you” any time — a dated note, in your own words, about what the condition has actually kept you from doing. This is what shows a condition has been consistent over time, not a one-time complaint.",
     ],
   },
   {
     title: "See how it all connects",
     body: [
       "Menu → 3 “Connect the dots.”",
+      "Near the top is “Presumptive pathways” — it checks your logged service dates and locations against programs like the PACT Act, Agent Orange, Camp Lejeune, Gulf War and radiation, and flags anything that may apply. It only ever flags a question for your VSO to confirm — never a yes.",
       "This is the big picture: your exposures down one side, your conditions down the other, and lines drawn between the ones the government already links. Tap any line to see the citation behind it.",
       "There is a lot more on this page — your service timeline, where each claim stands (“Not filed” / “Filed” / “Granted” / “Denied”), the VA's own form numbers, and date boxes that work out the one-year clocks for you. There is a “Print / Save as PDF to share” button at the top.",
       "You do not have to use all of it. This is the busiest screen in the app. Look at the picture, print it if you want it, and leave the rest — or bring it to your VSO and let them work it.",
@@ -208,6 +210,7 @@ const MORE_STEPS: Step[] = [
       "Otherwise, fill in where it happened (optional) and when — Year, Month, Day. Don't know it exactly? Tick “I'm not sure of the exact date — this is my best guess” and it saves as a circa year.",
       "“How do you know?” — “I remember it,” “Someone else can confirm it,” “It's in my service or medical record,” or “I have the document.” For combat-related events, your own memory alone can carry real legal weight under federal law, and the note that appears here says exactly when that applies to you.",
       "“In your own words (optional)” is exactly that. Nothing here is written or polished by AI — VA now screens for that kind of language, so your own specific memory is the stronger evidence anyway.",
+      "Once it's saved, most entries also get a private “Who else was there? (optional)” list — a name, how you know them, and contact info if you have it. Nothing here is sent to anyone automatically; it's just so a name isn't lost. It's left off entirely for military sexual trauma and assault entries, on purpose.",
     ],
     warn: {
       label: "If Save looks dead",
@@ -220,6 +223,7 @@ const MORE_STEPS: Step[] = [
     body: [
       "If one of your conditions on “Connect the dots” is marked Denied, your Dashboard shows a card: “A denial isn't the end — see your next steps →.” Tap it any time, or find it by going to that condition directly.",
       "That page explains why claims usually get denied, lays out your three real lanes — Supplemental Claim, Higher-Level Review, or Board Appeal — in plain language, and links straight to the parts of this app that build a stronger case: checking your documented links, asking someone to corroborate, and rebuilding your packet.",
+      "It also has “How to read your decision letter” — what each section of a real VA decision letter means, and which one (“Reasons for Decision”) actually tells you what evidence was missing.",
     ],
     tip: "This app doesn't tell you which lane to pick. That's exactly the call an accredited VSO is there to help you make.",
   },
@@ -241,11 +245,13 @@ const MORE_STEPS: Step[] = [
   },
   {
     title: "Look things up",
-    body: ["Three places to read rather than build:"],
+    body: ["A few places to read rather than build:"],
     points: [
       "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required.",
       "Your locations and your exposures — on your Dashboard, tap the tile marked “Locations” or the one marked “Exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
       "“Whole health” (under Learn & live well) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
+      "“Your C&P exam, demystified” (also under Learn & live well) — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up.",
+      "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It carries no personal information, so it's safe to print once and keep on hand.",
     ],
   },
   {

@@ -12,6 +12,7 @@ import { matchCondition, type TourLite } from "@/lib/conditionMatch";
 import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosNoise";
 import { asthmaPostServiceNote } from "@/lib/presumptive";
 import WheelPicker from "./WheelPicker";
+import ConditionImpactJournal from "./ConditionImpactJournal";
 
 const ONSET_YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => String(1940 + i));
 
@@ -627,6 +628,8 @@ export default function HealthView() {
                         Documented at your locations: {m.classes.map((x) => EXPOSURE_LABEL[x] ?? x).join(", ")}.
                       </p>
                     )}
+
+                    <ConditionImpactJournal conditionId={c.id} onsetYear={c.onset_year} />
                   </div>
                 )}
               </div>

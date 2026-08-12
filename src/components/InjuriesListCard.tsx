@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { listMemberIncidents, deleteIncident, PROVENANCE_LABEL, type IncidentRecord } from "@/lib/incidents";
 import { listIncidentNotes, createIncidentNote, deleteIncidentNote, type IncidentNote } from "@/lib/incidentNotes";
-import { INCIDENT_LABEL } from "@/lib/education";
-import { evidentiaryNoteFor } from "@/lib/incidentCopy";
+import { listIncidentWitnesses, createIncidentWitness, deleteIncidentWitness, type IncidentWitness } from "@/lib/incidentWitnesses";
+import { INCIDENT_LABEL, type IncidentClass } from "@/lib/education";
+import { evidentiaryNoteFor, isMarkersBased } from "@/lib/incidentCopy";
 import WheelPicker from "./WheelPicker";
 
 const card = "rounded-xl border border-line bg-surface p-5";
@@ -139,6 +140,107 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
   );
 }
 
+// WHO ELSE WAS THERE — private capture, never auto-sent. Gated off entirely
+// for MST/assault-classified incidents (isMarkersBased): "who else was
+// there?" on an assault entry risks reading as "name your assailant," the
+// exact MST-adjacent risk the injuries council flagged when it deferred
+// this feature. For every other incident type, this is a plain, useful
+// place to jot a name down before it's forgotten — the actual ask-for-a-
+// statement flow stays a separate, deliberate step through Battle buddies.
+function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; incidentClass: IncidentClass }) {
+  const { supabase } = useAuth();
+  const [witnesses, setWitnesses] = useState<IncidentWitness[] | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [relationship, setRelationship] = useState("");
+  const [contact, setContact] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const load = useCallback(async () => {
+    const res = await listIncidentWitnesses(supabase, incidentId);
+    setWitnesses("witnesses" in res ? res.witnesses : []);
+  }, [supabase, incidentId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function save() {
+    setErr("");
+    setBusy(true);
+    const res = await createIncidentWitness(supabase, { incidentId, name, relationship, contact });
+    setBusy(false);
+    if (res.status === "error") { setErr(res.message); return; }
+    setName(""); setRelationship(""); setContact("");
+    setAdding(false);
+    await load();
+  }
+
+  async function remove(id: string) {
+    await deleteIncidentWitness(supabase, id);
+    await load();
+  }
+
+  if (isMarkersBased(incidentClass)) return null;
+  if (witnesses === null) return null;
+
+  return (
+    <div className="mt-3 border-t border-line pt-3">
+      <div className="text-xs font-semibold text-ink">Who else was there? (optional)</div>
+      <p className="mt-0.5 text-[11px] leading-relaxed text-faint">
+        Private — this stays on your record and isn&apos;t sent to anyone. To actually ask someone for a
+        statement, use <Link href="/buddies" className="font-semibold text-brand hover:underline">Battle buddies → Ask them directly</Link>.
+      </p>
+      {witnesses.length > 0 && (
+        <ul className="mt-2 space-y-1.5">
+          {witnesses.map((w) => (
+            <li key={w.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-canvas px-2.5 py-1.5">
+              <span className="text-[13px] text-ink">
+                {w.name}
+                {w.relationship && <span className="text-muted"> · {w.relationship}</span>}
+                {w.contact && <span className="text-faint"> · {w.contact}</span>}
+              </span>
+              <button onClick={() => remove(w.id)} className="text-[11px] text-faint hover:text-red-600">Remove</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {adding ? (
+        <div className="mt-2 space-y-2 rounded-lg border border-brand/30 bg-brand/5 p-3">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Their name"
+            className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+          />
+          <input
+            value={relationship}
+            onChange={(e) => setRelationship(e.target.value)}
+            placeholder="How you know them (optional) — e.g. squad leader"
+            className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+          />
+          <input
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            placeholder="Phone or email, if you have it (optional)"
+            className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+          />
+          {err && <p className="text-[11px] text-scarlet">{err}</p>}
+          <div className="flex gap-2">
+            <button onClick={save} disabled={busy || !name.trim()} className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
+              {busy ? "Saving…" : "Save"}
+            </button>
+            <button onClick={() => setAdding(false)} className="rounded-md border border-line px-3 py-1.5 text-xs text-muted hover:bg-canvas">Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setAdding(true)} className="mt-2 text-xs font-semibold text-brand hover:underline">
+          + Add someone who was there
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function InjuriesListCard() {
   const { user, supabase } = useAuth();
   const [ready, setReady] = useState(false);
@@ -215,6 +317,7 @@ export default function InjuriesListCard() {
                     {r.detail && <p className="text-[13px] italic leading-relaxed text-ink/85">&ldquo;{r.detail}&rdquo;</p>}
                     <p className="mt-1 text-[11px] leading-relaxed text-faint">{note.headline}</p>
                     <NotesSection incidentId={r.id} incidentYear={yr(r.dateStart)} />
+                    <WitnessesSection incidentId={r.id} incidentClass={r.incidentClass} />
                   </div>
                 )}
               </li>

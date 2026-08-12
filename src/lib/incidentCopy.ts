@@ -99,3 +99,13 @@ export function evidentiaryNoteFor(incidentClass: IncidentClass): EvidentiaryNot
   if (MARKERS_CLASSES.has(incidentClass)) return MARKERS_NOTE;
   return ORDINARY_NOTE;
 }
+
+// Reused by the witness/buddy contact-capture UI (InjuriesListCard) to
+// decide whether to even show a "who else was there?" prompt. On an
+// MST/assault-classified incident, that question risks reading as "name
+// your assailant" — the exact MST-adjacent risk the injuries council
+// flagged when it deferred this feature. Same set that gates the copy
+// above, reused rather than re-derived, so the two can never drift apart.
+export function isMarkersBased(incidentClass: IncidentClass): boolean {
+  return MARKERS_CLASSES.has(incidentClass);
+}

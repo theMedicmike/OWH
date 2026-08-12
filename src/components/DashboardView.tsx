@@ -7,6 +7,7 @@ import VerifyCard from "./VerifyCard";
 import { ServiceRibbon, Seal250, RibbonDivider } from "./Patriotic";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 import { recordProgress } from "@/lib/nextaction";
+import PresumptivePathwaysCard from "./PresumptivePathwaysCard";
 
 
 type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
@@ -217,6 +218,10 @@ export default function DashboardView() {
           <div className="mt-1 text-sm font-semibold text-ink">File before you separate — see the BDD timeline →</div>
         </Link>
       )}
+
+      {/* Self-decides whether to render — only shows once a logged tour falls
+          inside a presumptive program's dates and locations */}
+      <PresumptivePathwaysCard compact />
 
       {/* Start here (brand-new) / Resume (returning) — one lit door either way */}
       <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">

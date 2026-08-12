@@ -8,6 +8,7 @@ import { EXPOSURE_LABEL, CONDITION_EXPOSURES } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
 import { recordProgress, conditionNextAction, VA_FORMS, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
+import PresumptivePathwaysCard from "./PresumptivePathwaysCard";
 import { plusOneYear, isPastOneYear } from "@/lib/nextaction";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { CONDITION_BY_LABEL } from "@/lib/conditions";
@@ -381,6 +382,10 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
           </p>
         </section>
       )}
+
+      <div className="print:hidden">
+        <PresumptivePathwaysCard />
+      </div>
 
       {/* ── Your service timeline — "a veteran is a timeline" ─────────────── */}
       <section className="rounded-2xl border border-line bg-surface p-5">
