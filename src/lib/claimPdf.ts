@@ -4,6 +4,7 @@
 
 export type PdfTimelineRow = { year: string; place: string; exposures: string; note?: string };
 export type PdfExposure = { label: string; presumptive: boolean; places: string; basis: string };
+export type PdfEvent = { label: string; note: string };
 export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string; diagnosisLine?: string };
 export type PdfContention = { label: string; matches: string; cite?: string; elementLine?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
@@ -20,6 +21,7 @@ export type ClaimPdfData = {
   nextStep: string;
   timeline: PdfTimelineRow[];
   exposures: PdfExposure[];
+  events: PdfEvent[];
   conditions: PdfCondition[];
   corroborations: string[];
   witnessStatements: PdfWitnessStatement[];
@@ -350,8 +352,9 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   // its own label, so nothing on pages one through six reads like an essay
   // arguing the veteran's case instead of a record of what happened to him.
   const appendixExposures = data.exposures.filter((e) => e.basis);
+  const appendixEvents = data.events;
   const appendixConditions = data.conditions.filter((c) => c.cite);
-  if (appendixExposures.length > 0 || appendixConditions.length > 0) {
+  if (appendixExposures.length > 0 || appendixEvents.length > 0 || appendixConditions.length > 0) {
     newPage();
     sectionHeading("Appendix A · Documented associations (educational reference)");
     text(
@@ -363,6 +366,13 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
       appendixExposures.forEach((e) => {
         text(e.label, { size: 9.5, style: "bold", gapAfter: 0 });
         text(e.basis, { size: 8.5, color: MUTED, indent: 12, gapAfter: 5 });
+      });
+    }
+    if (appendixEvents.length > 0) {
+      text("Reported events", { size: 9.5, style: "bold", color: NAVY, gapAfter: 3 });
+      appendixEvents.forEach((e) => {
+        text(e.label, { size: 9.5, style: "bold", gapAfter: 0 });
+        text(e.note, { size: 8.5, color: MUTED, indent: 12, gapAfter: 5 });
       });
     }
     if (appendixConditions.length > 0) {

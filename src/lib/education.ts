@@ -52,7 +52,11 @@ export const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(
 // not to where the air or water was bad. Same "one brain, everywhere"
 // discipline: the map, Your conditions, Connect the dots, and the claim
 // packet all read this list and nowhere else.
-export const INCIDENTS: { label: string; value: string }[] = [
+export type IncidentClass =
+  | "blast_ied" | "vehicle_accident" | "fall" | "noise_acoustic" | "training_injury"
+  | "physical_assault" | "military_sexual_trauma" | "fire_burn" | "other";
+
+export const INCIDENTS: { label: string; value: IncidentClass }[] = [
   { label: "Blast / IED / artillery", value: "blast_ied" },
   { label: "Vehicle accident", value: "vehicle_accident" },
   { label: "Fall", value: "fall" },

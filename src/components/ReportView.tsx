@@ -13,7 +13,8 @@ import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosN
 import { veteranWords, otherExposure } from "@/lib/veteranWords";
 import { currencyLine } from "@/lib/accuracyOwner";
 import StatementCard from "./StatementCard";
-import { CONDITION_EXPOSURES, CONDITION_INCIDENTS, EXPOSURE_LABEL, INCIDENT_LABEL, RECOGNIZED_CLASSES } from "@/lib/education";
+import { CONDITION_EXPOSURES, CONDITION_INCIDENTS, EXPOSURE_LABEL, INCIDENT_LABEL, RECOGNIZED_CLASSES, type IncidentClass } from "@/lib/education";
+import { evidentiaryNoteFor } from "@/lib/incidentCopy";
 import { listStatementRequests, type WitnessStatement } from "@/lib/statementRequests";
 
 const WITNESS_TYPE_LABEL: Record<string, string> = {
@@ -363,6 +364,10 @@ export default function ReportView() {
           places: (expoPlaces[c] ?? []).join("; "),
           basis: EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile.",
         })),
+        events: incidentClassesPresent.map((c) => {
+          const note = evidentiaryNoteFor(c as IncidentClass);
+          return { label: INCIDENT_LABEL[c] ?? c, note: `${note.headline} ${note.body}` };
+        }),
         conditions: conditions.map((c) => {
           const matches = (CONDITION_EXPOSURES[c.label] ?? []).filter((e) => (expoPlaces[e] ?? []).length > 0);
           const incidentMatches = (CONDITION_INCIDENTS[c.label] ?? []).filter((e) => (incidentPlaces[e] ?? []).length > 0);
@@ -865,7 +870,7 @@ export default function ReportView() {
             association, pulled out of the fact sections above so nothing on
             pages one through six reads like an essay arguing the veteran's
             case instead of a record of what happened to him. */}
-        {(classesPresent.length > 0 || conditions.some((c) => CONDITION_BASIS[c.label]?.cite)) && (
+        {(classesPresent.length > 0 || incidentClassesPresent.length > 0 || conditions.some((c) => CONDITION_BASIS[c.label]?.cite)) && (
           <section className="mt-6 break-before-page break-inside-avoid border-t border-line pt-5">
             <h3 className={sectionTitle}>Appendix A · Documented associations (educational reference)</h3>
             <p className="text-xs leading-relaxed text-faint">
@@ -883,6 +888,22 @@ export default function ReportView() {
                       <div className="mt-0.5 text-xs leading-relaxed text-muted">{EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}</div>
                     </li>
                   ))}
+                </ul>
+              </div>
+            )}
+            {incidentClassesPresent.length > 0 && (
+              <div className="mt-4">
+                <div className="text-xs font-bold uppercase tracking-wide text-muted">Reported events</div>
+                <ul className="mt-1.5 space-y-2">
+                  {incidentClassesPresent.map((c) => {
+                    const note = evidentiaryNoteFor(c as IncidentClass);
+                    return (
+                      <li key={c} className="text-sm">
+                        <span className="font-semibold">{INCIDENT_LABEL[c] ?? c}</span>
+                        <div className="mt-0.5 text-xs leading-relaxed text-muted">{note.headline} {note.body}</div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

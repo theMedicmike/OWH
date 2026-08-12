@@ -54,6 +54,18 @@ export async function listServiceEvents(
   return { events: (data ?? []) as ServiceEvent[] };
 }
 
+/** Resolve the signed-in veteran's member row, creating it on first use — the
+ *  same lazy-create pattern every other feature in this app uses. */
+export async function resolveMemberId(supabase: SupabaseClient): Promise<string | null> {
+  const { data: u } = await supabase.auth.getUser();
+  const authId = u.user?.id;
+  if (!authId) return null;
+  const { data: ex } = await supabase.from("members").select("id").eq("auth_id", authId).maybeSingle();
+  if (ex?.id) return ex.id;
+  const { data: cr } = await supabase.from("members").insert({ auth_id: authId }).select("id").single();
+  return cr?.id ?? null;
+}
+
 export async function createServiceEvent(
   supabase: SupabaseClient,
   opts: {
@@ -69,7 +81,14 @@ export async function createServiceEvent(
     note: string;
   },
 ): Promise<{ status: "saved" } | { status: "error"; message: string }> {
+  // 🔴 member_id was missing from every insert here — service_events.member_id
+  // is NOT NULL with no database default, so this save could never have
+  // succeeded; it would fail RLS/NOT NULL on every attempt. Found while
+  // building the injuries page's near-identical save path. Fixed here.
+  const memberId = await resolveMemberId(supabase);
+  if (!memberId) return { status: "error", message: "Couldn't find your record — try again." };
   const wide = {
+    member_id: memberId,
     kind: opts.kind,
     ref_slug: opts.refSlug,
     label: opts.label,

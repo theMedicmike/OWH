@@ -42,6 +42,10 @@ const SECTIONS: NavSection[] = [
     // "Vaccines" — it puts the app on the side of the paperwork, not the argument.
     items: [
       { href: "/shots", label: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
+      // Same "no step number" reasoning as shots above — discoverable
+      // alongside it, not a numbered step. Plain name, not clinical: council
+      // ruling 2026-08-11 ("Injuries & events," not "Trauma Intake").
+      { href: "/injuries", label: "Injuries & events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
     ],
   },
   {
