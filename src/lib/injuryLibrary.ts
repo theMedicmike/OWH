@@ -31,7 +31,7 @@ export const INJURY_LIBRARY: InjuryEntry[] = [
     slug: "blast-tbi",
     name: "Blast exposure / TBI",
     hook: "The concussion nobody wrote down because you walked away from it.",
-    incidentClasses: ["blast_ied", "fire_burn", "training_injury"],
+    incidentClasses: ["blast_ied", "fire_burn", "training_injury", "combat_action", "aircraft_mishap", "electrical_injury", "vehicle_accident"],
     evidence:
       "The exam VA uses is called the Initial Evaluation of Residuals of Traumatic Brain Injury DBQ. Unlike most of VA's 70-plus DBQs, this one can only be completed by a VA-trained or VA-certified examiner — a private doctor's version isn't accepted as a substitute. If you've already paid for a private TBI evaluation hoping it would count, ask your VSO whether it still needs to be redone by a VA-credentialed examiner.",
     ratingStructure:
@@ -47,7 +47,7 @@ export const INJURY_LIBRARY: InjuryEntry[] = [
     slug: "amputation-loss-of-limb",
     name: "Amputation / loss of limb",
     hook: "What's left, and what it takes to still call it a leg.",
-    incidentClasses: ["blast_ied", "vehicle_accident", "fire_burn"],
+    incidentClasses: ["blast_ied", "vehicle_accident", "fire_burn", "combat_action", "industrial_accident", "aircraft_mishap"],
     evidence:
       "There's no single \"amputation form.\" The exam depends on which limb or joint is involved — VA has separate DBQs for Knee and Lower Leg, Hip and Thigh, Shoulder and Arm, and Hand and Fingers. Even short of an actual amputation, \"loss of use\" is claimable: the examiner is specifically asked whether the remaining limb's function is so diminished that it serves no better purpose than an amputation with a prosthesis would.",
     ratingStructure:
@@ -65,7 +65,7 @@ export const INJURY_LIBRARY: InjuryEntry[] = [
     slug: "hearing-damage",
     name: "Hearing damage / blast or ordnance noise",
     hook: "The ringing that started on the range and never fully left.",
-    incidentClasses: ["noise_acoustic", "blast_ied"],
+    incidentClasses: ["noise_acoustic", "blast_ied", "combat_action", "aircraft_mishap", "diving_injury"],
     evidence:
       "VA hearing exams follow one specific protocol: a state-licensed audiologist, using the Maryland CNC controlled speech-discrimination test plus puretone audiometry in a sound-isolated booth that meets ANSI standards, scored at 500/1000/2000/3000/4000 Hz. A general hearing check at a walk-in clinic or a hearing-aid retailer will not meet this standard — if you've had one done that way, it likely needs to be redone through the correct exam.",
     ratingStructure:
@@ -81,7 +81,7 @@ export const INJURY_LIBRARY: InjuryEntry[] = [
     slug: "burns-disfigurement",
     name: "Burns / disfigurement",
     hook: "The scar, and whatever it took with it.",
-    incidentClasses: ["fire_burn", "blast_ied"],
+    incidentClasses: ["fire_burn", "blast_ied", "electrical_injury", "chemical_incident", "combat_action"],
     evidence:
       "Burn and scar claims use the Scars/Disfigurement DBQ. Where a burn also destroyed function — vision from an eyelid burn, grip from a hand burn, hearing from an ear — that functional loss is evaluated under its own separate diagnostic code, not folded into the scar rating.",
     ratingStructure:

@@ -52,19 +52,46 @@ export const EXPOSURE_LABEL: Record<string, string> = Object.fromEntries(
 // not to where the air or water was bad. Same "one brain, everywhere"
 // discipline: the map, Your conditions, Connect the dots, and the claim
 // packet all read this list and nowhere else.
+// Expanded 2026-08-11 from 9 to 25 values, researched against VA's own
+// recognition structure rather than invented — see migration 0026's header
+// for the two structures this maps to (38 CFR 3.304(f) stressor buckets for
+// mental-health-adjacent events; the DBQ/diagnostic-code structure for
+// physical events). Grouped below in that same spirit: combat/hostile-
+// adjacent, personal trauma, physical/training, environmental/specialized,
+// then the catch-all.
 export type IncidentClass =
-  | "blast_ied" | "vehicle_accident" | "fall" | "noise_acoustic" | "training_injury"
-  | "physical_assault" | "military_sexual_trauma" | "fire_burn" | "other";
+  | "combat_action" | "blast_ied" | "friendly_fire" | "witnessed_death_injury" | "fear_hostile_activity" | "captivity_pow"
+  | "military_sexual_trauma" | "physical_assault"
+  | "vehicle_accident" | "fall" | "training_injury" | "repetitive_motion" | "noise_acoustic" | "fire_burn"
+  | "cold_injury" | "heat_injury" | "airborne_jump" | "diving_injury" | "drowning" | "aircraft_mishap"
+  | "electrical_injury" | "industrial_accident" | "animal_bite" | "chemical_incident"
+  | "other";
 
 export const INCIDENTS: { label: string; value: IncidentClass }[] = [
+  { label: "Combat action / firefight / ambush", value: "combat_action" },
   { label: "Blast / IED / artillery", value: "blast_ied" },
+  { label: "Friendly fire", value: "friendly_fire" },
+  { label: "Witnessed a death or serious injury", value: "witnessed_death_injury" },
+  { label: "Threat of attack — incoming fire, ambush, IED threat", value: "fear_hostile_activity" },
+  { label: "Captivity / POW", value: "captivity_pow" },
+  { label: "Military sexual trauma", value: "military_sexual_trauma" },
+  { label: "Physical assault", value: "physical_assault" },
   { label: "Vehicle accident", value: "vehicle_accident" },
   { label: "Fall", value: "fall" },
+  { label: "Training injury / accident", value: "training_injury" },
+  { label: "Repeated strain — marching, rucking, lifting", value: "repetitive_motion" },
   { label: "Noise — weapons, aircraft, machinery", value: "noise_acoustic" },
-  { label: "Training injury", value: "training_injury" },
-  { label: "Physical assault", value: "physical_assault" },
-  { label: "Military sexual trauma", value: "military_sexual_trauma" },
   { label: "Fire / burn", value: "fire_burn" },
+  { label: "Cold weather injury — frostbite, hypothermia", value: "cold_injury" },
+  { label: "Heat injury — heat stroke, heat exhaustion", value: "heat_injury" },
+  { label: "Parachute / airborne jump injury", value: "airborne_jump" },
+  { label: "Diving / submarine injury", value: "diving_injury" },
+  { label: "Drowning / near-drowning", value: "drowning" },
+  { label: "Aircraft mishap or crash", value: "aircraft_mishap" },
+  { label: "Electrical injury / shock", value: "electrical_injury" },
+  { label: "Machinery / industrial accident", value: "industrial_accident" },
+  { label: "Military working dog or animal bite", value: "animal_bite" },
+  { label: "Chemical, biological, or radiological incident", value: "chemical_incident" },
   { label: "Other injury or event", value: "other" },
 ];
 

@@ -90,23 +90,23 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Shortness of breath (undiagnosed)", system: "Breathing & sinuses", exposures: ["burn_pit", "particulate"], programs: ["gulf_war"], link: "place" },
 
   // ── Hearing — the most-claimed VA disability, and it was missing entirely ──
-  { label: "Tinnitus", system: "Hearing", exposures: [], incidents: ["noise_acoustic", "blast_ied"], link: "event", alt: "ringing in the ears" },
-  { label: "Hearing loss", system: "Hearing", exposures: [], incidents: ["noise_acoustic", "blast_ied"], link: "event" },
-  { label: "Vertigo / balance problems", system: "Hearing", exposures: [], incidents: ["blast_ied", "fall", "noise_acoustic"], link: "event" },
+  { label: "Tinnitus", system: "Hearing", exposures: [], incidents: ["noise_acoustic", "blast_ied", "combat_action", "aircraft_mishap"], link: "event", alt: "ringing in the ears" },
+  { label: "Hearing loss", system: "Hearing", exposures: [], incidents: ["noise_acoustic", "blast_ied", "combat_action", "aircraft_mishap"], link: "event" },
+  { label: "Vertigo / balance problems", system: "Hearing", exposures: [], incidents: ["blast_ied", "fall", "noise_acoustic", "diving_injury", "combat_action"], link: "event" },
 
   // ── Bones, joints & muscles — the most-claimed category overall ──
-  { label: "Back pain / degenerative disc", system: "Bones, joints & muscles", exposures: [], incidents: ["fall", "vehicle_accident", "training_injury", "blast_ied"], link: "event" },
-  { label: "Neck pain / cervical strain", system: "Bones, joints & muscles", exposures: [], incidents: ["vehicle_accident", "fall", "training_injury", "blast_ied"], link: "event" },
-  { label: "Knee pain / instability", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident"], link: "event" },
-  { label: "Shoulder pain / rotator cuff", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident"], link: "event" },
-  { label: "Hip pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident"], link: "event" },
-  { label: "Ankle or foot pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall"], link: "event", alt: "plantar fasciitis, flat feet" },
-  { label: "Arthritis", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident"], link: "event" },
+  { label: "Back pain / degenerative disc", system: "Bones, joints & muscles", exposures: [], incidents: ["fall", "vehicle_accident", "training_injury", "blast_ied", "repetitive_motion", "airborne_jump", "industrial_accident"], link: "event" },
+  { label: "Neck pain / cervical strain", system: "Bones, joints & muscles", exposures: [], incidents: ["vehicle_accident", "fall", "training_injury", "blast_ied", "aircraft_mishap"], link: "event" },
+  { label: "Knee pain / instability", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion", "airborne_jump"], link: "event" },
+  { label: "Shoulder pain / rotator cuff", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion", "airborne_jump"], link: "event" },
+  { label: "Hip pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion"], link: "event" },
+  { label: "Ankle or foot pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "repetitive_motion", "airborne_jump", "cold_injury"], link: "event", alt: "plantar fasciitis, flat feet" },
+  { label: "Arthritis", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion"], link: "event" },
   { label: "Chronic muscle or joint pain", system: "Bones, joints & muscles", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both" },
   { label: "Fibromyalgia", system: "Bones, joints & muscles", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both" },
 
   // ── Head & nerves ──
-  { label: "Traumatic brain injury (TBI)", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "vehicle_accident", "fall", "training_injury", "physical_assault"], link: "event", alt: "blast exposure, concussion" },
+  { label: "Traumatic brain injury (TBI)", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "vehicle_accident", "fall", "training_injury", "physical_assault", "combat_action", "aircraft_mishap", "electrical_injury", "industrial_accident"], link: "event", alt: "blast exposure, concussion" },
   { label: "Migraines / chronic headaches", system: "Head & nerves", exposures: ["gulf_war_agent", "chemical_solvent"], programs: ["gulf_war"], link: "both" },
   { label: "Peripheral neuropathy (early-onset)", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent", "pesticide"], programs: ["agent_orange"], link: "both", alt: "numbness, tingling, burning — began within a YEAR of exposure (the window is part of the rule)" },
   { label: "Peripheral neuropathy (later onset)", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent"], link: "both", alt: "numbness, tingling, burning in hands or feet" },
@@ -114,23 +114,26 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Parkinson's disease", system: "Head & nerves", exposures: ["pesticide", "chemical_solvent", "water_contamination"], programs: ["agent_orange", "lejeune"], link: "place" },
   { label: "Parkinsonism / tremor", system: "Head & nerves", exposures: ["pesticide", "chemical_solvent", "heavy_metal"], programs: ["agent_orange"], link: "place" },
   { label: "ALS (Lou Gehrig's disease)", system: "Head & nerves", exposures: [], link: "both" },
-  { label: "Seizure disorder", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "fall"], link: "event" },
+  { label: "Seizure disorder", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "fall", "electrical_injury", "combat_action"], link: "event" },
 
   // ── Mental health — VA claims these on an in-service STRESSOR, which is
   // exactly what "incidents" records. Applied to the whole system, matching
-  // how this file already treats every entry here as event-linked. ──
-  { label: "PTSD", system: "Mental health", exposures: [], incidents: ["blast_ied", "physical_assault", "military_sexual_trauma", "vehicle_accident"], link: "event", alt: "post-traumatic stress" },
-  { label: "Depression", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied"], link: "event" },
-  { label: "Anxiety", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied"], link: "event" },
-  { label: "Panic attacks", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied"], link: "event" },
+  // how this file already treats every entry here as event-linked. Combat,
+  // fear-of-hostile-activity, and POW are the three named stressor buckets
+  // in 38 CFR 3.304(f) beyond assault/MST — all three belong on the whole
+  // mental-health cluster, not just PTSD. ──
+  { label: "PTSD", system: "Mental health", exposures: [], incidents: ["blast_ied", "physical_assault", "military_sexual_trauma", "vehicle_accident", "combat_action", "witnessed_death_injury", "fear_hostile_activity", "captivity_pow"], link: "event", alt: "post-traumatic stress" },
+  { label: "Depression", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied", "combat_action", "witnessed_death_injury", "captivity_pow"], link: "event" },
+  { label: "Anxiety", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied", "combat_action", "fear_hostile_activity"], link: "event" },
+  { label: "Panic attacks", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied", "fear_hostile_activity"], link: "event" },
   { label: "Military sexual trauma (MST) related condition", system: "Mental health", exposures: [], incidents: ["military_sexual_trauma"], link: "event" },
-  { label: "Substance use / alcohol", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied"], link: "event" },
+  { label: "Substance use / alcohol", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied", "combat_action", "captivity_pow"], link: "event" },
   { label: "Adjustment disorder", system: "Mental health", exposures: [], incidents: ["physical_assault", "military_sexual_trauma", "blast_ied"], link: "event" },
 
   // ── Sleep ──
   { label: "Sleep apnea", system: "Sleep", exposures: [], link: "both" },
   { label: "Insomnia", system: "Sleep", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both" },
-  { label: "Nightmares / night terrors", system: "Sleep", exposures: [], incidents: ["blast_ied", "physical_assault", "military_sexual_trauma"], link: "event" },
+  { label: "Nightmares / night terrors", system: "Sleep", exposures: [], incidents: ["blast_ied", "physical_assault", "military_sexual_trauma", "combat_action", "witnessed_death_injury", "captivity_pow"], link: "event" },
 
   // ── Heart & circulation ──
   { label: "High blood pressure", system: "Heart & circulation", exposures: ["heavy_metal", "chemical_solvent", "pesticide"], programs: ["agent_orange"], link: "both", alt: "hypertension" },
@@ -172,7 +175,7 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Chronic rash or skin condition", system: "Skin", exposures: ["pesticide", "chemical_solvent", "gulf_war_agent"], programs: ["gulf_war"], link: "place" },
   { label: "Chloracne", system: "Skin", exposures: ["pesticide"], programs: ["agent_orange"], link: "place" },
   { label: "Eczema or psoriasis", system: "Skin", exposures: [], link: "both" },
-  { label: "Scars or burns", system: "Skin", exposures: [], incidents: ["fire_burn", "blast_ied"], link: "event" },
+  { label: "Scars or burns", system: "Skin", exposures: [], incidents: ["fire_burn", "blast_ied", "electrical_injury", "chemical_incident", "combat_action"], link: "event" },
 
   // ── Immune & blood ──
   { label: "Autoimmune disorder", system: "Immune & blood", exposures: ["chemical_solvent", "pesticide", "heavy_metal", "asbestos_silica"], link: "place", alt: "lupus, RA, and others" },
@@ -218,7 +221,7 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Birth defect in a child", system: "Reproductive & sexual health", exposures: ["pesticide", "water_contamination", "chemical_solvent"], link: "place", alt: "this benefit belongs to the child — ask your VSO about VA Form 21-0304" },
 
   // ── Vision ──
-  { label: "Vision loss or eye injury", system: "Vision", exposures: [], incidents: ["blast_ied", "fire_burn", "fall", "training_injury"], link: "event" },
+  { label: "Vision loss or eye injury", system: "Vision", exposures: [], incidents: ["blast_ied", "fire_burn", "fall", "training_injury", "combat_action", "chemical_incident", "industrial_accident"], link: "event" },
   { label: "Light sensitivity", system: "Vision", exposures: [], incidents: ["blast_ied"], link: "event" },
 
   // ── Whole-body symptoms (Gulf War undiagnosed illness lives here) ──
@@ -247,8 +250,8 @@ export const CONDITIONS: ConditionDef[] = [
 
   // ── Hearing ──
   { label: "Ear pain or recurring ear infections", system: "Hearing", exposures: [], link: "event" },
-  { label: "Meniere's disease", system: "Hearing", exposures: [], incidents: ["noise_acoustic", "blast_ied"], link: "event" },
-  { label: "Perforated eardrum", system: "Hearing", exposures: [], incidents: ["blast_ied", "noise_acoustic"], link: "event", alt: "ruptured eardrum, blast" },
+  { label: "Meniere's disease", system: "Hearing", exposures: [], incidents: ["noise_acoustic", "blast_ied", "diving_injury"], link: "event" },
+  { label: "Perforated eardrum", system: "Hearing", exposures: [], incidents: ["blast_ied", "noise_acoustic", "diving_injury", "combat_action"], link: "event", alt: "ruptured eardrum, blast" },
 
   // ── Bones, joints & muscles ──
   { label: "Wrist or hand pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall"], link: "event" },
@@ -258,19 +261,19 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Degenerative joint disease", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident"], link: "event", alt: "osteoarthritis, worn joints" },
   { label: "Limited range of motion", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "blast_ied"], link: "event", alt: "can't bend, stiffness" },
   { label: "Surgical scars or hardware", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "vehicle_accident", "fall", "training_injury"], link: "event", alt: "plates, screws, rods" },
-  { label: "Amputation or loss of use", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "vehicle_accident"], link: "event" },
+  { label: "Amputation or loss of use", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "vehicle_accident", "combat_action", "industrial_accident", "aircraft_mishap"], link: "event" },
   { label: "TMJ / jaw problems", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "physical_assault", "training_injury"], link: "event", alt: "jaw pain, clicking" },
   { label: "Chronic pain syndrome", system: "Bones, joints & muscles", exposures: [], link: "both" },
   { label: "Osteoporosis / bone loss", system: "Bones, joints & muscles", exposures: ["heavy_metal"], link: "both" },
   { label: "Stress fractures / shin splints", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury"], link: "event" },
 
   // ── Head & nerves ──
-  { label: "Post-concussive symptoms", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "fall", "vehicle_accident", "training_injury"], link: "event", alt: "after a blast or head injury" },
+  { label: "Post-concussive symptoms", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "fall", "vehicle_accident", "training_injury", "combat_action", "aircraft_mishap", "electrical_injury"], link: "event", alt: "after a blast or head injury" },
   { label: "Dizziness / balance problems", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "fall", "noise_acoustic"], link: "event" },
   { label: "Restless legs", system: "Head & nerves", exposures: [], link: "both" },
   { label: "Bell's palsy / facial nerve", system: "Head & nerves", exposures: [], link: "both" },
   { label: "Multiple sclerosis", system: "Head & nerves", exposures: [], link: "both" },
-  { label: "Nerve damage from injury", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "vehicle_accident", "fall", "training_injury"], link: "event" },
+  { label: "Nerve damage from injury", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "vehicle_accident", "fall", "training_injury", "electrical_injury", "industrial_accident"], link: "event" },
 
   // ── Mental health — same "in-service stressor" logic as the core set above ──
   { label: "Bipolar disorder", system: "Mental health", exposures: [], incidents: ["blast_ied", "physical_assault", "military_sexual_trauma"], link: "event" },
@@ -289,7 +292,7 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Heart valve problem or murmur", system: "Heart & circulation", exposures: [], link: "both" },
   { label: "Varicose veins", system: "Heart & circulation", exposures: [], link: "event" },
   { label: "Blood clots / DVT", system: "Heart & circulation", exposures: [], link: "both" },
-  { label: "Poor circulation in hands or feet", system: "Heart & circulation", exposures: ["heavy_metal"], link: "both", alt: "Raynaud's, cold hands" },
+  { label: "Poor circulation in hands or feet", system: "Heart & circulation", exposures: ["heavy_metal"], incidents: ["cold_injury"], link: "both", alt: "Raynaud's, cold hands" },
   { label: "Heart failure", system: "Heart & circulation", exposures: [], link: "both" },
 
   // ── Stomach & digestion ──
@@ -373,7 +376,7 @@ export const CONDITIONS: ConditionDef[] = [
 
   // ── Whole-body symptoms ──
   { label: "Widespread pain", system: "Whole-body symptoms", exposures: ["gulf_war_agent"], link: "both" },
-  { label: "Trouble regulating temperature", system: "Whole-body symptoms", exposures: [], link: "both", alt: "night sweats, always cold" },
+  { label: "Trouble regulating temperature", system: "Whole-body symptoms", exposures: [], incidents: ["heat_injury", "cold_injury"], link: "both", alt: "night sweats, always cold" },
   { label: "Frequent dizziness or fainting", system: "Whole-body symptoms", exposures: [], link: "both" },
   { label: "Chemical or smell sensitivity", system: "Whole-body symptoms", exposures: ["chemical_solvent"], link: "both" },
   { label: "Something else I can't name yet", system: "Whole-body symptoms", exposures: [], link: "both", alt: "not sure what it is" },
