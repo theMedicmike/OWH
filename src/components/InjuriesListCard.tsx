@@ -11,7 +11,6 @@ import WheelPicker from "./WheelPicker";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const NOTE_YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => String(1940 + i));
 
 function yr(d: string | null): number | null {
   return d ? new Date(d).getUTCFullYear() : null;
@@ -34,19 +33,23 @@ function dateLabel(r: IncidentRecord): string {
   return String(sy);
 }
 
-function NoteYearPicker({ year, onChange }: { year: number | null; onChange: (y: number | null) => void }) {
-  const idx = year ? NOTE_YEARS.indexOf(String(year)) : NOTE_YEARS.length - 1;
+function NoteYearPicker({ year, minYear, onChange }: { year: number | null; minYear: number; onChange: (y: number | null) => void }) {
+  // Can't notice a symptom before the event happened — start the wheel at
+  // the incident's own year, not a fixed 1940 that makes finding your own
+  // entry take fifty extra spins.
+  const noteYears = Array.from({ length: new Date().getUTCFullYear() - minYear + 1 }, (_, i) => String(minYear + i));
+  const idx = year ? noteYears.indexOf(String(year)) : noteYears.length - 1;
   return (
     <WheelPicker
-      options={["Not sure", ...NOTE_YEARS]}
-      index={year ? idx + 1 : 0}
-      onChange={(i) => onChange(i === 0 ? null : parseInt(NOTE_YEARS[i - 1], 10))}
+      options={["Not sure", ...noteYears]}
+      index={year && idx >= 0 ? idx + 1 : 0}
+      onChange={(i) => onChange(i === 0 ? null : parseInt(noteYears[i - 1], 10))}
       ariaLabel="Year you noticed this"
     />
   );
 }
 
-function NotesSection({ incidentId }: { incidentId: string }) {
+function NotesSection({ incidentId, incidentYear }: { incidentId: string; incidentYear: number | null }) {
   const { supabase } = useAuth();
   const [notes, setNotes] = useState<IncidentNote[] | null>(null);
   const [adding, setAdding] = useState(false);
@@ -110,7 +113,7 @@ function NotesSection({ incidentId }: { incidentId: string }) {
         <div className="mt-2 rounded-lg border border-brand/30 bg-brand/5 p-3">
           <div className="text-[11px] font-medium text-muted">About when did you notice this?</div>
           <div className="mt-1 w-24">
-            <NoteYearPicker year={noticedYear} onChange={setNoticedYear} />
+            <NoteYearPicker year={noticedYear} minYear={incidentYear ?? 1940} onChange={setNoticedYear} />
           </div>
           <textarea
             value={text}
@@ -211,7 +214,7 @@ export default function InjuriesListCard() {
                   <div className="border-t border-line bg-canvas p-3">
                     {r.detail && <p className="text-[13px] italic leading-relaxed text-ink/85">&ldquo;{r.detail}&rdquo;</p>}
                     <p className="mt-1 text-[11px] leading-relaxed text-faint">{note.headline}</p>
-                    <NotesSection incidentId={r.id} />
+                    <NotesSection incidentId={r.id} incidentYear={yr(r.dateStart)} />
                   </div>
                 )}
               </li>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import MonthYearWheel from "./MonthYearWheel";
@@ -19,7 +18,6 @@ const YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_,
 // buried at the bottom of a long form.
 export default function InjuryCaptureFlow() {
   const { supabase } = useAuth();
-  const router = useRouter();
 
   const [incidentClass, setIncidentClass] = useState<IncidentClass | null>(null);
   const [repeated, setRepeated] = useState(false);
@@ -84,6 +82,28 @@ export default function InjuryCaptureFlow() {
     setSaved(true);
   }
 
+  // "Log another" was pushing to the same /injuries/add URL we're already
+  // on — Next.js doesn't remount a client component just because you
+  // navigate to the route it's already rendering, so the button did
+  // nothing. Reset the form's own state instead.
+  function resetForm() {
+    setIncidentClass(null);
+    setRepeated(false);
+    setPlaceName("");
+    setYear(new Date().getUTCFullYear());
+    setMonth(0);
+    setDay(0);
+    setApproximate(true);
+    setRoleOrUnit("");
+    setRangeStart(new Date().getUTCFullYear());
+    setRangeEnd(new Date().getUTCFullYear());
+    setFrequency("");
+    setProvenance(null);
+    setDetail("");
+    setErr("");
+    setSaved(false);
+  }
+
   if (saved) {
     return (
       <div className="mx-auto max-w-lg rounded-2xl border border-line bg-surface p-6 text-center shadow-sm">
@@ -99,7 +119,7 @@ export default function InjuryCaptureFlow() {
         <Link href="/injuries" className="mt-5 block w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
           See your entries →
         </Link>
-        <button onClick={() => router.push("/injuries/add")} className="mt-2.5 w-full rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-ink hover:bg-canvas">
+        <button onClick={resetForm} className="mt-2.5 w-full rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-ink hover:bg-canvas">
           Log another
         </button>
       </div>
