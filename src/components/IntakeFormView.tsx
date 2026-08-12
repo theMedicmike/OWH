@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { searchGazetteer, bootCampsFor } from "@/lib/gazetteer";
 import { saveBootCampCheckIn } from "@/lib/bootCamp";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
+import { daysInMonth } from "@/lib/serviceDates";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 import MonthYearWheel from "./MonthYearWheel";
 
@@ -47,9 +48,11 @@ type LocationEntry = {
   region: string;
   fromYear: string;
   fromMonth: number; // 0 = not sure, 1-12
+  fromDay: number; // 0 = not set — some sailors hit 5-10 ports in 10-14 days
   fromApprox: boolean; // "I don't remember exactly" — different from month unknown
   toYear: string;
   toMonth: number;
+  toDay: number;
   toApprox: boolean;
   exposures: string[];
   confirmed: string[];      // documented exposure classes for the matched site
@@ -60,7 +63,7 @@ type LocationEntry = {
 function makeLocation(): LocationEntry {
   return {
     id: crypto.randomUUID(),
-    name: "", region: "", fromYear: "", fromMonth: 0, fromApprox: false, toYear: "", toMonth: 0, toApprox: false,
+    name: "", region: "", fromYear: "", fromMonth: 0, fromDay: 0, fromApprox: false, toYear: "", toMonth: 0, toDay: 0, toApprox: false,
     exposures: [], confirmed: [], matchedSite: null, other: "",
   };
 }
@@ -190,15 +193,18 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   const [branch, setBranch] = useState("");
   const [startYear, setStartYear] = useState("");
   const [startMonth, setStartMonth] = useState(0);
+  const [startDay, setStartDay] = useState(0);
   const [startApprox, setStartApprox] = useState(false);
   const [endYear, setEndYear] = useState("");
   const [endMonth, setEndMonth] = useState(0);
+  const [endDay, setEndDay] = useState(0);
   const [endApprox, setEndApprox] = useState(false);
   const [currentlyServing, setCurrentlyServing] = useState(false);
   const [mos, setMos] = useState("");
   const [bootCamp, setBootCamp] = useState("");
   const [bootCampYear, setBootCampYear] = useState("");
   const [bootCampMonth, setBootCampMonth] = useState(0);
+  const [bootCampDay, setBootCampDay] = useState(0);
   const [bootCampApprox, setBootCampApprox] = useState(false);
 
   // Step 2 state
@@ -277,14 +283,18 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
     try {
       const memberId = await ensureMemberId();
       if (!memberId) throw new Error("Could not create account record.");
+      const hasStartMonth = startMonth >= 1 && startMonth <= 12;
+      const startDayClamped = hasStartMonth && startDay >= 1 ? Math.min(startDay, daysInMonth(startYear, String(startMonth))) : null;
+      const hasEndMonth = endMonth >= 1 && endMonth <= 12;
+      const endDayClamped = hasEndMonth && endDay >= 1 ? Math.min(endDay, daysInMonth(endYear, String(endMonth))) : null;
       const base = {
         display_name: displayName.trim() || null,
         branch: branch || null,
         service_start: startYear
-          ? `${startYear}-${startMonth >= 1 && startMonth <= 12 ? String(startMonth).padStart(2, "0") : "01"}-01`
+          ? `${startYear}-${hasStartMonth ? String(startMonth).padStart(2, "0") : "01"}-${String(startDayClamped ?? 1).padStart(2, "0")}`
           : null,
         service_end: (!currentlyServing && endYear)
-          ? (endMonth >= 1 && endMonth <= 12 ? `${endYear}-${String(endMonth).padStart(2, "0")}-01` : `${endYear}-12-31`)
+          ? (hasEndMonth ? `${endYear}-${String(endMonth).padStart(2, "0")}-${String(endDayClamped ?? 1).padStart(2, "0")}` : `${endYear}-12-31`)
           : null,
       };
       // A failed prefill means we'd be overwriting fields we never read —
@@ -319,8 +329,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
           ...base,
           mos: mos.trim() || null,
           still_serving: currentlyServing,
-          service_start_precision: startYear ? (startApprox ? "approximate" : startMonth >= 1 && startMonth <= 12 ? "month" : "year") : null,
-          service_end_precision: (!currentlyServing && endYear) ? (endApprox ? "approximate" : endMonth >= 1 && endMonth <= 12 ? "month" : "year") : null,
+          service_start_precision: startYear ? (startApprox ? "approximate" : startDayClamped ? "day" : hasStartMonth ? "month" : "year") : null,
+          service_end_precision: (!currentlyServing && endYear) ? (endApprox ? "approximate" : endDayClamped ? "day" : hasEndMonth ? "month" : "year") : null,
         })
         .eq("id", memberId);
       if (withAll.error) {
@@ -351,6 +361,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       year: bootCampYear,
       fallbackYear: startYear,
       month: bootCampMonth,
+      day: bootCampDay,
       approximate: bootCampApprox,
       sites,
     });
@@ -406,16 +417,21 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
           if (loc.other.trim()) noteParts.push(`Other exposure noted: ${loc.other.trim()}`);
           if (!coords) noteParts.push("Location not yet pinned — set the exact spot on the map.");
           if (noteParts.length) patch.notes = noteParts.join("\n");
-          // Month-level arrival date when known — presumptive windows can turn on months.
-          if (loc.fromMonth >= 1 && loc.fromMonth <= 12) patch.date_start = `${year}-${String(loc.fromMonth).padStart(2, "0")}-01`;
-          patch.date_start_precision = loc.fromApprox ? "approximate" : loc.fromMonth >= 1 && loc.fromMonth <= 12 ? "month" : "year";
+          // Day-level arrival date when known — some sailors hit 5-10 ports
+          // in 10-14 days, where even the month can't tell one stop apart.
+          const hasFromMonth = loc.fromMonth >= 1 && loc.fromMonth <= 12;
+          const fromDayClamped = hasFromMonth && loc.fromDay >= 1 ? Math.min(loc.fromDay, daysInMonth(String(year), String(loc.fromMonth))) : null;
+          if (hasFromMonth) patch.date_start = `${year}-${String(loc.fromMonth).padStart(2, "0")}-${String(fromDayClamped ?? 1).padStart(2, "0")}`;
+          patch.date_start_precision = loc.fromApprox ? "approximate" : fromDayClamped ? "day" : hasFromMonth ? "month" : "year";
           // Keep the tour span so the timeline can draw a real bar, not a point.
           if (loc.toYear && parseInt(loc.toYear)) {
             const ty = parseInt(loc.toYear);
-            patch.date_end = loc.toMonth >= 1 && loc.toMonth <= 12
-              ? `${ty}-${String(loc.toMonth).padStart(2, "0")}-01`
+            const hasToMonth = loc.toMonth >= 1 && loc.toMonth <= 12;
+            const toDayClamped = hasToMonth && loc.toDay >= 1 ? Math.min(loc.toDay, daysInMonth(String(ty), String(loc.toMonth))) : null;
+            patch.date_end = hasToMonth
+              ? `${ty}-${String(loc.toMonth).padStart(2, "0")}-${String(toDayClamped ?? 1).padStart(2, "0")}`
               : `${ty}-12-31`;
-            patch.date_end_precision = loc.toApprox ? "approximate" : loc.toMonth >= 1 && loc.toMonth <= 12 ? "month" : "year";
+            patch.date_end_precision = loc.toApprox ? "approximate" : toDayClamped ? "day" : hasToMonth ? "month" : "year";
           }
           if (Object.keys(patch).length > 0) {
             const { error: patchErr } = await supabase.from("check_ins").update(patch).eq("id", newId);
@@ -610,8 +626,10 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                     <MonthYearWheel
                       month={bootCampMonth}
                       year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
+                      day={bootCampDay}
                       onMonthChange={setBootCampMonth}
                       onYearChange={(y) => setBootCampYear(String(y))}
+                      onDayChange={setBootCampDay}
                       approximate={bootCampApprox}
                       onApproximateChange={setBootCampApprox}
                     />
@@ -628,8 +646,10 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                 <MonthYearWheel
                   month={startMonth}
                   year={parseInt(startYear) || new Date().getUTCFullYear()}
+                  day={startDay}
                   onMonthChange={setStartMonth}
                   onYearChange={(y) => setStartYear(String(y))}
+                  onDayChange={setStartDay}
                   approximate={startApprox}
                   onApproximateChange={setStartApprox}
                 />
@@ -646,8 +666,10 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                   <MonthYearWheel
                     month={endMonth}
                     year={parseInt(endYear) || new Date().getUTCFullYear()}
+                    day={endDay}
                     onMonthChange={setEndMonth}
                     onYearChange={(y) => setEndYear(String(y))}
+                    onDayChange={setEndDay}
                     minYear={parseInt(startYear) || 1945}
                     approximate={endApprox}
                     onApproximateChange={setEndApprox}
@@ -796,8 +818,10 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                         <MonthYearWheel
                           month={loc.fromMonth}
                           year={parseInt(loc.fromYear) || new Date().getUTCFullYear()}
+                          day={loc.fromDay}
                           onMonthChange={(m) => updateLocation(loc.id, { fromMonth: m })}
                           onYearChange={(y) => updateLocation(loc.id, { fromYear: String(y) })}
+                          onDayChange={(d) => updateLocation(loc.id, { fromDay: d })}
                           approximate={loc.fromApprox}
                           onApproximateChange={(v) => updateLocation(loc.id, { fromApprox: v })}
                         />
@@ -808,8 +832,8 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                             type="checkbox"
                             checked={loc.toYear.trim() !== ""}
                             onChange={(e) => updateLocation(loc.id, e.target.checked
-                              ? { toYear: String(parseInt(loc.fromYear) || new Date().getUTCFullYear()), toMonth: 0 }
-                              : { toYear: "", toMonth: 0 })}
+                              ? { toYear: String(parseInt(loc.fromYear) || new Date().getUTCFullYear()), toMonth: 0, toDay: 0 }
+                              : { toYear: "", toMonth: 0, toDay: 0 })}
                           />
                           I know when I left
                         </label>
@@ -818,8 +842,10 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                             <MonthYearWheel
                               month={loc.toMonth}
                               year={parseInt(loc.toYear) || new Date().getUTCFullYear()}
+                              day={loc.toDay}
                               onMonthChange={(m) => updateLocation(loc.id, { toMonth: m })}
                               onYearChange={(y) => updateLocation(loc.id, { toYear: String(y) })}
+                              onDayChange={(d) => updateLocation(loc.id, { toDay: d })}
                               minYear={parseInt(loc.fromYear) || 1945}
                               approximate={loc.toApprox}
                               onApproximateChange={(v) => updateLocation(loc.id, { toApprox: v })}

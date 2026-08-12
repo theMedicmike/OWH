@@ -7,7 +7,7 @@ import { isMissingTableError, isMissingColumnError } from "./supabaseErrors";
 // here is what keeps that true.
 
 export type ServiceEventKind = "vaccination" | "medication" | "blast" | "head_injury" | "injury" | "other";
-export type DatePrecision = "year" | "month" | "unsure";
+export type DatePrecision = "year" | "month" | "day" | "unsure";
 export type Provenance = "recalled" | "in_record" | "document_held";
 export type InformedConsent = "informed_choice" | "informed_mandatory" | "not_informed_mandatory" | "not_informed" | "unsure";
 
@@ -18,6 +18,7 @@ export type ServiceEvent = {
   label: string;
   event_year: number | null;
   event_month: number | null;
+  event_day: number | null;
   date_precision: DatePrecision;
   provenance: Provenance;
   informed_consent: InformedConsent | null;
@@ -61,6 +62,7 @@ export async function createServiceEvent(
     label: string;
     eventYear: number | null;
     eventMonth: number | null;
+    eventDay: number | null;
     datePrecision: DatePrecision;
     provenance: Provenance;
     informedConsent: InformedConsent;
@@ -73,6 +75,7 @@ export async function createServiceEvent(
     label: opts.label,
     event_year: opts.eventYear,
     event_month: opts.eventMonth,
+    event_day: opts.eventDay,
     date_precision: opts.datePrecision,
     provenance: opts.provenance,
     informed_consent: opts.informedConsent,
@@ -80,11 +83,17 @@ export async function createServiceEvent(
   };
   let error = (await supabase.from("service_events").insert(wide)).error;
   if (error && isMissingColumnError(error)) {
-    // Migration 0021 hasn't been run yet — drop informed_consent and save the
-    // rest. His answer is lost for this entry, not silently guessed at.
-    const { informed_consent: _ic, ...rest } = wide;
-    void _ic;
-    error = (await supabase.from("service_events").insert(rest)).error;
+    // Migration 0021 or 0024 hasn't been run yet — drop the newer optional
+    // fields one at a time and save the rest. An answer he gave is lost for
+    // this entry only, never silently guessed at.
+    const { event_day: _ed, ...withoutDay } = wide;
+    void _ed;
+    error = (await supabase.from("service_events").insert(withoutDay)).error;
+    if (error && isMissingColumnError(error)) {
+      const { informed_consent: _ic, ...rest } = withoutDay;
+      void _ic;
+      error = (await supabase.from("service_events").insert(rest)).error;
+    }
   }
   if (error) return { status: "error", message: isMissingTableError(error) ? "not-set-up" : error.message };
   return { status: "saved" };

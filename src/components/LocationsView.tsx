@@ -8,6 +8,7 @@ import { EXPOSURE_LABEL } from "@/lib/education";
 import { EXPOSURE_BASIS } from "@/lib/citations";
 import MonthYearWheel from "./MonthYearWheel";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
+import { daysInMonth } from "@/lib/serviceDates";
 
 // Rows written before migration 0023 (or read before it's applied) carry no
 // date_*_precision at all, so a year-only save (stamped Jan 1 / Dec 31 by
@@ -63,9 +64,11 @@ export default function LocationsView() {
   const [editId, setEditId] = useState<string | null>(null);
   const [edStart, setEdStart] = useState("");
   const [edStartMonth, setEdStartMonth] = useState(0);
+  const [edStartDay, setEdStartDay] = useState(0);
   const [edStartApprox, setEdStartApprox] = useState(false);
   const [edEnd, setEdEnd] = useState("");
   const [edEndMonth, setEdEndMonth] = useState(0);
+  const [edEndDay, setEdEndDay] = useState(0);
   const [edEndApprox, setEdEndApprox] = useState(false);
   const [edHasEnd, setEdHasEnd] = useState(false);
 
@@ -123,25 +126,33 @@ export default function LocationsView() {
     setEdStart(yearOf(r.date_start)?.toString() ?? String(new Date().getUTCFullYear()));
     setEdStartApprox(r.date_start_precision === "approximate");
     setEdStartMonth(r.date_start_precision === "approximate" ? 0 : monthOrUnsure(ds, 1, 1));
+    // "day" precision is a NEW explicit value (migration 0023) — no legacy
+    // ambiguity like month has, since older rows simply never carry it.
+    setEdStartDay(r.date_start_precision === "day" && ds ? ds.getUTCDate() : 0);
     setEdHasEnd(!!r.date_end);
     setEdEnd(yearOf(r.date_end)?.toString() ?? String(new Date().getUTCFullYear()));
     setEdEndApprox(r.date_end_precision === "approximate");
     setEdEndMonth(r.date_end_precision === "approximate" ? 0 : monthOrUnsure(de, 12, 31));
+    setEdEndDay(r.date_end_precision === "day" && de ? de.getUTCDate() : 0);
   }
   async function saveDates(id: string) {
     const sy = parseInt(edStart, 10);
+    const hasStartMonth = edStartMonth >= 1 && edStartMonth <= 12;
+    const startDayClamped = hasStartMonth && edStartDay >= 1 && sy ? Math.min(edStartDay, daysInMonth(String(sy), String(edStartMonth))) : null;
     const date_start = sy
-      ? (edStartMonth >= 1 && edStartMonth <= 12 ? `${sy}-${String(edStartMonth).padStart(2, "0")}-01` : `${sy}-01-01`)
+      ? `${sy}-${hasStartMonth ? String(edStartMonth).padStart(2, "0") : "01"}-${String(startDayClamped ?? 1).padStart(2, "0")}`
       : null;
-    const date_start_precision = !sy ? null : edStartApprox ? "approximate" : edStartMonth >= 1 && edStartMonth <= 12 ? "month" : "year";
+    const date_start_precision = !sy ? null : edStartApprox ? "approximate" : startDayClamped ? "day" : hasStartMonth ? "month" : "year";
     let date_end: string | null = null;
     let date_end_precision: string | null = null;
     if (edHasEnd) {
       const ey = parseInt(edEnd, 10);
+      const hasEndMonth = edEndMonth >= 1 && edEndMonth <= 12;
+      const endDayClamped = hasEndMonth && edEndDay >= 1 && ey ? Math.min(edEndDay, daysInMonth(String(ey), String(edEndMonth))) : null;
       date_end = ey
-        ? (edEndMonth >= 1 && edEndMonth <= 12 ? `${ey}-${String(edEndMonth).padStart(2, "0")}-01` : `${ey}-12-31`)
+        ? (hasEndMonth ? `${ey}-${String(edEndMonth).padStart(2, "0")}-${String(endDayClamped ?? 1).padStart(2, "0")}` : `${ey}-12-31`)
         : null;
-      date_end_precision = !ey ? null : edEndApprox ? "approximate" : edEndMonth >= 1 && edEndMonth <= 12 ? "month" : "year";
+      date_end_precision = !ey ? null : edEndApprox ? "approximate" : endDayClamped ? "day" : hasEndMonth ? "month" : "year";
     }
     let { error } = await supabase.from("check_ins").update({ date_start, date_end, date_start_precision, date_end_precision }).eq("id", id);
     if (error && isMissingColumnError(error)) {
@@ -210,7 +221,7 @@ export default function LocationsView() {
                       <div>
                         <div className="text-xs font-medium text-ink">Arrived</div>
                         <div className="mt-1">
-                          <MonthYearWheel month={edStartMonth} year={parseInt(edStart) || new Date().getUTCFullYear()} onMonthChange={setEdStartMonth} onYearChange={(y) => setEdStart(String(y))} approximate={edStartApprox} onApproximateChange={setEdStartApprox} />
+                          <MonthYearWheel month={edStartMonth} year={parseInt(edStart) || new Date().getUTCFullYear()} day={edStartDay} onMonthChange={setEdStartMonth} onYearChange={(y) => setEdStart(String(y))} onDayChange={setEdStartDay} approximate={edStartApprox} onApproximateChange={setEdStartApprox} />
                         </div>
                       </div>
                       <div>
@@ -220,7 +231,7 @@ export default function LocationsView() {
                         </label>
                         {edHasEnd && (
                           <div className="mt-1">
-                            <MonthYearWheel month={edEndMonth} year={parseInt(edEnd) || new Date().getUTCFullYear()} onMonthChange={setEdEndMonth} onYearChange={(y) => setEdEnd(String(y))} minYear={parseInt(edStart) || 1945} approximate={edEndApprox} onApproximateChange={setEdEndApprox} />
+                            <MonthYearWheel month={edEndMonth} year={parseInt(edEnd) || new Date().getUTCFullYear()} day={edEndDay} onMonthChange={setEdEndMonth} onYearChange={(y) => setEdEnd(String(y))} onDayChange={setEdEndDay} minYear={parseInt(edStart) || 1945} approximate={edEndApprox} onApproximateChange={setEdEndApprox} />
                           </div>
                         )}
                       </div>

@@ -112,8 +112,9 @@ export default function AccountView() {
   const [bootCamp, setBootCamp] = useState("");
   const [bootCampYear, setBootCampYear] = useState("");
   const [bootCampMonth, setBootCampMonth] = useState(0);
+  const [bootCampDay, setBootCampDay] = useState(0);
   const [bootCampApprox, setBootCampApprox] = useState(false);
-  const [existingBootCamp, setExistingBootCamp] = useState<{ place: string; year: number | null; month: number | null; approximate?: boolean } | null>(null);
+  const [existingBootCamp, setExistingBootCamp] = useState<{ place: string; year: number | null; month: number | null; day?: number | null; approximate?: boolean } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
@@ -293,6 +294,7 @@ export default function AccountView() {
         year: bootCampYear,
         fallbackYear: startYear,
         month: bootCampMonth,
+        day: bootCampDay,
         approximate: bootCampApprox,
       });
       if (res.status === "saved" || res.status === "already-there") {
@@ -300,6 +302,7 @@ export default function AccountView() {
           place: res.place,
           year: parseInt(bootCampYear) || parseInt(startYear) || null,
           month: bootCampApprox ? null : bootCampMonth || null,
+          day: bootCampApprox ? null : bootCampDay || null,
           approximate: bootCampApprox,
         });
         setBootCamp("");
@@ -439,7 +442,7 @@ export default function AccountView() {
                     {" · "}
                     {existingBootCamp.approximate
                       ? `circa ${existingBootCamp.year}`
-                      : `${existingBootCamp.month ? `${MONTHS[existingBootCamp.month - 1]} ` : ""}${existingBootCamp.year}`}
+                      : `${existingBootCamp.day && existingBootCamp.month ? `${existingBootCamp.day} ` : ""}${existingBootCamp.month ? `${MONTHS[existingBootCamp.month - 1]} ` : ""}${existingBootCamp.year}`}
                   </span>
                 ) : null}
                 <span className="mt-0.5 block text-[11px] text-faint">
@@ -460,8 +463,10 @@ export default function AccountView() {
                     <MonthYearWheel
                       month={bootCampMonth}
                       year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
+                      day={bootCampDay}
                       onMonthChange={setBootCampMonth}
                       onYearChange={(y) => setBootCampYear(String(y))}
+                      onDayChange={setBootCampDay}
                       approximate={bootCampApprox}
                       onApproximateChange={setBootCampApprox}
                     />

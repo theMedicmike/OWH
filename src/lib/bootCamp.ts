@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { bootCampsFor } from "./gazetteer";
 import { isMissingColumnError } from "./supabaseErrors";
+import { daysInMonth } from "./serviceDates";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOT CAMP — ONE BRAIN.
@@ -43,12 +44,14 @@ export async function saveBootCampCheckIn(
     fallbackYear?: string | number | null | undefined;
     /** 0 or omitted = not sure/not given. Everybody remembers the year; the month is a bonus, never required. */
     month?: number | null | undefined;
+    /** 0 or omitted = not set. Some sailors shipped through several ports close together and need the exact day. */
+    day?: number | null | undefined;
     /** "I don't remember exactly" — a different, honest answer from "I know the year but not the month." */
     approximate?: boolean | null | undefined;
     sites?: BootCampSite[];
   },
 ): Promise<BootCampSaveResult> {
-  const { branch, campName, year, fallbackYear, month, approximate, sites = [] } = opts;
+  const { branch, campName, year, fallbackYear, month, day, approximate, sites = [] } = opts;
 
   if (!campName || campName === "__other") return { status: "skipped", reason: "no camp selected" };
 
@@ -90,8 +93,10 @@ export async function saveBootCampCheckIn(
     place_name: placeName,
     notes: "Basic training / boot camp.",
   };
-  if (month && month >= 1 && month <= 12) patch.date_start = `${parsed}-${String(month).padStart(2, "0")}-01`;
-  patch.date_start_precision = approximate ? "approximate" : month && month >= 1 && month <= 12 ? "month" : "year";
+  const hasMonth = !!month && month >= 1 && month <= 12;
+  const dayClamped = hasMonth && day && day >= 1 ? Math.min(day, daysInMonth(String(parsed), String(month))) : null;
+  if (hasMonth) patch.date_start = `${parsed}-${String(month).padStart(2, "0")}-${String(dayClamped ?? 1).padStart(2, "0")}`;
+  patch.date_start_precision = approximate ? "approximate" : dayClamped ? "day" : hasMonth ? "month" : "year";
 
   const { error: patchErr } = await supabase.from("check_ins").update(patch).eq("id", newId);
   // date_start_precision (migration 0023) may not have landed yet — retry
@@ -109,7 +114,7 @@ export async function saveBootCampCheckIn(
 export async function findBootCampCheckIn(
   supabase: SupabaseClient,
   branch: string | null | undefined,
-): Promise<{ place: string; year: number | null; month: number | null; approximate: boolean } | null> {
+): Promise<{ place: string; year: number | null; month: number | null; day: number | null; approximate: boolean } | null> {
   const camps = bootCampsFor(branch);
   if (camps.length === 0) return null;
   const names = camps.map((c) => `${c.name}, ${c.region}`);
@@ -135,6 +140,7 @@ export async function findBootCampCheckIn(
     place: row.place_name,
     year: d ? d.getUTCFullYear() : null,
     month: !d || approximate ? null : d.getUTCMonth() + 1,
+    day: d && row.date_start_precision === "day" ? d.getUTCDate() : null,
     approximate,
   };
 }
