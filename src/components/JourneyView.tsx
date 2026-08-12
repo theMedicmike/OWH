@@ -480,7 +480,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
         <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[11px] leading-relaxed text-muted">
           This map only draws lines for exposures — bad air, bad water, chemicals. If what you&apos;re dealing with
           traces back to something that <em>happened</em> to you instead — a blast, a fall, an assault, hearing
-          damage — that belongs on the map too: log it as an event on <Link href="/map" className="font-semibold text-brand hover:underline">Where you served</Link>, and it will get
+          damage — log it on <Link href="/injuries" className="font-semibold text-brand hover:underline">Injuries &amp; events</Link>, and it will get
           its own connection under <Link href="/health" className="font-semibold text-brand hover:underline">Your conditions</Link>.
         </p>
 

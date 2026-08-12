@@ -111,6 +111,7 @@ export default function AboutPage() {
             "Lets the people they served with confirm what they witnessed — privately, only what they actually saw, and only for a veteran who has switched corroboration on.",
             "Lets a veteran ask anyone to confirm their record — on this app or not. A private link, no account needed, for a spouse, a battle buddy who never signed up, or a commander.",
             "Keeps a veteran's own words on the record. What they write about a place becomes a printable statement in their own voice.",
+            "Logs the injuries and events themselves — a blast, a fall, an assault, hearing damage, a burn, and more — not just the place, with the actual VA exam and diagnostic code behind each one, and a dated log of what's shown up since.",
             "Tracks the shots and vaccines a veteran received — with the actual FDA label for each one, word for word, and the dated paperwork trail nobody handed them at the time.",
             "Generates a claim packet, with the documented basis for every line in it, plus a hand-off sheet a doctor can sign.",
             "Stays with them after they file — where each claim stands, the real VA forms, and the one-year clocks that are easy to miss.",
@@ -168,6 +169,15 @@ export default function AboutPage() {
           nobody ever told them what was in the syringe or wrote down that it happened. It holds the actual
           FDA label for what a veteran was given, in plain language, plus a locator for the office that
           holds the paperwork the military never handed them.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          There&apos;s a place now for what actually happened, not just where — Injuries &amp; events. A
+          blast, a fall, hearing damage, a burn, or the kind of thing that wasn&apos;t one bad day but
+          hundreds of small ones. It asks how a veteran knows — remembered, documented, or witnessed —
+          and for combat veterans, memory alone can carry real legal weight under federal law, so the app
+          says so plainly instead of sending them hunting for paperwork that was never written. Underneath
+          every entry is a place to log what they&apos;ve noticed since, dated, in their own words —
+          because that consistency over time is exactly what an examiner is trained to look for.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           And if a claim gets denied, this app doesn&apos;t leave a veteran standing there. It explains why

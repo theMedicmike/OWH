@@ -68,10 +68,11 @@ const CORE_STEPS: Step[] = [
     points: [
       "1. Tap the spot on the map. A gold pin drops and a small tag appears at the top of the map with the nearest place name on it.",
       "2. Tap the blue “Check in here” button on that tag. This is what opens the form. Tapping the map alone will not do it.",
-      "3. Fill in the year with the slider. The month, if you remember it — months can matter.",
+      "3. Under “When were you here?”, set the Year, Month and Day wheels — the exact day matters if you hit more than one place close together, like five ports in two weeks. Don't know it that precisely? Tick “I'm not sure of the exact date — this is my best guess” and it saves as a circa year instead of forcing a guess at the month or day.",
       "4. Then the most important box in this whole app: “In your own words — what were you doing here?” Write what you did there. Loading burn pits. Working on the flight line. Sleeping fifty yards from the burn barrel. Whatever it was. As the page says, your own memory is the strongest evidence a record can carry.",
       "5. Underneath, tick what you were around. If the government already documents exposures at that spot, some will already be ticked and turned green. Read that list before you save — anything that was not you, tap it to untick it. This list goes into your packet, so only leave ticked what you were actually around.",
-      "6. Anything missing goes under “Something else? Add an exposure that isn't listed.” Then tap the blue button at the bottom to save.",
+      "6. Further down, “Did anything happen to you here? (optional)” — a blast, a fall, an injury, an assault. Tap what applies if it's tied to this specific spot. For a fuller entry — a repeated pattern rather than one day, how you know, what you've noticed since — use “Injuries & events” in the menu instead, covered further down this guide.",
+      "7. Anything missing from the exposures goes under “Something else? Add an exposure that isn't listed.” Then tap the blue button at the bottom to save.",
     ],
     warn: {
       label: "If the save button looks dead",
@@ -194,6 +195,25 @@ const MORE_STEPS: Step[] = [
       label: "If it says the feature isn't switched on yet",
       text: "That's a database update on our end, not something you did. Check back soon.",
     },
+  },
+  {
+    title: "Injuries & events — what happened, not just where",
+    body: [
+      "In the menu, its own line below “Your shot record” — “Injuries & events.”",
+      "This isn't about the place, it's about what happened there: a blast, a fall, hearing damage, a burn, an assault, and more — one bad day, or something that happened over and over.",
+      "Tap “Log an injury or event →”. First, “What happened?” — tap a chip. It's a long list on purpose, built to match how VA actually recognizes these things.",
+    ],
+    points: [
+      "Wasn't one day? Tick “This happened repeatedly, not on one day — not a single event, but a pattern over time.” That swaps in your role or unit, a from/to year, and roughly how often — for breachers, EOD, artillery, anyone whose injury came from hundreds of smaller ones, not a single date that never existed.",
+      "Otherwise, fill in where it happened (optional) and when — Year, Month, Day. Don't know it exactly? Tick “I'm not sure of the exact date — this is my best guess” and it saves as a circa year.",
+      "“How do you know?” — “I remember it,” “Someone else can confirm it,” “It's in my service or medical record,” or “I have the document.” For combat-related events, your own memory alone can carry real legal weight under federal law, and the note that appears here says exactly when that applies to you.",
+      "“In your own words (optional)” is exactly that. Nothing here is written or polished by AI — VA now screens for that kind of language, so your own specific memory is the stronger evidence anyway.",
+    ],
+    warn: {
+      label: "If Save looks dead",
+      text: "It stays grey until you've tapped what happened and one of the “How do you know?” answers — and if you ticked the repeated-event box, until you've filled in a role or unit too.",
+    },
+    tip: "Once it's saved, tap “Open” on any entry to find “What you've noticed since” — a dated log, in your own words, of what's shown up since. Add to it any time; that's what an examiner actually looks at to judge whether something's been consistent. And “What VA looks for, by injury type — the library →” on the main page lays out the real exam and diagnostic code behind TBI, amputation, hearing damage, and burns. Whatever you log here also shows up connected under “Your conditions,” the same way an exposure does.",
   },
   {
     title: "If your claim gets denied",
