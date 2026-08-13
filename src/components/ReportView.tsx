@@ -16,6 +16,7 @@ import StatementCard from "./StatementCard";
 import { CONDITION_EXPOSURES, CONDITION_INCIDENTS, EXPOSURE_LABEL, INCIDENT_LABEL, RECOGNIZED_CLASSES, type IncidentClass } from "@/lib/education";
 import { evidentiaryNoteFor } from "@/lib/incidentCopy";
 import { listStatementRequests, type WitnessStatement } from "@/lib/statementRequests";
+import { listMedications, type Medication } from "@/lib/medications";
 
 const WITNESS_TYPE_LABEL: Record<string, string> = {
   same_unit: "Served together",
@@ -31,6 +32,25 @@ function witnessDetailLine(s: WitnessStatement): string | undefined {
   const typeLabel = s.witness_type ? WITNESS_TYPE_LABEL[s.witness_type] : undefined;
   const line = [typeLabel, bits.join(" · ")].filter(Boolean).join(" — ");
   return line || undefined;
+}
+
+// ONE printed line per medication, built once and used by BOTH the browser
+// sheet and the downloaded PDF — same lockstep rule the contentions list
+// follows, so the two deliverables can never disagree. States what was taken
+// and what for; never that a drug caused anything.
+function medicationLine(m: Medication): { line: string; note?: string } {
+  const when =
+    m.started_year && m.stopped_year ? `${m.started_year}–${m.stopped_year}`
+    : m.started_year && m.still_taking ? `since ${m.started_year}, ongoing`
+    : m.started_year ? `from ${m.started_year}`
+    : m.still_taking ? "ongoing"
+    : m.stopped_year ? `until ${m.stopped_year}`
+    : null;
+  let line = m.name;
+  if (m.brand_name && m.brand_name.toLowerCase() !== m.name.toLowerCase()) line += ` (${m.brand_name})`;
+  if (m.taken_for) line += ` — reported as prescribed for ${m.taken_for}`;
+  if (when) line += `; ${when}`;
+  return { line, note: m.note ?? undefined };
 }
 
 // Exposure classes that carry a recognized presumptive pathway.
@@ -94,6 +114,7 @@ export default function ReportView() {
   const [condOnset, setCondOnset] = useState<Record<string, number>>({});
   const [condDetail, setCondDetail] = useState<Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null; diagnosed_by: string | null }>>({});
   const [incidentPlaces, setIncidentPlaces] = useState<Record<string, string[]>>({});
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
@@ -210,6 +231,11 @@ export default function ReportView() {
           })),
         );
       }
+
+      // Read through lib/medications, never a direct query — the medications
+      // table is query-isolated by scripts/coi-firewall.cjs rule 12a.
+      const meds = await listMedications(supabase);
+      if (!("error" in meds)) setMedications(meds.medications);
 
       const { data: fileList } = await supabase.storage
         .from("records")
@@ -412,6 +438,7 @@ export default function ReportView() {
         corroborations: Object.entries(corroByClass).map(
           ([c, n]) => `${n} fellow service member${n === 1 ? "" : "s"} corroborate${n === 1 ? "s" : ""} exposure to ${EXPOSURE_LABEL[c] ?? c} at ${(expoPlaces[c] ?? []).join("; ")}.`
         ),
+        medications: medications.map(medicationLine),
         witnessStatements: witnessRows,
         contentions: allContentions.map((c) => ({ label: c.label, matches: c.line, cite: c.cite, elementLine: c.elementLine })),
         attachments: records.map((r) => ({ name: r.name, isImage: r.isImage, url: r.url })),
@@ -748,6 +775,34 @@ export default function ReportView() {
             </ul>
           )}
         </section>
+
+        {/* 3b. Medications — veteran-reported fact only.
+            Deliberately does NOT assert that any medication caused anything.
+            A rater or clinician reading "prescribed for a service-connected
+            back since 2011" can raise 38 CFR 3.310 themselves; the packet
+            supplying that inference instead would be the app practicing
+            representation, which is the line it doesn't cross. */}
+        {medications.length > 0 && (
+          <section className={sectionWrap}>
+            <h3 className={sectionTitle}>3b · Medications reported by the veteran</h3>
+            <ul className="space-y-1.5">
+              {medications.map((m) => {
+                const { line, note } = medicationLine(m);
+                return (
+                  <li key={m.id} className="text-sm">
+                    {line}
+                    {note && <div className="mt-0.5 text-xs leading-relaxed text-muted">{note}</div>}
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Veteran-reported, as with every other entry in this packet. Listed because a condition caused or
+              aggravated by treatment for a service-connected disability may be claimable as secondary under
+              38 CFR 3.310 — a question for the reviewing clinician and an accredited VSO, not a claim made here.
+            </p>
+          </section>
+        )}
 
         {/* 4. Corroboration / lay statements */}
         <section className={sectionWrap}>

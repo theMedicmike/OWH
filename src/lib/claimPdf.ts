@@ -9,6 +9,9 @@ export type PdfCondition = { label: string; tag?: string; presumptive?: boolean;
 export type PdfContention = { label: string; matches: string; cite?: string; elementLine?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
 export type PdfWitnessStatement = { subject: string; witnessName: string; relationship: string; statement: string; detail?: string };
+/** One printed line per medication. Assembled in ReportView so the browser
+ *  sheet and this PDF can never disagree — same rule as the contentions list. */
+export type PdfMedication = { line: string; note?: string };
 
 export type ClaimPdfData = {
   name: string;
@@ -23,6 +26,7 @@ export type ClaimPdfData = {
   exposures: PdfExposure[];
   events: PdfEvent[];
   conditions: PdfCondition[];
+  medications: PdfMedication[];
   corroborations: string[];
   witnessStatements: PdfWitnessStatement[];
   contentions: PdfContention[];
@@ -268,6 +272,22 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
       if (c.cite) text("See Appendix A for the documented basis.", { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;
     });
+
+  // ---- 3b. Medications (veteran-reported) ----
+  // Prints WHAT and WHAT FOR, never "this drug caused that condition." A
+  // clinician or rater can raise 38 CFR 3.310 from these facts themselves;
+  // the packet asserting it would be the app practicing representation.
+  if (data.medications.length > 0) {
+    sectionHeading("3b · Medications reported by the veteran");
+    data.medications.forEach((m) => {
+      bullet(m.line, { size: 9.5 });
+      if (m.note) text(m.note, { size: 8.5, color: MUTED, indent: 12, gapAfter: 3 });
+    });
+    text(
+      "Veteran-reported. Listed because a condition caused or aggravated by treatment for a service-connected disability may be claimable as secondary under 38 CFR 3.310 — a question for the reviewing clinician and an accredited VSO, not a claim made here.",
+      { size: 8, color: FAINT, gapAfter: 4 },
+    );
+  }
 
   // ---- 4. Corroboration ----
   sectionHeading("4 · Corroboration by fellow service members");

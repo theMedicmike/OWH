@@ -57,8 +57,8 @@ export default async function ToxicantPage({ params }: { params: Promise<{ slug:
             nutrients each metal interferes with. There is no validated model from
             an exposure history to a nutrient deficit in a specific person, so the
             section asserted a calculation that does not exist — and it sat one
-            click from the metal chips in an app whose founder separately sells
-            nutritional supplements. The underlying data has been deleted from
+            click from the metal chips, turning a documentation page into a
+            "here is what to take about it" path. The underlying data has been deleted from
             toxlibrary.ts rather than unlinked; unlinked data is one refactor away
             from rendering again. Do not restore this section. */}
 

@@ -482,8 +482,8 @@ export default function EstimatorView() {
           DELETED on 2026-08-06, not relocated: there is no validated model from an
           exposure history to a nutrient deficit in a person, so it asserted a
           calculation that does not exist — and a depletion list one tap from a
-          burden estimate, in an app whose founder separately sells nutritional
-          supplements, is the click path that makes intent irrelevant. */}
+          burden estimate is the click path that makes intent irrelevant on a
+          surface whose whole job is documentation. */}
       <div className="grid gap-4">
         <div className={card}>
           <div className="text-sm font-semibold text-ink">Where these metals tend to accumulate</div>

@@ -46,6 +46,10 @@ const SECTIONS: NavSection[] = [
       // alongside it, not a numbered step. Plain name, not clinical: council
       // ruling 2026-08-11 ("Injuries & events," not "Trauma Intake").
       { href: "/injuries", label: "Injuries & events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
+      // Same reasoning as the two above — discoverable alongside them, never a
+      // numbered step. "Your medications," not "Drug side effects": the page
+      // documents what you take, it does not tell you what a drug did to you.
+      { href: "/medications", label: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
     ],
   },
   {

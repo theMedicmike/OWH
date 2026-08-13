@@ -485,9 +485,9 @@ export type SolutionPillar = {
   // be targeted at a veteran's own record. Targeting is what turned general
   // wellness copy into a personalised funnel: a veteran who logged heavy metals
   // was shown "Support natural detox" under a heading reading "Tailored to your
-  // record". The founder separately sells nutritional supplements, the nonprofit
-  // sells nothing, and no money needs to change hands for that click path to be
-  // the story. Removing the FIELDS (rather than emptying the arrays) makes the
+  // record". This app sells nothing and recommends no product, and no money needs
+  // to change hands anywhere for that click path to be the story. Removing the
+  // FIELDS (rather than emptying the arrays) makes the
   // targeting unrepresentable instead of merely absent. Do not add them back.
   //
   // `category` groups pillars for display ONLY — it is the same for every

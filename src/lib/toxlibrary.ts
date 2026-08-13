@@ -468,8 +468,8 @@ export const TOXICANTS: Toxicant[] = [
 // exposure history to a nutrient deficit in a specific person, so it asserted a
 // calculation that does not exist; and its zinc entry described zinc's role as
 // "immune function, testosterone, and antioxidant defense" while eight of sixteen
-// metals mapped to zinc — rendering "metals → low testosterone" as a data path in
-// an app whose founder separately sells nutritional supplements. Do not restore it.
+// metals mapped to zinc — rendering "metals → low testosterone" as a data path,
+// which the largest human datasets do not support. Do not restore it.
 export const ORGANS: Organ[] = [
   {
     slug: "bone", name: "Bone",

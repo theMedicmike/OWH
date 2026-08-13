@@ -13,9 +13,9 @@ import {
 // 🔴 This page is deliberately NOT personalised. It used to rank pillars against
 // the veteran's own logged exposures and conditions under a heading reading
 // "Tailored to your record" — which meant a man who logged heavy metals was shown
-// "Support natural detox" as advice matched to him. The founder separately sells
-// nutritional supplements; the nonprofit sells nothing and he takes nothing from
-// it, but no transaction is needed for that click path to read as a funnel.
+// "Support natural detox" as advice matched to him. This app sells nothing and
+// recommends no product, but no transaction is needed anywhere for that click
+// path to read as a funnel to an outside reviewer.
 // Everyone now sees the same pillars in the same order. Do not reintroduce
 // matching here — SolutionPillar no longer carries the fields to do it with.
 function PillarCard({ p }: { p: SolutionPillar }) {

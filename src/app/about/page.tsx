@@ -111,6 +111,7 @@ export default function AboutPage() {
             "Lets the people they served with confirm what they witnessed — privately, only what they actually saw, and only for a veteran who has switched corroboration on.",
             "Lets a veteran ask anyone to confirm their record — on this app or not. A private link, no account needed, for a spouse, a battle buddy who never signed up, or a commander.",
             "Keeps a veteran's own words on the record. What they write about a place becomes a printable statement in their own voice.",
+            "Keeps a veteran's medication list beside the FDA's own label for each one — because a condition caused by treatment for a service-connected disability can sometimes be claimed on its own, and almost nobody is told that.",
             "Logs the injuries and events themselves — a blast, a fall, an assault, hearing damage, a burn, and more — not just the place, with the actual VA exam and diagnostic code behind each one, and a dated log of what's shown up since.",
             "Tracks the shots and vaccines a veteran received — with the actual FDA label for each one, word for word, and the dated paperwork trail nobody handed them at the time.",
             "Generates a claim packet, with the documented basis for every line in it, plus a hand-off sheet a doctor can sign.",

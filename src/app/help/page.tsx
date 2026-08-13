@@ -219,6 +219,24 @@ const MORE_STEPS: Step[] = [
     tip: "Once it's saved, tap “Open” on any entry to find “What you've noticed since” — a dated log, in your own words, of what's shown up since. Add to it any time; that's what an examiner actually looks at to judge whether something's been consistent. And “What VA looks for, by injury type — the library →” on the main page lays out the real exam and diagnostic code behind TBI, amputation, hearing damage, and burns. Whatever you log here also shows up connected under “Your conditions,” the same way an exposure does.",
   },
   {
+    title: "Your medications — and what the FDA's own label says",
+    body: [
+      "In the menu, below “Injuries & events” — “Your medications.”",
+      "This one is about what you take, and it exists for a specific legal reason most veterans are never told: under 38 CFR §3.310, a condition that was caused or made worse by TREATMENT for something already connected to your service can sometimes be claimed on its own. Long-term anti-inflammatories for a service-connected back, for example, are a well-recognized route to a separate stomach claim.",
+      "Tap “Add a medication.” Type the name — generic or brand, whichever you know it by. It doesn't matter if it isn't in the suggestion list; the FDA's own database covers far more than we could ever list, so type it anyway.",
+    ],
+    points: [
+      "The question that matters most is “What were you taking it for?” — that's the part that decides whether the §3.310 route is even relevant to you. Answer it in your own words: “my back,” “sleep,” “PTSD.”",
+      "Then whether you're still on it, and roughly when you started and stopped. Rough is fine, as everywhere else in this app.",
+      "Open it afterward and you'll see the FDA's own label for that drug — the adverse reactions and warnings, quoted word for word, not rewritten by us and not written by AI. Alongside it, the real VA diagnostic code for any condition the label actually names.",
+    ],
+    warn: {
+      label: "What you will never see here",
+      text: "No percentages, no “you may be able to claim up to X,” and no button that adds anything to a claim for you. That is deliberate. A rating is something an examiner decides from your actual medical evidence — an app printing a number next to a drug label would be inventing an answer nobody adjudicated, and it would make your claim look worse, not better, to the person reading it.",
+    },
+    tip: "Never stop or change a prescription because of something you read here. That conversation belongs with whoever prescribed it. What this page is for is walking into your VSO's office already knowing what you take, what you take it for, and what the label actually says.",
+  },
+  {
     title: "If your claim gets denied",
     body: [
       "If one of your conditions on “Connect the dots” is marked Denied, your Dashboard shows a card: “A denial isn't the end — see your next steps →.” Tap it any time, or find it by going to that condition directly.",

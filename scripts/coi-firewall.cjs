@@ -12,9 +12,11 @@
  * record", beside copy promising to "replenish what was lost".
  *
  * Nobody wrote "heavy metals lower your testosterone" and nobody sold anything.
- * The click path was the problem. The founder of this nonprofit separately sells
- * nutritional supplements; the nonprofit sells nothing and he takes nothing from
- * it, which is exactly why the app must never assemble that path by accident.
+ * The click path was the problem. This app sells nothing and recommends no
+ * product — and a path running from a veteran's own exposure record to a
+ * "here is what to take about it" page reads as a funnel to an outside
+ * reviewer regardless of whether a transaction exists anywhere. That is why
+ * the app must never assemble that path by accident.
  *
  * Two of these rules also protect a scientific guardrail, not just a reputational
  * one: the largest human datasets find NO reduction in testosterone from heavy
@@ -105,8 +107,8 @@ const LEARN_FILES = [
 {
   // SCOPE IS DELIBERATE — these are the HEALTH-CONTENT surfaces, the places the
   // app tells a veteran something about his own body. That is where a nutrient or
-  // "detox" word does damage, because it sits next to his personal data in an app
-  // whose founder separately sells supplements.
+  // "detox" word does damage, because it sits next to his personal data on a
+  // claims-documentation surface that has no business recommending a product.
   //
   // /app/about and /app/help are NOT in this list, and that is a decision, not an
   // oversight (founder's call, 2026-08-06). Those pages carry Operation Whole
@@ -322,6 +324,103 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\
   const nextaction = read("src/lib/nextaction.ts");
   if (/service_events|shots?\b.*recordSteps|recordSteps[\s\S]{0,400}shots?/i.test(nextaction)) {
     fail("shots-no-count", "src/lib/nextaction.ts: a shots-related key appears near recordSteps() — a completeness meter can never fill for a man who cannot remember every year.");
+  }
+}
+
+// ── 12. Medications isolation + no-rating rules ─────────────────────────────
+// Council ruling 2026-08-12. The medications feature shows real FDA label text
+// and real VA diagnostic codes; it must never become (a) an exposure input,
+// (b) a rating estimator, or (c) a one-tap claim builder. All three are how the
+// benchmarked competitor product works, and all three are what the FTC's VA
+// Claims Insider action (W.D. Tex. 1:23-cv-01473) turned on.
+{
+  const MEDS_QUERY_ALLOWED = ["src/lib/medications.ts"];
+  const MEDS_FILES = [
+    ...walkAll(path.join(root, "src/app/medications")),
+    ...walkAll(path.join(root, "src")).filter((p) => /[\\/]lib[\\/]medication/i.test(p)),
+    ...walkAll(path.join(root, "src")).filter((p) => /[\\/]components[\\/]Medication/i.test(p)),
+  ].map(rel);
+
+  // 12a. Query isolation — same shape as rule 6. A medication must never be
+  // queryable as though it were an exposure. Matches the supabase call form
+  // rather than the bare word, which is ordinary English elsewhere in the app.
+  for (const p of walkAll(path.join(root, "src"))) {
+    const f = rel(p);
+    if (MEDS_QUERY_ALLOWED.includes(f)) continue;
+    if (/from\(\s*["'`]medications["'`]\s*\)/.test(read(f))) {
+      fail(
+        "meds-query-isolation",
+        `${f} queries the "medications" table outside the enumerated allowlist (${MEDS_QUERY_ALLOWED.join(", ")}). ` +
+          `A medication must never be readable as though it were an exposure.`
+      );
+    }
+  }
+
+  for (const f of MEDS_FILES) {
+    const src = stripComments(read(f));
+
+    // 12b. No percentage, rating tier, or dollar figure may EVER render here.
+    // The whole feature exists because the competitor prints "up to 100%" next
+    // to an unadjudicated AI match; that is a rating assertion no examiner made.
+    if (/\d\s*%|\bup to \d|percent\b|\brating\s*(?:of|:)\s*\d|\$\d/i.test(src)) {
+      fail(
+        "meds-no-rating",
+        `${f} contains a percentage, rating figure, or dollar amount. Medication pages carry diagnostic ` +
+          `code NUMBERS and CFR sections only — never a rating, a tier table, or "up to X%".`
+      );
+    }
+
+    // 12c. No write path from a side effect into a claim artifact.
+    if (/add to my (disabilit|claim)/i.test(src)) {
+      fail(
+        "meds-no-claim-write",
+        `${f} contains an "add to my disabilities/claim" action. A side-effect card may never write into a ` +
+          `claim artifact — that is the design pattern behind the VA Claims Insider action and it is blocked ` +
+          `pending the open 38 CFR 14.629 counsel question.`
+      );
+    }
+
+    // 12d. NO nutrient-deficiency condition may be surfaced as a medication
+    // effect. Several real drug labels name one (metformin → B12 deficiency,
+    // PPIs → magnesium), and each would render a card reading "deficiency —
+    // here is the VA code for it" one tap from a veteran's own medication list.
+    // That is the metals→detox funnel in a new costume: nobody writes the
+    // sentence, the click path writes it. It is also poor evidence — a label
+    // listing a possible deficiency says nothing about whether this veteran
+    // has one. Deficiency conditions are excluded from lib/medicationEffects.ts
+    // on purpose — this rule keeps them out.
+    // EXEMPTION, narrow and deliberate: a VERBATIM VA diagnostic-code name may
+    // legitimately contain one of these words — DC 7720 is literally titled
+    // "Iron deficiency anemia" in 38 CFR 4.117, and NSAID bleeding to anemia is
+    // a real secondary route worth documenting. Quoting a federal code name
+    // accurately is the opposite of the harm this rule guards against; editing
+    // one to satisfy a lint rule would be the actual error. So the ban applies
+    // to PROSE lines only — lines carrying a `code:`/`cfr:` citation field are
+    // exempt, and nothing else is.
+    const isCitationLine = (line) => /\bcode:\s*["'`]|\bcfr:\s*["'`]/.test(line);
+    for (const w of ["deficiency", "supplement", "nutrient", "vitamin", "detox", "replenish"]) {
+      const re = new RegExp(`\\b${w}`, "i");
+      src.split("\n").forEach((line) => {
+        if (!re.test(line) || isCitationLine(line)) return;
+        fail(
+          "meds-no-deficiency",
+          `${f} contains "${w}" outside a verbatim diagnostic-code citation: ${line.trim().slice(0, 110)}`
+        );
+      });
+    }
+
+    // 12e. Same isolation shots have, both directions: a drug is not a toxicant.
+    if (/\/learn\/|\/solutions\b/.test(src)) {
+      fail("meds-isolation", `${f} references /learn/ or /solutions — medication content must never link into the Exposure Library or the wellness pillars.`);
+    }
+    if (/@\/lib\/toxlibrary|@\/lib\/education/.test(src)) {
+      fail("meds-isolation", `${f} imports from lib/toxlibrary or lib/education — those are the Exposure Library's data files.`);
+    }
+  }
+  for (const f of LEARN_FILES) {
+    if (/\/medications\b/.test(stripComments(read(f)))) {
+      fail("meds-isolation", `${f} references /medications — the Exposure Library must never link into medication content.`);
+    }
   }
 }
 
