@@ -52,8 +52,31 @@ export default function TrustPage() {
       <H>Your data is yours</H>
       <P>
         Everything you enter is private to you, protected so that only you can read your own record, and
-        never sold. See our <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>{" "}
-        for the details.
+        never sold. You can download your whole record, print an archive copy, or permanently delete it —
+        any time, without asking anyone, from your <a href="/account" className="text-brand hover:underline">Account</a> page.
+        See our <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a> for the full details.
+      </P>
+
+      <H>If something goes wrong</H>
+      <P>
+        <strong>If we ever have a security incident that exposes your personal information</strong>, we
+        will tell you directly — by email, without unreasonable delay — what happened, what was involved,
+        and what to do next. We won&apos;t wait for you to find out some other way.
+      </P>
+      <P>
+        <strong>If Operation Whole Health ever closes</strong>, your record is deleted, not handed to
+        anyone else. We will not transfer your data — including anything you&apos;ve written about MST,
+        mental health, or anything else sensitive — to another organization, sell it as an asset, or keep
+        it running under new ownership. If we ever have advance notice this is happening, we will email
+        you first with a real window to export or delete your own record before that happens. Nothing
+        about this nonprofit&apos;s mission or funding changes that.
+      </P>
+      <P>
+        We are a small nonprofit, not a bank or a hospital system — we don&apos;t have a large compliance
+        department, and we won&apos;t pretend otherwise. What we do have is a small, well-understood set of
+        vendors (see <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>), your
+        data locked to your account alone, and a straightforward promise: it&apos;s your record, we&apos;re
+        holding it for you, and we&apos;ll act like it.
       </P>
     </InfoPage>
   );
