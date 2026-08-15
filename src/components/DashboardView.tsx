@@ -8,6 +8,9 @@ import { ServiceRibbon, Seal250, RibbonDivider } from "./Patriotic";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 import { recordProgress } from "@/lib/nextaction";
 import PresumptivePathwaysCard from "./PresumptivePathwaysCard";
+import { listServiceEvents } from "@/lib/serviceEvents";
+import { listMemberIncidents } from "@/lib/incidents";
+import { listMedications } from "@/lib/medications";
 
 
 type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
@@ -43,6 +46,12 @@ export default function DashboardView() {
   const [hasDD214, setHasDD214] = useState(false);
   const [deniedCount, setDeniedCount] = useState(0);
   const [stillServing, setStillServing] = useState(false);
+  // Shots, injuries and medications are tracked as STATE, never as a running
+  // tally. A number here would tell a veteran by arithmetic that his memory is
+  // deficient — the same reasoning that bans a count on the shots list itself.
+  const [hasShots, setHasShots] = useState(false);
+  const [hasInjuries, setHasInjuries] = useState(false);
+  const [hasMeds, setHasMeds] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -87,6 +96,22 @@ export default function DashboardView() {
       // A human is waiting — that must never be invisible on the home screen.
       setPendingReqs(allConns.filter((x) => x.direction === "received" && x.status === "pending"));
       setHasDD214(((files.data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder")).length > 0);
+
+      // The three newer sections. Each goes through its own data module — the
+      // shots and medications tables are query-isolated to those files by the
+      // COI firewall, and routing through them is what keeps that true. All
+      // three return an { error } shape rather than throwing, so an unrun
+      // migration leaves the tile reading "Not yet" instead of breaking the
+      // whole dashboard.
+      const [ev, inc, meds] = await Promise.all([
+        listServiceEvents(supabase),
+        listMemberIncidents(supabase),
+        listMedications(supabase),
+      ]);
+      setHasShots("events" in ev && ev.events.length > 0);
+      setHasInjuries("incidents" in inc && inc.incidents.length > 0);
+      setHasMeds("medications" in meds && meds.medications.length > 0);
+
       setLoaded(true);
     })();
   }, [user, supabase]);
@@ -101,16 +126,6 @@ export default function DashboardView() {
     setConfirmDel(null);
   }
 
-  const stats = [
-    { label: "Locations", value: checkins, href: "/locations" },
-    { label: "Exposures", value: counts.exposures, href: "/exposures" },
-    // Never a numeric tally of conditions — "11 conditions" is a picture of
-    // everything wrong with you. State, not score.
-    { label: "Your health", value: counts.conditions > 0 ? "On file" : "Not yet", href: "/health" },
-    { label: "Corroborations", value: counts.corroborations, href: "/buddies" },
-    { label: "Battle buddies", value: buddies.length, href: "/buddies" },
-  ];
-
   const connectedCount = condLabels.filter((label) =>
     (CONDITION_EXPOSURES[label] ?? []).some((ec) => classes.includes(ec))
   ).length;
@@ -124,6 +139,49 @@ export default function DashboardView() {
     hasDD214,
     filedConditions: filedCount,
   });
+
+  // Every section of the record gets a tile. The old five predated the shot
+  // record, injuries, medications and the packet, and two of them ("Corrobo-
+  // rations" and "Battle buddies") pointed at the same page — so a veteran
+  // could look at this grid and reasonably conclude four shipped features
+  // didn't exist. Counts only where a number is a neutral fact (places,
+  // exposures, buddies); everything health-adjacent reads as state, because
+  // "11 conditions" is a picture of everything wrong with you.
+  const stats = [
+    { label: "Locations", value: checkins, href: "/locations" },
+    { label: "Exposures", value: counts.exposures, href: "/exposures" },
+    { label: "Your health", value: counts.conditions > 0 ? "On file" : "Not yet", href: "/health" },
+    { label: "Shot record", value: hasShots ? "On file" : "Not yet", href: "/shots" },
+    { label: "Injuries & events", value: hasInjuries ? "On file" : "Not yet", href: "/injuries" },
+    { label: "Medications", value: hasMeds ? "On file" : "Not yet", href: "/medications" },
+    { label: "Battle buddies", value: buddies.length, href: "/buddies" },
+    { label: "Claim packet", value: prog.claimReady ? "Ready" : "Not yet", href: "/report" },
+  ];
+
+  // The SOP, in order: who you are → what you live with → where you served.
+  // The map comes third on purpose. A pin dropped before the app knows the
+  // veteran and their conditions has nothing to connect itself to.
+  const hasServiceInfo = !!(branch || years);
+  const startStep = !hasServiceInfo
+    ? {
+        href: "/intake",
+        cta: "Start with your service",
+        blurb:
+          "Let's start with your service — branch, years, and your job. It's short, and everything else in your record builds on it.",
+      }
+    : counts.conditions === 0
+    ? {
+        href: "/health",
+        cta: "Add what you live with",
+        blurb:
+          "Next: what you're living with now. Add the conditions and roughly when each started — that's what the rest of your record gets connected to.",
+      }
+    : {
+        href: "/map",
+        cta: "Map where you served",
+        blurb:
+          "Now the map. Drop a pin where you served and we'll show you the exposures the government already documents there — and connect them to what you've already told us.",
+      };
 
   const [reqErr, setReqErr] = useState<string | null>(null);
   async function respondReq(id: string, accept: boolean) {
@@ -163,7 +221,7 @@ export default function DashboardView() {
       <VerifyCard />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {stats.map((s) => (
           <Link
             key={s.label}
@@ -231,21 +289,31 @@ export default function DashboardView() {
             <div className="text-xs font-semibold uppercase tracking-wide text-accent">Your record</div>
             <p className="mt-1.5 text-sm text-muted">Loading your record…</p>
           </>
-        ) : checkins === 0 ? (
+        ) : !hasServiceInfo || counts.conditions === 0 || checkins === 0 ? (
           <>
-            <div className="text-xs font-semibold uppercase tracking-wide text-accent">Start here</div>
+            {/* THE ORDER IS THE POINT. This used to open every brand-new
+                veteran on "drop a pin" — which sent them to the map before the
+                app knew who they were or what they were carrying, so the pin
+                had nothing to connect to and they had to double back. Medic
+                Mike was repeating that same wrong first step, because the app
+                itself was saying it. The SOP is: service, then health, then
+                the map. Whichever of those three is missing first is the one
+                door lit here. */}
+            <div className="text-xs font-semibold uppercase tracking-wide text-accent">
+              {!hasServiceInfo ? "Start here" : "Next step"}
+            </div>
             <p className="mt-1.5 text-sm leading-relaxed text-ink">
-              Welcome{name ? `, ${name}` : ""}. The first step is the map — drop a pin where you served, and
-              we&apos;ll show you the exposures the government already documents there. That&apos;s the whole
-              idea: connect where you were to what it did to your health.
+              Welcome{name ? `, ${name}` : ""}. {startStep.blurb}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <Link href="/map" className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-                Drop your first pin on the map
+              <Link href={startStep.href} className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+                {startStep.cta}
               </Link>
-              <Link href="/intake/ai" className="text-sm font-semibold text-brand hover:underline">
-                or answer a few questions instead →
-              </Link>
+              {!hasServiceInfo && (
+                <Link href="/intake/ai" className="text-sm font-semibold text-brand hover:underline">
+                  or answer a few questions instead →
+                </Link>
+              )}
             </div>
           </>
         ) : (
