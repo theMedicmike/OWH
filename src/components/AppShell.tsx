@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { ServiceRibbon, StarRow, Anniversary250 } from "./Patriotic";
+import { ServiceRibbon, StarRow } from "./Patriotic";
 import { TextSizeControl } from "./TextSize";
 import OpsecGate from "./OpsecGate";
 
@@ -95,10 +95,10 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
     <Link
       href={item.href}
       onClick={onClick}
-      className={`flex items-center gap-3 py-2 pr-3 text-sm transition-all ${
+      className={`press flex items-center gap-3 py-2 pr-3 text-sm transition-all ${
         active
           ? "rounded-r-lg border-l-[3px] border-accent bg-white/15 pl-2.5 font-semibold text-white"
-          : "rounded-lg pl-3 text-white/65 hover:bg-white/10 hover:text-white"
+          : "rounded-lg pl-3 text-white/65 hover:translate-x-0.5 hover:bg-white/10 hover:text-white"
       }`}
     >
       {item.step ? (
@@ -158,7 +158,7 @@ export default function AppShell({ title, children }: { title: string; children:
   // line off-screen with no way to reach it, which defeats the entire point of
   // keeping 988 one tap away.
   const sidebar = (
-    <div className="flex h-full flex-col overflow-y-auto bg-brand">
+    <div className="topo-field flex h-full flex-col overflow-y-auto bg-brand">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -215,10 +215,11 @@ export default function AppShell({ title, children }: { title: string; children:
         ))}
       </div>
 
-      {/* 250th anniversary */}
+      {/* A quiet divider. The 250th-anniversary chip that used to sit here was
+          removed 2026-08-14 — a celebratory mark is the wrong note in a rail a
+          veteran opens to document what service cost him. */}
       <div className="px-3 pt-3">
-        <StarRow count={7} className="mb-2.5" />
-        <Anniversary250 />
+        <StarRow count={7} />
       </div>
 
       {/* User / sign out */}

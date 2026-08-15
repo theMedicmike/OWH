@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
-import { ServiceRibbon, Seal250, RibbonDivider } from "./Patriotic";
+import { ServiceRibbon, RibbonDivider } from "./Patriotic";
 import { CONDITION_EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 import { recordProgress } from "@/lib/nextaction";
 import PresumptivePathwaysCard from "./PresumptivePathwaysCard";
@@ -214,7 +214,6 @@ export default function DashboardView() {
               {[branch, years].filter(Boolean).join(" · ") || "Let's build your record."}
             </div>
           </div>
-          <Seal250 className="hidden sm:flex" />
         </div>
       </div>
 
@@ -226,9 +225,9 @@ export default function DashboardView() {
           <Link
             key={s.label}
             href={s.href}
-            className="group overflow-hidden rounded-xl border border-line bg-surface transition hover:border-brand/40 hover:shadow-sm"
+            className="group lift press surface-rest overflow-hidden rounded-xl border border-line bg-surface hover:border-brand/40"
           >
-            <div className="h-1 bg-accent" />
+            <div className="metal h-1" />
             <div className="p-4">
               <div className="text-2xl font-bold text-ink">{loaded ? s.value : "—"}</div>
               <div className="mt-0.5 flex items-center gap-1 text-xs leading-snug text-muted">
@@ -282,8 +281,11 @@ export default function DashboardView() {
           inside a presumptive program's dates and locations */}
       <PresumptivePathwaysCard compact />
 
-      {/* Start here (brand-new) / Resume (returning) — one lit door either way */}
-      <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
+      {/* Start here (brand-new) / Resume (returning) — one lit door either way.
+          This is the ONE raised surface on the Dashboard. Everything else rests
+          flat; the contrast between them is what makes this read as the next
+          thing to do without needing a label that says so. */}
+      <div className="surface-raise rise rise-2 rounded-xl border border-accent/30 bg-accent/5 p-5">
         {!loaded ? (
           <>
             <div className="text-xs font-semibold uppercase tracking-wide text-accent">Your record</div>

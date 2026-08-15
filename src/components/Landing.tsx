@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import AuthCard from "./AuthCard";
-import { ServiceRibbon, Anniversary250 } from "./Patriotic";
+import { ServiceRibbon } from "./Patriotic";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 
 // Show the artifact, don't describe it: this is what a finished record looks
@@ -97,7 +97,6 @@ export default function Landing() {
               <ServiceTimeline data={SAMPLE} compact />
             </div>
           </div>
-          <Anniversary250 className="w-44" />
           <div className="text-xs text-white/55">
             Free. No products. Nothing sold. Operation Whole Health, a Patriot-founded 501(c)(3).
             A record and an estimate — never a diagnosis.

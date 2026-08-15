@@ -26,6 +26,24 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* ── DEPTH ────────────────────────────────────────────────────────────
+     Direction A's layering, rendered on the light ground rather than on
+     navy (chosen 2026-08-14). Three levels, and the rule is that hierarchy
+     comes from CONTRAST between them, not from putting a border on
+     everything: `raise` is for the one primary card on a screen, `rest` for
+     ordinary surfaces, `lift` is the hover state. A page where every
+     surface is elevated reads exactly as flat as one where none is. */
+  --shadow-rest:  0 1px 2px rgba(21, 33, 46, .05);
+  --shadow-raise: 0 1px 2px rgba(21, 33, 46, .05), 0 14px 32px -12px rgba(21, 33, 46, .24);
+  --shadow-lift:  0 2px 4px rgba(21, 33, 46, .07), 0 20px 40px -14px rgba(21, 33, 46, .28);
+
+  /* Gold that reads as metal instead of mustard. Non-text only — the flat
+     accent is ~3:1 on white, so it can rule and fill but never carry words. */
+  --grad-metal: linear-gradient(145deg, #d9a353, #b8802f);
+  --grad-navy:  linear-gradient(158deg, #1d3f63, #12293f);
+
+  --ease-out: cubic-bezier(.16, .84, .44, 1);
 }
 
 html,
@@ -43,6 +61,71 @@ body {
 
 * {
   border-color: var(--color-line);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOTION — Direction B, chosen 2026-08-14.
+
+   The brief was that the app felt "static, no life." The fix is not more
+   animation; it is that things respond when a veteran touches them. Three
+   primitives, deliberately few, and every one of them opacity/transform
+   only so nothing triggers layout or repaint mid-scroll.
+
+   Hard limits, because this audience sets them: nothing lasts longer than
+   ~600ms, nothing moves more than a few pixels, and there is NO parallax,
+   no scroll-triggered reveal, and no autoplay anywhere. Visually-induced
+   dizziness is a hallmark of post-concussive and vestibular injury, which
+   is a live condition for a large share of the people using this. The
+   whole system collapses to nothing under prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1. RISE — content arrives instead of appearing. Stagger with rise-2..6. */
+@keyframes ctd-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.rise { animation: ctd-rise .5s var(--ease-out) both; }
+.rise-2 { animation-delay: .06s; }
+.rise-3 { animation-delay: .12s; }
+.rise-4 { animation-delay: .18s; }
+.rise-5 { animation-delay: .24s; }
+.rise-6 { animation-delay: .30s; }
+
+/* 2. PRESS — the control pushes back under the thumb. This is the single
+      biggest contributor to "feels alive"; a button that does not move on
+      touch reads as a picture of a button. */
+.press { transition: transform .14s var(--ease-out), background-color .14s var(--ease-out), box-shadow .14s var(--ease-out); }
+.press:active { transform: scale(.972); }
+
+/* 3. LIFT — a card acknowledges the cursor. Paired with press on anything
+      that is both hoverable and tappable. */
+.lift { transition: transform .18s var(--ease-out), box-shadow .18s var(--ease-out), border-color .18s var(--ease-out); }
+.lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+.lift:active { transform: translateY(0) scale(.99); }
+
+/* Depth helpers, so a page picks a level explicitly rather than inheriting
+   a border on every box. */
+.surface-rest  { box-shadow: var(--shadow-rest); }
+.surface-raise { box-shadow: var(--shadow-raise); }
+
+/* Direction A's contour field, kept as a texture rather than an image: no
+   external asset, no stock photography of veterans (which reads false), and
+   it costs nothing to load. Sits behind navy headers only. */
+.topo-field {
+  background-image:
+    repeating-radial-gradient(ellipse 140% 90% at 18% -20%,
+      rgba(150, 196, 240, .07) 0 1px, transparent 1px 22px),
+    repeating-radial-gradient(ellipse 120% 80% at 88% 10%,
+      rgba(150, 196, 240, .05) 0 1px, transparent 1px 28px);
+}
+
+/* The one gold that is allowed to look like metal. Never behind text. */
+.metal { background-image: var(--grad-metal); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; opacity: 1; transform: none; }
+  .press, .lift { transition: none; }
+  .press:active, .lift:hover, .lift:active { transform: none; }
 }
 
 /* The claim packet is meant to be printed and handed to a VSO. Browsers strip
