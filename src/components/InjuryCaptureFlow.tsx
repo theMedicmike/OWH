@@ -251,8 +251,8 @@ export default function InjuryCaptureFlow() {
               className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
             />
             <p className="mt-1 text-[11px] leading-relaxed text-faint">
-              VA now screens statements for AI-generated and copy-paste language — your own specific memory is
-              stronger evidence than polished wording. This app never writes it for you.
+              Your own specific memory — details only you would know — is stronger evidence than polished
+              wording. This app never writes it for you.
             </p>
           </div>
 
