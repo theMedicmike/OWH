@@ -26,9 +26,18 @@ export const SAMPLE: TimelineData = {
   ],
 };
 
+// These four are the ACTUAL order a veteran works in, and that is the point.
+// This list used to open on "Map where you served," which read as step one and
+// matched what the Dashboard and Medic Mike were both saying — send them
+// straight to the map. That was backwards: a pin dropped before the app knows
+// who someone is and what they are carrying has nothing to connect itself to,
+// so they double back and redo the work. Service, then health, then the map.
+// If this list is ever reordered again, the Dashboard's start-here card and
+// Medic Mike's WHERE SOMEONE STARTS block have to move with it.
 const POINTS = [
-  { title: "Map where you served", body: "Every base, deployment, and war zone — your whole timeline, from day one." },
-  { title: "Document what you were exposed to", body: "Burn pits, heavy metals, solvents, PFAS, radiation — tagged to the place and year." },
+  { title: "Start with your service", body: "Branch, years, and your job. It's short — and everything else in your record is built on it." },
+  { title: "Say what you live with now", body: "The conditions you're carrying, and roughly when each one started. This is what the rest gets connected to." },
+  { title: "Map where you served", body: "Every base, deployment, and war zone — and we'll show you what the government already documents in that ground." },
   { title: "Build the proof", body: "Corroborate with the buddies who were there, and generate a cited packet for your clinician and VSO." },
 ];
 

@@ -61,7 +61,7 @@ const CORE_STEPS: Step[] = [
   {
     title: "Mark where you served — in your own words",
     body: [
-      "In the menu, tap 2 “Where you served.” There are two ways in, and they behave differently — use whichever suits you.",
+      "In the menu, tap 3 “Where you served.” There are two ways in, and they behave differently — use whichever suits you.",
       "Easiest: search for it. Type the name into the box at the top — “Find your base — type its name (e.g. Balad, Lejeune, Bagram)” — and tap your base in the list that drops down. The map flies there and the check-in form opens straight away, so skip to point 3 below. On a phone that form opens underneath the map: scroll down.",
       "Or drop the pin yourself:",
     ],
@@ -109,7 +109,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "Add what you live with, in detail",
     body: [
-      "Menu → 4 “Your conditions.” Search for it, tap it from the row of common ones, or type your own under “＋ Something else — type it yourself.”",
+      "Menu → 2 “Your conditions.” Search for it, tap it from the row of common ones, or type your own under “＋ Something else — type it yourself.”",
       "These are not checkboxes. You tap a condition and it saves instantly — it turns dark blue with a tick and it is done. There is no Save button and you do not need one. To take one off, there is a small grey “remove” link.",
       "Under each one, tap “Add details (optional)” — it says “Edit details” once you have answered something. It opens three or four short questions; the last one only appears once you have added more than one condition. Two are worth your attention:",
     ],
@@ -122,7 +122,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "See how it all connects",
     body: [
-      "Menu → 3 “Connect the dots.”",
+      "Menu → 4 “Connect the dots.”",
       "Near the top is “Presumptive pathways” — it checks your logged service dates and locations against programs like the PACT Act, Agent Orange, Camp Lejeune, Gulf War and radiation, and flags anything that may apply. It only ever flags a question for your VSO to confirm — never a yes.",
       "This is the big picture: your exposures down one side, your conditions down the other, and lines drawn between the ones the government already links. Tap any line to see the citation behind it.",
       "There is a lot more on this page — your service timeline, where each claim stands (“Not filed” / “Filed” / “Granted” / “Denied”), the VA's own form numbers, and date boxes that work out the one-year clocks for you. There is a “Print / Save as PDF to share” button at the top.",
