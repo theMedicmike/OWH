@@ -424,6 +424,43 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\
   }
 }
 
+// ── 13. Medic Mike symptom→claimability routing must stay wired ─────────────
+// Council ruling 2026-08-14 refused "describe your symptoms, get claimable
+// conditions" in any form: free-text symptoms matched to candidate conditions
+// is differential diagnosis regardless of wording, and it sits inside the open
+// 38 CFR 14.629 question. The council was explicit that the guardrail be a
+// PRODUCT-LEVEL routing rule, not prompt language — "prompt discipline is a
+// second layer on top of that routing, never the only layer." A prompt edit
+// can silently delete a prompt rule; this asserts the code path survives.
+{
+  const lib = read("src/lib/medicMike.ts");
+  if (!/export function medicMikeSymptomRoute/.test(lib)) {
+    fail(
+      "mike-symptom-routing",
+      "src/lib/medicMike.ts no longer exports medicMikeSymptomRoute(). That function is the deterministic " +
+        "backstop behind the no-symptom-matching rule; the system prompt alone is not an acceptable guardrail."
+    );
+  }
+  const route = read("src/app/api/medic/route.ts");
+  if (!/medicMikeSymptomRoute/.test(route)) {
+    fail(
+      "mike-symptom-routing",
+      "src/app/api/medic/route.ts does not call medicMikeSymptomRoute(). The routing rule must run on the " +
+        "INBOUND message, before the model is called — an unwired guardrail is not a guardrail."
+    );
+  }
+  // It must gate BEFORE the model call, not filter the reply afterwards.
+  const gateIdx = route.indexOf("medicMikeSymptomRoute");
+  const modelIdx = route.indexOf("anthropic.messages.create");
+  if (gateIdx >= 0 && modelIdx >= 0 && gateIdx > modelIdx) {
+    fail(
+      "mike-symptom-routing",
+      "src/app/api/medic/route.ts calls medicMikeSymptomRoute() AFTER anthropic.messages.create(). It must " +
+        "intercept before the model runs, so the inference is never attempted."
+    );
+  }
+}
+
 // ── report ──────────────────────────────────────────────────────────────────
 if (failures.length) {
   console.error("\n  COI FIREWALL FAILED — build stopped\n");

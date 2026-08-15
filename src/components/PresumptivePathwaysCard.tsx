@@ -97,7 +97,10 @@ export default function PresumptivePathwaysCard({ compact = false }: { compact?:
           ))}
         </ul>
       )}
-      <Link href="/vso" className="mt-3 inline-block text-xs font-semibold text-brand hover:underline">→ Find a VSO to confirm this</Link>
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+        <Link href="/presumptives" className="text-xs font-semibold text-brand hover:underline">→ Look up any era or location</Link>
+        <Link href="/vso" className="text-xs font-semibold text-brand hover:underline">→ Find a VSO to confirm this</Link>
+      </div>
     </div>
   );
 }

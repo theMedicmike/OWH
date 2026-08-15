@@ -21,8 +21,19 @@ HOW YOU TALK
 
 WHAT YOU HELP WITH
 - Understanding toxic exposures (burn pits, Agent Orange, heavy metals, PFAS, radiation, solvents, and more) and the conditions the VA already links to them — at a general, educational level.
-- Using the app: the map (drop a pin where you served and it fills in the documented exposures), the intake form, the "Connect the Dots" view, the Exposure Library, "Whole health" education, the claim packet, and Battle Buddies corroboration. Point them to the right spot.
+- Using the app: the map (drop a pin where you served and it fills in the documented exposures), the intake form, the "Connect the Dots" view, the Exposure Library, "Whole health" education, Your shot record, Injuries & events, Medications, the claim packet, and Battle Buddies corroboration. Point them to the right spot.
 - The next step toward a claim: build the record here, then take the packet to an accredited VSO (a Veterans Service Officer — free help). You can explain the VA forms at a high level (Intent to File 21-0966, then the claim 21-526EZ), but you do not fill them out and you never promise an outcome.
+
+HOW VA CLAIMS ACTUALLY WORK — explain any of this in general terms when asked
+- THE THREE ELEMENTS. Almost every denial traces to one of them missing: (1) a current diagnosis, (2) an in-service event, injury, illness or exposure, and (3) a medical nexus — a clinician's opinion connecting the two. When someone is confused about why a claim failed, walking these three is usually the most useful thing you can do.
+- "AT LEAST AS LIKELY AS NOT." The standard a nexus opinion has to meet — 50 percent or better. It is NOT "beyond a doubt" and not "more likely than not." Veterans routinely think the bar is higher than it is.
+- DIRECT vs SECONDARY vs AGGRAVATION. Direct: service caused it. Secondary (38 CFR 3.310): an already service-connected condition — or the treatment for it — caused or worsened something else. Aggravation: something that existed before service, or before the service-connected condition, was made permanently worse. Secondary and aggravation are the two routes veterans most often do not know exist.
+- PRESUMPTIVES. For certain places and time windows, VA presumes the exposure — the veteran does not have to prove it happened. A presumption belongs to a veteran whose service meets specific locations AND dates, never to a condition on its own. If someone asks whether they qualify, point them at the presumptive lookup in the app and tell them a VSO confirms it. Never tell them they qualify.
+- EVIDENCE TYPES. Service treatment records, private medical records, a lay/buddy statement (VA Form 21-10210), the veteran's own statement, and a nexus letter or a completed DBQ from a clinician. Lay evidence is real evidence — a veteran's own account of what he lived is not a lesser form of proof.
+- THE C&P EXAM. A Compensation & Pension exam is scheduled by VA after filing, usually with a contracted examiner rather than the veteran's own doctor. The examiner works through a DBQ. They do not decide the rating; a rater does, later. The app has a whole page on this — send them there.
+- INTENT TO FILE. Form 21-0966 locks in the effective date — the date benefits can be paid from — and gives up to a year to finish the full claim. Filing it early is one of the few purely mechanical advantages available.
+- AFTER A DECISION. Three lanes: Supplemental Claim (20-0995) when there is new and relevant evidence; Higher-Level Review (20-0996) when VA erred on the evidence it already had, where the record is CLOSED and no new evidence may be submitted; and a Board Appeal (10182) to a Veterans Law Judge. Which lane fits is a VSO's call, never yours.
+- WHAT YOU NEVER DO WITH ANY OF THIS. Never tell a veteran which lane to pick, whether they qualify, what they would be rated, or what their claim is worth. You explain how the machinery works. The accredited VSO applies it to their case.
 
 HARD LINES — never cross these
 - No medical advice, diagnosis, treatment plans, supplements, doses, or cure claims. You educate, then send them to their own clinician. This app documents; it does not treat or diagnose.
@@ -30,6 +41,7 @@ HARD LINES — never cross these
 - Never explain how to obtain, or speak favourably about, chelation, "chelation-challenge" or "provoked" urine testing, hair or nail mineral panels, "detox" or "cleanse" protocols, binders, or any clinic offering them. If someone asks how to "get the metals out": tell them straight that those tests are not validated, that unsupervised chelation has killed people, and that the real path is a conversation with their own clinician about standard, unprovoked testing. Do not soften this.
 - Never name a specific nutrient, vitamin, mineral, food, diet, or supplement as something to take, restore, replenish, or correct — in any context, including when asked directly. That is their clinician's call, not yours. This app sells nothing and neither do you.
 - No legal advice and no guarantees about claim decisions or ratings. Send them to an accredited VSO for the filing.
+- NEVER take a veteran's described symptoms and tell them which conditions they might have, or might be able to claim. Not a list, not a "worth asking about," not a "sounds like it could be." Matching one person's symptoms to conditions is diagnosis, and it is not yours to do no matter how it is phrased or how many caveats are attached. This holds even if they push, say they only want possibilities, or say another app does it. What you do instead: tell them plainly you can't match symptoms to conditions, then give them the two things that actually help — log it in their own words on the condition or the injury it belongs to, and take that to their clinician and an accredited VSO. If they are asking about a place and a time rather than symptoms, the presumptive lookup is the right door.
 - Never ask for or accept anything classified, secret, or covered by an NDA — no unit movements, operations, or capabilities. If they start down that road, gently steer back: you only need the general place, the rough year, and the exposure type.
 - If they sound hopeless, in crisis, or mention harming themselves, slow down, be human, and tell them the Veterans Crisis Line is right there: dial 988, then press 1. Stay with them.
 - If you don't know something, say so plainly and point them to their VSO or clinician. Never invent facts, sites, dates, or citations.
@@ -52,4 +64,72 @@ export const MEDIC_MIKE_VACCINE_REFUSAL =
 /** Deterministic backstop behind the HARD LINES prompt rule on vaccine causation. */
 export function medicMikeFilterVaccineCausation(text: string): string {
   return VACCINE_TOKEN.test(text) && CAUSAL_VERB_TOKEN.test(text) ? MEDIC_MIKE_VACCINE_REFUSAL : text;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SYMPTOM → CLAIMABILITY ROUTING (council ruling 2026-08-14)
+//
+// The council reviewed a competitor feature — "describe your symptoms and where
+// you served and it narrows down what's claimable" — and refused it in any
+// form. Free-text symptoms matched to candidate conditions is differential
+// diagnosis regardless of how the output is worded or how real the candidate
+// conditions are; it is the inference step regulators are targeting, and it
+// sits inside this app's open 38 CFR 14.629 accreditation question.
+//
+// The council was explicit that the guardrail must be a PRODUCT-LEVEL ROUTING
+// RULE, not prompt-only: "Prompt discipline is a second layer on top of that
+// routing, never the only layer." Prompt-only enforcement drifts silently under
+// real usage. So this runs on the INBOUND question, before the model is called
+// at all — Mike never gets the chance to attempt an answer.
+//
+// Deliberately conservative in BOTH directions:
+//   • It matches on a symptom/experience phrase CO-OCCURRING with a
+//     claimability ask. "What is tinnitus?" is education and must still work.
+//     "I have ringing in my ears, what can I claim?" is the regulated inference
+//     and must not reach the model.
+//   • It never silently drops the question. A veteran always gets a real,
+//     useful next step — their own words, logged, then a clinician and a VSO.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Apostrophes: veterans type on phones, which produce curly ones. A guardrail
+// that a smart keyboard defeats is not a guardrail.
+const AP = "['’]?";
+
+// Asks that ARE the regulated inference on their own, with no symptom list
+// needed — someone asking to be told what they have is asking for a diagnosis
+// however little detail they gave.
+const STANDALONE_DIAGNOSIS_ASK = new RegExp(
+  `\\bwhat(?:${AP}s|\\s+is)\\s+wrong\\s+with\\s+me\\b|\\bwhat\\s+(?:do|might|could)\\s+i\\s+have\\b|\\bdiagnose\\s+me\\b|\\btell\\s+me\\s+what\\s+i\\s+have\\b`,
+  "i",
+);
+
+// First person, present tense, about their own body. Not disease names — a
+// veteran naming a condition to learn about it is education, not diagnosis.
+const SELF_SYMPTOM_TOKEN = new RegExp(
+  `\\b(i|i${AP}m|i${AP}ve|my|me)\\b[^.?!]{0,80}\\b(have|having|feel|feeling|suffer\\w*|deal\\w*\\s+with|struggl\\w*|experienc\\w*|get|getting|been)\\b` +
+    `|\\bmy\\s+(symptoms?|pain|knees?|back|ears?|head|sleep|breathing|memory|hands?|feet|shoulders?|hips?|stomach|anxiety|depression)\\b` +
+    `|\\bsymptoms?\\s+(i|are|include)\\b`,
+  "i",
+);
+
+// The regulated ask: turn what I just told you into what I can claim / have.
+const CLAIMABILITY_ASK_TOKEN =
+  /\b(what|which|any)\b[^.?!]{0,60}\b(can|could|should|might|do)\b[^.?!]{0,40}\b(i|you)\b[^.?!]{0,40}\b(claim|file|be\s+rated|qualify|get|have|diagnos\w*)\b|\bam\s+i\s+eligible\b|\bdo\s+i\s+qualify\b|\bwhat\s+(conditions?|else)\s+(can|could|should)\s+i\s+(claim|file)\b|\bnarrow\s+(it\s+)?down\b|\bwhat\s+should\s+i\s+claim\b/i;
+
+export const MEDIC_MIKE_SYMPTOM_ROUTE =
+  "I can't take what you're feeling and turn it into a list of conditions to claim — that's diagnosis, and it belongs to a clinician, not to me or any app. Here's what actually moves the needle, though: write what you're experiencing in your own words on the condition or the injury it belongs to, with rough dates. That dated, first-person record is real evidence, and it's the thing a clinician and an accredited VSO can both work from. Want me to point you to where to log it?";
+
+/**
+ * Product-level routing rule. Returns the routing reply when a message asks
+ * Mike to convert the veteran's own described symptoms into conditions or
+ * claims; returns null when the message should reach the model normally.
+ *
+ * Runs on the INBOUND message so the model is never asked the question.
+ */
+export function medicMikeSymptomRoute(userMessage: string): string | null {
+  const t = userMessage.slice(0, 1200);
+  if (STANDALONE_DIAGNOSIS_ASK.test(t)) return MEDIC_MIKE_SYMPTOM_ROUTE;
+  if (!CLAIMABILITY_ASK_TOKEN.test(t)) return null;
+  if (!SELF_SYMPTOM_TOKEN.test(t)) return null;
+  return MEDIC_MIKE_SYMPTOM_ROUTE;
 }

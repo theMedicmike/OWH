@@ -50,6 +50,13 @@ const SECTIONS: NavSection[] = [
       // numbered step. "Your medications," not "Drug side effects": the page
       // documents what you take, it does not tell you what a drug did to you.
       { href: "/medications", label: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
+      // Council ruling 2026-08-14. Dropdown-only lookup of the PUBLISHED
+      // presumptive lists — where and when only, never a question about the
+      // veteran's health. The symptom-driven version veterans asked for was
+      // refused outright: matching described symptoms to claimable conditions
+      // is diagnosis. If a free-text box ever appears in that flow, this
+      // becomes the feature the council said no to.
+      { href: "/presumptives", label: "What VA presumes", d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
     ],
   },
   {
