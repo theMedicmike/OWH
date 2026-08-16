@@ -115,6 +115,7 @@ export default function AboutPage() {
             "Logs the injuries and events themselves — a blast, a fall, an assault, hearing damage, a burn, and more — not just the place, with the actual VA exam and diagnostic code behind each one, and a dated log of what's shown up since.",
             "Takes a symptom before anyone knows what it is. A bad night at 2 a.m., written down and dated in your own words, with no condition to pick and no category to choose — filed against the right condition later, when you know, or when a VSO helps you work it out.",
             "Explains the C&P exam before the letter arrives — what it is, who actually examines you, what they're filling out, and what happens if you can't make it.",
+            "Finds free accredited help by ZIP code, from the VA's own accreditation lists — the organizations near you that will take your claim at no cost, with a number you can call today.",
             "Tracks the shots and vaccines a veteran received — with the actual FDA label for each one, word for word, and the dated paperwork trail nobody handed them at the time.",
             "Generates a claim packet, with the documented basis for every line in it, plus a hand-off sheet a doctor can sign.",
             "Stays with them after they file — where each claim stands, the real VA forms, and the one-year clocks that are easy to miss.",
@@ -189,6 +190,17 @@ export default function AboutPage() {
           it&apos;s dated and saved, no category to pick. File it against the right condition later, when you
           know, or when a VSO helps you work it out. No score to slide, no streak to keep. Just somewhere for
           it to go at two in the morning.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          And you can now find free help by ZIP code, right here, from the VA&apos;s own accreditation lists.
+          For a long time this app told a veteran to go find a VSO and then handed him off to somebody
+          else&apos;s website to do it — which is exactly the kind of hand-off that loses people. Type five
+          digits and it shows who is accredited near you, free organizations first, with a number to call.
+          Testing it taught us something worth saying out loud: in one downtown ZIP the only accredited people
+          registered were attorneys who may charge a fee, while the free VSOs served that same city from a few
+          blocks over. So when nothing free sits in your exact ZIP, the search widens rather than leading with
+          the paid list. A VSO is free, every time, and no postcode boundary is going to make this app imply
+          otherwise. We take nothing from anyone on that list, and we have no relationship with any of them.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           And if a claim gets denied, this app doesn&apos;t leave a veteran standing there. It explains why
