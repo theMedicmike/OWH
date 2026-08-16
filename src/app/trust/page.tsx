@@ -1,6 +1,10 @@
 import InfoPage, { H, P } from "@/components/InfoPage";
 
-export const metadata = { title: "What this is — and what it isn't" };
+export const metadata = {
+  title: "What this is — and what it isn't",
+  description:
+    "Who builds Connecting the Dots of Service, where the science comes from, and the honest limits: it is not the VA, not legal representation, and not a diagnosis. What happens to your record on a breach, or if the nonprofit closes.",
+};
 
 export default function TrustPage() {
   return (

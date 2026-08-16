@@ -4,7 +4,11 @@ import PrintButton from "@/components/PrintButton";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 
-export const metadata = { title: "For your clinician" };
+export const metadata = {
+  title: "For your clinician",
+  description:
+    "A printable one-page primer for a doctor asked to support a veteran's VA claim: what a Disability Benefits Questionnaire is, what \"at least as likely as not\" means, and the difference between a direct and a secondary nexus opinion under 38 CFR 3.310.",
+};
 
 // A one-page primer to hand a TREATING clinician — public, no-login, since
 // the whole point is a veteran can print or link this to someone who's

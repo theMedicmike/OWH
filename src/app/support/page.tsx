@@ -1,6 +1,10 @@
 import InfoPage, { H, P } from "@/components/InfoPage";
 
-export const metadata = { title: "Support — you are not alone" };
+export const metadata = {
+  title: "Support — you are not alone",
+  description:
+    "The Veterans Crisis Line is 988, then press 1 — free, confidential, 24 hours a day, and you do not have to be in crisis to call. Where else to turn, and how to reach Operation Whole Health.",
+};
 
 export default function SupportPage() {
   return (

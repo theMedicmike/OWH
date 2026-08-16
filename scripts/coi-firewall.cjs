@@ -182,6 +182,12 @@ const LEARN_FILES = [
     // the one non-government name on the list, explicitly approved by the
     // founder and rendered with a "Partner nonprofit, not VA" label in the UI.
     "samhsa.gov", "woundedwarriorproject.org",
+    // schema.org — NOT an outbound link and never rendered as one. It is the
+    // vocabulary namespace identifier inside JSON-LD structured data
+    // (`"@context": "https://schema.org"`), which is how search engines and AI
+    // assistants are told what this nonprofit IS. Nothing is fetched from it
+    // and a veteran can never click it. Added 2026-08-14 for the SEO pass.
+    "schema.org",
   ];
   const walk = (dir) =>
     fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
