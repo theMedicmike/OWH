@@ -63,6 +63,7 @@ const CORE_STEPS: Step[] = [
     body: [
       "In the menu, tap 2 “Your conditions.” Search for it, tap it from the row of common ones, or type your own under “＋ Something else — type it yourself.”",
       "This comes before the map on purpose. Once the app knows what you are carrying, everything you put on the map afterwards has something to connect itself to.",
+      "At the top of that page there is a box headed “Something going on? Write it down.” Use it when something is happening and you do not know what it is or which condition it belongs to — that is the normal case, not a failure. Type a line, set the date if it was not today, tap “Save it,” and it is on your record. No category, no score, nothing to pick first. Later, when you know — or when a VSO helps you work it out — there is a “File under” dropdown on that note to put it with the right condition, and it keeps the date you wrote it.",
       "These are not checkboxes. You tap a condition and it saves instantly — it turns dark blue with a tick and it is done. There is no Save button and you do not need one. To take one off, there is a small grey “remove” link.",
       "Under each one, tap “Add details (optional)” — it says “Edit details” once you have answered something. It opens three or four short questions; the last one only appears once you have added more than one condition. Two are worth your attention:",
     ],
@@ -269,6 +270,7 @@ const MORE_STEPS: Step[] = [
       "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required.",
       "Your locations and your exposures — on your Dashboard, tap the tile marked “Locations” or the one marked “Exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
       "“Whole health” (under Learn & live well) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
+      "“What VA presumes” — pick a branch, an era, and where you were, and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
       "“Your C&P exam, demystified” (also under Learn & live well) — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up.",
       "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It carries no personal information, so it's safe to print once and keep on hand.",
     ],

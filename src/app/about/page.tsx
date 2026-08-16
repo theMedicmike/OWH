@@ -113,6 +113,8 @@ export default function AboutPage() {
             "Keeps a veteran's own words on the record. What they write about a place becomes a printable statement in their own voice.",
             "Keeps a veteran's medication list beside the FDA's own label for each one — because a condition caused by treatment for a service-connected disability can sometimes be claimed on its own, and almost nobody is told that.",
             "Logs the injuries and events themselves — a blast, a fall, an assault, hearing damage, a burn, and more — not just the place, with the actual VA exam and diagnostic code behind each one, and a dated log of what's shown up since.",
+            "Takes a symptom before anyone knows what it is. A bad night at 2 a.m., written down and dated in your own words, with no condition to pick and no category to choose — filed against the right condition later, when you know, or when a VSO helps you work it out.",
+            "Explains the C&P exam before the letter arrives — what it is, who actually examines you, what they're filling out, and what happens if you can't make it.",
             "Tracks the shots and vaccines a veteran received — with the actual FDA label for each one, word for word, and the dated paperwork trail nobody handed them at the time.",
             "Generates a claim packet, with the documented basis for every line in it, plus a hand-off sheet a doctor can sign.",
             "Stays with them after they file — where each claim stands, the real VA forms, and the one-year clocks that are easy to miss.",
@@ -179,6 +181,14 @@ export default function AboutPage() {
           says so plainly instead of sending them hunting for paperwork that was never written. Underneath
           every entry is a place to log what they&apos;ve noticed since, dated, in their own words —
           because that consistency over time is exactly what an examiner is trained to look for.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          And there&apos;s finally somewhere to put a symptom you can&apos;t name yet. Veterans kept telling us
+          the same thing: something is happening, they don&apos;t know what it is or what it belongs to, so they
+          say nothing and it&apos;s gone. Now it&apos;s a box at the top of Your conditions — write the line,
+          it&apos;s dated and saved, no category to pick. File it against the right condition later, when you
+          know, or when a VSO helps you work it out. No score to slide, no streak to keep. Just somewhere for
+          it to go at two in the morning.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           And if a claim gets denied, this app doesn&apos;t leave a veteran standing there. It explains why
