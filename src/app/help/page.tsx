@@ -1,7 +1,7 @@
 import AppShell from "@/components/AppShell";
 import { ServiceRibbon } from "@/components/Patriotic";
 
-// PART ONE is four steps and ends at a packet in your hand. A veteran who does
+// PART ONE is five steps and ends at a packet in your hand. A veteran who does
 // only Part One is finished, and this page says so out loud, twice. Everything
 // else is Part Two and is explicitly optional.
 //
@@ -56,7 +56,21 @@ const CORE_STEPS: Step[] = [
       label: "If you get a red line",
       text: "You must put a year on every place, and a guess is fine. Leave it blank and you will get a red line asking for the year you arrived. That is not the app rejecting you — it is just asking. Nobody remembers the exact month they landed thirty or forty years later, and nobody expects you to.",
     },
-    tip: "Tap “Save & continue →” at the bottom of each screen, and “Save my record →” at the end. About that gold link at the top of the page reading “Prefer to talk? Voice guided intake →”: fair warning, because the label is wrong. That screen is a typed conversation — there is no microphone on it. You type your answers into a box and tap “Send.” And it does not save for you: when it works out a place it shows you a box headed “Proposed check-in,” and nothing goes on your record until you read it and tap “Save to my timeline.” If you want to actually talk to something, that is “Talk to Medic Mike” — step 5.",
+    tip: "Tap “Save & continue →” at the bottom of each screen, and “Save my record →” at the end. About that gold link at the top of the page reading “Prefer to talk? Voice guided intake →”: fair warning, because the label is wrong. That screen is a typed conversation — there is no microphone on it. You type your answers into a box and tap “Send.” And it does not save for you: when it works out a place it shows you a box headed “Proposed check-in,” and nothing goes on your record until you read it and tap “Save to my timeline.” If you want to actually talk to something, that is “Talk to Medic Mike” — step 6.",
+  },
+  {
+    title: "Add what you live with",
+    body: [
+      "In the menu, tap 2 “Your conditions.” Search for it, tap it from the row of common ones, or type your own under “＋ Something else — type it yourself.”",
+      "This comes before the map on purpose. Once the app knows what you are carrying, everything you put on the map afterwards has something to connect itself to.",
+      "These are not checkboxes. You tap a condition and it saves instantly — it turns dark blue with a tick and it is done. There is no Save button and you do not need one. To take one off, there is a small grey “remove” link.",
+      "Under each one, tap “Add details (optional)” — it says “Edit details” once you have answered something. It opens three or four short questions; the last one only appears once you have added more than one condition. Two are worth your attention:",
+    ],
+    points: [
+      "When did it start? If something started before you shipped, or before an exposure, that is not a dead end. The VA can still connect a condition that already existed if service made it permanently worse — that is called aggravation, and the app now says so in plain English. Ask your VSO whether that applies to you.",
+      "“Did this come from another one of these?” If one of your conditions grew out of another one, say so here. That is a real route, and your VSO will know what to do with it.",
+      "Further down in that same panel is “How this has affected you — dated.” Tap “+ Add how this has affected you” any time — a dated note, in your own words, about what the condition has actually kept you from doing. This is what shows a condition has been consistent over time, not a one-time complaint.",
+    ],
   },
   {
     title: "Mark where you served — in your own words",
@@ -104,19 +118,6 @@ const MORE_STEPS: Step[] = [
       "To talk instead of type, tap the round microphone button on the LEFT side of the typing box. It turns red while it is listening and sends by itself when you stop talking. The first time you tap it, your phone will ask permission to use the microphone — tap “Allow.”",
       "Mike talks back out loud by default. If you would rather he did not, tap the small speaker icon up in his header to shut his voice off.",
       "If you do not see a microphone at all, your browser does not support it — that is common on older iPhones. Nothing is broken. Type your question instead, or open the app in Chrome or Edge.",
-    ],
-  },
-  {
-    title: "Add what you live with, in detail",
-    body: [
-      "Menu → 2 “Your conditions.” Search for it, tap it from the row of common ones, or type your own under “＋ Something else — type it yourself.”",
-      "These are not checkboxes. You tap a condition and it saves instantly — it turns dark blue with a tick and it is done. There is no Save button and you do not need one. To take one off, there is a small grey “remove” link.",
-      "Under each one, tap “Add details (optional)” — it says “Edit details” once you have answered something. It opens three or four short questions; the last one only appears once you have added more than one condition. Two are worth your attention:",
-    ],
-    points: [
-      "When did it start? If something started before you shipped, or before an exposure, that is not a dead end. The VA can still connect a condition that already existed if service made it permanently worse — that is called aggravation, and the app now says so in plain English. Ask your VSO whether that applies to you.",
-      "“Did this come from another one of these?” If one of your conditions grew out of another one, say so here. That is a real route, and your VSO will know what to do with it.",
-      "Further down in that same panel is “How this has affected you — dated.” Tap “+ Add how this has affected you” any time — a dated note, in your own words, about what the condition has actually kept you from doing. This is what shows a condition has been consistent over time, not a one-time complaint.",
     ],
   },
   {
@@ -376,11 +377,11 @@ export default function HelpPage() {
 
         <div className="mb-3 border-t-2 border-brand/20 pt-5">
           <p className="text-sm font-semibold uppercase tracking-widest text-accent">
-            Part one — the four steps that matter
+            Part one — the five steps that matter
           </p>
           <p className="mt-1.5 text-sm leading-relaxed text-muted">
             Do these four. When you&apos;re done you&apos;ll have a packet in your hand. Everything
-            after step 4 is optional and can wait for another day.
+            after step 5 is optional and can wait for another day.
           </p>
         </div>
 
@@ -389,7 +390,7 @@ export default function HelpPage() {
         <div className="mt-5 rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
           <div className="font-semibold text-brand">That&apos;s the whole job.</div>
           <p className="mt-1 text-sm leading-relaxed text-ink">
-            Four steps. If you stop right here, you&apos;ve done it — you have a documented record
+            Five steps. If you stop right here, you&apos;ve done it — you have a documented record
             and a packet, which is more than most veterans walk in with. Everything below is extra.
             Come back to it when you feel like it, or never.
           </p>
@@ -404,7 +405,7 @@ export default function HelpPage() {
           </p>
         </div>
 
-        <StepList steps={MORE_STEPS} start={5} />
+        <StepList steps={MORE_STEPS} start={6} />
 
         <h3 className="mt-8 text-base font-bold text-ink">A few things worth knowing</h3>
         <div className="mt-2 space-y-3 text-sm leading-relaxed text-muted">
