@@ -3,7 +3,13 @@ import Link from "next/link";
 import { ServiceRibbon } from "@/components/Patriotic";
 import { TOXICANTS, ORGANS, LIBRARY_NOTE } from "@/lib/toxlibrary";
 
-export const metadata = { title: "Exposure library" };
+// Counts come from the data, not a typed-in number, so the description can't
+// claim 30 pages after someone adds the 31st.
+export const metadata = {
+  title: "Exposure library",
+  description: `Plain-English pages on ${TOXICANTS.length} exposures veterans carried home — burn pits, Agent Orange, Camp Lejeune water, heavy metals and more — plus ${ORGANS.length} organ systems: where each came from in service, what it does in the body, and the conditions the government already links to it.`,
+  alternates: { canonical: "/learn" },
+};
 
 const metals = TOXICANTS.filter((t) => t.kind === "metal");
 const contaminants = TOXICANTS.filter((t) => t.kind === "contaminant");

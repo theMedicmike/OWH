@@ -3,6 +3,13 @@ import Link from "next/link";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 
+export const metadata = {
+  title: "Building your exposure timeline",
+  description:
+    "Become your own historian. The specific service records — by name — that establish where you were and when, who holds each one, and how to request them. Most veterans have never heard these documents named.",
+  alternates: { canonical: "/learn/timeline" },
+};
+
 // Pure records literacy — no health content, no exposure/condition claims.
 // Promoted from a one-line "Start this week" bullet into its own page because
 // this is consistently one of the highest-value things a veteran can do for a

@@ -3,6 +3,13 @@ import AppShell from "@/components/AppShell";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 
+export const metadata = {
+  title: "Your C&P exam, demystified",
+  description:
+    "A letter showed up mentioning a C&P exam and nobody explained it. Here's what the exam is, who actually examines you, what a DBQ asks, how to prepare, what happens if you can't make it, and what comes after.",
+  alternates: { canonical: "/cp-exam" },
+};
+
 // A dedicated door for a specific moment: a veteran who just got a C&P exam
 // letter and doesn't know what it is. Descriptive, never prescriptive — same
 // posture as /denied and /bdd. Nothing here schedules, reschedules, or

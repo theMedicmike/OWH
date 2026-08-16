@@ -14,6 +14,22 @@ export function generateStaticParams() {
   return TOXICANTS.map((t) => ({ slug: t.slug }));
 }
 
+// Built from the toxicant's own fields rather than a hand-written blurb per
+// page, so a new entry in toxlibrary.ts arrives with its search description
+// already written and there is no parallel list to fall out of date.
+// `short` is the one-line summary the hub cards already show; `where` is the
+// service pathway, which is what a veteran is actually searching for.
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const t = TOXICANT_BY_SLUG[slug];
+  if (!t) return { title: "Exposure library" };
+  return {
+    title: t.name,
+    description: `${t.short} Where it came from in service, what it does in the body, and the conditions the VA already links to it — with the government's own sources.`.slice(0, 300),
+    alternates: { canonical: `/learn/${t.slug}` },
+  };
+}
+
 export default async function ToxicantPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const t = TOXICANT_BY_SLUG[slug];

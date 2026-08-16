@@ -3,6 +3,17 @@ import Link from "next/link";
 
 const card = "rounded-xl border border-line bg-surface p-5";
 
+// Description stays inside the same fence as the page: deployment roles, MST,
+// and real resources. No hormonal or reproductive claim about any toxicant —
+// that is the rescope the council ordered, and a meta description is exactly
+// the kind of out-of-the-way string that claim has crept back in through.
+export const metadata = {
+  title: "Women veterans & service",
+  description:
+    "Deployment roles and exposure patterns, military sexual trauma and how it's claimed, and the VA care built for women veterans — including the resources most are never told exist.",
+  alternates: { canonical: "/learn/women-veterans" },
+};
+
 // Deliberately standalone — not a Toxicant entry, no organ chips, no cross-
 // links from the metal pages. Council ruling 2026-08-09 rescoped this page
 // after both adversarial verify passes flagged the original proposal

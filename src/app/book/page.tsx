@@ -3,6 +3,12 @@ import Link from "next/link";
 import { ServiceRibbon } from "@/components/Patriotic";
 import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_SUBTITLE, BOOK_AUTHOR } from "@/content/book";
 
+export const metadata = {
+  title: BOOK_TITLE,
+  description: `${BOOK_SUBTITLE}. ${BOOK_AUTHOR}'s book on what service costs the body — all ${BOOK_CHAPTERS.length} chapters free to read, no sign-in, nothing for sale.`,
+  alternates: { canonical: "/book" },
+};
+
 export default function BookPage() {
   return (
     <AppShell title="The Book" publicPage>

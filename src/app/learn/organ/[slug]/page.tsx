@@ -7,6 +7,17 @@ export function generateStaticParams() {
   return ORGANS.map((o) => ({ slug: o.slug }));
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const o = ORGAN_BY_SLUG[slug];
+  if (!o) return { title: "Exposure library" };
+  return {
+    title: `${o.name} — what exposures do to it`,
+    description: `${o.what} Which military exposures target it, what they do there, and the conditions the government already links to damage in this system.`.slice(0, 300),
+    alternates: { canonical: `/learn/organ/${o.slug}` },
+  };
+}
+
 export default async function OrganPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const o = ORGAN_BY_SLUG[slug];
