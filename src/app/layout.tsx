@@ -79,7 +79,15 @@ const STRUCTURED_DATA = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "NGO",
+      // BOTH types, not just NGO. Google documents rich-result support for
+      // `Organization` and says nothing about `NGO` — publishing the bare
+      // NGO type means the entity signals (logo, legalName, sameAs) may not
+      // be read as an Organization at all. The array keeps the more precise
+      // schema.org type while staying inside what Google actually documents.
+      // Verified against Google's Organization structured-data docs
+      // 2026-08-16; `nonprofitStatus` below is schema.org-only and earns
+      // nothing from Google, kept because other consumers do read it.
+      "@type": ["NGO", "Organization"],
       "@id": "https://owh-three.vercel.app/#organization",
       name: "Operation Whole Health",
       alternateName: "OWH",
