@@ -13,6 +13,7 @@ import { mosNoiseLookup, NOISE_CONDITIONS, MOS_NOISE_REVIEWED } from "@/lib/mosN
 import { asthmaPostServiceNote } from "@/lib/presumptive";
 import WheelPicker from "./WheelPicker";
 import ConditionImpactJournal from "./ConditionImpactJournal";
+import SymptomNotesCard from "./SymptomNotesCard";
 
 const ONSET_YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => String(1940 + i));
 
@@ -404,6 +405,14 @@ export default function HealthView() {
           )}
         </div>
       )}
+
+      {/* Capture first, classify later. Sits above the conditions list on
+          purpose: a veteran who came here because something is happening
+          right now shouldn't have to pick a category before he can write it
+          down. Filing it is a separate, later decision. */}
+      <div className="border-t border-line pt-5">
+        <SymptomNotesCard conditions={conditions.map((c) => ({ id: c.id, label: c.label }))} />
+      </div>
 
       {/* ── Your list, with the connection ──────────────────────────────── */}
       {conditions.length > 0 && (
