@@ -9,7 +9,7 @@ const card = "rounded-xl border border-line bg-surface p-5";
 // claim, and most have never heard of these specific documents by name.
 export default function ExposureTimelinePage() {
   return (
-    <AppShell title="Building your exposure timeline">
+    <AppShell title="Building your exposure timeline" publicPage>
       <div className="mx-auto max-w-2xl space-y-5">
         <p className="text-sm leading-relaxed text-muted">
           Becoming your own historian is one of the highest-value things you can do for a claim — and most

@@ -28,7 +28,7 @@ function Group({ title, blurb, items, base }: { title: string; blurb: string; it
 
 export default function LearnIndex() {
   return (
-    <AppShell title="Exposure library">
+    <AppShell title="Exposure library" publicPage>
       <div className="space-y-6">
         <div>
           <ServiceRibbon className="mb-4 w-40 rounded-full opacity-90" />

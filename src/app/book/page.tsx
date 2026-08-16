@@ -5,7 +5,7 @@ import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_SUBTITLE, BOOK_AUTHOR } from "@/content
 
 export default function BookPage() {
   return (
-    <AppShell title="The Book">
+    <AppShell title="The Book" publicPage>
       <div className="mx-auto max-w-2xl">
         <ServiceRibbon className="mb-5 w-40 rounded-full opacity-90" />
         <p className="text-xs font-semibold uppercase tracking-widest text-accent">Read it free — our thanks for your service</p>

@@ -18,7 +18,7 @@ export default async function ChapterPage({ params }: { params: Promise<{ slug: 
   const next = BOOK_CHAPTERS[idx + 1];
 
   return (
-    <AppShell title="The Book">
+    <AppShell title="The Book" publicPage>
       <article className="mx-auto max-w-2xl">
         <Link href="/book" className="text-xs font-medium text-brand hover:underline">← All chapters</Link>
         <div className="mt-3 text-xs font-bold uppercase tracking-widest text-accent">Chapter {chapter.number}</div>

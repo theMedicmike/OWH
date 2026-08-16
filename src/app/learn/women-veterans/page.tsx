@@ -13,7 +13,7 @@ const card = "rounded-xl border border-line bg-surface p-5";
 // resources instead — never a hormone-directionality claim about any metal.
 export default function WomenVeteransPage() {
   return (
-    <AppShell title="Women veterans & service">
+    <AppShell title="Women veterans & service" publicPage>
       <div className="mx-auto max-w-2xl space-y-5">
         <p className="text-sm leading-relaxed text-muted">
           Women veterans are the fastest-growing population in VA care, with a service and exposure picture

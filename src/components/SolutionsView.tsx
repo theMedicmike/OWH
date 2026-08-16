@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import type { User } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
+// No React state, no router link, and no Supabase client — all five imports
+// that used to be here went with the sign-in gate. This component now renders
+// the same static education for every visitor and touches nothing personal.
 import { ServiceRibbon } from "./Patriotic";
 import {
   SOLUTION_PILLARS, START_THIS_WEEK, VA_WHOLE_HEALTH_NOTE, SOLUTION_CATEGORY_ORDER,
@@ -57,30 +56,19 @@ function PillarCard({ p }: { p: SolutionPillar }) {
 }
 
 export default function SolutionsView() {
-  const [supabase] = useState(() => createClient());
-  const [user, setUser] = useState<User | null>(null);
-  const [loaded, setLoaded] = useState(false);
-
-  // The veteran's exposures and conditions are deliberately NOT read here. This
-  // page shows the same general education to everyone; nothing on it is matched
-  // to a personal record. See the note above PillarCard.
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
-      setLoaded(true);
-    });
-  }, [supabase]);
-
-  if (!loaded) return <p className="text-sm text-muted">Loading…</p>;
-  if (!user) {
-    return (
-      <div className="rounded-xl border border-line bg-surface p-6">
-        <p className="text-sm text-muted">Sign in to see your whole-health plan.</p>
-        <Link href="/" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">← Go to sign in</Link>
-      </div>
-    );
-  }
-
+  // No auth check, and no data fetch of any kind.
+  //
+  // This used to sign-in-gate itself behind "Sign in to see your whole-health
+  // plan" — which was misleading on its own terms, because there is no
+  // personal plan here and never was. The comment two lines below has always
+  // said so: the veteran's exposures and conditions are deliberately NOT read,
+  // and every visitor sees the identical page. It was a login wall in front of
+  // a pamphlet.
+  //
+  // Opened to the public 2026-08-16 along with the rest of the education
+  // routes. The rule that keeps it safe to be public is the same rule that
+  // always governed it: nothing on this page is matched to a personal record.
+  // See the note above PillarCard.
   return (
     <div className="space-y-4">
       {/* Restoration mindset */}

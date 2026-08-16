@@ -124,7 +124,39 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
   );
 }
 
-export default function AppShell({ title, children }: { title: string; children: React.ReactNode }) {
+// Education routes that render for anyone, signed in or not. Every one of
+// them is the same page for every visitor — no record is read, nothing is
+// personalised — which is the only reason it's safe to open them.
+//
+// This is also the entire SEO strategy. Before this, 7 of 37 routes were
+// crawlable and the best writing on the site (the exposure library, the book,
+// whole health) was invisible to search because it sat behind a login. No
+// amount of sitemap or structured-data work fixes that; only this does.
+const PUBLIC_SECTIONS: NavSection[] = [
+  {
+    title: "Learn",
+    items: [
+      { href: "/learn", label: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
+      { href: "/presumptives", label: "What VA presumes", d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
+      { href: "/solutions", label: "Whole health", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
+      { href: "/cp-exam", label: "Your C&P exam", d: "M9 11l2 2 4-4M5 4h14a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" },
+      { href: "/book", label: "Read the book", d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" },
+      { href: "/vso", label: "Find a VSO", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
+    ],
+  },
+];
+
+export default function AppShell({
+  title,
+  children,
+  publicPage = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  /** Renders for signed-out visitors too. Only ever set on pages that read
+   *  no personal record — see PUBLIC_SECTIONS above. */
+  publicPage?: boolean;
+}) {
   const { user, ready, signOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -146,7 +178,9 @@ export default function AppShell({ title, children }: { title: string; children:
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted">Loading…</div>;
   }
 
-  if (!user) {
+  // A signed-out visitor on a personal page still gets stopped here. On an
+  // education page they get the page — that is the whole change.
+  if (!user && !publicPage) {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
         <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-7 text-center shadow-sm">
@@ -159,6 +193,12 @@ export default function AppShell({ title, children }: { title: string; children:
       </div>
     );
   }
+
+  const signedOut = !user;
+  // A signed-out visitor sees only the pages they can actually open. Showing
+  // them the full record-building rail would be six links that all bounce off
+  // a login wall.
+  const sections = signedOut ? PUBLIC_SECTIONS : SECTIONS;
 
   // The whole sidebar scrolls — not just <nav>. With ~440px of fixed chrome
   // below the nav, a short viewport (phone landscape) used to clip the crisis
@@ -181,7 +221,7 @@ export default function AppShell({ title, children }: { title: string; children:
 
       {/* Nav */}
       <nav className="flex-1 space-y-4 px-3 py-2">
-        {SECTIONS.map((section, si) => (
+        {sections.map((section, si) => (
           <div key={si} className="space-y-0.5">
             {section.title && (
               <div className="flex items-center gap-1.5 px-3 pb-1 pt-1">
@@ -229,15 +269,27 @@ export default function AppShell({ title, children }: { title: string; children:
         <StarRow count={7} />
       </div>
 
-      {/* User / sign out */}
+      {/* User / sign out — or, for a visitor reading the library, the reason
+          to start a record of their own. */}
       <div className="border-t border-white/10 p-3">
-        <div className="truncate px-2 text-xs text-white/35">{user.email}</div>
-        <button
-          onClick={signOut}
-          className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-white/55 transition hover:bg-white/10 hover:text-white"
-        >
-          Sign out
-        </button>
+        {signedOut ? (
+          <Link
+            href="/"
+            className="press mb-1 block rounded-lg bg-white/15 px-3 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-white/25"
+          >
+            Start your free record
+          </Link>
+        ) : (
+          <>
+            <div className="truncate px-2 text-xs text-white/35">{user?.email}</div>
+            <button
+              onClick={signOut}
+              className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-white/55 transition hover:bg-white/10 hover:text-white"
+            >
+              Sign out
+            </button>
+          </>
+        )}
         {/* The floor: the crisis line is always one tap away, on every page.
             The book closes every chapter with it; an app that asks veterans to
             relive their exposures owes them the same. */}
@@ -317,7 +369,15 @@ export default function AppShell({ title, children }: { title: string; children:
             Need support?
           </Link>
 
-          {/* Account menu (always visible) */}
+          {/* Account menu — or, for a signed-out reader, a way in. */}
+          {signedOut ? (
+            <Link
+              href="/"
+              className="press rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition hover:bg-brand-600"
+            >
+              Sign in
+            </Link>
+          ) : (
           <div className="relative">
             <button
               onClick={() => setMenu((m) => !m)}
@@ -325,9 +385,9 @@ export default function AppShell({ title, children }: { title: string; children:
               aria-label="Account menu"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
-                {(user.email?.[0] ?? "U").toUpperCase()}
+                {(user?.email?.[0] ?? "U").toUpperCase()}
               </span>
-              <span className="hidden max-w-[140px] truncate font-medium sm:block">{user.email}</span>
+              <span className="hidden max-w-[140px] truncate font-medium sm:block">{user?.email}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${menu ? "rotate-180" : ""}`}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
@@ -339,7 +399,7 @@ export default function AppShell({ title, children }: { title: string; children:
                 <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
                   <div className="border-b border-line px-4 py-3">
                     <div className="text-xs text-faint">Signed in as</div>
-                    <div className="truncate text-sm font-semibold text-ink">{user.email}</div>
+                    <div className="truncate text-sm font-semibold text-ink">{user?.email}</div>
                   </div>
                   <TextSizeControl />
                   <Link
@@ -365,10 +425,17 @@ export default function AppShell({ title, children }: { title: string; children:
               </>
             )}
           </div>
+          )}
         </header>
 
         <main className="flex-1 px-5 py-6 sm:px-7 lg:px-9">
-          <div className="mx-auto w-full max-w-4xl"><OpsecGate>{children}</OpsecGate></div>
+          <div className="mx-auto w-full max-w-4xl">
+            {/* OpsecGate is the one-time "keep it unclassified" screen a
+                veteran confirms before entering anything into their own
+                record. A signed-out reader has nothing to enter, so gating
+                the library behind it would be a wall in front of a book. */}
+            {signedOut ? children : <OpsecGate>{children}</OpsecGate>}
+          </div>
         </main>
       </div>
     </div>

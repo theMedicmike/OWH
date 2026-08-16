@@ -10,7 +10,7 @@ const card = "rounded-xl border border-line bg-surface p-5";
 // authoritative for both.
 export default function CpExamPage() {
   return (
-    <AppShell title="Your C&P exam, demystified">
+    <AppShell title="Your C&P exam, demystified" publicPage>
       <div className="mx-auto max-w-2xl space-y-5">
         <p className="text-sm leading-relaxed text-muted">
           If a letter showed up mentioning a &ldquo;C&amp;P exam&rdquo; and nobody explained what that means, here&apos;s

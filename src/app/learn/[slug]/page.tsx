@@ -20,7 +20,7 @@ export default async function ToxicantPage({ params }: { params: Promise<{ slug:
   if (!t) notFound();
 
   return (
-    <AppShell title="Exposure library">
+    <AppShell title="Exposure library" publicPage>
       <article className="mx-auto max-w-2xl space-y-4">
         <Link href="/learn" className="text-xs font-medium text-brand hover:underline">← Exposure library</Link>
 

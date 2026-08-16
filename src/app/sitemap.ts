@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { TOXICANTS, ORGANS } from "@/lib/toxlibrary";
+import { BOOK_CHAPTERS } from "@/content/book";
 
 export const SITE_URL = "https://owh-three.vercel.app";
 
@@ -16,8 +18,22 @@ export const SITE_URL = "https://owh-three.vercel.app";
 //
 // Deliberately absent: /reviewer. It is a beta-feedback sheet for VSOs and
 // clinicians we hand out directly, not a page that should surface in search.
-const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
+type Freq = MetadataRoute.Sitemap[number]["changeFrequency"];
+
+const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: Freq }[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
+
+  // The education layer, opened to the public 2026-08-16. These are the
+  // pages worth finding: hub pages first, then the deep content below.
+  { path: "/learn", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/presumptives", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/cp-exam", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/solutions", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/book", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/vso", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/learn/timeline", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/learn/women-veterans", priority: 0.7, changeFrequency: "monthly" },
+
   { path: "/trust", priority: 0.8, changeFrequency: "monthly" },
   { path: "/clinician", priority: 0.7, changeFrequency: "monthly" },
   { path: "/support", priority: 0.6, changeFrequency: "monthly" },
@@ -27,7 +43,17 @@ const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
-  return PUBLIC_ROUTES.map((r) => ({
+
+  // Generated from the same data the pages render from, so a new toxicant,
+  // organ or chapter appears in the sitemap the moment it ships — there is no
+  // second list to forget to update.
+  const generated: { path: string; priority: number; changeFrequency: Freq }[] = [
+    ...TOXICANTS.map((t) => ({ path: `/learn/${t.slug}`, priority: 0.7, changeFrequency: "monthly" as Freq })),
+    ...ORGANS.map((o) => ({ path: `/learn/organ/${o.slug}`, priority: 0.6, changeFrequency: "monthly" as Freq })),
+    ...BOOK_CHAPTERS.map((c) => ({ path: `/book/${c.slug}`, priority: 0.6, changeFrequency: "yearly" as Freq })),
+  ];
+
+  return [...PUBLIC_ROUTES, ...generated].map((r) => ({
     url: `${SITE_URL}${r.path}`,
     lastModified,
     changeFrequency: r.changeFrequency,
