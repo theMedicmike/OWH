@@ -25,7 +25,8 @@ const CORE_STEPS: Step[] = [
     title: "Get in the door",
     body: [
       "Open the internet app you normally use — Safari on an iPhone, Chrome on most Android phones and computers. At the very top of the screen there is a long blank strip where web addresses go. Tap it, type owh-three.vercel.app exactly as it looks, and press Go. It looks odd because it has no “www” and no “.com” — that is normal, and it is the right address.",
-      "Tap “Create account” at the top of the white box in the middle of the screen. Put in your email and a password. If you cannot see what you are typing, tap “Show” next to the password box.",
+      "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows six things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam,” “Read the book” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife a chapter, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record.",
+      "When you are ready for that, tap “Create account” at the top of the white box in the middle of the screen. Put in your email and a password. If you cannot see what you are typing, tap “Show” next to the password box. (Signed out, that button sits in the menu reading “Start your free record,” and there is a “Sign in” button in the bar across the top.)",
       "Now watch what the screen does. If it says “Check your email,” you are not signed in yet — open the email, tap the link inside, then come back and tap “Sign in.” If instead it takes you straight into the app, you are already in and there is nothing to check. Next time, you only need “Sign in.”",
       "If you forget your password: on the “Sign in” tab there is a small link, “Forgot your password?”. Tap it, put in your email, tap “Send me a reset link,” then check your email. One thing to know — that link is only good for one hour, and it only works once. If you check your email once a day it will be expired by the time you get there, so ask for a fresh one right before you sit down to do it.",
       "When you tap the link in that email, a screen comes up headed “Set a new password.” There are two boxes: type your new password in the first, then the same thing again in the second. It has to be at least 8 characters, and a phrase you will actually remember beats something short and clever. Tap “Save my new password,” then “Go to your record.” Nothing you built has changed.",
@@ -44,10 +45,11 @@ const CORE_STEPS: Step[] = [
     body: [
       "In the menu, under “Build your record,” tap 1 “Your service.”",
       "On a phone the menu is hidden. In the top-left corner of the screen there is a small square button with three short lines stacked on top of each other. Tap it and the menu slides out from the left; tap anywhere else to close it again. On a computer the menu is already down the left-hand side — nothing to tap.",
-      "This is four short screens, with a bar across the top showing where you are. Your name, your branch, and then:",
+      "The very first time you tap that — and only the first time — you get a screen headed “Before you start — three things worth knowing.” It is a short orientation, with a “Sample record” you can look at to see where this ends up. Read it or don't; tap “Let's build your record →” at the bottom and you are into the questions. You will never see it again.",
+      "Then it is four short screens, with a bar across the top showing where you are. Your name, your branch, and then:",
     ],
     points: [
-      "“Where did you go to boot camp?” — pick your post from the list, or choose “Somewhere else / I'll add it on the map.” Put the year in the “What year?” box. Everybody remembers boot camp, and it counts: it goes on your map as a real place, with whatever is documented about that ground.",
+      "“Where did you go to boot camp?” — pick your post from the list, or choose “Somewhere else / I'll add it on the map.” Underneath, where it says “When?”, set the year on the scroll wheels — it is the same wheel you will meet everywhere else in this app, and the year is the only part that has to be right. Everybody remembers boot camp, and it counts: it goes on your map as a real place, with whatever is documented about that ground.",
       "Your service years, and your job — MOS / Rate / AFSC / NEC.",
       "Then the places you served. If you were on a ship or a submarine, open the panel that says “Served aboard a ship or submarine?” — it explains to pin your homeport and your shipyard instead of the open ocean.",
       "The last screen is a short list of things you might live with, your current VA rating, and whether you are using VA healthcare.",
@@ -61,17 +63,20 @@ const CORE_STEPS: Step[] = [
   {
     title: "Add what you live with",
     body: [
-      "In the menu, tap 2 “Your conditions.” Search for it, tap it from the row of common ones, or type your own under “＋ Something else — type it yourself.”",
+      "In the menu, tap 2 “Your conditions.” There are four ways to add one and they are not equal. Search for it in the box at the top; tap it from the row under “Most veterans start here”; or — the one most people miss — open one of the body systems under the line reading “Not here? Search above, or open a body system below — there are far more.” Those lists are much longer than the row of common ones.",
+      "The fourth way is “＋ Something else — type it yourself,” and it is the last resort, not the shortcut. Look through the body-system lists properly first. A condition you type in yourself is saved exactly as you wrote it, and the app cannot draw a connection line to it, cannot attach the documented link, and cannot cite it in your packet — it will show on your record marked “your words.” The same condition picked off a list gets you all three.",
       "This comes before the map on purpose. Once the app knows what you are carrying, everything you put on the map afterwards has something to connect itself to.",
-      "At the top of that page there is a box headed “Something going on? Write it down.” Use it when something is happening and you do not know what it is or which condition it belongs to — that is the normal case, not a failure. Type a line, set the date if it was not today, tap “Save it,” and it is on your record. No category, no score, nothing to pick first. Later, when you know — or when a VSO helps you work it out — there is a “File under” dropdown on that note to put it with the right condition, and it keeps the date you wrote it.",
+      "Scroll past the condition picker and there is a box headed “Something going on? Write it down.” It sits just above your saved conditions, not at the very top of the page — keep going past the search box and the lists and you will find it. Use it when something is happening and you do not know what it is or which condition it belongs to — that is the normal case, not a failure. Type a line, set the date if it was not today, tap “Save it,” and it is on your record. No category, no score, nothing to pick first. Later, when you know — or when a VSO helps you work it out — there is a “File under” dropdown on that note to put it with the right condition, and it keeps the date you wrote it.",
       "These are not checkboxes. You tap a condition and it saves instantly — it turns dark blue with a tick and it is done. There is no Save button and you do not need one. To take one off, there is a small grey “remove” link.",
-      "Under each one, tap “Add details (optional)” — it says “Edit details” once you have answered something. It opens three or four short questions; the last one only appears once you have added more than one condition. Two are worth your attention:",
+      "Under each one, tap “Add details (optional)” — it says “Edit details” once you have answered something. It opens four short questions, and a fifth once you have added more than one condition. It says “optional,” and the first one really is not. Three are worth your attention:",
     ],
     points: [
+      "“Has a doctor diagnosed this?” — answer this one even if you answer nothing else on this page. Your choices are “Yes — VA doctor,” “Yes — civilian doctor,” “Yes — while I was in,” and “Not yet — no doctor has said it.” This is what the VA calls element one, and it is the first thing a rater looks for. Leave it blank and your packet prints “Diagnosis status not yet answered” beside that condition — which reads worse to a VSO than an honest “not yet.” Saying “Not yet” is a perfectly good answer and the app tags the condition “needs diagnosis” so you and your VSO can see at a glance what to go get.",
       "When did it start? If something started before you shipped, or before an exposure, that is not a dead end. The VA can still connect a condition that already existed if service made it permanently worse — that is called aggravation, and the app now says so in plain English. Ask your VSO whether that applies to you.",
       "“Did this come from another one of these?” If one of your conditions grew out of another one, say so here. That is a real route, and your VSO will know what to do with it.",
       "Further down in that same panel is “How this has affected you — dated.” Tap “+ Add how this has affected you” any time — a dated note, in your own words, about what the condition has actually kept you from doing. This is what shows a condition has been consistent over time, not a one-time complaint.",
     ],
+    tip: "If you put Tinnitus or Hearing loss on your record, go back and make sure your job code is filled in — MOS, Rate, AFSC or NEC, in “Account.” The VA publishes a Duty MOS Noise Exposure Listing that rates job codes for hazardous noise, and it is the same table a VA rater checks on hearing claims. Fill the code in and this app looks yours up, shows you what it is rated, and prints it in your packet. Leave it blank and that line is silently missing. Say the listing's name out loud to your VSO — it rates the job, not your claim, but it is real VA evidence and most veterans have never heard of it.",
   },
   {
     title: "Mark where you served — in your own words",
@@ -91,7 +96,7 @@ const CORE_STEPS: Step[] = [
     ],
     warn: {
       label: "If the save button looks dead",
-      text: "It is — on purpose. Until you either tick one exposure or type something in your own words, it stays faded and reads “Add your words or an exposure.” Once you do either, it goes solid blue and reads “Save check-in.”",
+      text: "It is — on purpose. Until you give it something to save, it stays faded and reads “Add your words, an exposure, or an event.” Any one of those four things wakes it up: tick an exposure, write in the “in your own words” box, tick something under “Did anything happen to you here?”, or type into “Something else?”. You do not need all of them, and you must never tick an exposure you were not actually around just to unlock the button. Once it wakes up it goes solid blue and reads “Save check-in,” with a number after it counting what you ticked.",
     },
     tip: "Do this for every place you served. Keep it general — no classified, secret or NDA-covered details.",
   },
@@ -116,7 +121,12 @@ const MORE_STEPS: Step[] = [
     body: [
       "Top of the menu: “Talk to Medic Mike.”",
       "Mike is a guide — not a doctor, not a lawyer, not the VA. Ask him anything about the app, or about what you are reading.",
+      "He also knows how VA claims actually work, and this is worth using. Ask him what “at least as likely as not” means, what the three elements of a claim are, the difference between a direct claim, a secondary one and aggravation, what an Intent to File buys you, what happens at a C&P exam, or what the difference is between a Supplemental Claim, a Higher-Level Review and a Board Appeal. He will explain any of it in plain English, at two in the morning, without you having to ask a human to slow down and repeat it.",
     ],
+    warn: {
+      label: "One thing he will not do",
+      text: "Do not ask him “here are my symptoms, what can I claim?” — he will not answer it. He gives you a set reply saying he cannot turn what you are feeling into a list of conditions to claim, because that is diagnosis and it belongs to a clinician. That is deliberate, not a fault, and it is not you asking wrong. Write the symptom down instead, in the box on “Your conditions,” and take it to your doctor and your VSO. Mike will offer to point you at where to log it.",
+    },
     points: [
       "To talk instead of type, tap the round microphone button on the LEFT side of the typing box. It turns red while it is listening and sends by itself when you stop talking. The first time you tap it, your phone will ask permission to use the microphone — tap “Allow.”",
       "Mike talks back out loud by default. If you would rather he did not, tap the small speaker icon up in his header to shut his voice off.",
@@ -127,10 +137,12 @@ const MORE_STEPS: Step[] = [
     title: "See how it all connects",
     body: [
       "Menu → 4 “Connect the dots.”",
-      "Near the top is “Presumptive pathways” — it checks your logged service dates and locations against programs like the PACT Act, Agent Orange, Camp Lejeune, Gulf War and radiation, and flags anything that may apply. It only ever flags a question for your VSO to confirm — never a yes.",
-      "This is the big picture: your exposures down one side, your conditions down the other, and lines drawn between the ones the government already links. Tap any line to see the citation behind it.",
-      "There is a lot more on this page — your service timeline, where each claim stands (“Not filed” / “Filed” / “Granted” / “Denied”), the VA's own form numbers, and date boxes that work out the one-year clocks for you. There is a “Print / Save as PDF to share” button at the top.",
-      "You do not have to use all of it. This is the busiest screen in the app. Look at the picture, print it if you want it, and leave the rest — or bring it to your VSO and let them work it.",
+      "The first thing on the page is not about your claim at all. It is headed “The cascade doesn't stop at your body” and lays out four floors — The body, The conscience, The family, The institution — with a line into the chapter of the book about each. Where your own entries touch a floor, it gets tagged “on your record.” It is there because what service costs does not stop at your health, and the family floor is where a spouse or caregiver is pointed at the Account setting that puts their name on what they write.",
+      "Below that is “Presumptive pathways” — it checks your logged service dates and locations against programs like the PACT Act, Agent Orange, Camp Lejeune, Gulf War and radiation, and flags anything that may apply. It only ever flags a question for your VSO to confirm — never a yes.",
+      "Then the big picture: your exposures down one side, your conditions down the other, and lines drawn between the ones the government already links. Tap any line to see the citation behind it.",
+      "Keep scrolling for the one panel on this page you should not skip: “Benefits you may be leaving on the table.” It lists conditions the VA already links to exposures you have documented — and that are not on your record yet. If you live with any of them, even mildly, tap “Add a condition to your record” and add it. It is the only place in this app that tells you about something you have not thought to claim. It is a prompt to take to your clinician, not a diagnosis, and it only appears when there is actually something to say.",
+      "There is more below that — your service timeline, where each claim stands (“Not filed” / “Filed” / “Granted” / “Denied”), the VA's own form numbers, and date boxes that work out the one-year clocks for you. There is a “Print / Save as PDF to share” button at the top.",
+      "You do not have to use all of it. This is the busiest screen in the app. Read the four floors if they speak to you, check the benefits panel, look at the picture, print it — and leave the rest, or bring it to your VSO and let them work it.",
     ],
     warn: {
       label: "If the middle of the page looks empty",
@@ -144,7 +156,8 @@ const MORE_STEPS: Step[] = [
     ],
     points: [
       "“Let others who served where I did corroborate my exposures” — this is the one that strengthens your record. It shares only the place, the time and the type of exposure. Never your name, never your health.",
-      "“I'm open to reconnecting with battle buddies” — this is the social one. Nobody gets your contact details unless you both agree.",
+      "“I'm open to reconnecting with battle buddies” — this is the social one. Nobody gets your contact details unless you both agree. The next point is where that agreeing actually happens.",
+      "When another veteran asks to connect with you, a card shows up on your Dashboard with their name and roughly where and when you overlapped — “…asked to connect” — and two buttons, “Accept” and “Not now.” That card is the agreeing. Accept and you are connected; “Not now” turns it down and the card goes away rather than coming back later, so treat it as no rather than later. The same requests are also waiting on this page under “Reconnection requests,” where the second button reads “Decline” instead — same thing, different word.",
     ],
     warn: {
       label: "If the list is empty",
@@ -186,6 +199,19 @@ const MORE_STEPS: Step[] = [
     },
   },
   {
+    title: "Helping the next veteran — and how to say no",
+    body: [
+      "The very last card on that same “Account” page is headed “Help prove what happened to all of us.” It is the only thing in this app that lets your information leave your own record, and it is switched off unless you turn it on. Nothing here is on by default, and nothing changes if you never touch it.",
+      "There are three separate switches, and you can turn on one without the others:",
+    ],
+    points: [
+      "“Contribute my anonymized record” — your service places, years and exposures go into the pooled picture with your name stripped off. This is how clusters get counted, and counted clusters are how new presumptive conditions eventually get recognized.",
+      "“Show my data in the public exposure map” — this one changes what other people can see, so read it twice before you turn it on.",
+      "“Include me in de-identified research” — the same idea, for researchers rather than the map.",
+    ],
+    tip: "None of this affects your claim, your packet or your VA benefits in any way, and turning it off later is one tap. If you would rather keep everything to yourself, that is a completely legitimate answer and the app is built to work exactly the same either way.",
+  },
+  {
     title: "Your shot record — the paperwork nobody gave you",
     body: [
       "In the menu, its own line below “Claim packet” — no number on this one, just its own icon — “Your shot record.”",
@@ -213,7 +239,7 @@ const MORE_STEPS: Step[] = [
       "Wasn't one day? Tick “This happened repeatedly, not on one day — not a single event, but a pattern over time.” That swaps in your role or unit, a from/to year, and roughly how often — for breachers, EOD, artillery, anyone whose injury came from hundreds of smaller ones, not a single date that never existed.",
       "Otherwise, fill in where it happened (optional) and when — Year, Month, Day. Don't know it exactly? Tick “I'm not sure of the exact date — this is my best guess” and it saves as a circa year.",
       "“How do you know?” — “I remember it,” “Someone else can confirm it,” “It's in my service or medical record,” or “I have the document.” For combat-related events, your own memory alone can carry real legal weight under federal law, and the note that appears here says exactly when that applies to you.",
-      "“In your own words (optional)” is exactly that. Nothing here is written or polished by AI — VA now screens for that kind of language, so your own specific memory is the stronger evidence anyway.",
+      "“In your own words (optional)” is exactly that. Nothing here is written or polished by AI, and it should not be: your own specific memory — the details only you would know — is stronger evidence than polished wording.",
       "Once it's saved, most entries also get a private “Who else was there? (optional)” list — a name, how you know them, and contact info if you have it. Nothing here is sent to anyone automatically; it's just so a name isn't lost. It's left off entirely for military sexual trauma and assault entries, on purpose.",
     ],
     warn: {
@@ -260,7 +286,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "Read the book — free, all of it",
     body: [
-      "Menu, under “Learn & live well” → “Read the book.”",
+      "Menu, under “Learn & live well” → “Read the book.” Every chapter is open to anyone — copy the address of a chapter and send it to whoever needs to read it, and they can read it without an account or a sign-in.",
       "What Happened to Our Veterans, the whole thing, at your own pace. If reading is hard on your eyes, each chapter can be read aloud to you in Medic Mike's voice — it highlights the line it is on and scrolls along with you, and you can set the pace to “Slow,” “Steady” or “Brisk.” If you do not see the listen bar, your browser cannot do it.",
       "Find a passage that says what you have never been able to say? On a phone, tap the small square icon at the top right of that paragraph and choose “Make a card” — it turns the passage into a picture you can send to your family or post. On a computer you can also highlight the words and tap “Make a card” when it pops up. A couple of chapters have sharing switched off, out of respect for the people named in them.",
     ],
@@ -272,9 +298,13 @@ const MORE_STEPS: Step[] = [
       "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required.",
       "Your locations and your exposures — on your Dashboard, tap the tile marked “Locations” or the one marked “Exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
       "“Whole health” (under Learn & live well) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
-      "“What VA presumes” — pick a branch, an era, and where you were, and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
+      "“What VA presumes” — two dropdowns, “When did you serve?” and “Where did you serve?”, and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
       "“Your C&P exam, demystified” (also under Learn & live well) — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up.",
       "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It carries no personal information, so it's safe to print once and keep on hand.",
+      "“Women veterans & service” — also in the exposure library, further down past the grids. Deployment roles and how exposure patterns differ, how military sexual trauma is claimed, and the VA women's health resources most women veterans are never told exist.",
+      "“Building your exposure timeline” — in the same place. The service records that prove where you were and when, called by their real names, who holds each one, and how to ask for them. This is the unglamorous paperwork that wins claims.",
+      "“Condition library” — a page per condition: why it's connected, the exposures commonly studied with it, and what to track. You reach it from “See the full breakdown and what to track →” on Connect the dots, or from the big blue button on your Dashboard when it reads “Connect a condition to an exposure.” The name says library, but it is really the detail behind your own conditions — it is not where you add them, that is still 2 “Your conditions.”",
+      "“What this is” — in the small print at the bottom of the Privacy or Terms page. Worth two minutes if you are weighing up whether to type something personal into a stranger's app: it says in plain words what the app is not, how the science is graded, what happens to your record if this organisation ever closes, and that you would be told directly if your data were ever exposed.",
     ],
   },
   {
@@ -343,7 +373,12 @@ function StepList({ steps, start }: { steps: Step[]; start: number }) {
 
 export default function HelpPage() {
   return (
-    <AppShell title="How to use this">
+    // publicPage: BOTTOM_LINKS in AppShell renders "How to use this" and "Why we
+    // built this" for signed-out visitors too, so before this prop these were the
+    // only two links in the signed-out rail that dead-ended at a sign-in card —
+    // and they are precisely the two that explain what this site is. This page
+    // reads no account and no record; it is a static document.
+    <AppShell title="How to use this" publicPage>
       <div className="mx-auto max-w-2xl">
         <div className="mb-6">
           <p className="text-sm font-semibold uppercase tracking-widest text-accent">User guide</p>
@@ -384,7 +419,7 @@ export default function HelpPage() {
             Part one — the five steps that matter
           </p>
           <p className="mt-1.5 text-sm leading-relaxed text-muted">
-            Do these four. When you&apos;re done you&apos;ll have a packet in your hand. Everything
+            Do these five. When you&apos;re done you&apos;ll have a packet in your hand. Everything
             after step 5 is optional and can wait for another day.
           </p>
         </div>
@@ -417,8 +452,35 @@ export default function HelpPage() {
             <strong className="text-ink">Finding your way around.</strong> On a phone the menu hides
             behind the small button in the top-left corner with three short lines stacked on top of
             each other. Your Dashboard is home — the tiles across the top open their own pages, and{" "}
-            <strong>&ldquo;Jump back in&rdquo;</strong> at the bottom is a set of shortcuts to
-            wherever you were.
+            <strong>&ldquo;Jump back in&rdquo;</strong> at the bottom is a fixed set of ten
+            shortcuts to the main screens. It is the same ten every time; it is a menu, not a
+            history, so don&apos;t go looking there for the last thing you were doing.
+          </p>
+          <p>
+            <strong className="text-ink">The card at the top of your Dashboard.</strong> The one
+            raised box near the top — headed <strong>&ldquo;Start here&rdquo;</strong> the first
+            time and <strong>&ldquo;Next step&rdquo;</strong> after that — is the app&apos;s answer
+            to &ldquo;what do I do now.&rdquo; It shows something like{" "}
+            <strong>&ldquo;3 of 8&rdquo;</strong> with a percentage, and one button that takes you
+            to whatever is next. That is <em>this app&apos;s</em> checklist of eight things, not the
+            VA&apos;s, and the percentage is not a score on you or a prediction about your claim —
+            filing is one of the eight, so nobody reaches the end of it sitting at home. If it says{" "}
+            <strong>&ldquo;Your record is claim-ready,&rdquo;</strong> that means this app has what
+            it needs to build you a packet. It does not mean the VA will agree, and only a VSO can
+            tell you that. This card is also the thing that genuinely remembers where you were: when
+            you come back it reads <strong>&ldquo;Pick up where you left off.&rdquo;</strong>
+          </p>
+          <p>
+            <strong className="text-ink">
+              Careful with &ldquo;Remove&rdquo; on your Dashboard.
+            </strong>{" "}
+            Further down, the card headed <strong>&ldquo;Your timeline&rdquo;</strong> lists your
+            most recent places, and each line has a faint <strong>Remove</strong> beside it. That is
+            not tidying a summary — it deletes the check-in itself, along with every exposure you
+            ticked at that place, and it takes two taps with nothing to type. If you only want a
+            shorter list, leave it alone and use <strong>&ldquo;Open map →&rdquo;</strong> or{" "}
+            <strong>&ldquo;Manage all … locations →&rdquo;</strong> instead. Deleting a place there
+            is the same delete, just somewhere you meant to be.
           </p>
           <p>
             <strong className="text-ink">Making the text bigger.</strong> In the top-right corner

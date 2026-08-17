@@ -34,6 +34,11 @@ const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: Freq }[]
   { path: "/learn/timeline", priority: 0.7, changeFrequency: "monthly" },
   { path: "/learn/women-veterans", priority: 0.7, changeFrequency: "monthly" },
 
+  // Opened to signed-out visitors 2026-08-16 — they were already listed in the
+  // signed-out sidebar and were the only two links there that hit a login card.
+  { path: "/about", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/help", priority: 0.7, changeFrequency: "monthly" },
+
   { path: "/trust", priority: 0.8, changeFrequency: "monthly" },
   { path: "/clinician", priority: 0.7, changeFrequency: "monthly" },
   { path: "/support", priority: 0.6, changeFrequency: "monthly" },

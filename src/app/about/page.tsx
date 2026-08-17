@@ -18,7 +18,9 @@ const MVP = [
 
 export default function AboutPage() {
   return (
-    <AppShell title="Why we built this">
+    // publicPage — see the note in help/page.tsx. This is a static letter; the
+    // people most likely to read it are the ones who do not have an account yet.
+    <AppShell title="Why we built this" publicPage>
       <div className="mx-auto max-w-2xl">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/owh-logo.png" alt="Operation Whole Health" className="h-16 w-auto object-contain" />
@@ -112,9 +114,15 @@ export default function AboutPage() {
             "Lets a veteran ask anyone to confirm their record — on this app or not. A private link, no account needed, for a spouse, a battle buddy who never signed up, or a commander.",
             "Keeps a veteran's own words on the record. What they write about a place becomes a printable statement in their own voice.",
             "Keeps a veteran's medication list beside the FDA's own label for each one — because a condition caused by treatment for a service-connected disability can sometimes be claimed on its own, and almost nobody is told that.",
-            "Logs the injuries and events themselves — a blast, a fall, an assault, hearing damage, a burn, and more — not just the place, with the actual VA exam and diagnostic code behind each one, and a dated log of what's shown up since.",
+            "Logs the injuries and events themselves — a blast, a fall, an assault, hearing damage, a burn, and more — not just the place, each with a dated log of what's shown up since. For blast/TBI, amputation, hearing damage and burns, it also lays out the actual VA exam and diagnostic code; the rest of the list is being written.",
             "Takes a symptom before anyone knows what it is. A bad night at 2 a.m., written down and dated in your own words, with no condition to pick and no category to choose — filed against the right condition later, when you know, or when a VSO helps you work it out.",
             "Explains the C&P exam before the letter arrives — what it is, who actually examines you, what they're filling out, and what happens if you can't make it.",
+            "Hands the treating clinician a printable one-page primer — what a nexus opinion is, what a DBQ is, what the VA actually needs from them. It carries no personal information, so a veteran can print it once and take it to any appointment.",
+            "Answers the VA-process questions nobody explains out loud. The app's guide will walk through \"at least as likely as not,\" what an Intent to File buys you, and the difference between a Supplemental Claim, a Higher-Level Review and a Board Appeal — at two in the morning, without anyone having to be asked twice.",
+            "Says out loud what a job code is worth. Enter an MOS, Rate or AFSC and the app checks it against the VA's own Duty MOS Noise Exposure Listing — the same table a rater checks on a hearing claim — and prints what it finds.",
+            "Points a woman veteran at the page written for her — deployment roles and how exposure differs, how MST is claimed, and the VA women's health resources most are never told about.",
+            "Tells a veteran about the benefit he hasn't thought to claim. If the VA already links a condition to an exposure he has documented, and it isn't on his record, the app says so.",
+            "Lets a veteran contribute an anonymized copy of their record to the collective picture, or not — three separate switches, all off unless they turn them on, none of it touching their claim either way.",
             "Finds free accredited help by ZIP code, from the VA's own accreditation lists — the organizations near you that will take your claim at no cost, with a number you can call today.",
             "Tracks the shots and vaccines a veteran received — with the actual FDA label for each one, word for word, and the dated paperwork trail nobody handed them at the time.",
             "Generates a claim packet, with the documented basis for every line in it, plus a hand-off sheet a doctor can sign.",
@@ -123,6 +131,7 @@ export default function AboutPage() {
             "Gives active-duty service members a timeline for filing before they separate — Benefits Delivery at Discharge — so a rating decision can be close to ready the day they're out, not months later.",
             "Lets a spouse or caregiver build the whole record for a veteran who can't or won't do it themselves — clearly labeled as their own words, never mistaken for the veteran's.",
             "Reconnects veterans with the brothers and sisters they served beside.",
+            "Gives the whole education half away with no account and no sign-in — the exposure library, the presumptive lookup, the C&P explainer, whole health, the VSO finder and the entire book. A veteran can send any of it to a spouse, a buddy or a doctor, and they can read it without signing up for anything.",
             "Hands the whole record back. They can download it, print it, or delete it — the locations, the exposures, the conditions, the uploads, all of it — any time, without asking anyone.",
           ].map((item, i) => (
             <li key={i} className="flex gap-2.5">
@@ -186,7 +195,8 @@ export default function AboutPage() {
         <p className="mt-3 text-sm leading-relaxed text-muted">
           And there&apos;s finally somewhere to put a symptom you can&apos;t name yet. Veterans kept telling us
           the same thing: something is happening, they don&apos;t know what it is or what it belongs to, so they
-          say nothing and it&apos;s gone. Now it&apos;s a box at the top of Your conditions — write the line,
+          say nothing and it&apos;s gone. Now it&apos;s a box on Your conditions, sitting just above the
+          conditions you&apos;ve saved — write the line,
           it&apos;s dated and saved, no category to pick. File it against the right condition later, when you
           know, or when a VSO helps you work it out. No score to slide, no streak to keep. Just somewhere for
           it to go at two in the morning.
@@ -207,6 +217,17 @@ export default function AboutPage() {
           claims usually get denied, lays out the three real paths forward, and points straight to VA&apos;s
           own directory of free accredited representatives — the same free help this app has pointed to
           from day one.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          And we took the wall down off the front half. Everything that teaches — the exposure
+          library, the presumptive lookup, the C&amp;P explainer, whole health, the VSO finder, and
+          all of the book — is now readable by anyone, with no account and no sign-in. That was not
+          a growth decision. A veteran kept telling us he wanted to send his wife a chapter, or send
+          his doctor the page about what he was standing in, and every link he sent them landed on a
+          sign-up form. Asking a man&apos;s wife to create an account before she is allowed to read
+          why he cannot sleep is the exact wrong way round. So the reading is open to everybody, and
+          you only make an account for the one thing that genuinely needs one — building your own
+          record, which is yours.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           The record belongs to the veteran, not to us. They can take it with them or delete it, on
