@@ -252,7 +252,7 @@ export default function DashboardView() {
               </p>
               <div className="flex gap-2">
                 <button onClick={() => respondReq(r.id, true)} className="rounded-lg bg-brand px-3.5 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600">Accept</button>
-                <button onClick={() => respondReq(r.id, false)} className="rounded-lg border border-line px-3.5 py-1.5 text-sm text-muted hover:bg-canvas">Not now</button>
+                <button onClick={() => respondReq(r.id, false)} className="rounded-lg border border-line px-3.5 py-1.5 text-sm text-muted hover:bg-canvas">Decline</button>
               </div>
             </div>
           ))}
@@ -391,9 +391,15 @@ export default function DashboardView() {
                       {(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", ") || "—"}
                     </div>
                     {confirmDel === r.id ? (
+                      // The confirm action is deliberately NOT also called "Remove".
+                      // The trigger and the confirm used to share the word, so a
+                      // veteran could not tell whether his first tap had worked --
+                      // and the safe option stays rightmost, where the finger
+                      // already is. This deletes claim evidence; it should read
+                      // like it does.
                       <span className="flex flex-none items-center gap-2 text-xs">
-                        <button onClick={() => removeCheckin(r.id)} className="font-semibold text-red-600 hover:underline">Remove</button>
-                        <button onClick={() => setConfirmDel(null)} className="text-muted hover:underline">Cancel</button>
+                        <button onClick={() => removeCheckin(r.id)} className="font-semibold text-red-600 hover:underline">Delete</button>
+                        <button onClick={() => setConfirmDel(null)} className="font-semibold text-ink hover:underline">Keep it</button>
                       </span>
                     ) : (
                       <button onClick={() => setConfirmDel(r.id)} className="flex-none text-xs text-faint transition hover:text-red-600" aria-label="Remove location">
@@ -401,6 +407,15 @@ export default function DashboardView() {
                       </button>
                     )}
                   </div>
+                  {confirmDel === r.id && (
+                    <p className="mt-1.5 rounded-lg border border-scarlet/30 bg-scarlet/5 px-2.5 py-1.5 text-[11px] leading-relaxed text-ink">
+                      Deletes this check-in
+                      {(r.exposures ?? []).length > 0
+                        ? ` and the ${(r.exposures ?? []).length} exposure${(r.exposures ?? []).length === 1 ? "" : "s"} you ticked here`
+                        : ""}
+                      . This cannot be undone, and it changes what your claim packet says.
+                    </p>
+                  )}
                 </li>
               ))}
               {checkins > 6 && (

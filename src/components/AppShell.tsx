@@ -304,6 +304,7 @@ export default function AppShell({
         </a>
         <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 px-2 text-[10px] text-white/30">
           <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-white/60">Send feedback</a>
+          <Link href="/trust" className="hover:text-white/60">What this is</Link>
           <Link href="/privacy" className="hover:text-white/60">Privacy</Link>
           <Link href="/terms" className="hover:text-white/60">Terms</Link>
         </div>

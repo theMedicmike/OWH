@@ -157,7 +157,7 @@ const MORE_STEPS: Step[] = [
     points: [
       "“Let others who served where I did corroborate my exposures” — this is the one that strengthens your record. It shares only the place, the time and the type of exposure. Never your name, never your health.",
       "“I'm open to reconnecting with battle buddies” — this is the social one. Nobody gets your contact details unless you both agree. The next point is where that agreeing actually happens.",
-      "When another veteran asks to connect with you, a card shows up on your Dashboard with their name and roughly where and when you overlapped — “…asked to connect” — and two buttons, “Accept” and “Not now.” That card is the agreeing. Accept and you are connected; “Not now” turns it down and the card goes away rather than coming back later, so treat it as no rather than later. The same requests are also waiting on this page under “Reconnection requests,” where the second button reads “Decline” instead — same thing, different word.",
+      "When another veteran asks to connect with you, a card shows up on your Dashboard with their name and roughly where and when you overlapped — “…asked to connect” — and two buttons, “Accept” and “Decline.” That card is the agreeing. Accept and you are connected; Decline turns it down and the card goes for good rather than coming back later, so treat it as no rather than not yet. The same requests also wait for you on this page under “Reconnection requests,” with the same two buttons.",
     ],
     warn: {
       label: "If the list is empty",
@@ -303,8 +303,8 @@ const MORE_STEPS: Step[] = [
       "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It carries no personal information, so it's safe to print once and keep on hand.",
       "“Women veterans & service” — also in the exposure library, further down past the grids. Deployment roles and how exposure patterns differ, how military sexual trauma is claimed, and the VA women's health resources most women veterans are never told exist.",
       "“Building your exposure timeline” — in the same place. The service records that prove where you were and when, called by their real names, who holds each one, and how to ask for them. This is the unglamorous paperwork that wins claims.",
-      "“Condition library” — a page per condition: why it's connected, the exposures commonly studied with it, and what to track. You reach it from “See the full breakdown and what to track →” on Connect the dots, or from the big blue button on your Dashboard when it reads “Connect a condition to an exposure.” The name says library, but it is really the detail behind your own conditions — it is not where you add them, that is still 2 “Your conditions.”",
-      "“What this is” — in the small print at the bottom of the Privacy or Terms page. Worth two minutes if you are weighing up whether to type something personal into a stranger's app: it says in plain words what the app is not, how the science is graded, what happens to your record if this organisation ever closes, and that you would be told directly if your data were ever exposed.",
+      "“How your conditions connect” — a page for each condition you have added: why it's connected, the exposures commonly studied with it, and what to track. You reach it from “See the full breakdown and what to track →” on Connect the dots, or from the big blue button on your Dashboard when it reads “Connect a condition to an exposure.” It is the reasoning behind your own conditions — not where you add them, which is still 2 “Your conditions.”",
+      "“What this is” — in the small grey print at the very bottom of the menu, beside Privacy and Terms. Worth two minutes if you are weighing up whether to type something personal into a stranger's app: it says in plain words what the app is not, how the science is graded, what happens to your record if this organisation ever closes, and that you would be told directly if your data were ever exposed.",
     ],
   },
   {
@@ -477,8 +477,9 @@ export default function HelpPage() {
             Further down, the card headed <strong>&ldquo;Your timeline&rdquo;</strong> lists your
             most recent places, and each line has a faint <strong>Remove</strong> beside it. That is
             not tidying a summary — it deletes the check-in itself, along with every exposure you
-            ticked at that place, and it takes two taps with nothing to type. If you only want a
-            shorter list, leave it alone and use <strong>&ldquo;Open map →&rdquo;</strong> or{" "}
+            ticked at that place. Tap it and it asks first, telling you exactly what will go; the
+            safe answer is <strong>&ldquo;Keep it&rdquo;</strong> and the one that deletes says{" "}
+            <strong>Delete</strong>. If you only want a shorter list, leave it alone and use <strong>&ldquo;Open map →&rdquo;</strong> or{" "}
             <strong>&ldquo;Manage all … locations →&rdquo;</strong> instead. Deleting a place there
             is the same delete, just somewhere you meant to be.
           </p>
