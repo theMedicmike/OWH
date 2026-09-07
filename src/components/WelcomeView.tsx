@@ -93,7 +93,7 @@ export default function WelcomeView() {
           </svg>
           <span>
             Free and private, built for veterans by Operation Whole Health, a 501(c)(3) nonprofit founded by Michael
-            Jones, a veteran. Your record is yours — never sold.{" "}
+            Jones. Your record is yours — never sold.{" "}
             <Link href="/about" className="font-semibold text-brand hover:underline">Why I built this →</Link>
           </span>
         </div>

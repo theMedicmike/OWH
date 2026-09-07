@@ -118,11 +118,16 @@ export function lejeuneScope(tours: TourFacts[]): ScopeResult {
   };
 }
 
-// ⏰ 38 CFR §3.317(a)(1)(i). Grep-verified absent from the whole codebase
-// before 2026-08 — with under five months left to run.
+// About the "December 31, 2026" date: 38 CFR §3.317(a)(1)(i) still prints it, but the
+// PACT Act (Pub. L. 117-168 §405, Aug 2022) amended 38 U.S.C. §1117 so a qualifying
+// chronic disability counts if it "became manifest to any degree at any time" and struck
+// the subsection that authorized any presumptive period. The statute has no deadline; VA’s
+// regulation text is simply unconformed (verified against the U.S. Code 2026-09-07). The
+// date is kept visible only so a veteran who has read the regulation learns why it no
+// longer controls. The 2026-08-07 pass had added it as a live deadline from the CFR alone.
 export const GULF_WAR_DEADLINE = "December 31, 2026";
 export const GULF_WAR_DEADLINE_LINE =
-  `⏰ A Gulf War qualifying chronic disability must have become manifest during Southwest Asia service, or to a degree of 10 percent or more not later than ${GULF_WAR_DEADLINE} (38 CFR §3.317(a)(1)(i)). Ask your VSO about this deadline now, and confirm whether VA has extended it.`;
+  `About the "${GULF_WAR_DEADLINE}" date some sources still print: VA’s regulation (38 CFR §3.317(a)(1)(i)) has not been updated, but the PACT Act (Pub. L. 117-168 §405, 2022) amended 38 U.S.C. §1117 so a qualifying chronic disability counts if it "became manifest to any degree at any time." There is no deadline in the statute. Ask your VSO to confirm — and do not rush a claim because of that date.`;
 
 export function gulfWarScope(): ScopeResult {
   return { status: "unknown", scope: `${GULF_WAR_SCOPE} ${GULF_WAR_DEADLINE_LINE}` };

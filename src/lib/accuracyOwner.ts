@@ -27,6 +27,7 @@ export const REVIEW_SCOPE = [
   "38 U.S.C. §1116(a)(2) and §1116(d) — Agent Orange conditions and covered locations/dates",
   "38 U.S.C. §§1119–1120 — PACT Act covered locations/dates and conditions",
   "38 CFR §3.307(a)(6)–(7), §3.309(d)(e)(f), §3.311, §3.317, §3.320 series",
+  "38 U.S.C. §1117 as amended by PACT Act §405 — Gulf War presumptive period has NO statutory deadline; §3.317 text unconformed (verified 2026-09-07)",
   "VA Duty MOS Noise Exposure Listing (enabled Aug 2026 — verified by an accredited VSO)",
   "VA form numbers, titles and about-form URLs",
 ];
