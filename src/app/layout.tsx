@@ -36,6 +36,16 @@ export const metadata: Metadata = {
   // which told Google that /about, /help and every such page was a duplicate of
   // the homepage and should not be indexed separately. Each page now declares
   // its own; the homepage does it in src/app/page.tsx.
+  // Google Search Console ownership, for the URL-prefix property on
+  // https://www.tracethecascade.com. Next renders this as
+  // <meta name="google-site-verification" content="..."> on every page.
+  //
+  // DO NOT REMOVE once verification passes. Google re-checks periodically and
+  // silently unverifies the property if the tag disappears, which would take
+  // the sitemap and the indexing reports down with it. If the site ever moves
+  // to a Domain property (a DNS TXT record instead), this can go — but not
+  // before that record is live and verified.
+  verification: { google: "yw5JrQZ79lxn0a8akt7YaIhb53C61v1L9N-_s9JZ28E" },
   applicationName: "Connect the Dots",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Connect the Dots", statusBarStyle: "default" },
