@@ -1,6 +1,13 @@
 import AppShell from "@/components/AppShell";
 import { ServiceRibbon } from "@/components/Patriotic";
 
+export const metadata = {
+  title: "How to use this",
+  description:
+    "A plain-language walkthrough of Connecting the Dots of Service, written for a veteran holding a phone: five steps from your service history to a claim packet you hand an accredited VSO. Free, and nothing is sold.",
+  alternates: { canonical: "/help" },
+};
+
 // PART ONE is five steps and ends at a packet in your hand. A veteran who does
 // only Part One is finished, and this page says so out loud, twice. Everything
 // else is Part Two and is explicitly optional.
@@ -24,7 +31,7 @@ const CORE_STEPS: Step[] = [
   {
     title: "Get in the door",
     body: [
-      "Open the internet app you normally use — Safari on an iPhone, Chrome on most Android phones and computers. At the very top of the screen there is a long blank strip where web addresses go. Tap it, type owh-three.vercel.app exactly as it looks, and press Go. It looks odd because it has no “www” and no “.com” — that is normal, and it is the right address.",
+      "Open the internet app you normally use — Safari on an iPhone, Chrome on most Android phones and computers. At the very top of the screen there is a long blank strip where web addresses go. Tap it, type tracethecascade.com exactly as it looks, and press Go.",
       "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows six things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam,” “Read the book” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife a chapter, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record.",
       "When you are ready for that, tap “Create account” at the top of the white box in the middle of the screen. Put in your email and a password. If you cannot see what you are typing, tap “Show” next to the password box. (Signed out, that button sits in the menu reading “Start your free record,” and there is a “Sign in” button in the bar across the top.)",
       "Now watch what the screen does. If it says “Check your email,” you are not signed in yet — open the email, tap the link inside, then come back and tap “Sign in.” If instead it takes you straight into the app, you are already in and there is nothing to check. Next time, you only need “Sign in.”",

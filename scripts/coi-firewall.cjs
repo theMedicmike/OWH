@@ -168,6 +168,14 @@ const LEARN_FILES = [
     "dvidshub.net",
     // Infrastructure the app itself runs on
     "openfreemap.org", "openstreetmap.org", "supabase.co", "vercel.app",
+    // tracethecascade.com — this app's OWN address, added 2026-09-07 when the
+    // site moved off the vercel.app subdomain. Same category as vercel.app
+    // above: a self-reference in metadata (canonical URLs, the sitemap, JSON-LD
+    // @id, the address printed on a shared book card), never rendered as an
+    // outbound link a veteran can click away on, and it sells nothing. It is
+    // NOT the founder's operationwholehealth.org, which stays banned on the
+    // line below — that separation is the point of this rule and is unchanged.
+    "tracethecascade.com",
     // Share intents for the challenge coin. Outbound social sharing only — these
     // carry no health content and sell nothing.
     "twitter.com", "x.com", "facebook.com",
@@ -337,8 +345,9 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\
 // Council ruling 2026-08-12. The medications feature shows real FDA label text
 // and real VA diagnostic codes; it must never become (a) an exposure input,
 // (b) a rating estimator, or (c) a one-tap claim builder. All three are how the
-// benchmarked competitor product works, and all three are what the FTC's VA
-// Claims Insider action (W.D. Tex. 1:23-cv-01473) turned on.
+// benchmarked competitor product works, and all three are what the private Lanham Act suit against VA
+// Claims Insider (Warriors & Family Assistance Center v. VA Claims Insider, W.D. Tex.
+// 1:23-cv-01473, brought by accredited agents) and the Texas AG action turned on.
 {
   const MEDS_QUERY_ALLOWED = ["src/lib/medications.ts"];
   const MEDS_FILES = [

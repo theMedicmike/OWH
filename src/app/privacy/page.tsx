@@ -1,6 +1,11 @@
 import InfoPage, { H, P } from "@/components/InfoPage";
 
-export const metadata = { title: "Privacy Policy" };
+export const metadata = {
+  title: "Privacy Policy",
+  description:
+    "What Connecting the Dots of Service collects, how a veteran’s record is protected, which processors ever see it, and how to export or delete everything.",
+  alternates: { canonical: "/privacy" },
+};
 
 export default function PrivacyPage() {
   return (

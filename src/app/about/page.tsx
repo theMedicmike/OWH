@@ -1,6 +1,16 @@
 import AppShell from "@/components/AppShell";
 import { ServiceRibbon } from "@/components/Patriotic";
 
+// This page and /help had no metadata of their own, so both inherited the root
+// title and the root canonical — telling Google the two pages that explain what
+// this site IS were duplicates of the homepage.
+export const metadata = {
+  title: "Why we built this",
+  description:
+    "Why Operation Whole Health built Connecting the Dots of Service: the veterans behind it, what the app does, and the one thing it will never do. A free 501(c)(3) tool that sells nothing.",
+  alternates: { canonical: "/about" },
+};
+
 const MVP = [
   {
     label: "Mission",

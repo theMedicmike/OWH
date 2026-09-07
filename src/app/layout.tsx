@@ -4,8 +4,9 @@ import "./globals.css";
 import CrisisSupport from "@/components/CrisisSupport";
 import { AuthProvider } from "@/components/AuthProvider";
 import { TextSizeApplier } from "@/components/TextSize";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://owh-three.vercel.app"),
+  // Every relative canonical, OG url and image below resolves against this.
+  metadataBase: new URL(SITE_URL),
   // A template, so a child page setting `title: "Find a VSO"` renders
   // "Find a VSO · Connecting the Dots of Service" instead of replacing the
   // product name entirely — every tab and every search result keeps the
@@ -29,7 +31,11 @@ export const metadata: Metadata = {
   },
   description:
     "A living record of where veterans served, what they were exposed to, and what it cost them. An Operation Whole Health initiative.",
-  alternates: { canonical: "/" },
+  // NO canonical here. Next merges `alternates` down the tree, so a canonical
+  // set on the layout is inherited by every page that does not set its own —
+  // which told Google that /about, /help and every such page was a duplicate of
+  // the homepage and should not be indexed separately. Each page now declares
+  // its own; the homepage does it in src/app/page.tsx.
   applicationName: "Connect the Dots",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Connect the Dots", statusBarStyle: "default" },
@@ -45,16 +51,21 @@ export const metadata: Metadata = {
     title: "Connecting the Dots of Service",
     description:
       "A living record of where veterans served, what they were exposed to, and what it cost them.",
-    url: "https://owh-three.vercel.app",
+    url: SITE_URL,
     siteName: "Operation Whole Health",
-    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Operation Whole Health" }],
+    // 1200x630 is what Facebook, LinkedIn, iMessage and Slack all crop to. The
+    // old 512-square rendered as a tiny centred logo in every preview — and a
+    // veteran texting a book chapter to his wife IS the sharing path this public
+    // layer was built for, so the preview is part of the product.
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Connecting the Dots of Service — a free record of where you served and what it cost you" }],
     type: "website",
+    locale: "en_US",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Connecting the Dots of Service",
     description: "A living record of where veterans served, what they were exposed to, and what it cost them.",
-    images: ["/icon-512.png"],
+    images: ["/og-image.png"],
   },
 };
 
@@ -88,11 +99,11 @@ const STRUCTURED_DATA = {
       // 2026-08-16; `nonprofitStatus` below is schema.org-only and earns
       // nothing from Google, kept because other consumers do read it.
       "@type": ["NGO", "Organization"],
-      "@id": "https://owh-three.vercel.app/#organization",
+      "@id": `${SITE_URL}/#organization`,
       name: "Operation Whole Health",
       alternateName: "OWH",
-      url: "https://owh-three.vercel.app",
-      logo: "https://owh-three.vercel.app/icon-512.png",
+      url: SITE_URL,
+      logo: `${SITE_URL}/icon-512.png`,
       description:
         "A Patriot-founded 501(c)(3) nonprofit helping veterans document the connection between their service and their health. Free, and it sells nothing.",
       nonprofitStatus: "Nonprofit501c3",
@@ -109,12 +120,12 @@ const STRUCTURED_DATA = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://owh-three.vercel.app/#website",
-      url: "https://owh-three.vercel.app",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
       name: "Connecting the Dots of Service",
       description:
         "A living record of where veterans served, what they were exposed to, and what it cost them.",
-      publisher: { "@id": "https://owh-three.vercel.app/#organization" },
+      publisher: { "@id": `${SITE_URL}/#organization` },
       inLanguage: "en-US",
     },
   ],

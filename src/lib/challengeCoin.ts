@@ -6,7 +6,9 @@
 // title/author are tiny and stable, so we hold them here to keep the manuscript
 // out of the client bundle.
 
-export const PUBLIC_URL = "https://owh-three.vercel.app";
+import { SITE_URL, SITE_HOST } from "./site";
+
+export const PUBLIC_URL = SITE_URL;
 const CARD_TITLE = "What Happened to Our Veterans";
 const CARD_AUTHOR = "Michael Andrew Feller Jones";
 
@@ -192,7 +194,7 @@ export function drawCard(ctx: CanvasRenderingContext2D, opts: CardOpts) {
     ctx.fillText("READ FREE", W - PAD, footerY + 46);
     ctx.fillStyle = COLORS.gold;
     ctx.font = `22px ${SERIF}`;
-    ctx.fillText("owh-three.vercel.app", W - PAD, footerY + 80);
+    ctx.fillText(SITE_HOST, W - PAD, footerY + 80);
   } else {
     ctx.fillStyle = COLORS.scarlet;
     ctx.font = `600 20px ${SERIF}`;

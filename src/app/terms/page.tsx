@@ -1,6 +1,11 @@
 import InfoPage, { H, P } from "@/components/InfoPage";
 
-export const metadata = { title: "Terms of Service" };
+export const metadata = {
+  title: "Terms of Service",
+  description:
+    "Plain-English terms for Connecting the Dots of Service: a free nonprofit tool that documents a veteran’s own record. Not the VA, not legal representation, and never sold.",
+  alternates: { canonical: "/terms" },
+};
 
 export default function TermsPage() {
   return (

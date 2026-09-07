@@ -1,8 +1,12 @@
 import type { MetadataRoute } from "next";
 import { TOXICANTS, ORGANS } from "@/lib/toxlibrary";
 import { BOOK_CHAPTERS } from "@/content/book";
+import { SITE_URL } from "@/lib/site";
 
-export const SITE_URL = "https://owh-three.vercel.app";
+// SITE_URL now lives in src/lib/site.ts — it was hardcoded here AND in
+// layout.tsx, robots.ts and challengeCoin.ts, and they all kept the old address
+// after the domain moved. Re-exported so existing importers keep working.
+export { SITE_URL };
 
 // THE SITEMAP — only what a crawler can actually read.
 //

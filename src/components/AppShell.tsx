@@ -174,7 +174,19 @@ export default function AppShell({
     else router.push("/dashboard");
   }
 
-  if (!ready) {
+  // Auth still resolving. A PUBLIC page must never wait for it.
+  //
+  // This component is server-rendered and `ready` is false on the server, so
+  // returning a spinner here meant every public page shipped "Loading…" as its
+  // entire crawlable HTML. Measured live 2026-09-07: /learn returned 42 KB of
+  // markup containing no visible text at all. All 127 public education pages,
+  // the whole book, and every link preview a veteran texted to his wife were
+  // empty to Google, to AI assistants and to reader modes.
+  //
+  // A public page now renders immediately with the signed-out rail; the account
+  // controls fill in on hydration. A personal page still waits, because showing
+  // its frame before we know who is asking is worse than a spinner.
+  if (!ready && !publicPage) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted">Loading…</div>;
   }
 

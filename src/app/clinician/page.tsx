@@ -8,6 +8,7 @@ export const metadata = {
   title: "For your clinician",
   description:
     "A printable one-page primer for a doctor asked to support a veteran's VA claim: what a Disability Benefits Questionnaire is, what \"at least as likely as not\" means, and the difference between a direct and a secondary nexus opinion under 38 CFR 3.310.",
+  alternates: { canonical: "/clinician" },
 };
 
 // A one-page primer to hand a TREATING clinician — public, no-login, since
@@ -50,7 +51,7 @@ export default function ClinicianPage() {
       <section className={card}>
         <h2 className="text-sm font-semibold text-ink">What your patient&apos;s packet gives you</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink">
-          The claim packet from Connecting the Dots of Service — a free tool built by a veteran-founded nonprofit
+          The claim packet from Connecting the Dots of Service — a free tool built by a nonprofit
           — has a section titled <strong>&ldquo;For the reviewing clinician&rdquo;</strong> that lists the specific
           condition(s), the documented in-service exposure or event behind each one, and the exact question being
           asked. It states facts your patient logged and the government&apos;s own documented sources — never a
