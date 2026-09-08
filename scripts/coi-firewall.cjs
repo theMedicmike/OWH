@@ -476,6 +476,54 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\
   }
 }
 
+// ── 14. Every app-written check-in note must be filtered from the veteran's words
+// The packet, the PDF and the signed "My Statement — In My Own Words" all print
+// check_ins.notes as the veteran's own testimony, filtered only by MACHINE_NOTE
+// in src/lib/veteranWords.ts. Twice now a feature has written its own sentence
+// into that column without adding the prefix to the filter, and both times the
+// app ended up asking a veteran to sign a sentence the software wrote:
+//   2026-08-06  lib/bootCamp.ts   "Basic training / boot camp."
+//   2026-08-11  lib/incidents.ts  "Logged from Injuries & events — ..."
+// This rule closes the class instead of the instance: find every `notes: "..."`
+// literal the app writes, and assert MACHINE_NOTE matches it. Adding a new
+// auto-note is fine — adding one without the filter prefix fails the build.
+{
+  const veteranWordsSrc = read("src/lib/veteranWords.ts");
+  const m = veteranWordsSrc.match(/MACHINE_NOTE\s*=\s*(\/(?:[^/\\]|\\.)+\/[a-z]*)/);
+  if (!m) {
+    fail("machine-notes", "src/lib/veteranWords.ts no longer exports a MACHINE_NOTE regex literal — the packet's only filter between app-written text and the veteran's sworn words is gone.");
+  } else {
+    let machineNote = null;
+    try { machineNote = eval(m[1]); } catch { /* handled below */ }
+    if (!machineNote) {
+      fail("machine-notes", `Could not parse the MACHINE_NOTE regex in src/lib/veteranWords.ts (${m[1]}).`);
+    } else {
+      const walkTs = (dir) =>
+        fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+          const p = path.join(dir, e.name);
+          if (e.isDirectory()) return walkTs(p);
+          return /\.(ts|tsx)$/.test(e.name) ? [p] : [];
+        });
+      for (const p of walkTs(path.join(root, "src"))) {
+        const src = fs.readFileSync(p, "utf8");
+        // `notes: "…"` written by the app into a check-in insert/update.
+        for (const hit of src.matchAll(/\bnotes:\s*"((?:[^"\\]|\\.)*)"/g)) {
+          const literal = hit[1].replace(/\\"/g, '"');
+          if (!literal.trim()) continue;
+          if (!machineNote.test(literal)) {
+            fail(
+              "machine-notes",
+              `${path.relative(root, p)} writes an app-authored check-in note that MACHINE_NOTE does not filter:\n      "${literal}"\n    ` +
+                `Add its opening phrase to MACHINE_NOTE in src/lib/veteranWords.ts in THIS commit, or this sentence will print\n    ` +
+                `as the veteran's own words in the claim packet, the PDF, and the statement he signs.`
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
 // ── report ──────────────────────────────────────────────────────────────────
 if (failures.length) {
   console.error("\n  COI FIREWALL FAILED — build stopped\n");

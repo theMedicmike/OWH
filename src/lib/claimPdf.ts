@@ -12,6 +12,11 @@ export type PdfWitnessStatement = { subject: string; witnessName: string; relati
 /** One printed line per medication. Assembled in ReportView so the browser
  *  sheet and this PDF can never disagree — same rule as the contentions list. */
 export type PdfMedication = { line: string; note?: string };
+/** An injury or event the veteran logged, with his OWN account of it and the
+ *  dated "what I've noticed since" entries. `detail` and `notes` are the
+ *  veteran's words, already run through veteranWords() upstream — the packet
+ *  prints them, it never writes them. */
+export type PdfIncident = { line: string; detail?: string; notes: string[] };
 
 export type ClaimPdfData = {
   name: string;
@@ -19,6 +24,11 @@ export type ClaimPdfData = {
   years: string | null;
   /** e.g. "MOS 11B · Current VA rating: 70% (veteran-reported)" */
   subline?: string;
+  /** Intent to File status. The first thing an accredited VSO asks, because it
+   *  sets the effective date and therefore the back pay. Printed in the header
+   *  whether or not one exists — "not yet reported" is itself the answer the
+   *  VSO needs, and it is the prompt the veteran most needs to see. */
+  itfLine?: string;
   today: string;
   summary: string;
   nextStep: string;
@@ -27,6 +37,7 @@ export type ClaimPdfData = {
   events: PdfEvent[];
   conditions: PdfCondition[];
   medications: PdfMedication[];
+  incidents: PdfIncident[];
   corroborations: string[];
   witnessStatements: PdfWitnessStatement[];
   contentions: PdfContention[];
@@ -199,7 +210,8 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   doc.text("Claim Support Packet", margin, y);
   y += 18;
   text([data.name, data.branch, data.years].filter(Boolean).join("  ·  "), { size: 10, color: MUTED, gapAfter: data.subline ? 0 : 6 });
-  if (data.subline) text(data.subline, { size: 9, color: MUTED, gapAfter: 6 });
+  if (data.subline) text(data.subline, { size: 9, color: MUTED, gapAfter: data.itfLine ? 0 : 6 });
+  if (data.itfLine) text(data.itfLine, { size: 9, color: MUTED, gapAfter: 6 });
 
   text(
     "Prepared from veteran-entered data. This is a self-reported record with documented-source citations to assist an accredited VSO and a clinician. It is not a diagnosis or a determination of service connection.",
@@ -285,6 +297,30 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     });
     text(
       "Veteran-reported. Listed because a condition caused or aggravated by treatment for a service-connected disability may be claimable as secondary under 38 CFR 3.310 — a question for the reviewing clinician and an accredited VSO, not a claim made here.",
+      { size: 8, color: FAINT, gapAfter: 4 },
+    );
+  }
+
+  // ---- 3c. Injuries and events, in the veteran's own words ----
+  // For an event-based contention (a blast, a fall, a fire) the veteran's own
+  // first-hand account IS the evidence — under 38 U.S.C. 1154(b) it can be
+  // sufficient on its own for a combat veteran. The app collected it, told him
+  // on screen that his own specific memory beats polished prose, and then
+  // printed only the category label ("Blast / IED"). Everything below is his
+  // words or a date he entered; the packet adds no characterisation.
+  //
+  // The dated "noticed since" entries carry 38 CFR 3.303(b) continuity of
+  // symptomatology, which is the element these claims usually turn on.
+  if (data.incidents.length > 0) {
+    sectionHeading("3c · Injuries and events reported by the veteran");
+    data.incidents.forEach((i) => {
+      bullet(i.line, { size: 9.5 });
+      if (i.detail) text(`"${i.detail}"`, { size: 9, style: "italic", color: INK, indent: 12, gapAfter: i.notes.length ? 2 : 5 });
+      i.notes.forEach((n) => text(n, { size: 8.5, color: MUTED, indent: 12, gapAfter: 1 }));
+      if (i.notes.length) y += 4;
+    });
+    text(
+      "Veteran-reported, in his or her own words. Dated entries record what the veteran noticed and when — relevant to continuity of symptomatology under 38 CFR 3.303(b). For a veteran who engaged in combat, lay evidence of an in-service event may be sufficient under 38 U.S.C. 1154(b); whether that applies here is for an accredited VSO to confirm.",
       { size: 8, color: FAINT, gapAfter: 4 },
     );
   }

@@ -16,6 +16,8 @@ import StatementCard from "./StatementCard";
 import { CONDITION_EXPOSURES, CONDITION_INCIDENTS, EXPOSURE_LABEL, INCIDENT_LABEL, RECOGNIZED_CLASSES, type IncidentClass } from "@/lib/education";
 import { evidentiaryNoteFor } from "@/lib/incidentCopy";
 import { listStatementRequests, type WitnessStatement } from "@/lib/statementRequests";
+import { listMemberIncidents, PROVENANCE_LABEL, type IncidentRecord } from "@/lib/incidents";
+import { listIncidentNotes, type IncidentNote } from "@/lib/incidentNotes";
 import { listMedications, type Medication } from "@/lib/medications";
 
 const WITNESS_TYPE_LABEL: Record<string, string> = {
@@ -52,6 +54,50 @@ function medicationLine(m: Medication): { line: string; note?: string } {
   if (when) line += `; ${when}`;
   return { line, note: m.note ?? undefined };
 }
+
+// ONE printed block per injury or event, built once for BOTH deliverables —
+// the same lockstep rule medicationLine and the contentions list follow.
+//
+// Everything returned here is either the veteran's own words (run through
+// veteranWords first, so nothing the app authored can be presented back to him
+// as testimony) or a date and a category he chose. The packet characterises
+// nothing: for an event-based claim his account IS the evidence, and rewriting
+// it would both weaken it and cross the line this app doesn't cross.
+//
+// Repeated entries store the ROLE in place_name (see lib/incidents.ts), so they
+// are labelled "Role:" — printing "breacher, 2nd squad" in the place column of a
+// service timeline reads to a rater as a data-entry error.
+function incidentBlock(
+  i: IncidentRecord,
+  notes: IncidentNote[],
+): { line: string; detail?: string; notes: string[] } {
+  const label = INCIDENT_LABEL[i.incidentClass] ?? i.incidentClass;
+  const when = rangeLabel(i.dateStart, i.dateEnd, i.dateStartPrecision ?? null, null);
+  const where = i.repeated
+    ? i.roleOrUnit ? `Role: ${i.roleOrUnit}` : null
+    : i.placeName || null;
+  const bits = [where, when && when !== "—" ? when : null].filter(Boolean) as string[];
+  let line = bits.length ? `${label} — ${bits.join(", ")}` : label;
+  if (i.repeated && i.frequency) line += `; repeated, ${i.frequency}`;
+  if (i.provenance) line += `. How the veteran knows: ${PROVENANCE_LABEL[i.provenance].toLowerCase()}`;
+  return {
+    line,
+    detail: veteranWords(i.detail) || undefined,
+    notes: notes
+      .map((n) => {
+        const words = veteranWords(n.note);
+        if (!words) return null;
+        const when =
+          n.noticed_year && n.noticed_month ? `${MONTH_ABBR[n.noticed_month - 1] ?? ""} ${n.noticed_year}`.trim()
+          : n.noticed_year ? String(n.noticed_year)
+          : null;
+        return `${when ? `Noticed ${when}` : "Noticed since"}: ${words}`;
+      })
+      .filter((s): s is string => !!s),
+  };
+}
+
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // Exposure classes that carry a recognized presumptive pathway.
 
@@ -115,6 +161,8 @@ export default function ReportView() {
   const [condDetail, setCondDetail] = useState<Record<string, { onset_precision: string | null; evidence_status: string | null; secondary_to: string | null; diagnosed_by: string | null }>>({});
   const [incidentPlaces, setIncidentPlaces] = useState<Record<string, string[]>>({});
   const [medications, setMedications] = useState<Medication[]>([]);
+  const [incidentBlocks, setIncidentBlocks] = useState<{ line: string; detail?: string; notes: string[] }[]>([]);
+  const [itfFiledOn, setItfFiledOn] = useState<string | null>(null);
   const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
@@ -237,6 +285,30 @@ export default function ReportView() {
       const meds = await listMedications(supabase);
       if (!("error" in meds)) setMedications(meds.medications);
 
+      // Injuries and events, with the veteran's own account and his dated
+      // "what I've noticed since" log. Both were collected and then dropped on
+      // the floor: the packet selected only incidents(id, incident_class), so a
+      // blast injury printed as the two words "Blast / IED" and the paragraph
+      // he wrote about it — the actual evidence for an event-based claim —
+      // reached no deliverable at all. lib/incidents handles the pre-0025
+      // fallback itself, so no defensive tiering is needed here.
+      const inc = await listMemberIncidents(supabase);
+      if (!("error" in inc) && inc.incidents.length) {
+        const withNotes = await Promise.all(
+          inc.incidents.map(async (i) => {
+            const n = await listIncidentNotes(supabase, i.id);
+            return incidentBlock(i, "notes" in n ? n.notes : []);
+          }),
+        );
+        setIncidentBlocks(withNotes);
+      }
+
+      // Intent to File (migration 0016). Read separately and defensively rather
+      // than widening the member select above, so an unrun 0016 can't take the
+      // whole header down with it.
+      const itf = await supabase.from("members").select("itf_filed_on").maybeSingle();
+      if (!itf.error) setItfFiledOn((itf.data as { itf_filed_on: string | null } | null)?.itf_filed_on ?? null);
+
       const { data: fileList } = await supabase.storage
         .from("records")
         .list(data.user.id, { sortBy: { column: "created_at", order: "desc" } });
@@ -353,6 +425,31 @@ export default function ReportView() {
     })
     .filter((x): x is { label: string; line: string; cite: string | undefined; elementLine: string } => x !== null);
 
+  // INTENT TO FILE — the first question an accredited VSO asks, and the field
+  // with more dollars attached than anything else in this packet: an ITF sets
+  // the effective date, which sets how far back an award is paid. The date was
+  // already in the database (migration 0016) and printed nowhere.
+  //
+  // When it is missing the line is MORE useful, not less, so it prints either
+  // way — for the VSO it closes an open question, and for the veteran it is the
+  // one prompt most likely to be worth real money. It states what a form does
+  // and routes to a VSO; it never tells him he qualifies for anything, and no
+  // figure appears.
+  // Parsed defensively: itf_filed_on is a `date` column and PostgREST returns
+  // "2026-03-12", but a timestamp would make `+ "T00:00:00"` an Invalid Date and
+  // print the words "Invalid Date" on the first page a VSO reads. Take the date
+  // part only, and fall back to the raw string rather than to garbage.
+  const itfPretty = (() => {
+    if (!itfFiledOn) return null;
+    const d = new Date(`${itfFiledOn.slice(0, 10)}T00:00:00`);
+    return Number.isNaN(d.getTime())
+      ? itfFiledOn
+      : d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  })();
+  const itfLine = itfPretty
+    ? `Intent to File (VA Form 21-0966): veteran reports filing on ${itfPretty} — veteran-reported; confirm on VA.gov.`
+    : "Intent to File (VA Form 21-0966): none reported. Filing one sets the effective date for any later award — worth asking an accredited VSO about before anything else.";
+
   async function handleDownload() {
     setPdfBusy(true);
     try {
@@ -365,6 +462,8 @@ export default function ReportView() {
           member?.units?.length ? `Unit(s): ${member.units.join(", ")}` : "",
           member?.va_rating && member.va_rating !== "Not rated yet" ? `Current VA rating: ${member.va_rating} (veteran-reported)` : "",
         ].filter(Boolean).join("  ·  ") || undefined,
+        itfLine,
+        incidents: incidentBlocks,
         today,
         summary: `You logged service at ${rows.length} location${rows.length === 1 ? "" : "s"}. Documented exposures include ${classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.${conditions.length > 0 ? ` Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.` : " Add your conditions to see which carry a recognized presumptive pathway."}`,
         nextStep: "bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to review the hand-off sheet on the last page.",
@@ -610,6 +709,8 @@ export default function ReportView() {
             {years ? ` · ${years}` : ""}
             {member?.va_rating && member.va_rating !== "Not rated yet" ? ` · VA rating ${member.va_rating} (veteran-reported)` : ""}
           </p>
+          {/* Same string the PDF header prints — see the note on itfLine above. */}
+          <p className="mt-0.5 text-sm text-muted">{itfLine}</p>
           <div className="mt-2 inline-block rounded-md border border-line bg-canvas px-2.5 py-1 text-[11px] font-semibold text-muted">
             A self-prepared record — not a medical diagnosis or a legal opinion.
           </div>
@@ -800,6 +901,46 @@ export default function ReportView() {
               Veteran-reported, as with every other entry in this packet. Listed because a condition caused or
               aggravated by treatment for a service-connected disability may be claimable as secondary under
               38 CFR 3.310 — a question for the reviewing clinician and an accredited VSO, not a claim made here.
+            </p>
+          </section>
+        )}
+
+        {/* 3c. Injuries and events, in the veteran's own words.
+            The app told him on screen that his own specific memory is stronger
+            evidence than polished prose, then printed only the category label.
+            For an event-based contention his account IS the evidence — under
+            38 U.S.C. 1154(b) it can be sufficient on its own for a combat
+            veteran — and the dated "noticed since" entries are the continuity
+            of symptomatology these claims usually turn on (38 CFR 3.303(b)).
+            Built from the same incidentBlock() the PDF uses, so the browser
+            sheet and the download can never disagree. */}
+        {incidentBlocks.length > 0 && (
+          <section className={sectionWrap}>
+            <h3 className={sectionTitle}>3c · Injuries and events reported by the veteran</h3>
+            <ul className="space-y-3">
+              {incidentBlocks.map((i, idx) => (
+                <li key={idx} className="text-sm">
+                  {i.line}
+                  {i.detail && (
+                    <blockquote className="mt-1 border-l-2 border-line pl-3 text-sm italic leading-relaxed text-ink">
+                      &ldquo;{i.detail}&rdquo;
+                    </blockquote>
+                  )}
+                  {i.notes.length > 0 && (
+                    <ul className="mt-1 space-y-0.5">
+                      {i.notes.map((n, j) => (
+                        <li key={j} className="text-xs leading-relaxed text-muted">{n}</li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Veteran-reported, in his or her own words. Dated entries record what the veteran noticed and when —
+              relevant to continuity of symptomatology under 38 CFR 3.303(b). For a veteran who engaged in combat,
+              lay evidence of an in-service event may be sufficient under 38 U.S.C. 1154(b); whether that applies
+              here is for an accredited VSO to confirm.
             </p>
           </section>
         )}

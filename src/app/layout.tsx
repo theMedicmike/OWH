@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   // which told Google that /about, /help and every such page was a duplicate of
   // the homepage and should not be indexed separately. Each page now declares
   // its own; the homepage does it in src/app/page.tsx.
-  // Google Search Console ownership, for the URL-prefix property on
-  // https://www.tracethecascade.com. Next renders this as
+  // Google Search Console ownership, for the URL-prefix property on the site's
+  // own www domain (SITE_URL above). Next renders this as
   // <meta name="google-site-verification" content="..."> on every page.
   //
   // DO NOT REMOVE once verification passes. Google re-checks periodically and

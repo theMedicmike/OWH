@@ -15,7 +15,17 @@
 //
 // If you add another auto-written note anywhere, add its prefix here in the same
 // commit.
-export const MACHINE_NOTE = /^(Location not yet pinned|Location approximate|Other exposure noted:|Basic training \/ boot camp\.?$)/;
+//
+// 🔴 The same bug recurred five days after the boot-camp fix. lib/incidents.ts
+// writes "Logged from Injuries & events — location not yet pinned on the map."
+// onto the check-in behind every injury, and the prefix below did not match it
+// ("Logged from…", not "Location not yet pinned…"). So every veteran who used
+// the Injuries page had that sentence printed as his own sworn testimony in the
+// packet, the PDF and the signed statement. Fixed 2026-09-08; the prebuild check
+// in scripts/coi-firewall.cjs now asserts that every app-written `notes:` literal
+// in src/ is matched here, so a third recurrence fails the build instead of
+// shipping.
+export const MACHINE_NOTE = /^(Location not yet pinned|Location approximate|Logged from Injuries & events|Other exposure noted:|Basic training \/ boot camp\.?$)/;
 
 export function veteranWords(notes: string | null | undefined): string {
   return (notes ?? "")
