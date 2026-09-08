@@ -18,6 +18,11 @@ import { evidentiaryNoteFor } from "@/lib/incidentCopy";
 import { listStatementRequests, type WitnessStatement } from "@/lib/statementRequests";
 import { listMemberIncidents, PROVENANCE_LABEL, type IncidentRecord } from "@/lib/incidents";
 import { listIncidentNotes, type IncidentNote } from "@/lib/incidentNotes";
+import { listConditionNotes } from "@/lib/conditionNotes";
+// Shots are read ONLY through this module. scripts/coi-firewall.cjs rule 6 bans
+// the underlying table name everywhere else in src/, so a shot can never be
+// queried as though it were an exposure.
+import { listServiceEvents, PROVENANCE_LABEL as SHOT_PROVENANCE_LABEL } from "@/lib/serviceEvents";
 import { listMedications, type Medication } from "@/lib/medications";
 
 const WITNESS_TYPE_LABEL: Record<string, string> = {
@@ -163,6 +168,8 @@ export default function ReportView() {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [incidentBlocks, setIncidentBlocks] = useState<{ line: string; detail?: string; notes: string[] }[]>([]);
   const [itfFiledOn, setItfFiledOn] = useState<string | null>(null);
+  const [shotRows, setShotRows] = useState<{ label: string; date: string; provenance: string }[]>([]);
+  const [condNotes, setCondNotes] = useState<Record<string, string[]>>({});
   const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
@@ -309,6 +316,70 @@ export default function ReportView() {
       const itf = await supabase.from("members").select("itf_filed_on").maybeSingle();
       if (!itf.error) setItfFiledOn((itf.data as { itf_filed_on: string | null } | null)?.itf_filed_on ?? null);
 
+      // The dated impact journal per condition — 38 CFR 4.10 functional impact
+      // and 3.303(b) continuity, which is what a C&P examiner is trained to ask
+      // about and what the packet had no way to show. Collected since migration
+      // 0027 and printed nowhere until now.
+      if (detRows?.length) {
+        const noteMap: Record<string, string[]> = {};
+        await Promise.all(
+          detRows.map(async (r) => {
+            const n = await listConditionNotes(supabase, r.id);
+            if ("notes" in n && n.notes.length) {
+              noteMap[r.label] = n.notes
+                .map((x) => {
+                  const words = veteranWords(x.note);
+                  if (!words) return null;
+                  const when =
+                    x.noticed_year && x.noticed_month ? `${MONTH_ABBR[x.noticed_month - 1] ?? ""} ${x.noticed_year}`.trim()
+                    : x.noticed_year ? String(x.noticed_year)
+                    : null;
+                  return `${when ? `Noted ${when}` : "Noted"}: ${words}`;
+                })
+                .filter((s): s is string => !!s);
+            }
+          }),
+        );
+        setCondNotes(noteMap);
+      }
+
+      // Shots and in-service medications — read through lib/serviceEvents only
+      // (firewall rule 6), and filtered HERE to documented rows.
+      //
+      // The 2026-08-07 shots council ruling, section 9: "Default to documented
+      // and in-record rows only." A recalled entry that later contradicts the
+      // veteran's Service Treatment Record in front of a rater damages his
+      // credibility on everything else in the packet, so a row he reconstructed
+      // from memory alone does not go into a VA-bound document under his name.
+      // Recalled rows stay visible to him on /shots; they just don't print.
+      // (The ruling's per-row opt-in for recalled entries is not built — that
+      // needs storage and a control, and is Michael's call. See the note to him.)
+      const se = await listServiceEvents(supabase);
+      if (!("error" in se)) {
+        setShotRows(
+          se.events
+            // Kind filter first. The table carries unused blast/head_injury/injury
+            // enum values that the injuries council deliberately walled off (real
+            // injuries live in `incidents`, printed in 3c). Without this, a stray
+            // row of one of those kinds would print under a heading that calls it
+            // a shot — miscategorising an injury in a VA-bound document.
+            .filter((e) => e.kind === "vaccination" || e.kind === "medication")
+            .filter((e) => e.provenance === "in_record" || e.provenance === "document_held")
+            .map((e) => {
+              const date =
+                e.event_year && e.event_month && e.event_day && e.date_precision === "day"
+                  ? `${e.event_day} ${MONTH_ABBR[e.event_month - 1] ?? ""} ${e.event_year}`.replace(/\s+/g, " ")
+                  : e.event_year && e.event_month && e.date_precision === "month"
+                    ? `${MONTH_ABBR[e.event_month - 1] ?? ""} ${e.event_year}`.trim()
+                    : e.event_year
+                      ? String(e.event_year)
+                      : "date not recorded";
+              // Provenance verbatim from the ruling's own quoted strings.
+              return { label: e.label, date, provenance: SHOT_PROVENANCE_LABEL[e.provenance] };
+            }),
+        );
+      }
+
       const { data: fileList } = await supabase.storage
         .from("records")
         .list(data.user.id, { sortBy: { column: "created_at", order: "desc" } });
@@ -417,13 +488,56 @@ export default function ReportView() {
       if (secondary) parts.push(`${parts.length ? "also " : ""}claimed as secondary to ${secondary}`);
       if (!parts.length) return null;
       const diag = diagnosisLineFor(c.label);
-      const elementLine =
-        `Current diagnosis: ${diag ?? "not yet answered"}` +
-        `  ·  In-service link: ${(matched?.matches.length || matched?.incidentMatches.length) ? "documented above" : "not yet documented"}` +
-        `  ·  Medical nexus: pending clinician signature below`;
+      // The three elements, branched BY THEORY. It used to print one fixed
+      // string for every contention, which stated two things that were wrong
+      // depending on the claim:
+      //
+      //  • For a secondary-only contention (38 CFR 3.310) it printed "In-service
+      //    link: not yet documented" — reading to a rater as a hole in the file.
+      //    A secondary claim has no in-service link element; what it needs is a
+      //    service-connected primary, which the veteran has already named.
+      //  • For a condition on a presumptive list it solicited a private nexus
+      //    opinion, which VSOs specifically warn against — a weak or equivocal
+      //    private opinion can undercut a presumption the veteran already had.
+      //
+      // The civilian physician on the September panel put it plainly: ask the
+      // right question or don't ask at all, because a sheet asking the wrong one
+      // is a sheet she hands back.
+      const linked = !!(matched?.matches.length || matched?.incidentMatches.length);
+      const isPresumptive = !!CONDITION_BASIS[c.label]?.presumptive;
+      const inService = linked
+        ? "In-service link: documented above"
+        : secondary
+          ? `Service-connected primary: ${secondary} (status as reported by the veteran)`
+          : "In-service link: not yet documented";
+      const nexus = isPresumptive
+        ? "Medical nexus: not required if the presumption applies — an accredited VSO should confirm scope first"
+        : secondary && !linked
+          ? "Medical nexus: clinician opinion on aggravation or causation by the primary (38 CFR 3.310)"
+          : "Medical nexus: pending clinician signature in section 5";
+      const elementLine = `Current diagnosis: ${diag ?? "not yet answered"}  ·  ${inService}  ·  ${nexus}`;
       return { label: c.label, line: parts.join("; "), cite: (CONDITION_BASIS[c.label]?.cite ?? undefined) as string | undefined, elementLine };
     })
     .filter((x): x is { label: string; line: string; cite: string | undefined; elementLine: string } => x !== null);
+
+  // CONTENTIONS AT A GLANCE — page one, third person, one block per contention.
+  // Both the rater and the VSO asked for this and gave the same reason: the
+  // facts already existed but were split across sections 3 and 5 on different
+  // pages, so the first thing either of them did was assemble this by hand.
+  // Built from the same allContentions the clinician sheet uses, so the two can
+  // never disagree about what is being claimed.
+  const contentionFacts = allContentions.map((c) => {
+    const d = condDetail[c.label];
+    const onset = condOnset[c.label];
+    const began = onset
+      ? `${d?.onset_precision === "approximate" ? "circa " : ""}${onset}`
+      : undefined;
+    const diagnosis = diagnosisLineFor(c.label)
+      ? `Diagnosis: ${diagnosisLineFor(c.label)}`
+      : "Diagnosis: NEEDS DIAGNOSIS — no clinician has diagnosed this yet";
+    const evidence = d?.evidence_status ? `Evidence: ${EVIDENCE_LINE[d.evidence_status] ?? d.evidence_status}` : undefined;
+    return { label: c.label, began, diagnosis, theory: c.line, evidence, elementLine: c.elementLine };
+  });
 
   // INTENT TO FILE — the first question an accredited VSO asks, and the field
   // with more dollars attached than anything else in this packet: an ITF sets
@@ -464,6 +578,8 @@ export default function ReportView() {
         ].filter(Boolean).join("  ·  ") || undefined,
         itfLine,
         incidents: incidentBlocks,
+        contentionFacts,
+        shots: shotRows,
         today,
         summary: `You logged service at ${rows.length} location${rows.length === 1 ? "" : "s"}. Documented exposures include ${classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.${conditions.length > 0 ? ` Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.` : " Add your conditions to see which carry a recognized presumptive pathway."}`,
         nextStep: "bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to review the hand-off sheet on the last page.",
@@ -515,6 +631,7 @@ export default function ReportView() {
           ].filter(Boolean);
           return {
             label: c.label,
+            notes: condNotes[c.label],
             tag: basis?.tag,
             presumptive: basis?.presumptive,
             status: c.claim_status,
@@ -719,6 +836,32 @@ export default function ReportView() {
           Prepared from veteran-entered data. This is a self-reported record with documented-source citations to
           assist an accredited VSO and a clinician. It is not a diagnosis or a determination of service connection.
         </p>
+
+        {/* ── Page one: contentions at a glance ──────────────────────────────
+            The rater's and the VSO's single shared request. Same array the PDF
+            prints, so the browser sheet and the download cannot disagree. Third
+            person: this block is read by the person deciding the claim. */}
+        {contentionFacts.length > 0 && (
+          <section className="mt-5 break-inside-avoid rounded-lg border border-line p-4">
+            <div className="text-[13px] font-bold uppercase tracking-wide text-brand">Contentions at a glance</div>
+            <ul className="mt-2 space-y-3">
+              {contentionFacts.map((c) => (
+                <li key={c.label}>
+                  <div className="text-sm font-semibold text-ink">{c.label}</div>
+                  <div className="mt-0.5 text-xs text-ink">
+                    {[c.began ? `Began ${c.began}` : null, c.diagnosis, c.evidence].filter(Boolean).join("  ·  ")}
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted">{c.theory}</div>
+                  <div className="mt-0.5 text-[11px] leading-relaxed text-faint">{c.elementLine}</div>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11px] leading-relaxed text-faint">
+              Every line above is veteran-reported unless a citation says otherwise. The detail behind each is in
+              sections 1&ndash;3; the clinician&apos;s question is in section 5.
+            </p>
+          </section>
+        )}
 
         {/* ── Page one: the service timeline ─────────────────────────────── */}
         <section className="mt-5 break-inside-avoid rounded-lg border border-line p-4">
@@ -941,6 +1084,34 @@ export default function ReportView() {
               relevant to continuity of symptomatology under 38 CFR 3.303(b). For a veteran who engaged in combat,
               lay evidence of an in-service event may be sufficient under 38 U.S.C. 1154(b); whether that applies
               here is for an accredited VSO to confirm.
+            </p>
+          </section>
+        )}
+
+        {/* Appendix B. Shots and in-service medications.
+            Built to the 2026-08-07 shots council ruling, section 9: its own
+            labelled appendix never merged with exposure findings, documented
+            and in-record rows only, provenance in the ruling's own words, and
+            no free-text note field anywhere in the path. */}
+        {shotRows.length > 0 && (
+          <section className={sectionWrap}>
+            <h3 className={sectionTitle}>Appendix B · Shots and in-service medications</h3>
+            <p className="text-xs leading-relaxed text-muted">
+              Recorded by the veteran, separately from the exposure findings in this packet. A vaccine or a
+              medication is not an exposure, and nothing here asserts that any of it caused any condition listed
+              above.
+            </p>
+            <ul className="mt-2 space-y-1">
+              {shotRows.map((s, i) => (
+                <li key={i} className="text-sm">
+                  {s.label} — {s.date} <span className="text-muted">· {s.provenance}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Entries the veteran recorded from memory alone are deliberately not listed here; only rows he marked
+              as shown in his service record, or backed by a document he holds, are printed. His immunization
+              record is the authority — this list is a pointer to it.
             </p>
           </section>
         )}

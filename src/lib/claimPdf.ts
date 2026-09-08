@@ -5,7 +5,7 @@
 export type PdfTimelineRow = { year: string; place: string; exposures: string; note?: string };
 export type PdfExposure = { label: string; presumptive: boolean; places: string; basis: string };
 export type PdfEvent = { label: string; note: string };
-export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string; diagnosisLine?: string };
+export type PdfCondition = { label: string; tag?: string; presumptive?: boolean; status: string; matches: string; cite?: string; veteranLine?: string; latency?: string; noiseLine?: string; diagnosisLine?: string; notes?: string[] };
 export type PdfContention = { label: string; matches: string; cite?: string; elementLine?: string };
 export type PdfAttachment = { name: string; isImage: boolean; url: string };
 export type PdfWitnessStatement = { subject: string; witnessName: string; relationship: string; statement: string; detail?: string };
@@ -17,6 +17,22 @@ export type PdfMedication = { line: string; note?: string };
  *  veteran's words, already run through veteranWords() upstream — the packet
  *  prints them, it never writes them. */
 export type PdfIncident = { line: string; detail?: string; notes: string[] };
+/** ONE contention, with every fact a rater needs on the first page instead of
+ *  collated from two sections on two pages. Third person throughout: this is a
+ *  record about a veteran, read by someone deciding his claim. */
+export type PdfContentionFact = { label: string; began?: string; diagnosis: string; theory: string; evidence?: string; elementLine: string };
+/** A shot or in-service medication.
+ *
+ *  🔴 There is deliberately NO `note` field, and there must never be one. From
+ *  the 2026-08-07 shots council ruling, section 9: the packet's row type is
+ *  `{ label, date, provenance }` and the veteran's free-text note "never leaves
+ *  the app". The ruling predicted precisely how this breaks — a builder copies
+ *  the house pattern of quoting the veteran under a row, and the output becomes
+ *  a VA-bound document pairing a dated vaccine with a reported symptom under
+ *  his name. No sentence is written; the layout writes it. Keeping the field
+ *  off the type is what makes that unrepresentable rather than merely
+ *  discouraged. */
+export type PdfShot = { label: string; date: string; provenance: string };
 
 export type ClaimPdfData = {
   name: string;
@@ -38,6 +54,10 @@ export type ClaimPdfData = {
   conditions: PdfCondition[];
   medications: PdfMedication[];
   incidents: PdfIncident[];
+  /** Printed on page one, above the timeline. */
+  contentionFacts: PdfContentionFact[];
+  /** Documented and in-record rows only — see PdfShot and the ruling it cites. */
+  shots: PdfShot[];
   corroborations: string[];
   witnessStatements: PdfWitnessStatement[];
   contentions: PdfContention[];
@@ -241,6 +261,33 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   for (const ln of nextLines) { doc.text(ln, margin + 12, y); y += 13; }
   y = boxTop + boxH + 6;
 
+  // ---- Contentions at a glance ----
+  // PAGE ONE, above everything. Both the VA rating specialist and the accredited
+  // VSO on the September panel asked for exactly this and named the same reason:
+  // every fact they need per contention existed in the packet, but split across
+  // section 3 and section 5 on different pages, so the first thing either of
+  // them did was build this table by hand. "Instead of making me assemble it
+  // myself from two sections on two pages."
+  //
+  // Third person on purpose. The rest of page one still addresses the veteran;
+  // this block is read by someone deciding his claim, and a record that talks to
+  // the claimant reads as advocacy to the person reading it.
+  if (data.contentionFacts.length > 0) {
+    sectionHeading("Contentions at a glance");
+    data.contentionFacts.forEach((c) => {
+      ensure(46);
+      text(c.label, { size: 10.5, style: "bold", gapAfter: 1 });
+      const facts = [c.began ? `Began ${c.began}` : null, c.diagnosis, c.evidence].filter(Boolean) as string[];
+      if (facts.length) text(facts.join("  ·  "), { size: 9, color: INK, indent: 10, gapAfter: 1 });
+      text(c.theory, { size: 9, color: MUTED, indent: 10, gapAfter: 1 });
+      text(c.elementLine, { size: 8.5, color: FAINT, indent: 10, gapAfter: 6 });
+    });
+    text(
+      "Every line above is veteran-reported unless a citation says otherwise. The detail behind each is in sections 1-3; the clinician's question is in section 5.",
+      { size: 8, color: FAINT, gapAfter: 6 },
+    );
+  }
+
   // ---- 1. Timeline ----
   sectionHeading("1 · Service & exposure timeline");
   if (data.timeline.length === 0) text("No locations logged yet.", { color: MUTED });
@@ -281,6 +328,10 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
       if (c.latency) text(c.latency, { size: 9, style: "italic", color: MUTED, indent: 12, gapAfter: 0 });
       if (c.noiseLine) text(c.noiseLine, { size: 9, color: INK, indent: 12, gapAfter: 0 });
       text(c.matches || "No logged exposure or event linked yet.", { size: 9, color: MUTED, indent: 12, gapAfter: 0 });
+      // The dated impact journal — 38 CFR 4.10 functional impact and 3.303(b)
+      // continuity, which is what a C&P examiner is actually trained to ask
+      // about. Collected since migration 0027 and printed nowhere until now.
+      if (c.notes?.length) c.notes.forEach((n) => text(n, { size: 8.5, color: MUTED, indent: 20, gapAfter: 0 }));
       if (c.cite) text("See Appendix A for the documented basis.", { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;
     });
@@ -370,9 +421,12 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   );
   if (data.contentions.length === 0) text("Add conditions and exposures to generate the contentions list.", { color: MUTED });
   else
+    // The element checklist (diagnosis / in-service link / nexus) deliberately
+    // does NOT repeat here — it moved to the page-one contentions block, which
+    // is the rater's surface. This section is the clinician's: what she is being
+    // asked to opine on, and where the basis for it is written down.
     data.contentions.forEach((c) => {
       text(`${c.label} — ${c.matches}`, { size: 10, style: "bold", gapAfter: 0 });
-      if (c.elementLine) text(c.elementLine, { size: 8.5, color: MUTED, indent: 12, gapAfter: 0 });
       if (c.cite) text("See Appendix A for the documented basis.", { size: 8, color: FAINT, indent: 12, gapAfter: 5 });
       else y += 5;
     });
@@ -389,6 +443,35 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   doc.text("Clinician signature", margin, y);
   doc.text("Date  ·  License #", pageW - margin - 220, y);
   y += 6;
+
+  // ---- Appendix B. Shots and in-service medications ----
+  // Built to the 2026-08-07 shots council ruling, section 9, which set three
+  // non-negotiable terms for the day this entered the packet:
+  //
+  //   1. Its OWN labelled appendix, never merged with exposure findings. A
+  //      vaccine is not an exposure, and a layout that files it beside one
+  //      makes the causal argument the app refuses to make in words.
+  //   2. Documented and in-record rows ONLY (filtered upstream in ReportView).
+  //      A recalled entry that later contradicts the veteran's Service
+  //      Treatment Record in front of a rater damages his credibility on
+  //      everything else in the packet.
+  //   3. Provenance printed in words, verbatim from PROVENANCE_LABEL — the
+  //      ruling quotes these exact strings.
+  //
+  // And no note field exists on PdfShot at all. See the type.
+  if (data.shots.length > 0) {
+    newPage();
+    sectionHeading("Appendix B · Shots and in-service medications");
+    text(
+      "Recorded by the veteran, separately from the exposure findings in this packet. A vaccine or a medication is not an exposure and nothing here asserts that any of it caused any condition listed above.",
+      { size: 9, color: MUTED, gapAfter: 6 },
+    );
+    data.shots.forEach((s) => bullet(`${s.label} — ${s.date}  ·  ${s.provenance}`, { size: 9.5 }));
+    text(
+      "Entries the veteran recorded from memory alone are deliberately not listed here; only rows he marked as shown in his service record, or backed by a document he holds, are printed. His immunization record is the authority — this list is a pointer to it.",
+      { size: 8, color: FAINT, gapAfter: 4 },
+    );
+  }
 
   // ---- 6. Attachments ----
   sectionHeading("6 · Attached records");
