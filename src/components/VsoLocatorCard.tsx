@@ -66,8 +66,18 @@ export default function VsoLocatorCard() {
       <div className={`${card} surface-raise border-brand/30 bg-brand/5`}>
         <div className="text-sm font-semibold text-ink">Find accredited help near you</div>
         <p className="mt-1 text-sm leading-relaxed text-muted">
-          Enter your ZIP code. Every Veterans Service Organization listed helps you for{" "}
-          <strong className="text-ink">free</strong> — that is what accreditation means, and it never changes.
+          {/* Corrected 2026-09-08. This said free help "is what accreditation
+              means", conflating two different rules. Accreditation (38 CFR
+              14.629) is authorisation to represent a veteran; the no-fee rule
+              for VSO representatives is separate (38 CFR 14.636), and accredited
+              AGENTS and ATTORNEYS may charge. This card lists all three kinds —
+              a veteran who learned "accredited = free" here and then met an
+              accredited agent charging a percentage of his back pay would have
+              been misled by us, on the page whose whole job is steering him away
+              from exactly that. */}
+          Enter your ZIP code. The Veterans Service Organizations listed help you for{" "}
+          <strong className="text-ink">free</strong> — their representatives are not allowed to charge you.
+          Accredited agents and attorneys may charge a fee, and are labelled as such below.
         </p>
 
         <form onSubmit={search} className="mt-4 flex flex-wrap items-center gap-2">
@@ -174,8 +184,8 @@ export default function VsoLocatorCard() {
       <div className={card}>
         <div className="text-sm font-semibold text-ink">Why bring your packet to a VSO</div>
         <ul className="mt-3 space-y-2.5 text-sm text-ink">
-          <li><span className="font-semibold">Free, every time.</span> DAV, VFW, American Legion, your county veterans office, and hundreds of others are accredited to help you at no cost.</li>
-          <li><span className="font-semibold">Accredited.</span> VA-trained representatives know what evidence a rater actually needs to see.</li>
+          <li><span className="font-semibold">Free from a VSO.</span> DAV, VFW, American Legion, your county veterans office, and hundreds of others help you at no cost — that is why they are listed first.</li>
+          <li><span className="font-semibold">Accredited by VA to represent you.</span> They know what evidence a rater actually needs to see. Accreditation is permission to represent — it is not a promise of a free service, so check before you sign anything with an agent or an attorney.</li>
           <li><span className="font-semibold">They file it.</span> This app documents your record — a VSO is who actually submits the claim with you.</li>
         </ul>
       </div>

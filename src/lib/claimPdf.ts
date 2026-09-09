@@ -408,7 +408,7 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
   // a condition caused or worsened by an ALREADY service-connected one — without
   // the question a clinician has to answer for it under 38 CFR 3.310.
   text(
-    "The veteran requests your medical opinion on whether the following condition(s) are at least as likely as not (50% or greater probability) connected to his service. A signed nexus statement, or a completed Disability Benefits Questionnaire (DBQ), supports this claim.",
+    "The veteran requests your medical opinion on whether the following condition(s) are at least as likely as not (50% or greater probability) connected to the veteran's service. A signed nexus statement, or a completed Disability Benefits Questionnaire (DBQ), supports this claim.",
     { size: 9.5, gapAfter: 4 }
   );
   text(

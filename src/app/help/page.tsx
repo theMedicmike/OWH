@@ -282,6 +282,7 @@ const MORE_STEPS: Step[] = [
     body: [
       "If one of your conditions on “Connect the dots” is marked Denied, your Dashboard shows a card: “A denial isn't the end — see your next steps →.” Tap it any time, or find it by going to that condition directly.",
       "That page explains why claims usually get denied, lays out your three real lanes — Supplemental Claim, Higher-Level Review, or Board Appeal — in plain language, and links straight to the parts of this app that build a stronger case: checking your documented links, asking someone to corroborate, and rebuilding your packet.",
+      "It also names one thing most veterans are never told about: Individual Unemployability, usually written TDIU. It is for a veteran whose service-connected conditions stop him holding down steady work, even when his combined rating is under 100 percent. The page names the form and tells you to ask a VSO — it does not work out whether it fits you, because that depends on rating thresholds this app deliberately does not calculate. Ask about it out loud at your next appointment anyway.",
       "It also has “How to read your decision letter” — what each section of a real VA decision letter means, and which one (“Reasons for Decision”) actually tells you what evidence was missing.",
     ],
     tip: "This app doesn't tell you which lane to pick. That's exactly the call an accredited VSO is there to help you make.",

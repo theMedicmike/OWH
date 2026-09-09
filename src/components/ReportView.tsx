@@ -1168,7 +1168,7 @@ export default function ReportView() {
               contentions, and they need DIFFERENT questions answered. */}
           <p className="mt-2 text-sm leading-relaxed text-ink">
             The veteran requests your medical opinion on whether the following condition(s) are <strong>at least as
-            likely as not</strong> (50% or greater probability) connected to his service. A signed nexus statement,
+            likely as not</strong> (50% or greater probability) connected to the veteran&apos;s service. A signed nexus statement,
             or a completed Disability Benefits Questionnaire (DBQ), supports this claim.
           </p>
           <p className="mt-2 text-sm leading-relaxed text-ink">

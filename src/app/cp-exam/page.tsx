@@ -38,7 +38,7 @@ export default function CpExamPage() {
           <h2 className="text-sm font-semibold text-ink">Who actually examines you</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink">
             Usually not your own doctor. VA schedules these through a contracted network of examiners — companies
-            like QTC, LHI, or VES show up most often on the scheduling letter — or sometimes directly through a VA
+            like QTC, Optum Serve (formerly LHI), or VES show up most often on the scheduling letter — or sometimes directly through a VA
             medical center. That&apos;s normal, not a sign something&apos;s wrong. The exam can be in person or by
             video (telehealth), depending on what VA scheduled.
           </p>

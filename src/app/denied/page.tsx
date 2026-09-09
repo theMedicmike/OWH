@@ -115,6 +115,36 @@ export default function DeniedPage() {
           </p>
         </section>
 
+        {/* TDIU — a SIGNPOST, deliberately not a calculator.
+            Individual Unemployability was absent from this entire app: zero
+            matches for "TDIU" or "unemployability" anywhere in src. Three of the
+            five September panellists raised it unprompted, and it is often the
+            largest thing available to exactly the veteran this page is written
+            for — multiple conditions, unable to hold steady work, reading a
+            denial. It went missing because the honest version is hard: TDIU has
+            rating thresholds, and this app prints no percentages and does no
+            eligibility math. So it names the form, says what it is for, and
+            hands the question to a VSO. No thresholds, no "you may qualify". */}
+        <section className={card}>
+          <h2 className="text-sm font-semibold text-ink">If your conditions keep you from working</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            There is a separate path most veterans are never told about:{" "}
+            <strong className="text-ink">Individual Unemployability</strong>, usually written TDIU. It exists for
+            a veteran whose service-connected conditions prevent him from holding steady work, even when his
+            combined rating is below 100 percent.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            The form is <strong className="text-ink">VA Form 21-8940</strong>, and there is an employer portion as
+            well. Whether it applies to you depends on your ratings and your work history, and there are
+            thresholds this app does not calculate — that is a question for an accredited VSO, and worth asking
+            out loud at your next appointment even if nobody has raised it with you.
+          </p>
+          <p className="mt-3 text-xs leading-relaxed text-faint">
+            Named here because it is commonly missed, not because we know it fits your record. This app does not
+            assess eligibility for anything.
+          </p>
+        </section>
+
         <section className={card}>
           <h2 className="text-sm font-semibold text-ink">Build a stronger case</h2>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">

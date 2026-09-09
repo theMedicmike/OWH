@@ -364,7 +364,7 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Fibers can remain in the lung for life; disease latency is often 20–40 years.",
     organs: ["lungs"],
-    conditions: "IARC lists asbestos as a known carcinogen; the VA recognizes asbestos-related disease (asbestosis, lung cancer, mesothelioma) claimed by exposure history — roughly 1 in 3 mesothelioma patients is a veteran.",
+    conditions: "IARC lists asbestos as a known carcinogen; the VA recognizes asbestos-related disease (asbestosis, lung cancer, mesothelioma) claimed by exposure history.",
     untreated: "Because latency is so long, a documented exposure history is essential even when you feel well today.",
     tests: ["Periodic lung screening given asbestos history", "Chest imaging and pulmonary function testing"],
     iarc: "IARC Group 1 (asbestos).",
@@ -377,10 +377,10 @@ export const TOXICANTS: Toxicant[] = [
     harm: ["Ionizing radiation damages DNA, which is why it is linked to a recognized list of cancers; dose and proximity matter."],
     retention: "The exposure is the dose received; the DNA/cancer risk is cumulative over a lifetime.",
     organs: ["bone-marrow", "thyroid"],
-    conditions: "The VA recognizes a list of radiogenic cancers (38 CFR §3.309(d), §3.311) and the Radiation-Exposed Veterans Act — strong government acknowledgment for atomic veterans.",
+    conditions: "The VA recognizes a list of radiogenic cancers (38 CFR §3.309(d), §3.311) and the Radiation-Exposed Veterans Compensation Act of 1988 — strong government acknowledgment for atomic veterans.",
     untreated: "Cancer risk persists; document your role and environment, and screen per guidance.",
     tests: ["Cancer screening per clinical guidance", "Radiation dose reconstruction where applicable"],
-    sources: ["38 CFR §3.309(d), §3.311", "Radiation-Exposed Veterans Act", "VA radiation programs"],
+    sources: ["38 CFR §3.309(d), §3.311", "Radiation-Exposed Veterans Compensation Act of 1988 (Pub. L. 100-321)", "VA radiation programs"],
   },
   {
     slug: "nerve-agents", name: "Nerve agents & organophosphates", kind: "contaminant",
@@ -452,10 +452,18 @@ export const TOXICANTS: Toxicant[] = [
     ],
     retention: "Untreated sleep apnea's cardiovascular strain accumulates over years; it does not resolve by improving sleep habits alone if the underlying airway obstruction isn't addressed.",
     organs: ["heart"],
-    conditions: "Sleep apnea is commonly claimed as secondary to PTSD and other service-connected mental-health conditions (38 CFR 3.310), and hypertension is on the airborne-hazard presumptive list. Confirm which pathway fits your record with your VSO.",
+    // 🔴 Corrected 2026-09-08. This said hypertension "is on the airborne-hazard
+    // presumptive list", which is wrong and wrong in the direction that costs a
+    // veteran: a post-9/11 burn-pit veteran reading this page was told his high
+    // blood pressure was presumptive for his service. It is not. Verified
+    // against the U.S. Code: hypertension is 38 U.S.C. §1116(a)(2)(M) — an AGENT
+    // ORANGE presumptive, added by PACT Act §404(c). §1119, the airborne-hazard
+    // section, names no diseases at all. Cited to the statute rather than
+    // 38 CFR §3.309(e), which has not been amended to match and is narrower.
+    conditions: "Sleep apnea is commonly claimed as secondary to PTSD and other service-connected mental-health conditions (38 CFR 3.310). Hypertension is a presumptive for herbicide (Agent Orange) exposure — 38 U.S.C. §1116(a)(2)(M), added by the PACT Act — not for burn pits or other airborne hazards. Which pathway fits your record is a question for your VSO.",
     untreated: "Cardiovascular strain from untreated sleep apnea compounds over years — a sleep study is the diagnostic step, not a lifestyle change.",
     tests: ["Ask for a sleep study if you snore heavily, wake unrefreshed, or have daytime fatigue", "Ask whether your sleep apnea could be claimed as secondary to an existing service-connected condition"],
-    sources: ["38 CFR 3.310 (secondary service connection)", "PACT Act airborne-hazard presumptive list"],
+    sources: ["38 CFR 3.310 (secondary service connection)", "38 U.S.C. §1116(a)(2)(M) (hypertension, herbicide presumptive, PACT Act §404)"],
   },
 ];
 
@@ -608,5 +616,12 @@ export const ORGAN_NAME_TO_SLUG: Record<string, string> = {
   heart: "heart", thyroid: "thyroid", skin: "skin",
 };
 
+// The reviewer-status sentence is REQUIRED and load-bearing. The council let
+// this content ship without a named clinical reviewer on the express condition
+// that it ship "marked first-pass/unreviewed" — but that marking existed only
+// in the source comment at the top of this file, where no veteran, VSO or
+// attorney could ever see it. On screen the library read as settled. Remove the
+// sentence the day a named clinician or toxicologist signs the content, and not
+// before.
 export const LIBRARY_NOTE =
-  "Drafted from the government's and science's own record — VA presumptive lists (PACT Act, 38 CFR, Camp Lejeune), ATSDR ToxFAQs, IARC, and NTP. This is documentation to bring to your clinician and VSO — not a diagnosis, a treatment plan, or a determination of service connection.";
+  "Drafted from the government's and science's own record — VA presumptive lists (PACT Act, 38 CFR, Camp Lejeune), ATSDR ToxFAQs, IARC, and NTP. Sources are cited on every page, and this library has not yet been reviewed by a named clinician or toxicologist. This is documentation to bring to your clinician and VSO — not a diagnosis, a treatment plan, or a determination of service connection.";

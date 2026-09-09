@@ -141,6 +141,7 @@ export default function AboutPage() {
             "Says plainly whether an Intent to File is on record, because that one date decides how far back a claim is paid, and almost nobody is told about it in time.",
             "Stays with them after they file — where each claim stands, the real VA forms, and the one-year clocks that are easy to miss.",
             "Explains what to do next after a denial — the three real paths forward, in plain language, and points them straight to VA's own directory of free accredited representatives.",
+            "Names Individual Unemployability, the path for a veteran whose conditions stop him working, which almost nobody is told about — without pretending to judge whether it fits him.",
             "Gives active-duty service members a timeline for filing before they separate — Benefits Delivery at Discharge — so a rating decision can be close to ready the day they're out, not months later.",
             "Lets a spouse or caregiver build the whole record for a veteran who can't or won't do it themselves — clearly labeled as their own words, never mistaken for the veteran's.",
             "Reconnects veterans with the brothers and sisters they served beside.",
