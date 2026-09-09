@@ -118,8 +118,9 @@ const CORE_STEPS: Step[] = [
       "Near the top you will also see a line about an Intent to File. If you have not filed one, it says so and tells you to ask your VSO. Do not skip past it. An Intent to File sets the date your claim counts from, and it is the cheapest thing on this whole page to get right.",
       "Your shot record appears at the back, as its own appendix, and only the entries you marked as being in your service record or backed by a document you hold. Anything you put down from memory alone stays out of the packet on purpose — if it turned out to disagree with your official record in front of a rater, it would cost you credibility on everything else. It is still on your shot page for you; it just does not go to the VA.",
       "Further down is a second thing worth having: “My statement, in my words.” It takes everything you wrote in those “in your own words” boxes and lays it out as a plain draft statement for your VSO, in your voice, with a tick-box beside each passage so you can leave anything out. Then tap “Save my statement (PDF).” If it is not there yet, that is because you have not written in one of those boxes — go back to the map and write.",
-      "Now take it to a VSO. That is the whole point of the packet. A VSO is an accredited representative who can actually prepare and file a claim, and it costs you nothing: DAV, VFW, American Legion, your county veterans office. Further down that same page, under “How to file this,” there is a link reading “Find an accredited VSO near you →”. That opens its own page — “Find a VSO” — and you can search it directly: type your five-digit ZIP code, tap Search, and it lists who is accredited near you, free organisations first, most of them with a phone number you can tap to call.",
-      "Two honest notes about that list. It comes from the VA's own published accreditation lists, and the page prints the date it was taken — accreditation changes, so there is a link to VA's live search underneath to confirm before you rely on it. And if nobody free happens to be registered in your exact ZIP, it widens to the surrounding area rather than showing you only people who charge a fee; when it does that, it says so.",
+      "Now take it to a VSO. That is the whole point of the packet. A VSO is an accredited representative who can actually prepare and file a claim, and it costs you nothing: DAV, VFW, American Legion, your county veterans office. Further down that same page, under “How to file this,” there is a link reading “Find an accredited VSO near you →”. That opens its own page — “Find a VSO” — which also sits in the menu under “When you're ready to file,” so you never have to go back through the packet to reach it. Search it directly: type your five-digit ZIP code, tap Search, and it lists who is accredited near you, free organisations first, most of them with a phone number you can tap to call.",
+      "Three honest notes about that list. It comes from the VA's own published accreditation lists, and the page prints the date it was taken — accreditation changes, so there is a link to VA's live search underneath to confirm before you rely on it. And if nobody free happens to be registered in your exact ZIP, it widens to the surrounding area rather than showing you only people who charge a fee; when it does that, it says so.",
+      "The third one could cost you money, so read it twice. “Accredited” means the VA has given someone permission to represent you. It does not mean free. A Veterans Service Organization representative — DAV, VFW, American Legion, your county veterans office — cannot charge you, and those are listed first for that reason. Accredited agents and accredited attorneys are also on that list, they are allowed to charge a fee, and the page labels them so you can tell. If someone asks you to sign a fee agreement, that is not a VSO. You are allowed to hang up and call a VSO instead.",
       "There is also a cover sheet you can print and clip on top of the packet — the link reads “Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →” — so they know what they are looking at in ten seconds.",
       "Bring the packet, hand it over, and ask what applies to you. That is their job, and they are good at it.",
     ],
@@ -133,6 +134,8 @@ const MORE_STEPS: Step[] = [
       "Top of the menu: “Talk to Medic Mike.”",
       "Mike is a guide — not a doctor, not a lawyer, not the VA. Ask him anything about the app, or about what you are reading.",
       "He also knows how VA claims actually work, and this is worth using. Ask him what “at least as likely as not” means, what the three elements of a claim are, the difference between a direct claim, a secondary one and aggravation, what an Intent to File buys you, what happens at a C&P exam, or what the difference is between a Supplemental Claim, a Higher-Level Review and a Board Appeal. He will explain any of it in plain English, at two in the morning, without you having to ask a human to slow down and repeat it.",
+      "Ask him practical things too — “what do I have to bring to my VSO appointment,” “what do I do next.” Those are the most common questions veterans ask him and he answers them straight.",
+      "One promise this app now keeps. If what you type sounds like a bad night — not a claims question, a bad night — Mike stops before anything else and gives you the crisis line: 988, then press 1, or text 838255. Every time, before he answers anything else, with no thinking about it on our end. It used to be possible to write something dark and get a tidy paragraph about diagnosis instead, because a different rule reached your sentence first. That was our fault, it is fixed, and the number now comes ahead of every other rule in the app.",
     ],
     warn: {
       label: "One thing he will not do",
@@ -307,12 +310,12 @@ const MORE_STEPS: Step[] = [
     title: "Look things up",
     body: ["A few places to read rather than build:"],
     points: [
-      "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required.",
+      "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required. One straight thing about it, printed at the bottom of every page in there: it is drawn from the government's and science's own record and every page cites its sources, but it has not yet been reviewed by a named clinician or toxicologist. Read it as a good first pass to take to your doctor and your VSO, not as the last word.",
       "Your locations and your exposures — on your Dashboard, tap the tile marked “Locations” or the one marked “Exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
       "“Whole health” (under Learn & live well) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
       "“What VA presumes” — two dropdowns, “When did you serve?” and “Where did you serve?”, and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
-      "“Your C&P exam, demystified” (also under Learn & live well) — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up.",
-      "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It carries no personal information, so it's safe to print once and keep on hand.",
+      "“Your C&P exam, demystified” — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up. It is in the menu under “When you're ready to file,” and again as a card at the very bottom of the Exposure library, past all the grids.",
+      "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It is the card next to the C&P one at the bottom of the Exposure library. It carries no personal information, so it's safe to print once and keep on hand.",
       "“Women veterans & service” — also in the exposure library, further down past the grids. Deployment roles and how exposure patterns differ, how military sexual trauma is claimed, and the VA women's health resources most women veterans are never told exist.",
       "“Building your exposure timeline” — in the same place. The service records that prove where you were and when, called by their real names, who holds each one, and how to ask for them. This is the unglamorous paperwork that wins claims.",
       "“How your conditions connect” — a page for each condition you have added: why it's connected, the exposures commonly studied with it, and what to track. You reach it from “See the full breakdown and what to track →” on Connect the dots. It is the reasoning behind your own conditions — not where you add them, which is still 2 “Your conditions.”",
@@ -464,7 +467,20 @@ export default function HelpPage() {
           <p>
             <strong className="text-ink">Finding your way around.</strong> On a phone the menu hides
             behind the small button in the top-left corner with three short lines stacked on top of
-            each other. Your Dashboard is home — the tiles across the top open their own pages, and{" "}
+            each other. On a computer it is always down the left-hand side. It reads top to bottom in
+            the order you would actually work: your Dashboard and Medic Mike at the top;{" "}
+            <strong>&ldquo;Build your record&rdquo;</strong> — the six numbered steps, ending at your
+            packet; then, with no heading and no numbers, the four things you can add whenever you
+            like — your shot record, injuries &amp; events, your medications, and what VA presumes;
+            then <strong>&ldquo;When you&rsquo;re ready to file&rdquo;</strong> — the VSO finder and
+            the C&amp;P exam page; then <strong>&ldquo;Learn &amp; live well,&rdquo;</strong> your
+            private <strong>&ldquo;Exposure insights,&rdquo;</strong> your Account, and this guide.
+            Anything without a number beside it is optional, and that is the whole rule: if the six
+            numbered steps are done, you are done.
+          </p>
+          <p>
+            <strong className="text-ink">Your Dashboard.</strong> It is home — the tiles across the
+            top open their own pages, and{" "}
             <strong>&ldquo;Jump back in&rdquo;</strong> at the bottom is a fixed set of ten
             shortcuts to the main screens. It is the same ten every time; it is a menu, not a
             history, so don&apos;t go looking there for the last thing you were doing.

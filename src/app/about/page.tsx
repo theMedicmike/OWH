@@ -178,7 +178,12 @@ export default function AboutPage() {
           There&apos;s a guide called Medic Mike a veteran can talk to or type to at any hour.
           He&apos;s a guide — not a doctor, a lawyer, or the VA — and he says so himself. If a night
           gets dark, the Veterans Crisis Line is one tap away from every screen: dial 988, then press
-          1.
+          1. And if what a veteran types to Mike sounds like that kind of night, Mike stops
+          everything and leads with the number before he answers anything else. That runs ahead of
+          every other rule in the app now. It did not always, and finding that out was not
+          comfortable: two safety rules that were each right on their own could combine so that a
+          dark sentence got a careful paragraph about diagnosis instead of a phone number. There are
+          now forty-seven written tests that refuse to let the app build if that ever comes back.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           And the app now says out loud what nobody told most of us: a condition that started before
@@ -205,6 +210,16 @@ export default function AboutPage() {
           says so plainly instead of sending them hunting for paperwork that was never written. Underneath
           every entry is a place to log what they&apos;ve noticed since, dated, in their own words —
           because that consistency over time is exactly what an examiner is trained to look for.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          One more thing we got wrong and have fixed, because a veteran deserves to hear it said
+          rather than quietly patched. For a long time this app would not call a record complete
+          unless it contained a toxic exposure. That locked out tinnitus, hearing loss, knees, backs,
+          shoulders — the most-claimed disabilities in the entire VA system, and injuries a map pin
+          can never speak to. Those veterans were told to go document exposures they did not have,
+          which reads exactly like being told the app was built for somebody else. It was our
+          mistake, not theirs. An injury logged on Injuries &amp; events now counts every bit as much
+          as an exposure, everywhere in the app that keeps score.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           And there&apos;s finally somewhere to put a symptom you can&apos;t name yet. Veterans kept telling us

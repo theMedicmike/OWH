@@ -67,6 +67,25 @@ const SECTIONS: NavSection[] = [
     ],
   },
   {
+    // 🔴 WHAT HAPPENS AFTER THE PACKET. Both of these already existed and both
+    // were in PUBLIC_SECTIONS below — and in NEITHER case were they in this
+    // list. So a visitor could read the VSO finder signed out, create an
+    // account, and lose it from his menu: the app's entire endpoint, reachable
+    // afterwards only from a link buried inside the packet page. The C&P
+    // explainer was worse, because /help told him to look for it "under Learn
+    // & live well," where it has never been.
+    //
+    // Deliberately NOT numbered and deliberately not inside "Build your
+    // record": step 6 hands you a packet and the record is finished. These are
+    // what you do with it, and a seventh number would tell a veteran who
+    // stopped at the packet that he is not done. He is.
+    title: "When you're ready to file",
+    items: [
+      { href: "/vso",     label: "Find a VSO",    d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
+      { href: "/cp-exam", label: "Your C&P exam", d: "M9 11l2 2 4-4M5 4h14a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" },
+    ],
+  },
+  {
     title: "Learn & live well",
     items: [
       { href: "/learn",     label: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
