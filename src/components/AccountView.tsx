@@ -488,8 +488,12 @@ export default function AccountView() {
             <input value={mos} onChange={(e) => setMos(e.target.value)} placeholder="e.g. 11B, HM, 1N0X1" className={field} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Unit(s) you served with</label>
-            <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="e.g. 1-502 IN, 101st ABN" className={field} />
+            {/* The example used to be Army-only, which is how a sailor decided this
+                box was not for him. Units print in the packet header, so a ship
+                and hull number typed here DO reach the VSO — today that is the
+                only place in this app a vessel can go. */}
+            <label className="mb-1 block text-xs font-medium text-muted">Unit(s) or ship(s) you served with</label>
+            <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="e.g. 1-502 IN, 101st ABN, USS Kitty Hawk (CV-63)" className={field} />
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-muted">Current VA rating</label>
