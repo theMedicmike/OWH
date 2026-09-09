@@ -1,5 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { rateLimit, clientKey } from "@/lib/ratelimit";
+import { createClient } from "@/lib/supabase/server";
+import { medicMikeCrisisCheck } from "@/lib/medicMike";
 
 const SYSTEM_PROMPT = `You are the intake guide for "Connecting the Dots of Service," an app that helps U.S. and allied veterans and military first responders build a record of where they served and what they were exposed to.
 
@@ -23,22 +25,49 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({
-      text: "The AI guide isn't connected yet. Add an Anthropic API key as ANTHROPIC_API_KEY in .env.local, then restart the app.",
-    });
+    console.error("[api/intake] ANTHROPIC_API_KEY is not set");
+    return Response.json({ text: "The guide isn't available right now. Try again in a bit." });
   }
-  if (!rateLimit(`intake:${clientKey(req)}`, 40, 60_000)) {
+
+  // Same exposure the medic route had: the page is gated, the endpoint was not.
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth?.user) {
+    return Response.json({ text: "Sign in and we can pick this up." }, { status: 401 });
+  }
+
+  if (!rateLimit(`intake:${auth.user.id}:${clientKey(req)}`, 40, 60_000)) {
     return Response.json({ text: "You're sending messages a little fast — give it a few seconds and try again." }, { status: 429 });
   }
 
   try {
     const { messages } = (await req.json()) as { messages: Msg[] };
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return Response.json({ text: "Say that again for me?" }, { status: 400 });
+    }
+
+    // 🔴 The same crisis pre-check the medic route runs. This is a second
+    // conversation surface with its own prompt, and its prompt mentions 988 but
+    // nothing deterministic enforced it — a veteran typing something desperate
+    // here depended entirely on the model choosing to notice. Shared with Mike
+    // so the two can never drift apart on the one answer that must not vary.
+    const lastUser = [...messages].reverse().find((m) => m.role === "user");
+    const crisis = lastUser ? medicMikeCrisisCheck(lastUser.content) : null;
+    if (crisis) return Response.json({ text: crisis });
+
+    const total = messages.reduce((n, m) => n + (m.content?.length ?? 0), 0);
+    if (messages.some((m) => (m.content?.length ?? 0) > 4_000) || total > 24_000) {
+      return Response.json({ text: "That's a lot at once — send me the short version." }, { status: 413 });
+    }
+
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 700,
       system: SYSTEM_PROMPT,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      // Was sending the ENTIRE history every turn, so a long intake cost
+      // quadratically more with each message. Bounded like the medic route.
+      messages: messages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
     });
     const text = msg.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
@@ -46,6 +75,7 @@ export async function POST(req: Request) {
       .join("");
     return Response.json({ text });
   } catch (e) {
-    return Response.json({ text: "Something went wrong reaching the AI guide: " + (e as Error).message });
+    console.error("[api/intake]", e);
+    return Response.json({ text: "Something went wrong reaching the guide. Try again." });
   }
 }

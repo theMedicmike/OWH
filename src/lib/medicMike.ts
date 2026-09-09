@@ -71,8 +71,23 @@ Stay in character as Medic Mike. Keep it short, keep it real, and always leave t
 // in a refactor — scripts/coi-firewall.cjs asserts it exists verbatim.
 const VACCINE_TOKEN =
   /\b(anthrax|smallpox|ACAM2000|COVID(?:-19)?|aluminum|aluminium|thimerosal|squalene|formaldehyde|vaccine|vaccination|immuniz\w*|adjuvant)\b/i;
+// "gives you" and "because of" were removed: they are ordinary English carrying
+// no causal claim about a vaccine. "The immunization record gives you the dates
+// you need for the packet" and "You got the smallpox shot in 2004 because of
+// the deployment order" were both being swapped for the refusal, so Mike's
+// on-spine job for shots — pointing at the record locator — got clobbered
+// whenever he used a normal sentence.
+//
+// Deliberately NOT exempting negated sentences. A correct refusal ("I can't say
+// a vaccine caused that") does still get replaced by the standard refusal, which
+// the audit flagged as friction. It stays that way on purpose: any "unless the
+// sentence contains a negation" escape hatch also passes "Nobody can say for
+// sure, but the anthrax vaccine caused your thyroid condition" — a real causal
+// claim wearing a hedge. Swapping one refusal for another refusal costs a
+// veteran nothing. Letting a hedged causal claim through costs him the thing
+// this backstop exists to protect.
 const CAUSAL_VERB_TOKEN =
-  /\b(caused?|gives?\s+you|gave\s+you|led\s+to|leads?\s+to|triggered|triggers?|because\s+of|responsible\s+for|contributed?\s+to|worsened|worsens?)\b/i;
+  /\b(caused?|gave\s+you|led\s+to|leads?\s+to|triggered|triggers?|responsible\s+for|contributed?\s+to|worsened|worsens?)\b/i;
 
 export const MEDIC_MIKE_VACCINE_REFUSAL =
   "Nobody can tell you that from a service history — not me, not anyone. What you can still do is get the dated record and take it to your own clinician and an accredited VSO. Want me to pull up the record locator for your branch?";
@@ -111,26 +126,112 @@ export function medicMikeFilterVaccineCausation(text: string): string {
 // that a smart keyboard defeats is not a guardrail.
 const AP = "['’]?";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔴 CRISIS PRE-CHECK — runs before EVERYTHING, including the symptom router.
+//
+// The September audit executed the router against realistic messages and found
+// the worst possible interaction between two guardrails that are each correct
+// on their own. "I don't know what's wrong with me anymore. I want to die."
+// matches STANDALONE_DIAGNOSIS_ASK on the phrase "what's wrong with me", so the
+// router intercepted it BEFORE the model was ever called and answered with the
+// diagnosis-refusal paragraph. No crisis line. The one prompt instruction that
+// mattered (line 62) could never fire, because the request was never made.
+//
+// A veteran in crisis at 2am got a canned lecture about clinicians.
+//
+// This is a STATIC TEXT response, not a counselling feature and not a duty of
+// care — it stays inside the standing no-chat, no-crisis-service ruling. It
+// makes one promise the app can keep: the number, immediately, every time.
+// Nothing here is sent to a model, so it cannot drift.
+//
+// Deliberately broad. A false positive costs a veteran one paragraph he did not
+// need, next to a phone number he can ignore. A false negative costs something
+// that cannot be undone. That asymmetry decides every judgement call below.
+const CRISIS_TOKEN = new RegExp(
+  [
+    `\\bi\\s+want\\s+to\\s+die\\b`,
+    `\\bi\\s+wanna\\s+die\\b`,
+    `\\bwant\\s+to\\s+be\\s+dead\\b`,
+    `\\bkill\\s+myself\\b`,
+    `\\bkilling\\s+myself\\b`,
+    `\\bend\\s+(my\\s+life|it\\s+all|things)\\b`,
+    `\\bending\\s+(my\\s+life|it\\s+all)\\b`,
+    `\\btake\\s+my\\s+own\\s+life\\b`,
+    `\\bsuicid\\w*`,
+    `\\bunalive\\b`,
+    `\\bkms\\b`,
+    `\\bhurt\\s+myself\\b`,
+    `\\bharm\\s+myself\\b`,
+    `\\bself[-\\s]?harm\\b`,
+    `\\bdon${AP}?t\\s+want\\s+to\\s+(be\\s+here|live|wake\\s+up)\\b`,
+    `\\bnot\\s+worth\\s+living\\b`,
+    `\\bbetter\\s+off\\s+(without\\s+me|dead)\\b`,
+    `\\bno\\s+(reason|point)\\s+(to\\s+)?(go\\s+on|living|live)\\b`,
+    `\\bcan${AP}?t\\s+(go\\s+on|do\\s+this\\s+anymore|take\\s+(it|this)\\s+anymore)\\b`,
+    `\\beat\\s+my\\s+(gun|pistol)\\b`,
+    `\\bmy\\s+(gun|pistol|rifle)\\s+is\\s+(right\\s+)?(here|out|loaded)\\b`,
+  ].join("|"),
+  "i",
+);
+
+export const MEDIC_MIKE_CRISIS =
+  "I'm going to stop everything else for a second, because what you just said matters more than any of it.\n\n" +
+  "The Veterans Crisis Line is 988, then press 1. You can text 838255. You can chat at veteranscrisisline.net. " +
+  "It's free, it's confidential, it's answered by people who have been where you are, and you do not have to be " +
+  "in crisis to call — you just have to want to talk to somebody.\n\n" +
+  "If you're in danger right now, call 911 or get to an emergency room.\n\n" +
+  "I'm not going anywhere. I can't be the person you need on this one, but that line can be, and I'd like you to " +
+  "use it. When you're ready, I'll still be right here to help with your record.";
+
+/**
+ * Runs FIRST on every inbound message, ahead of the symptom router.
+ *
+ * Returns the crisis reply when a message carries crisis language, otherwise
+ * null. Static text — no model is called, nothing is logged, nothing is stored.
+ */
+export function medicMikeCrisisCheck(userMessage: string): string | null {
+  return CRISIS_TOKEN.test(userMessage.slice(0, 1200)) ? MEDIC_MIKE_CRISIS : null;
+}
+
 // Asks that ARE the regulated inference on their own, with no symptom list
 // needed — someone asking to be told what they have is asking for a diagnosis
 // however little detail they gave.
+//
+// "have to" is excluded. Without it, "What do I have to bring to my VSO
+// appointment?" and "What do I have to do next?" were both routed — and the
+// prompt itself says "where do I start / what do I do next" is the single most
+// common question a veteran asks. A meaningful share of those never reached
+// Mike at all and got a lecture about diagnosis instead.
 const STANDALONE_DIAGNOSIS_ASK = new RegExp(
-  `\\bwhat(?:${AP}s|\\s+is)\\s+wrong\\s+with\\s+me\\b|\\bwhat\\s+(?:do|might|could)\\s+i\\s+have\\b|\\bdiagnose\\s+me\\b|\\btell\\s+me\\s+what\\s+i\\s+have\\b`,
+  `\\bwhat(?:${AP}s|\\s+is)\\s+wrong\\s+with\\s+me\\b|\\bwhat\\s+(?:do|might|could)\\s+i\\s+have\\b(?!\\s+to\\b)|\\bdiagnose\\s+me\\b|\\btell\\s+me\\s+what\\s+i\\s+have\\b`,
   "i",
 );
 
 // First person, present tense, about their own body. Not disease names — a
 // veteran naming a condition to learn about it is education, not diagnosis.
+//
+// "been rated / been to / been told / been denied / been diagnosed" are
+// excluded from the bare "been" branch. They are status reports about the VA
+// process, not descriptions of the body — "I've been rated for PTSD already,
+// what forms do I file for an increase?" is a procedural question and was being
+// routed as though the veteran had asked to be diagnosed.
 const SELF_SYMPTOM_TOKEN = new RegExp(
-  `\\b(i|i${AP}m|i${AP}ve|my|me)\\b[^.?!]{0,80}\\b(have|having|feel|feeling|suffer\\w*|deal\\w*\\s+with|struggl\\w*|experienc\\w*|get|getting|been)\\b` +
+  `\\b(i|i${AP}m|i${AP}ve|my|me)\\b[^.?!]{0,80}\\b(have|having|feel|feeling|suffer\\w*|deal\\w*\\s+with|struggl\\w*|experienc\\w*|get|getting|been(?!\\s+(rated|to|told|denied|diagnosed|awarded|granted|service[-\\s]connected)\\b))\\b` +
     `|\\bmy\\s+(symptoms?|pain|knees?|back|ears?|head|sleep|breathing|memory|hands?|feet|shoulders?|hips?|stomach|anxiety|depression)\\b` +
     `|\\bsymptoms?\\s+(i|are|include)\\b`,
   "i",
 );
 
 // The regulated ask: turn what I just told you into what I can claim / have.
+//
+// Bare "get" and "have" were removed from the verb list. With them in, the
+// two-token path fired on ordinary procedural English: "What do I have to bring
+// to my VSO appointment?" satisfies (what → do → I → have) and "I ... have"
+// satisfies the self-symptom token, so a veteran asking what to pack for his
+// appointment was told the app cannot diagnose him. The regulated ask is
+// specifically about CLAIMING or being RATED, and those verbs are still here.
 const CLAIMABILITY_ASK_TOKEN =
-  /\b(what|which|any)\b[^.?!]{0,60}\b(can|could|should|might|do)\b[^.?!]{0,40}\b(i|you)\b[^.?!]{0,40}\b(claim|file|be\s+rated|qualify|get|have|diagnos\w*)\b|\bam\s+i\s+eligible\b|\bdo\s+i\s+qualify\b|\bwhat\s+(conditions?|else)\s+(can|could|should)\s+i\s+(claim|file)\b|\bnarrow\s+(it\s+)?down\b|\bwhat\s+should\s+i\s+claim\b/i;
+  /\b(what|which|any)\b[^.?!]{0,60}\b(can|could|should|might|do)\b[^.?!]{0,40}\b(i|you)\b[^.?!]{0,40}\b(claim|file|be\s+rated|qualify|diagnos\w*)\b|\bam\s+i\s+eligible\b|\bdo\s+i\s+qualify\b|\bwhat\s+(conditions?|else)\s+(can|could|should)\s+i\s+(claim|file)\b|\bnarrow\s+(it\s+)?down\b|\bwhat\s+should\s+i\s+claim\b/i;
 
 export const MEDIC_MIKE_SYMPTOM_ROUTE =
   "I can't take what you're feeling and turn it into a list of conditions to claim — that's diagnosis, and it belongs to a clinician, not to me or any app. Here's what actually moves the needle, though: write what you're experiencing in your own words on the condition or the injury it belongs to, with rough dates. That dated, first-person record is real evidence, and it's the thing a clinician and an accredited VSO can both work from. Want me to point you to where to log it?";

@@ -466,6 +466,36 @@ export const CONDITION_INCIDENTS: Record<string, string[]> = Object.fromEntries(
   CONDITION_CATALOG.filter((c) => (c.incidents?.length ?? 0) > 0).map((c) => [c.label, c.incidents as string[]]),
 );
 
+/**
+ * THE ONE DEFINITION of "this condition is connected to something the veteran
+ * logged." Both the Dashboard and the Journey view compute record completeness,
+ * and both used to answer this question themselves — identically, and identically
+ * wrong: each looked only at CONDITION_EXPOSURES.
+ *
+ * 🔴 That single omission decided who this app could serve. Tinnitus, hearing
+ * loss, knees, backs, shoulders and every other event-linked condition carry
+ * `exposures: []` in lib/conditions.ts and a full `incidents` list instead — by
+ * design, because a map pin cannot speak to a blast or a fall. So a veteran
+ * whose claims are tinnitus and knees (the most-claimed disabilities in the VA
+ * system) could log every injury the app asked for and still read "Claim
+ * packet: Not yet" forever, with a next-step button pointing at exposures he
+ * does not have. The denied-claim veteran on the September panel read it
+ * exactly as intended: "built for somebody else."
+ *
+ * Both callers now share this, so the two can never drift apart again.
+ */
+export function connectedConditionLabels(
+  conditionLabels: string[],
+  exposureClasses: string[],
+  incidentClasses: string[],
+): string[] {
+  return conditionLabels.filter(
+    (label) =>
+      (CONDITION_EXPOSURES[label] ?? []).some((c) => exposureClasses.includes(c)) ||
+      (CONDITION_INCIDENTS[label] ?? []).some((c) => incidentClasses.includes(c)),
+  );
+}
+
 export type SolutionCategory =
   | "Know what you're carrying"
   | "Reduce the burden"

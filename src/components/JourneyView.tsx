@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { ServiceRibbon } from "./Patriotic";
-import { EXPOSURE_LABEL, CONDITION_EXPOSURES } from "@/lib/education";
+import { EXPOSURE_LABEL, CONDITION_EXPOSURES, connectedConditionLabels } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
 import { recordProgress, conditionNextAction, VA_FORMS, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
@@ -150,7 +150,13 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
       if (ei >= 0) edges.push({ e: ei, c: ci });
     });
   });
-  const connectedConds = new Set(edges.map((e) => conditions[e.c].label));
+  // The GRAPH above draws exposure→condition edges only, which is honest: it is
+  // a picture of documented exposure associations and an event has no exposure
+  // node to draw a line from. Completeness is a different question, and asking
+  // it of the graph is what made an event-linked condition invisible to the
+  // progress engine. Shared with the Dashboard via lib/education.
+  const incidentClasses = Array.from(new Set(rows.flatMap((r) => (r.incidents ?? []).map((i) => i.incident_class))));
+  const connectedConds = new Set(connectedConditionLabels(conditions.map((c) => c.label), classes, incidentClasses));
 
   const nRows = Math.max(classes.length, conditions.length, 1);
   const height = nRows * ROW_H;
@@ -274,6 +280,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
     hasService: !!(branch || years),
     locations: rows.length,
     exposures: classes.length,
+    incidents: incidentClasses.length,
     conditions: conditions.length,
     connectedConditions: connectedConds.size,
     corroborations: corr,

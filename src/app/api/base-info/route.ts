@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { rateLimit, clientKey } from "@/lib/ratelimit";
+import { createClient } from "@/lib/supabase/server";
 
 const SYSTEM_PROMPT = `You are a military historian writing a short, vivid, honorable profile of a place where Americans served, for a veteran-facing app. Your reader may have served there. Write so they feel seen and proud — and so they learn something worth knowing about the ground they stood on.
 
@@ -22,12 +23,19 @@ export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ text: "" });
   }
-  if (!rateLimit(`base-info:${clientKey(req)}`, 20, 60_000)) {
+  // Gated like the other two AI routes. This one also sends a place name the
+  // veteran typed to the model vendor, so an open endpoint was both a cost
+  // exposure and a way for anyone to use the nonprofit's key as a free model.
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth?.user) return Response.json({ text: "" }, { status: 401 });
+
+  if (!rateLimit(`base-info:${auth.user.id}:${clientKey(req)}`, 20, 60_000)) {
     return Response.json({ text: "" }, { status: 429 });
   }
   try {
     const { name } = (await req.json()) as { name: string };
-    if (!name || name.trim().length < 2) return Response.json({ text: "" });
+    if (!name || name.trim().length < 2 || name.length > 200) return Response.json({ text: "" });
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
       model: "claude-sonnet-4-6",

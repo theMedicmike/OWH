@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
 import { ServiceRibbon, RibbonDivider } from "./Patriotic";
-import { CONDITION_EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
+import { EXPOSURE_LABEL, connectedConditionLabels } from "@/lib/education";
 import { recordProgress } from "@/lib/nextaction";
 import PresumptivePathwaysCard from "./PresumptivePathwaysCard";
 import { listServiceEvents } from "@/lib/serviceEvents";
@@ -51,6 +51,7 @@ export default function DashboardView() {
   // deficient — the same reasoning that bans a count on the shots list itself.
   const [hasShots, setHasShots] = useState(false);
   const [hasInjuries, setHasInjuries] = useState(false);
+  const [incidentClasses, setIncidentClasses] = useState<string[]>([]);
   const [hasMeds, setHasMeds] = useState(false);
 
   useEffect(() => {
@@ -110,6 +111,10 @@ export default function DashboardView() {
       ]);
       setHasShots("events" in ev && ev.events.length > 0);
       setHasInjuries("incidents" in inc && inc.incidents.length > 0);
+      // The incident CLASSES, not just "are there any" — the completeness math
+      // needs them to connect an event-linked condition (tinnitus, knees) the
+      // same way exposure classes connect an exposure-linked one.
+      setIncidentClasses("incidents" in inc ? Array.from(new Set(inc.incidents.map((i) => i.incidentClass))) : []);
       setHasMeds("medications" in meds && meds.medications.length > 0);
 
       setLoaded(true);
@@ -126,13 +131,14 @@ export default function DashboardView() {
     setConfirmDel(null);
   }
 
-  const connectedCount = condLabels.filter((label) =>
-    (CONDITION_EXPOSURES[label] ?? []).some((ec) => classes.includes(ec))
-  ).length;
+  // Shared with JourneyView via lib/education so the two completeness views
+  // can never disagree — and so an event-linked condition counts.
+  const connectedCount = connectedConditionLabels(condLabels, classes, incidentClasses).length;
   const prog = recordProgress({
     hasService: !!(branch || years),
     locations: checkins,
     exposures: classes.length,
+    incidents: incidentClasses.length,
     conditions: counts.conditions,
     connectedConditions: connectedCount,
     corroborations: counts.corroborations,

@@ -80,6 +80,11 @@ export type RecordState = {
   hasService: boolean;
   locations: number;
   exposures: number;
+  /** Injuries and events logged on the map or the Injuries page. REQUIRED, and
+   *  weighted equally with `exposures` below — the commonest VA claims are
+   *  event-linked, not exposure-linked, and treating an exposure as the only
+   *  valid evidence is what locked those veterans out of "claim-ready". */
+  incidents: number;
   conditions: number;
   connectedConditions: number;
   corroborations: number;
@@ -117,9 +122,18 @@ export function recordSteps(s: RecordState): RecordStep[] {
   return [
     { key: "service", label: "Service details", done: s.hasService, href: "/account", cta: "Add your branch and years" },
     { key: "locations", label: "Where you served", done: s.locations > 0, href: "/map", cta: "Map where you served" },
-    { key: "exposures", label: "Exposures", done: s.exposures > 0, href: "/map", cta: "Document your exposures" },
+    // Exposures OR injuries. A veteran whose service left him with a blown-out
+    // knee and ringing ears has nothing to tick on an exposure list, and telling
+    // him to "document your exposures" is telling him to invent some.
+    {
+      key: "exposures",
+      label: "Exposures or injuries",
+      done: s.exposures > 0 || s.incidents > 0,
+      href: "/map",
+      cta: "Add what you were around, or what happened to you",
+    },
     { key: "conditions", label: "Conditions", done: s.conditions > 0, href: "/health", cta: "Add the conditions you live with" },
-    { key: "link", label: "A documented link", done: s.connectedConditions > 0, href: "/conditions", cta: "Connect a condition to an exposure" },
+    { key: "link", label: "A documented link", done: s.connectedConditions > 0, href: "/health", cta: "Pick your condition from the list so it can be connected" },
     { key: "corroboration", label: "Corroboration", done: s.corroborations > 0, href: "/buddies", cta: "Ask a battle buddy to corroborate" },
     // ⚠️ `hasDD214` is really "any file has been uploaded" — the app never opens a
     // document and cannot tell a DD-214 from a photo of a lab slip. It used to be
@@ -139,10 +153,13 @@ export function recordProgress(s: RecordState) {
   const remaining = steps.filter((x) => !x.done);
   const total = steps.length;
   const pct = Math.round((done.length / total) * 100);
-  // "claim-ready" once the core evidence chain exists: a place, an exposure,
-  // a condition, and a documented link between them.
+  // "claim-ready" once the core evidence chain exists: a place, something that
+  // happened there (an exposure OR an injury), a condition, and a documented
+  // link between them. Requiring an exposure specifically made the most-claimed
+  // disabilities in the VA system permanently unreachable — see
+  // connectedConditionLabels in lib/education.ts for the full note.
   const claimReady =
-    s.locations > 0 && s.exposures > 0 && s.conditions > 0 && s.connectedConditions > 0;
+    s.locations > 0 && (s.exposures > 0 || s.incidents > 0) && s.conditions > 0 && s.connectedConditions > 0;
   return { steps, done: done.length, total, pct, remaining, next: remaining[0] ?? null, claimReady };
 }
 

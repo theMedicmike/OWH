@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prebuild": "node scripts/coi-firewall.cjs"
+    "prebuild": "node scripts/coi-firewall.cjs && node scripts/verify-mike.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
