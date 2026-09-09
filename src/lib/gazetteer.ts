@@ -240,6 +240,201 @@ export const GAZETTEER: GazEntry[] = [
   { name: "Coronado Naval Amphibious Base", region: "California", lat: 32.68, lng: -117.16 },
   { name: "US Coast Guard Academy (New London)", region: "Connecticut", lat: 41.37, lng: -72.1 },
   { name: "Coast Guard Base Kodiak", region: "Alaska", lat: 57.75, lng: -152.5 },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COVERAGE AUDIT, 2026-09-09. Everything below is FINDABILITY ONLY.
+  //
+  // A gazetteer entry asserts nothing except "a place by this name is roughly
+  // here." It carries no exposure, no date window and no status. Documented
+  // exposures live in known_exposure_sites, are seeded from cited sources, and
+  // nothing here touches that table — a new name appearing in search must never
+  // become a new claim about what happened on that ground.
+  //
+  // Why it still matters: the Place field on the map is free text, so a veteran
+  // could always TYPE any base. But he has to know where it is on a world map
+  // and spell it himself, and if he searches for it first and gets nothing back
+  // he reasonably concludes the app does not cover his service. Every name below
+  // was missing from both this file and the seed data.
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // ── Open water. THE SHARPEST GAP FOUND. presumptive.ts matches PACT service
+  //    on the literal strings "persian gulf", "red sea", "gulf of aden", "gulf
+  //    of oman" and "arabian sea" (38 U.S.C. §1119(c) names all five), and not
+  //    one of them was searchable anywhere in the app. The engine was checking
+  //    for water it gave no sailor a way to name. Centroids sit in genuinely
+  //    open water so nearestPlace can never relabel a coastal base pin.
+  { name: "Persian Gulf (at sea)", region: "Gulf waters", lat: 27.0, lng: 51.0 },
+  { name: "Gulf of Oman (at sea)", region: "Gulf waters", lat: 24.8, lng: 58.5 },
+  { name: "Arabian Sea (at sea)", region: "Indian Ocean", lat: 15.0, lng: 63.0 },
+  { name: "Gulf of Aden (at sea)", region: "Indian Ocean", lat: 12.5, lng: 47.5 },
+  { name: "Red Sea (at sea)", region: "Red Sea", lat: 20.0, lng: 38.5 },
+  { name: "Mediterranean Sea (Sixth Fleet)", region: "At sea", lat: 35.0, lng: 18.0 },
+  // Vietnam waters. Naming these creates NO herbicide presumption and must not:
+  // agentOrangeScope matches Vietnam land and inland waterways, and Blue Water
+  // Navy turns on being within 12 nautical miles of the demarcation line — a
+  // question decided from deck logs by a rater, not from a pin. The names exist
+  // so a carrier or destroyer sailor can put his service on the map at all.
+  { name: "Gulf of Tonkin (at sea)", region: "Vietnam waters", lat: 19.5, lng: 107.5 },
+  { name: "Yankee Station (Gulf of Tonkin)", region: "Vietnam waters", lat: 17.5, lng: 108.5 },
+  { name: "Dixie Station (off the Mekong Delta)", region: "Vietnam waters", lat: 11.0, lng: 110.0 },
+  { name: "South China Sea (at sea)", region: "At sea", lat: 14.0, lng: 113.0 },
+
+  // ── Named in a regulation, and missing. MCAS New River is the worst of these:
+  //    38 CFR §3.307(a)(7) names it in the same breath as Camp Lejeune, and
+  //    lejeuneScope() already matches "new river" — a Marine could qualify for
+  //    the presumption and not be able to find his own air station.
+  { name: "MCAS New River", region: "North Carolina", lat: 34.71, lng: -77.44 },
+  { name: "Paducah Gaseous Diffusion Plant", region: "Kentucky", lat: 37.1, lng: -88.81 },
+  { name: "Portsmouth Gaseous Diffusion Plant (Piketon)", region: "Ohio", lat: 39.02, lng: -83.02 },
+
+  // ── CONUS — Army
+  { name: "Fort Meade", region: "Maryland", lat: 39.11, lng: -76.74 },
+  { name: "Fort Belvoir", region: "Virginia", lat: 38.71, lng: -77.14 },
+  { name: "Fort Eustis (JB Langley-Eustis)", region: "Virginia", lat: 37.14, lng: -76.6 },
+  { name: "Fort Novosel (Rucker)", region: "Alabama", lat: 31.34, lng: -85.72 },
+  { name: "Fort Gregg-Adams (Lee)", region: "Virginia", lat: 37.24, lng: -77.33 },
+  { name: "Fort Sam Houston (JBSA)", region: "Texas", lat: 29.46, lng: -98.44 },
+  { name: "Fort Myer (JB Myer-Henderson Hall)", region: "Virginia", lat: 38.88, lng: -77.08 },
+  { name: "Fort Story (JEB Little Creek-Fort Story)", region: "Virginia", lat: 36.92, lng: -76.0 },
+  { name: "Fort Pickett", region: "Virginia", lat: 37.06, lng: -77.95 },
+  { name: "Fort Devens", region: "Massachusetts", lat: 42.53, lng: -71.62 },
+  { name: "Fort Dix (JB McGuire-Dix-Lakehurst)", region: "New Jersey", lat: 40.03, lng: -74.6 },
+  { name: "Fort Monmouth", region: "New Jersey", lat: 40.31, lng: -74.03 },
+  { name: "Fort Hamilton", region: "New York", lat: 40.61, lng: -74.03 },
+  { name: "Fort Indiantown Gap", region: "Pennsylvania", lat: 40.43, lng: -76.58 },
+  { name: "Fort Chaffee", region: "Arkansas", lat: 35.3, lng: -94.22 },
+  { name: "Fort Wolters", region: "Texas", lat: 32.85, lng: -98.06 },
+  { name: "Fort Ord", region: "California", lat: 36.65, lng: -121.79 },
+  { name: "Fort Hunter Liggett", region: "California", lat: 35.97, lng: -121.24 },
+  { name: "Presidio of San Francisco", region: "California", lat: 37.8, lng: -122.46 },
+  { name: "Fort Shafter", region: "Hawaii", lat: 21.348, lng: -157.883 },
+  { name: "Fort Wainwright", region: "Alaska", lat: 64.83, lng: -147.61 },
+  { name: "Fort Greely", region: "Alaska", lat: 63.95, lng: -145.71 },
+
+  // ── CONUS — depots and arsenals. Whole careers were served on these and none
+  //    of them were findable.
+  { name: "Anniston Army Depot", region: "Alabama", lat: 33.6, lng: -85.96 },
+  { name: "Tooele Army Depot", region: "Utah", lat: 40.53, lng: -112.35 },
+  { name: "Umatilla Chemical Depot", region: "Oregon", lat: 45.85, lng: -119.32 },
+  { name: "Pine Bluff Arsenal", region: "Arkansas", lat: 34.3, lng: -92.07 },
+  { name: "Blue Grass Army Depot", region: "Kentucky", lat: 37.69, lng: -84.2 },
+
+  // ── CONUS — Air Force / Space Force, including closed Cold War bases
+  { name: "Joint Base Andrews", region: "Maryland", lat: 38.81, lng: -76.87 },
+  { name: "Dover AFB", region: "Delaware", lat: 39.13, lng: -75.47 },
+  { name: "McGuire AFB (JB McGuire-Dix-Lakehurst)", region: "New Jersey", lat: 40.02, lng: -74.59 },
+  { name: "Joint Base Charleston", region: "South Carolina", lat: 32.9, lng: -80.04 },
+  { name: "Vandenberg Space Force Base", region: "California", lat: 34.74, lng: -120.57 },
+  { name: "Buckley Space Force Base", region: "Colorado", lat: 39.7, lng: -104.75 },
+  { name: "Cheyenne Mountain Space Force Station", region: "Colorado", lat: 38.74, lng: -104.85 },
+  { name: "Los Angeles AFB", region: "California", lat: 33.92, lng: -118.38 },
+  { name: "March ARB", region: "California", lat: 33.88, lng: -117.26 },
+  { name: "Mather AFB", region: "California", lat: 38.55, lng: -121.3 },
+  { name: "Grissom AFB", region: "Indiana", lat: 40.65, lng: -86.15 },
+  { name: "Westover ARB", region: "Massachusetts", lat: 42.2, lng: -72.53 },
+  { name: "Carswell AFB (NAS JRB Fort Worth)", region: "Texas", lat: 32.77, lng: -97.44 },
+  { name: "Bergstrom AFB", region: "Texas", lat: 30.2, lng: -97.67 },
+  { name: "Reese AFB", region: "Texas", lat: 33.59, lng: -102.04 },
+  { name: "Homestead ARB", region: "Florida", lat: 25.49, lng: -80.38 },
+  { name: "Myrtle Beach AFB", region: "South Carolina", lat: 33.68, lng: -78.93 },
+  { name: "Clear Space Force Station", region: "Alaska", lat: 64.3, lng: -149.19 },
+
+  // ── CONUS — Navy
+  { name: "NAS Patuxent River", region: "Maryland", lat: 38.28, lng: -76.41 },
+  { name: "Naval Station Newport", region: "Rhode Island", lat: 41.52, lng: -71.32 },
+  { name: "Naval Weapons Station Earle", region: "New Jersey", lat: 40.28, lng: -74.09 },
+  { name: "Naval Weapons Station Yorktown", region: "Virginia", lat: 37.24, lng: -76.57 },
+  { name: "NAS Corpus Christi", region: "Texas", lat: 27.69, lng: -97.29 },
+  { name: "NAS Kingsville", region: "Texas", lat: 27.51, lng: -97.81 },
+  { name: "NAS Meridian", region: "Mississippi", lat: 32.55, lng: -88.56 },
+  { name: "NSA Mid-South (Millington)", region: "Tennessee", lat: 35.35, lng: -89.87 },
+  { name: "NAS Cecil Field", region: "Florida", lat: 30.22, lng: -81.88 },
+  { name: "NAS Key West (Boca Chica)", region: "Florida", lat: 24.58, lng: -81.69 },
+  { name: "NAS Whiting Field", region: "Florida", lat: 30.72, lng: -87.02 },
+  { name: "NAS Brunswick", region: "Maine", lat: 43.89, lng: -69.94 },
+  { name: "NAS Glenview", region: "Illinois", lat: 42.08, lng: -87.82 },
+  { name: "NAS North Island (Naval Base Coronado)", region: "California", lat: 32.7, lng: -117.21 },
+  { name: "NAS Point Mugu", region: "California", lat: 34.12, lng: -119.12 },
+  { name: "NAS Moffett Field", region: "California", lat: 37.41, lng: -122.05 },
+  { name: "NAS Alameda", region: "California", lat: 37.79, lng: -122.32 },
+  { name: "Treasure Island Naval Station", region: "California", lat: 37.82, lng: -122.37 },
+  { name: "Naval Station Everett", region: "Washington", lat: 47.99, lng: -122.22 },
+  { name: "NAS Barbers Point", region: "Hawaii", lat: 21.32, lng: -158.07 },
+  { name: "Naval Station Roosevelt Roads", region: "Puerto Rico", lat: 18.24, lng: -65.63 },
+  { name: "Naval Station Adak", region: "Alaska", lat: 51.88, lng: -176.65 },
+  { name: "Naval Station Argentia", region: "Newfoundland", lat: 47.3, lng: -53.99 },
+
+  // ── CONUS / Pacific — Marine Corps
+  { name: "MCAS Miramar", region: "California", lat: 32.87, lng: -117.14 },
+  { name: "MCAS Yuma", region: "Arizona", lat: 32.66, lng: -114.61 },
+  { name: "MCAS Beaufort", region: "South Carolina", lat: 32.48, lng: -80.72 },
+  { name: "MCAS El Toro", region: "California", lat: 33.68, lng: -117.73 },
+  { name: "MCAS Tustin", region: "California", lat: 33.71, lng: -117.83 },
+  { name: "Camp Geiger / Camp Johnson (Montford Point)", region: "North Carolina", lat: 34.72, lng: -77.37 },
+  { name: "MCLB Barstow", region: "California", lat: 34.86, lng: -117.06 },
+  { name: "MCLB Albany", region: "Georgia", lat: 31.55, lng: -84.06 },
+  { name: "MCB Hawaii (Kaneohe Bay)", region: "Hawaii", lat: 21.45, lng: -157.77 },
+  { name: "Camp Fuji", region: "Japan", lat: 35.27, lng: 138.9 },
+  { name: "Camp Hansen (Okinawa)", region: "Japan", lat: 26.46, lng: 127.86 },
+  { name: "Camp Schwab (Okinawa)", region: "Japan", lat: 26.53, lng: 128.05 },
+  { name: "Camp Courtney (Okinawa)", region: "Japan", lat: 26.36, lng: 127.93 },
+  { name: "Camp Kinser (Okinawa)", region: "Japan", lat: 26.27, lng: 127.71 },
+
+  // ── Korea — the garrisons north of Seoul, where most of the tours were served
+  { name: "Camp Red Cloud (Uijeongbu)", region: "South Korea", lat: 37.74, lng: 127.05 },
+  { name: "Camp Stanley", region: "South Korea", lat: 37.78, lng: 127.06 },
+  { name: "Camp Hovey", region: "South Korea", lat: 37.93, lng: 127.08 },
+  { name: "Camp Carroll (Waegwan)", region: "South Korea", lat: 35.99, lng: 128.4 },
+  { name: "Camp Walker / Camp Henry (Daegu)", region: "South Korea", lat: 35.84, lng: 128.59 },
+  { name: "K-16 Seoul Air Base (Seongnam)", region: "South Korea", lat: 37.44, lng: 127.11 },
+  { name: "Chinhae Naval Base", region: "South Korea", lat: 35.14, lng: 128.66 },
+
+  // ── Europe — the Cold War bases a whole generation served on, nearly all now
+  //    closed, and none of them findable until now
+  { name: "Bitburg Air Base", region: "Germany", lat: 49.95, lng: 6.57 },
+  { name: "Hahn Air Base", region: "Germany", lat: 49.95, lng: 7.26 },
+  { name: "Rhein-Main Air Base (Frankfurt)", region: "Germany", lat: 50.03, lng: 8.57 },
+  { name: "Zweibruecken Air Base", region: "Germany", lat: 49.21, lng: 7.4 },
+  { name: "Sembach Air Base", region: "Germany", lat: 49.51, lng: 7.87 },
+  { name: "Chievres Air Base / SHAPE", region: "Belgium", lat: 50.58, lng: 3.83 },
+  { name: "Camp Darby", region: "Italy", lat: 43.66, lng: 10.32 },
+  { name: "Souda Bay", region: "Greece", lat: 35.53, lng: 24.15 },
+  { name: "Torrejon Air Base", region: "Spain", lat: 40.49, lng: -3.45 },
+  { name: "Moron Air Base", region: "Spain", lat: 37.17, lng: -5.62 },
+  { name: "Zaragoza Air Base", region: "Spain", lat: 41.67, lng: -1.03 },
+  { name: "Lajes Field (Azores)", region: "Portugal", lat: 38.76, lng: -27.09 },
+  { name: "RAF Alconbury", region: "United Kingdom", lat: 52.37, lng: -0.22 },
+  { name: "RAF Croughton", region: "United Kingdom", lat: 51.98, lng: -1.19 },
+  { name: "RAF Fairford", region: "United Kingdom", lat: 51.68, lng: -1.79 },
+  { name: "RAF Upper Heyford", region: "United Kingdom", lat: 51.94, lng: -1.25 },
+  { name: "RAF Bentwaters", region: "United Kingdom", lat: 52.13, lng: 1.43 },
+  { name: "RAF Menwith Hill", region: "United Kingdom", lat: 54.01, lng: -1.69 },
+  { name: "Taszar Air Base", region: "Hungary", lat: 46.39, lng: 17.92 },
+
+  // ── Latin America and the Canal Zone
+  { name: "Fort Clayton", region: "Panama", lat: 8.99, lng: -79.59 },
+  { name: "Howard Air Force Base", region: "Panama", lat: 8.91, lng: -79.6 },
+  { name: "Rodman Naval Station", region: "Panama", lat: 8.94, lng: -79.57 },
+  { name: "Soto Cano Air Base (Palmerola)", region: "Honduras", lat: 14.38, lng: -87.62 },
+
+  // ── Middle East / Africa — including the two Sinai MFO camps. Egypt is named
+  //    in 38 U.S.C. §1119(c) for service on or after 11 Sep 2001, so an MFO
+  //    rotation can carry a PACT presumption, and pactScope already matches
+  //    "egypt" in the region string.
+  { name: "MFO North Camp (El Gorah, Sinai)", region: "Egypt", lat: 31.08, lng: 34.07 },
+  { name: "MFO South Camp (Sharm el-Sheikh)", region: "Egypt", lat: 27.98, lng: 34.38 },
+  { name: "Muwaffaq Salti Air Base (Azraq)", region: "Jordan", lat: 31.83, lng: 36.78 },
+  { name: "Al-Tanf Garrison", region: "Syria", lat: 33.5, lng: 38.65 },
+  { name: "Erbil Air Base", region: "Iraq", lat: 36.24, lng: 43.96 },
+  { name: "Marine Barracks / Beirut International", region: "Lebanon", lat: 33.82, lng: 35.49 },
+  { name: "Nigerien Air Base 201 (Agadez)", region: "Niger", lat: 16.96, lng: 8.0 },
+  { name: "Camp Simba (Manda Bay)", region: "Kenya", lat: -2.25, lng: 40.91 },
+
+  // ── Indian Ocean and remote Pacific
+  { name: "Diego Garcia", region: "British Indian Ocean Territory", lat: -7.31, lng: 72.41 },
+  { name: "Ascension Island", region: "South Atlantic", lat: -7.97, lng: -14.39 },
+  { name: "Wake Island", region: "Pacific", lat: 19.28, lng: 166.65 },
+  { name: "Midway Atoll", region: "Pacific", lat: 28.2, lng: -177.38 },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
