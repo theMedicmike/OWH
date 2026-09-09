@@ -12,14 +12,25 @@ import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 // like — the first page a veteran hands their VSO. Sample data, clearly
 // labeled. Exported so /welcome can show the same artifact without a second,
 // driftable copy.
+// 🔴 Every date here has to survive being read by a VSO, because this is a
+// timeline and timelines are what they read. It previously showed a veteran
+// serving 2003–2011 with a Camp Lejeune tour in 1982–1985 — twenty-one years
+// before he enlisted. The Lejeune dates had been moved into the statutory
+// window (Aug 1953 – Dec 1987) without anyone moving the service years to
+// match, so the fix for one scope error created a plainly impossible record on
+// the first screen of an app whose entire promise is careful documentation.
+//
+// Now a coherent 23-year career: enlisted 1982, Lejeune early, Balad late,
+// retired 2005. Asthma onset 2012 is deliberate too — it sits after separation,
+// which is what 38 U.S.C. §1120(b)(1) requires for the burn-pit presumptive and
+// what the app's own onset logic enforces. The sample demonstrates the rules it
+// is built on.
 export const SAMPLE: TimelineData = {
-  serviceStart: 2003,
-  serviceEnd: 2011,
+  serviceStart: 1982,
+  serviceEnd: 2005,
   tours: [
+    { place: "Camp Lejeune", startYear: 1983, endYear: 1986, exposures: ["water_contamination"] },
     { place: "Joint Base Balad", startYear: 2004, endYear: 2005, exposures: ["burn_pit"] },
-    // Inside the statutory Camp Lejeune window (Aug 1953 – Dec 1987). The
-    // sample packet must never demonstrate a claim outside its own scope.
-    { place: "Camp Lejeune", startYear: 1982, endYear: 1985, exposures: ["water_contamination"] },
   ],
   conditions: [
     { label: "Asthma", onsetYear: 2012, linkedExposures: ["burn_pit"] },
@@ -106,9 +117,15 @@ export default function Landing() {
               <ServiceTimeline data={SAMPLE} compact />
             </div>
           </div>
-          <div className="text-xs text-white/55">
-            Free. No products. Nothing sold. Operation Whole Health, a Patriot-founded 501(c)(3).
-            A record and an estimate — never a diagnosis.
+          {/* "Patriot-founded" is a phrase only an insider can decode, and the
+              honest sentence is stronger anyway — /trust already says it plainly
+              and it is the page a skeptic opens first. "An estimate" is gone
+              too: on a claims app that word means a RATING estimate, which is
+              the one thing this app promises never to produce. */}
+          <div className="text-xs leading-relaxed text-white/55">
+            Free, and always free. This is not the VA. Run by Operation Whole Health, a 501(c)(3)
+            nonprofit — founded by a civilian, not a veteran, and built alongside veterans who are.
+            Nothing here is sold. A record — never a diagnosis, and never a rating.
           </div>
         </div>
       </section>
@@ -123,10 +140,27 @@ export default function Landing() {
             <h1 className="mt-5 text-2xl font-bold leading-tight tracking-tight text-ink">
               Finally connect the dots between your service and your health.
             </h1>
+            {/* 🔴 THE FIVE-SECOND TEST, on the screen most veterans actually
+                arrive on. Everything that answered "what is this and who runs
+                it" lived in the desktop brand panel, which is `hidden lg:flex` —
+                so on a phone the word "VA" appeared only inside step three's
+                body text, and the sentence "this is not the VA" was reachable
+                only from /trust, behind a 10px footer link.
+                The 75-year-old Navy veteran on the September panel said exactly
+                what would get him to file after fifty years: one straight
+                sentence, up front, that this is free and is not the VA. */}
+            <p className="mt-3 rounded-lg border border-line bg-surface px-3 py-2.5 text-sm font-semibold leading-relaxed text-ink">
+              Free, and always free. This is not the VA. Nothing here is sold.
+            </p>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              A free, private tool for veterans and military first responders. Map where you served,
+              A private tool for veterans and military first responders. Map where you served,
               see what you were likely exposed to, and build the documented proof that connects it to
-              your health — so you can build the strongest possible case.
+              your health. You leave with a packet to hand an accredited VSO.
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Run by Operation Whole Health, a 501(c)(3) nonprofit. Our founder is not a veteran — he
+              built this alongside veterans who are.{" "}
+              <Link href="/trust" className="font-semibold text-brand underline">What this is →</Link>
             </p>
             <ul className="mt-4 space-y-3">
               {POINTS.map((p, i) => (
@@ -141,6 +175,20 @@ export default function Landing() {
                 </li>
               ))}
             </ul>
+
+            {/* The artifact, on mobile too. It is the strongest thing this page
+                has — showing what you walk away with beats describing it — and
+                it was visible only to desktop visitors. Same SAMPLE the desktop
+                panel and /welcome render, so there is no second copy to drift. */}
+            <div className="mt-5 rounded-xl border border-line bg-surface p-3 shadow-sm">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-accent">Sample record</span>
+                <span className="text-[11px] text-faint">Page one of what you hand your VSO</span>
+              </div>
+              <div className="mt-2">
+                <ServiceTimeline data={SAMPLE} compact />
+              </div>
+            </div>
           </div>
 
           <h2 className="text-xl font-semibold tracking-tight text-ink">Welcome</h2>
