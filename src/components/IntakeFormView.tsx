@@ -716,10 +716,20 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
             {showNaval && (
               <div className="border-t border-accent/20 px-4 py-3">
                 <p className="text-sm leading-relaxed text-muted">
-                  A ship or sub doesn&apos;t sit in one place on the map. The honest way to capture it is to
-                  pin your <strong className="text-ink">homeport</strong> and the{" "}
-                  <strong className="text-ink">shipyard</strong> where your vessel was overhauled — that&apos;s
-                  where the documented exposures were: asbestos, solvents and fuels, the sealed-atmosphere
+                  A ship or sub doesn&apos;t sit in one place on the map, so it gets its own page:{" "}
+                  <a href="/vessels" className="font-semibold text-brand underline">Ships you served aboard</a> —
+                  the vessel, the hull number and your dates, which is what a VSO writes a records request
+                  against. It prints in your claim packet.
+                </p>
+                {/* Homeport and shipyard used to be the ENTIRE answer here,
+                    which is how a sailor's actual ship ended up nowhere in this
+                    app. They are still worth pinning — they are real places with
+                    documented exposures — but they are the second sentence now,
+                    not the first. */}
+                <p className="mt-2 text-sm leading-relaxed text-muted">
+                  Worth pinning here as well: your <strong className="text-ink">homeport</strong> and the{" "}
+                  <strong className="text-ink">shipyard</strong> where your vessel was overhauled. That&apos;s
+                  where the documented exposures were — asbestos, solvents and fuels, the sealed-atmosphere
                   chemicals you breathed for months, and refueling radiological work.
                 </p>
                 {navalSites.length > 0 ? (

@@ -11,6 +11,7 @@ import PresumptivePathwaysCard from "./PresumptivePathwaysCard";
 import { listServiceEvents } from "@/lib/serviceEvents";
 import { listMemberIncidents } from "@/lib/incidents";
 import { listMedications } from "@/lib/medications";
+import { listVessels } from "@/lib/vessels";
 
 
 type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
@@ -23,6 +24,7 @@ const QUICK = [
   { href: "/shots", title: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
   { href: "/injuries", title: "Injuries & events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
   { href: "/medications", title: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
+  { href: "/vessels", title: "Ships you served aboard", d: "M12 2v6M9 5h6M3 13h18l-2.2 6.2a2 2 0 0 1-1.9 1.3H7.1a2 2 0 0 1-1.9-1.3zM5.5 13V9h13v4" },
   { href: "/intake/ai", title: "Voice guided intake", d: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" },
   { href: "/learn", title: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
   { href: "/solutions", title: "Whole health", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
@@ -53,6 +55,7 @@ export default function DashboardView() {
   const [hasInjuries, setHasInjuries] = useState(false);
   const [incidentClasses, setIncidentClasses] = useState<string[]>([]);
   const [hasMeds, setHasMeds] = useState(false);
+  const [hasVessels, setHasVessels] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -98,18 +101,20 @@ export default function DashboardView() {
       setPendingReqs(allConns.filter((x) => x.direction === "received" && x.status === "pending"));
       setHasDD214(((files.data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder")).length > 0);
 
-      // The three newer sections. Each goes through its own data module — the
-      // shots and medications tables are query-isolated to those files by the
-      // COI firewall, and routing through them is what keeps that true. All
-      // three return an { error } shape rather than throwing, so an unrun
+      // The four newer sections. Each goes through its own data module — the
+      // shots, medications and vessels tables are query-isolated to those files
+      // by the COI firewall, and routing through them is what keeps that true.
+      // All four return an { error } shape rather than throwing, so an unrun
       // migration leaves the tile reading "Not yet" instead of breaking the
       // whole dashboard.
-      const [ev, inc, meds] = await Promise.all([
+      const [ev, inc, meds, ves] = await Promise.all([
         listServiceEvents(supabase),
         listMemberIncidents(supabase),
         listMedications(supabase),
+        listVessels(supabase),
       ]);
       setHasShots("events" in ev && ev.events.length > 0);
+      setHasVessels("vessels" in ves && ves.vessels.length > 0);
       setHasInjuries("incidents" in inc && inc.incidents.length > 0);
       // The incident CLASSES, not just "are there any" — the completeness math
       // needs them to connect an event-linked condition (tinnitus, knees) the
@@ -163,6 +168,25 @@ export default function DashboardView() {
     { label: "Battle buddies", value: buddies.length, href: "/buddies" },
     { label: "Claim packet", value: prog.claimReady ? "Ready" : "Not yet", href: "/report" },
   ];
+
+  // The ships tile is the ONE tile in this grid that is conditional, and the
+  // reason is worth keeping. Every other section applies to every veteran, so a
+  // "Not yet" on it is a real to-do. A ship is not: an infantryman will never have
+  // one, and a permanent "Not yet" would be this grid telling him his record is
+  // missing something that cannot exist. So it appears for the sea-going
+  // branches, and for anyone who has already added a ship regardless of what
+  // their branch says — plenty of soldiers rode Army watercraft, and a man who
+  // has already told us about his ship must never watch the tile vanish.
+  // It is in "Jump back in" unconditionally, because that is a menu, not a
+  // scorecard, and nothing there implies anything is owed.
+  const seaGoing = /navy|marine|coast guard/i.test(branch ?? "");
+  if (seaGoing || hasVessels) {
+    stats.splice(6, 0, {
+      label: "Ships",
+      value: hasVessels ? "On file" : "Not yet",
+      href: "/vessels",
+    });
+  }
 
   // The SOP, in order: who you are → what you live with → where you served.
   // The map comes third on purpose. A pin dropped before the app knows the

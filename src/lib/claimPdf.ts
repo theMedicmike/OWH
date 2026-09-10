@@ -34,6 +34,20 @@ export type PdfContentionFact = { label: string; began?: string; diagnosis: stri
  *  discouraged. */
 export type PdfShot = { label: string; date: string; provenance: string };
 
+/** A ship the veteran served aboard.
+ *
+ *  🔴 There is NO qualifies/eligible/presumptive field here, and there will not
+ *  be one. Blue Water Navy turns on where the vessel actually was — inside the
+ *  inland waterways, or within 12 nautical miles of the demarcation line (38
+ *  U.S.C. 1116(d), Pub. L. 116-23) — which the rater reading this packet
+ *  establishes from the DECK LOGS for these dates. Printing a qualification
+ *  next to a hull number the veteran typed from memory would be this app
+ *  answering, inside a VA-bound document, a question it has never seen the
+ *  evidence for. Keeping the field off the type is what makes that
+ *  unrepresentable rather than merely discouraged — same reasoning as PdfShot
+ *  above. See migration 0030. */
+export type PdfVessel = { title: string; when: string; role?: string; note?: string };
+
 export type ClaimPdfData = {
   name: string;
   branch: string | null;
@@ -58,6 +72,9 @@ export type ClaimPdfData = {
   contentionFacts: PdfContentionFact[];
   /** Documented and in-record rows only — see PdfShot and the ruling it cites. */
   shots: PdfShot[];
+  /** Ships served aboard. Prints as 1b, inside the service record — a vessel is
+   *  a service fact like a unit, never an exposure and never an appendix. */
+  vessels: PdfVessel[];
   corroborations: string[];
   witnessStatements: PdfWitnessStatement[];
   contentions: PdfContention[];
@@ -298,6 +315,29 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
       // The veteran's own account is the strongest thing this page carries.
       if (r.note) text(`In the veteran's words — "${r.note}"  (Veteran-reported)`, { size: 9, style: "italic", color: INK, indent: 12, gapAfter: 4 });
     });
+
+  // ---- 1b. Ships served aboard ----
+  // Inside the service record on purpose, immediately under the timeline, and
+  // NOT an appendix: for a sailor the ship IS the location, and filing it at
+  // the back would repeat the mistake the whole feature exists to fix.
+  //
+  // What this block is FOR is the sentence at the end of it. The vessel, the
+  // hull number and the dates are what a records request gets written against,
+  // and the deck logs are the document that settles where a ship actually was.
+  // Naming that out loud, in the packet, is the useful thing this app can do
+  // about Blue Water Navy — and printing a qualification is not. See PdfVessel.
+  if (data.vessels.length > 0) {
+    sectionHeading("1b · Ships served aboard (veteran-reported)");
+    data.vessels.forEach((v) => {
+      text(`${v.title}${v.when ? `  ·  ${v.when}` : ""}`, { size: 10, style: "bold", gapAfter: 0 });
+      if (v.role) text(v.role, { size: 9, color: MUTED, indent: 12, gapAfter: v.note ? 0 : 4 });
+      if (v.note) text(`In the veteran's words — "${v.note}"  (Veteran-reported)`, { size: 9, style: "italic", color: INK, indent: 12, gapAfter: 4 });
+    });
+    text(
+      "Request the deck logs for the vessels and dates above (National Archives). They are the ship's own daily record of her position and are the document that establishes where this veteran was. Where a herbicide presumption is at issue, VA's published list of ships associated with service in Vietnam should be checked against those logs by an accredited representative. Nothing on this page asserts that any vessel qualifies for any presumption.",
+      { size: 8, color: FAINT, gapAfter: 6 },
+    );
+  }
 
   // ---- 2. Documented basis ----
   // Facts only: what the veteran logged and where. The science and legal

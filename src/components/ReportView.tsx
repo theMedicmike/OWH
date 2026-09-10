@@ -23,6 +23,7 @@ import { listConditionNotes } from "@/lib/conditionNotes";
 // the underlying table name everywhere else in src/, so a shot can never be
 // queried as though it were an exposure.
 import { listServiceEvents, PROVENANCE_LABEL as SHOT_PROVENANCE_LABEL } from "@/lib/serviceEvents";
+import { listVessels, vesselWhen, vesselTitle } from "@/lib/vessels";
 import { listMedications, type Medication } from "@/lib/medications";
 
 const WITNESS_TYPE_LABEL: Record<string, string> = {
@@ -169,6 +170,7 @@ export default function ReportView() {
   const [incidentBlocks, setIncidentBlocks] = useState<{ line: string; detail?: string; notes: string[] }[]>([]);
   const [itfFiledOn, setItfFiledOn] = useState<string | null>(null);
   const [shotRows, setShotRows] = useState<{ label: string; date: string; provenance: string }[]>([]);
+  const [vesselRows, setVesselRows] = useState<{ title: string; when: string; role?: string; note?: string }[]>([]);
   const [condNotes, setCondNotes] = useState<Record<string, string[]>>({});
   const [downloaded, setDownloaded] = useState(false);
 
@@ -354,6 +356,24 @@ export default function ReportView() {
       // Recalled rows stay visible to him on /shots; they just don't print.
       // (The ruling's per-row opt-in for recalled entries is not built — that
       // needs storage and a control, and is Michael's call. See the note to him.)
+      // Ships. Unlike shots, EVERY row prints: there is no provenance filter
+      // here because there is nothing to filter against — a vessel is a service
+      // fact the veteran states, the same as a unit, and the packet already
+      // labels the whole section veteran-reported. The deck logs are what
+      // settle it, which is what the section's closing line tells the rater to
+      // go and get. See PdfVessel for what this deliberately does NOT carry.
+      const vs = await listVessels(supabase);
+      if (!("error" in vs)) {
+        setVesselRows(
+          vs.vessels.map((v) => ({
+            title: vesselTitle(v),
+            when: vesselWhen(v),
+            role: v.role ?? undefined,
+            note: v.note ?? undefined,
+          })),
+        );
+      }
+
       const se = await listServiceEvents(supabase);
       if (!("error" in se)) {
         setShotRows(
@@ -580,6 +600,7 @@ export default function ReportView() {
         incidents: incidentBlocks,
         contentionFacts,
         shots: shotRows,
+        vessels: vesselRows,
         today,
         summary: `You logged service at ${rows.length} location${rows.length === 1 ? "" : "s"}. Documented exposures include ${classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.${conditions.length > 0 ? ` Of your ${conditions.length} condition${conditions.length === 1 ? "" : "s"}, ${presumptiveConditions} ${presumptiveConditions === 1 ? "carries" : "carry"} a recognized presumptive pathway.` : " Add your conditions to see which carry a recognized presumptive pathway."}`,
         nextStep: "bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to review the hand-off sheet on the last page.",
@@ -929,6 +950,42 @@ export default function ReportView() {
             </ul>
           )}
         </section>
+
+        {/* 1b. Ships served aboard. Inside the service record, directly under
+            the timeline, and NOT an appendix — for a sailor the ship IS the
+            location, and filing it at the back would repeat the exact mistake
+            this feature exists to fix. The closing line is the point of the
+            section: the deck logs are the document that settles where a ship
+            was, and naming them is the useful thing this app can do about Blue
+            Water Navy. Printing a qualification is not — see PdfVessel. */}
+        {vesselRows.length > 0 && (
+          <section className={sectionWrap}>
+            <h3 className={sectionTitle}>1b · Ships served aboard (veteran-reported)</h3>
+            <ul className="space-y-2">
+              {vesselRows.map((v, i) => (
+                <li key={i}>
+                  <div className="text-sm font-semibold text-ink">
+                    {v.title}
+                    {v.when && <span className="font-normal text-muted"> · {v.when}</span>}
+                  </div>
+                  {v.role && <div className="text-xs text-muted">{v.role}</div>}
+                  {v.note && (
+                    <p className="mt-1 whitespace-pre-wrap text-sm italic leading-relaxed text-ink">
+                      In the veteran&apos;s words — &ldquo;{v.note}&rdquo; (Veteran-reported)
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs leading-relaxed text-muted">
+              Request the deck logs for the vessels and dates above (National Archives). They are the ship&apos;s
+              own daily record of her position and are the document that establishes where this veteran was. Where
+              a herbicide presumption is at issue, VA&apos;s published list of ships associated with service in
+              Vietnam should be checked against those logs by an accredited representative. Nothing on this page
+              asserts that any vessel qualifies for any presumption.
+            </p>
+          </section>
+        )}
 
         {/* 2. Documented exposures — facts only. The science/legal basis that
             EXPLAINS the association reads as advocacy inline; it moves to

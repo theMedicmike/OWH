@@ -53,6 +53,13 @@ const SECTIONS: NavSection[] = [
       // alongside it, not a numbered step. Plain name, not clinical: council
       // ruling 2026-08-11 ("Injuries & events," not "Trauma Intake").
       { href: "/injuries", label: "Injuries & events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
+      // Same "no step number" reasoning as the two above. A ship is a service
+      // fact, not a place and not a numbered step — and it sits here rather
+      // than under "Where you served" because a vessel is the one thing in this
+      // app that a map genuinely cannot hold. Plain name for the same reason
+      // shots is "Your shot record": "Ships you served aboard" is what a sailor
+      // would say, "Vessel record" is what a database would.
+      { href: "/vessels", label: "Ships you served aboard", d: "M12 2v6M9 5h6M3 13h18l-2.2 6.2a2 2 0 0 1-1.9 1.3H7.1a2 2 0 0 1-1.9-1.3zM5.5 13V9h13v4" },
       // Same reasoning as the two above — discoverable alongside them, never a
       // numbered step. "Your medications," not "Drug side effects": the page
       // documents what you take, it does not tell you what a drug did to you.

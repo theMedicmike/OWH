@@ -58,7 +58,7 @@ const CORE_STEPS: Step[] = [
     points: [
       "“Where did you go to boot camp?” — pick your post from the list, or choose “Somewhere else / I'll add it on the map.” Underneath, where it says “When?”, set the year on the scroll wheels — it is the same wheel you will meet everywhere else in this app, and the year is the only part that has to be right. Everybody remembers boot camp, and it counts: it goes on your map as a real place, with whatever is documented about that ground.",
       "Your service years, and your job — MOS / Rate / AFSC / NEC.",
-      "Then the places you served. If you were on a ship or a submarine, open the panel that says “Served aboard a ship or submarine?” — it explains to pin your homeport and your shipyard instead of the open ocean.",
+      "Then the places you served. If you were on a ship or a submarine, open the panel that says “Served aboard a ship or submarine?” — it points you at “Ships you served aboard,” which is where the vessel, the hull number and your dates go, and reminds you to pin your homeport and your shipyard on the map as well.",
       "The last screen is a short list of things you might live with, your current VA rating, and whether you are using VA healthcare.",
     ],
     warn: {
@@ -261,6 +261,20 @@ const MORE_STEPS: Step[] = [
       text: "It stays grey until you've tapped what happened and one of the “How do you know?” answers — and if you ticked the repeated-event box, until you've filled in a role or unit too.",
     },
     tip: "Once it's saved, tap “Open” on any entry to find “What you've noticed since” — a dated log, in your own words, of what's shown up since. Add to it any time; that's what an examiner actually looks at to judge whether something's been consistent. And “What VA looks for, by injury type — the library →” on the main page lays out the real exam and diagnostic code behind TBI, amputation, hearing damage, and burns. Whatever you log here also shows up connected under “Your conditions,” the same way an exposure does.",
+  },
+  {
+    title: "Served aboard a ship? It has its own page now",
+    body: [
+      "In the menu, below “Injuries & events” — “Ships you served aboard.”",
+      "This is the one thing a map genuinely cannot hold. Until now this app told sailors to pin their homeport and their shipyard, which is honest as far as it goes — those are real places with real documented exposures — and it is not what a VSO asks for. What a VSO asks for is the ship, the hull number, and the dates you were aboard. Those three facts are what a records request gets written against.",
+      "Tap “＋ Add a ship.” Only the name is required. If you do not remember the hull number, leave it empty — we will not guess one for you, because a hull number an app invented is worse in front of a rater than one you left blank. Dates are rough, the same as everywhere else here; a year on its own is a perfectly good answer.",
+      "Your ships print in your claim packet, in your service details, with a line telling whoever reads it to request the deck logs for those dates. The deck logs are the ship’s own daily record of where she was, they are held at the National Archives, and they are the document that actually settles where you were standing.",
+    ],
+    warn: {
+      label: "What this page will not do",
+      text: "It will not tell you whether your ship gets you an Agent Orange presumption, and that is deliberate. VA publishes a list of ships associated with service in Vietnam, but whether a presumption reaches you turns on where your ship actually was — inside the inland waterways, or within twelve nautical miles of the line — and that comes off the deck logs, decided by the person reading your claim. We could print you a green tick off a hull number you typed from memory fifty years later. We are not going to. The page links you straight to VA’s own list instead, and then to a VSO.",
+    },
+    tip: "Still pin the homeport and the shipyard on the map at step 3 — alongside this page, not instead of it. And you can now pin open water too: search the map for the Persian Gulf, the Gulf of Tonkin, Yankee Station, the Arabian Sea. Those were missing until September 2026, which meant a sailor searching for where he served got nothing back. That was our fault, not yours.",
   },
   {
     title: "Your medications — and what the FDA's own label says",
@@ -470,8 +484,9 @@ export default function HelpPage() {
             each other. On a computer it is always down the left-hand side. It reads top to bottom in
             the order you would actually work: your Dashboard and Medic Mike at the top;{" "}
             <strong>&ldquo;Build your record&rdquo;</strong> — the six numbered steps, ending at your
-            packet; then, with no heading and no numbers, the four things you can add whenever you
-            like — your shot record, injuries &amp; events, your medications, and what VA presumes;
+            packet; then, with no heading and no numbers, the five things you can add whenever you
+            like — your shot record, injuries &amp; events, ships you served aboard, your medications,
+            and what VA presumes;
             then <strong>&ldquo;When you&rsquo;re ready to file&rdquo;</strong> — the VSO finder and
             the C&amp;P exam page; then <strong>&ldquo;Learn &amp; live well,&rdquo;</strong> your
             private <strong>&ldquo;Exposure insights,&rdquo;</strong> your Account, and this guide.
@@ -481,9 +496,14 @@ export default function HelpPage() {
           <p>
             <strong className="text-ink">Your Dashboard.</strong> It is home — the tiles across the
             top open their own pages, and{" "}
-            <strong>&ldquo;Jump back in&rdquo;</strong> at the bottom is a fixed set of ten
-            shortcuts to the main screens. It is the same ten every time; it is a menu, not a
-            history, so don&apos;t go looking there for the last thing you were doing.
+            <strong>&ldquo;Jump back in&rdquo;</strong> at the bottom is a fixed set of eleven
+            shortcuts to the main screens. It is the same eleven every time; it is a menu, not a
+            history, so don&apos;t go looking there for the last thing you were doing. If you served
+            in the Navy, the Marine Corps or the Coast Guard — or once you add a ship — a{" "}
+            <strong>&ldquo;Ships&rdquo;</strong> tile appears in the grid above it. It is the one
+            tile that is conditional, because an infantryman will never have a ship and a permanent
+            &ldquo;Not yet&rdquo; would be telling him his record is missing something that cannot
+            exist.
           </p>
           <p>
             <strong className="text-ink">The card at the top of your Dashboard.</strong> The one

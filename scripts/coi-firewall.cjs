@@ -524,6 +524,74 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\
   }
 }
 
+// ── 15. Vessel (ship record) isolation + no qualification ───────────────────
+// Migration 0030. A ship is a SERVICE FACT, the same shape as a unit. Three
+// things must stay true, and each is a thing the next reasonable builder would
+// add: it is not an exposure, it never scores the record, and this app never
+// answers whether a vessel qualifies for a presumption.
+{
+  const VESSEL_QUERY_ALLOWED = ["src/lib/vessels.ts"];
+  const VESSEL_FILES = [
+    ...walkAll(path.join(root, "src/app/vessels")),
+    ...walkAll(path.join(root, "src")).filter((p) => /[\/]lib[\/]vessels\./i.test(p)),
+    ...walkAll(path.join(root, "src")).filter((p) => /[\/]components[\/]Vessels/i.test(p)),
+  ].map(rel);
+
+  // 15a. Query isolation — same shape as rules 6 and 12a. A vessel must never
+  // be readable as though it were an exposure or a logged location.
+  for (const p of walkAll(path.join(root, "src"))) {
+    const f = rel(p);
+    if (VESSEL_QUERY_ALLOWED.includes(f)) continue;
+    if (/from\(\s*["'`]vessels["'`]\s*\)/.test(read(f))) {
+      fail(
+        "vessel-query-isolation",
+        `${f} queries the "vessels" table outside the enumerated allowlist (${VESSEL_QUERY_ALLOWED.join(", ")}). ` +
+          `A ship is a service fact, never an exposure input.`
+      );
+    }
+  }
+
+  // 15b. THE ONE THAT MATTERS. Blue Water Navy turns on where a vessel actually
+  // was — inside the inland waterways, or within 12 nautical miles of the
+  // demarcation line — which a rater establishes from DECK LOGS. An app that
+  // prints "your ship qualifies" off a hull number typed from memory is making
+  // a determination on evidence it has never seen, inside a VA-bound document.
+  // Bans the assertion, not the subject: the pages are REQUIRED to discuss the
+  // ship list and say why we will not answer it.
+  const QUALIFY = /\b(?:your|this|the)\s+ship\s+(?:is\s+)?(?:qualifie[sd]|eligible|covered|presumptive)\b|\bship\s+qualifies\s+for\b|\b(?:qualifying|eligible)\s+(?:vessel|ship)\b|\bvessel\s+(?:is\s+)?(?:eligible|presumptive)\b/i;
+  for (const f of VESSEL_FILES) {
+    const src = stripComments(read(f));
+    if (QUALIFY.test(src)) {
+      fail(
+        "vessel-no-qualification",
+        `${f} asserts that a ship qualifies, is eligible, or is covered. This app captures the vessel and the ` +
+          `dates and routes the veteran to VA's own published list and to the deck logs. It never answers the ` +
+          `question itself — see the ruling in supabase/migrations/0030_vessels.sql.`
+      );
+    }
+    // 15c. No rating, percentage or dollar figure, same as 12b.
+    if (/\d\s*%|\bup to \d|\brating\s*(?:of|:)\s*\d|\$\d/i.test(src)) {
+      fail(
+        "vessel-no-rating",
+        `${f} contains a percentage, rating figure, or dollar amount. The ship record documents service; it ` +
+          `never prints an outcome.`
+      );
+    }
+  }
+
+  // 15d. A vessel may never count toward record completeness — the same ruling
+  // as shots (rule 11). A sailor who cannot name every ship he rode is not an
+  // incomplete record, and a meter that says so reads as a verdict on his
+  // memory. nextaction.ts must not know this table exists.
+  if (/vessel|\bship\b/i.test(stripComments(read("src/lib/nextaction.ts")))) {
+    fail(
+      "vessel-no-count",
+      "src/lib/nextaction.ts mentions a vessel — a completeness meter can never fill for a man who cannot " +
+        "remember every ship he rode."
+    );
+  }
+}
+
 // ── report ──────────────────────────────────────────────────────────────────
 if (failures.length) {
   console.error("\n  COI FIREWALL FAILED — build stopped\n");

@@ -124,6 +124,7 @@ export default function AboutPage() {
             "Lets a veteran ask anyone to confirm their record — on this app or not. A private link, no account needed, for a spouse, a battle buddy who never signed up, or a commander.",
             "Keeps a veteran's own words on the record. What they write about a place becomes a printable statement in their own voice.",
             "Keeps a veteran's medication list beside the FDA's own label for each one — because a condition caused by treatment for a service-connected disability can sometimes be claimed on its own, and almost nobody is told that.",
+            "Gives a sailor somewhere to put his ship. The vessel, the hull number and the dates aboard — the three facts a records request is written against — printed in the claim packet with a line telling the reader to pull the deck logs for those dates.",
             "Logs the injuries and events themselves — a blast, a fall, an assault, hearing damage, a burn, and more — not just the place, each with a dated log of what's shown up since. For blast/TBI, amputation, hearing damage and burns, it also lays out the actual VA exam and diagnostic code; the rest of the list is being written.",
             "Takes a symptom before anyone knows what it is. A bad night at 2 a.m., written down and dated in your own words, with no condition to pick and no category to choose — filed against the right condition later, when you know, or when a VSO helps you work it out.",
             "Explains the C&P exam before the letter arrives — what it is, who actually examines you, what they're filling out, and what happens if you can't make it.",
@@ -210,6 +211,24 @@ export default function AboutPage() {
           says so plainly instead of sending them hunting for paperwork that was never written. Underneath
           every entry is a place to log what they&apos;ve noticed since, dated, in their own words —
           because that consistency over time is exactly what an examiner is trained to look for.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          And there is finally somewhere to put a ship. For a long time this app had none — it told a
+          sailor to pin his homeport and the yard where his ship was overhauled, which is true as far as
+          it goes and is not what anyone actually asks him for. What a Veterans Service Officer asks for is
+          the vessel, the hull number, and the dates he was aboard, because that is what a records request
+          gets written against. Those now have their own page and they print in his packet, with a line
+          telling whoever reads it to pull the deck logs — the ship&apos;s own daily record of where she
+          was, held at the National Archives.
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          What that page will not do is tell him whether his ship gets him an Agent Orange presumption. We
+          could have. VA publishes the list, and matching a hull number against it is an afternoon&apos;s
+          work. But whether a presumption reaches a particular sailor turns on where his ship actually was,
+          established from the deck logs by the person deciding his claim — so a green tick from us would
+          be this app answering, inside a VA-bound document, a question it has never seen the evidence for.
+          A veteran who walks into a VSO office holding our tick and gets corrected has been failed twice.
+          The page links him to VA&apos;s own list and then to a VSO, and says plainly why.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           One more thing we got wrong and have fixed, because a veteran deserves to hear it said
