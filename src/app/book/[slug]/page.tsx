@@ -1,12 +1,42 @@
 import AppShell from "@/components/AppShell";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_AUTHOR, type BookChapter } from "@/content/book";
 import ReaderClient from "@/components/ReaderClient";
 import { isHeavy, isMemoriamOnly, canShareChapter } from "@/content/heavyChapters";
 
 export function generateStaticParams() {
   return BOOK_CHAPTERS.map((c) => ({ slug: c.slug }));
+}
+
+// CHAPTER NUMBERS DRIFT; TITLES DO NOT. Every chapter URL carries its ordinal
+// ("38-the-work-that-went-first"), so inserting a chapter silently changes the
+// address of every chapter after it. That happened on 2026-09-23: a 74 -> 81
+// update moved 65 of them, and 65 URLs that Google had already indexed — most
+// of the book — became 404s at once. For a site whose whole point is that the
+// chapters are publicly readable, that is the worst possible failure, and it is
+// completely silent.
+//
+// So an unknown slug is not automatically a 404. If its TITLE portion still
+// matches a real chapter, the request is an old address for a chapter that
+// still exists, and it gets a permanent redirect to the current one. 308 tells
+// a crawler to move the ranking to the new address rather than drop the page.
+// This is general, not a list of the 65: it fixes every past renumber and every
+// future one without anyone having to remember to add redirects.
+const baseSlug = (slug: string) => slug.replace(/^\d+-/, "");
+
+// The one case base-slug matching cannot catch: a RETITLE changes the title
+// portion too, so there is nothing left to match on. "A Letter to the Veteran"
+// became "Roll Call" in the 2026-09-23 update. Add an entry here whenever a
+// published chapter is renamed, keyed old -> new base slug.
+const RETITLED: Record<string, string> = {
+  "a-letter-to-the-veteran": "roll-call",
+};
+
+function canonicalFor(slug: string): BookChapter | undefined {
+  const key = baseSlug(slug);
+  const target = RETITLED[key] ?? key;
+  return BOOK_CHAPTERS.find((c) => baseSlug(c.slug) === target);
 }
 
 function clip(text: string, max: number): string {
@@ -50,7 +80,7 @@ function chapterDescription(chapter: BookChapter): string {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const chapter = BOOK_CHAPTERS.find((c) => c.slug === slug);
+  const chapter = BOOK_CHAPTERS.find((c) => c.slug === slug) ?? canonicalFor(slug);
   if (!chapter) return { title: BOOK_TITLE };
   return {
     title: chapter.title,
@@ -62,7 +92,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ChapterPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const idx = BOOK_CHAPTERS.findIndex((c) => c.slug === slug);
-  if (idx === -1) notFound();
+  if (idx === -1) {
+    const moved = canonicalFor(slug);
+    if (moved) permanentRedirect(`/book/${moved.slug}`);
+    notFound();
+  }
   const chapter = BOOK_CHAPTERS[idx];
   const prev = BOOK_CHAPTERS[idx - 1];
   const next = BOOK_CHAPTERS[idx + 1];

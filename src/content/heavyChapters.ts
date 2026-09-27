@@ -29,6 +29,18 @@ export const HEAVY_CHAPTERS = new Set<string>([
   "the-family-that-served-too",
   "the-caregiver-who-served-too",
   "the-pain-they-made-you-prove",
+  // Added 2026-09-23, carrying over Michael's sign-off on the five gap chapters
+  // (the same four are in HEAVY_BY_IDENTITY in the book site's build-book-site.cjs).
+  // Each closes ON the crisis line rather than opening near it.
+  "the-work-that-went-first",         // ends on the insurance-money passage + 988
+  "the-long-arc",                     // dementia, caregiver collapse, dying
+  "the-room-where-someone-asks",      // incarceration + the violent-offence finding
+  "the-ones-without-the-word",        // exclusion; the chapter ends on not being here at all
+  // NOT flagged, deliberately: "the-medicine-you-can-t-swallow" is hopeful throughout.
+  // Also NOT here, and that is not an oversight: the book site additionally flags
+  // "the-weight-of-the-trigger" and "when-the-cascade-reaches-the-street" as
+  // site-only, where it chose to be more protective than this app. Don't "sync"
+  // those two in without asking Michael — the divergence is intentional.
 ]);
 
 // The most acute — the celebratory 250th seal and the "READ FREE" promo are

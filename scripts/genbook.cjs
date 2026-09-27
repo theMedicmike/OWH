@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * genbook — regenerate src/content/book.ts from the manuscript.
+ * genbook — regenerate src/content/book.ts from the book's source of truth.
  *
  * Usage:  node scripts/genbook.cjs [--check]
  *   --check  print the chapter table and exit without writing
@@ -8,141 +8,70 @@
  * This script is the ONLY supported way to update src/content/book.ts.
  * It has been lost twice by living in a temp scratchpad. It lives here now.
  *
+ * WHERE THE BOOK COMES FROM (changed 2026-09-23 — read this before "fixing" it):
+ * This used to re-parse the FULL_MANUSCRIPT markdown and reverse-engineer the
+ * book's structure out of its headings. That worked until the manuscript and the
+ * book stopped being the same document. Measured on 2026-09-23, the markdown was
+ * missing "The Ringing" entirely and still called "Roll Call" by its old title,
+ * "A Letter to the Veteran" — so this app shipped 74 chapters while both other
+ * surfaces (the reader SPA and the Desktop static site) shipped 81. The app was
+ * seven chapters behind the book its own learning pages quote from.
+ *
+ * book-data.json is the file the other two surfaces build from, and its chapter
+ * records are ALREADY exactly the BookChapter shape below — same slug, number,
+ * title, and {type,text} paragraphs. Re-deriving that from prose was inventing a
+ * second parser to produce a file we already had. Now we read it. The whole class
+ * of drift bug goes away: if the book changes, this app changes with it.
+ *
+ * The two book-data.json copies (Desktop site + wwtov-reader) are kept byte-
+ * identical by the integrity harness; the Desktop one is the source of truth, so
+ * that is the one read here.
+ *
  * SAFETY: src/content/heavyChapters.ts gates the crisis UI by TITLE slug
- * (number-independent). If a chapter title changes here, that gate silently
+ * (number-independent). If a chapter title changes upstream, that gate silently
  * stops firing for it. After running this, always run:
- *     node scripts/genbook.cjs --check
+ *     node scripts/verify-gating.cjs
  * and confirm every heavyChapters key still resolves. `npm run build` will
  * not catch a broken gate.
- *
- * Manuscript rules this reproduces (reverse-engineered from the prior output):
- *   - Everything before the first standalone '---' is the title page. Skipped.
- *   - '# Part X' immediately followed by '# Subtitle' is a part divider. Skipped.
- *   - '# Front Matter' is a container: its '##' sections each become a chapter.
- *   - 'Contents' (a stale TOC) and 'Foreword' (an unfilled [NEEDS:] placeholder)
- *     are excluded entirely. Including them would add two chapters and shift
- *     every number after them.
- *   - Any other '# Heading' is a chapter.
- *   - Inside a chapter, '##'/'###' become {type:'h'}; prose becomes {type:'p'}.
- *   - Titles drop ':' but keep em-dashes. Slug is NN-kebab of the title.
- *   - '@@FIG:...@@' markers and '---' rules are dropped (PDF-only constructs).
- *   - Bold/italic markers stripped; '- x' becomes '• x'; table rows flattened.
  */
-const fs = require("path") && require("fs");
+const fs = require("fs");
 const path = require("path");
 
-const MANUSCRIPT =
-  "C:\\Users\\Michael Andrew Jones\\.claude\\projects\\C--Users-Michael-Andrew-Jones--claude\\knowledge\\What_Happened_To_Our_Veterans_FULL_MANUSCRIPT.md";
+const BOOK_DATA =
+  "C:/Users/Michael Andrew Jones/OneDrive/Desktop/What Happened to Our Veterans - Website/book-data.json";
 const OUT = path.join(__dirname, "..", "src", "content", "book.ts");
 
-const BOOK_TITLE = "What Happened to Our Veterans";
-const BOOK_SUBTITLE = "The Biological Cascade and the Price of Service";
-const BOOK_AUTHOR = "Michael Andrew Feller Jones";
+const src = JSON.parse(fs.readFileSync(BOOK_DATA, "utf8"));
 
-// Front-matter sections that are not chapters. See header note.
-const FRONT_MATTER_SKIP = new Set(["contents", "foreword"]);
+const BOOK_TITLE = src.title;
+const BOOK_SUBTITLE = src.subtitle;
+const BOOK_AUTHOR = src.author;
 
-const slugify = (title) =>
-  title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+// Take only the fields this app renders, in a fixed order, so an upstream field
+// addition cannot silently bloat the bundle or leak an editorial-only flag into
+// the client. Anything new upstream must be added here deliberately.
+const chapters = src.chapters.map((c) => ({
+  slug: c.slug,
+  number: c.number,
+  title: c.title,
+  paragraphs: c.paragraphs.map((p) => ({ type: p.type, text: p.text })),
+}));
 
-const titleize = (raw) => raw.replace(/:/g, "").trim();
-
-/** Convert one manuscript line to display text, or null to drop it. */
-function clean(line) {
-  let t = line.trim();
-  if (!t) return null;
-  if (/^@@FIG:/.test(t)) return null;
-  if (t === "---") return null;
-
-  if (/^\|/.test(t)) {
-    if (/^\|[\s:\-|]+\|?\s*$/.test(t)) return null; // separator row
-    t = t
-      .replace(/^\|/, "")
-      .replace(/\|$/, "")
-      .split("|")
-      .map((c) => c.trim())
-      .join("  |  ");
-  } else {
-    t = t.replace(/^>\s?/, "");
-    t = t.replace(/^[-*]\s+/, "• ");
-  }
-
-  t = t.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*([^*]+?)\*/g, "$1");
-  return t.trim() || null;
+// Fail loudly rather than write a book that cannot be gated or linked.
+const problems = [];
+const seen = new Set();
+chapters.forEach((c, i) => {
+  if (c.number !== i + 1) problems.push(`chapter ${i + 1} carries number ${c.number}`);
+  if (!/^\d+-.+/.test(c.slug)) problems.push(`slug "${c.slug}" is not "NN-title"`);
+  if (seen.has(c.slug)) problems.push(`duplicate slug "${c.slug}"`);
+  seen.add(c.slug);
+  if (!c.paragraphs.length) problems.push(`"${c.slug}" has no paragraphs`);
+});
+if (problems.length) {
+  console.error("*** REFUSING TO WRITE book.ts ***");
+  problems.forEach((p) => console.error("   " + p));
+  process.exit(1);
 }
-
-function parse(lines) {
-  const chapters = [];
-  let cur = null;
-  let inFrontMatter = false;
-
-  // Skip the title page: everything through the first standalone '---'.
-  let i = 0;
-  while (i < lines.length && lines[i].trim() !== "---") i++;
-  i++;
-
-  const push = (rawTitle) => {
-    const title = titleize(rawTitle);
-    cur = { title, paragraphs: [] };
-    chapters.push(cur);
-  };
-
-  for (; i < lines.length; i++) {
-    const t = lines[i].trim();
-    if (!t) continue;
-
-    // Part divider: '# Part X' + immediate '# Subtitle'
-    if (/^#\s+Part\s+/i.test(t) && (lines[i + 1] || "").trim().match(/^#\s+/)) {
-      i++;
-      continue;
-    }
-
-    const h1 = t.match(/^#\s+(.+)$/);
-    if (h1) {
-      if (/^front matter$/i.test(h1[1].trim())) {
-        inFrontMatter = true;
-        cur = null;
-      } else {
-        inFrontMatter = false;
-        push(h1[1]);
-      }
-      continue;
-    }
-
-    const h2 = t.match(/^##\s+(.+)$/);
-    if (h2 && inFrontMatter) {
-      const name = titleize(h2[1]);
-      if (FRONT_MATTER_SKIP.has(name.toLowerCase())) {
-        cur = null; // drop this section's body too
-      } else {
-        push(h2[1]);
-      }
-      continue;
-    }
-
-    if (!cur) continue; // inside a skipped section
-
-    const hx = t.match(/^#{2,6}\s+(.+)$/);
-    if (hx) {
-      const text = clean(hx[1]);
-      if (text) cur.paragraphs.push({ type: "h", text });
-      continue;
-    }
-
-    const text = clean(t);
-    if (text) cur.paragraphs.push({ type: "p", text });
-  }
-
-  return chapters.map((c, idx) => ({
-    slug: String(idx + 1).padStart(2, "0") + "-" + slugify(c.title),
-    number: idx + 1,
-    title: c.title,
-    paragraphs: c.paragraphs,
-  }));
-}
-
-const raw = fs.readFileSync(MANUSCRIPT, "utf8");
-const chapters = parse(raw.split(/\r?\n/));
 
 if (process.argv.includes("--check")) {
   console.log(`${chapters.length} chapters\n`);
@@ -158,9 +87,9 @@ if (process.argv.includes("--check")) {
   process.exit(0);
 }
 
-const header = `// AUTO-GENERATED from the manuscript — do not edit by hand.
+const header = `// AUTO-GENERATED from book-data.json — do not edit by hand.
 // Regenerate:  node scripts/genbook.cjs
-// Verify:      node scripts/genbook.cjs --check   (confirm heavyChapters keys still resolve)
+// Verify:      node scripts/verify-gating.cjs   (confirm heavyChapters keys still resolve)
 
 export type BookParagraph = { type: string; text: string };
 export type BookChapter = { slug: string; number: number; title: string; paragraphs: BookParagraph[] };

@@ -29,8 +29,13 @@ const chapters = JSON.parse(
 const base = (slug) => slug.replace(/^\d+-/, "");
 const byKey = new Map(chapters.map((c) => [base(c.slug), c]));
 
-// Strip line comments so prose like "100+ 'suicide' mentions" isn't read as a key.
-const code = gateSrc.replace(/^\s*\/\/.*$/gm, "");
+// Strip comments so prose in them is never read as a key. This must cover
+// TRAILING comments too, not just whole-line ones: on 2026-09-23 a trailing
+// // exclusion; "not being here at all"
+// beside a real key was picked up as a fourteenth key and reported as a broken
+// gate. A verifier that cries wolf gets ignored, which is how a real broken gate
+// ships. The (?<!:) guard keeps a "https://..." inside a string intact.
+const code = gateSrc.replace(/^\s*\/\/.*$/gm, "").replace(/(?<!:)\/\/.*$/gm, "");
 
 function setKeys(name) {
   const re = new RegExp(name + "\\s*=\\s*new Set<string>\\(\\[([\\s\\S]*?)\\]\\)");
