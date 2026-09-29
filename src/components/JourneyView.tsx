@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { ServiceRibbon } from "./Patriotic";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 import { EXPOSURE_LABEL, CONDITION_EXPOSURES, connectedConditionLabels } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
 import { recordProgress, conditionNextAction, VA_FORMS, FILE_ONLINE_URL } from "@/lib/nextaction";
@@ -369,7 +370,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                         <Link href="/account" className="font-semibold text-brand hover:underline">Account</Link>.
                       </p>
                     )}
-                    {f.chapterSlug && (
+                    {BOOK_PUBLIC && f.chapterSlug && (
                       <Link
                         href={`/book/${f.chapterSlug}`}
                         className="mt-1.5 inline-block text-[12px] font-semibold text-brand hover:underline"

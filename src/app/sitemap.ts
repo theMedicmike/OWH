@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { TOXICANTS, ORGANS } from "@/lib/toxlibrary";
 import { BOOK_CHAPTERS } from "@/content/book";
 import { SITE_URL } from "@/lib/site";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 
 // SITE_URL now lives in src/lib/site.ts — it was hardcoded here AND in
 // layout.tsx, robots.ts and challengeCoin.ts, and they all kept the old address
@@ -33,7 +34,7 @@ const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: Freq }[]
   { path: "/presumptives", priority: 0.9, changeFrequency: "monthly" },
   { path: "/cp-exam", priority: 0.8, changeFrequency: "monthly" },
   { path: "/solutions", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/book", priority: 0.8, changeFrequency: "monthly" },
+  ...(BOOK_PUBLIC ? [{ path: "/book", priority: 0.8, changeFrequency: "monthly" as Freq }] : []),
   { path: "/vso", priority: 0.8, changeFrequency: "weekly" },
   { path: "/learn/timeline", priority: 0.7, changeFrequency: "monthly" },
   { path: "/learn/women-veterans", priority: 0.7, changeFrequency: "monthly" },
@@ -59,7 +60,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const generated: { path: string; priority: number; changeFrequency: Freq }[] = [
     ...TOXICANTS.map((t) => ({ path: `/learn/${t.slug}`, priority: 0.7, changeFrequency: "monthly" as Freq })),
     ...ORGANS.map((o) => ({ path: `/learn/organ/${o.slug}`, priority: 0.6, changeFrequency: "monthly" as Freq })),
-    ...BOOK_CHAPTERS.map((c) => ({ path: `/book/${c.slug}`, priority: 0.6, changeFrequency: "yearly" as Freq })),
+    ...(BOOK_PUBLIC ? BOOK_CHAPTERS.map((c) => ({ path: `/book/${c.slug}`, priority: 0.6, changeFrequency: "yearly" as Freq })) : []),
   ];
 
   return [...PUBLIC_ROUTES, ...generated].map((r) => ({

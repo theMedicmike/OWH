@@ -3,10 +3,11 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_AUTHOR, type BookChapter } from "@/content/book";
 import ReaderClient from "@/components/ReaderClient";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 import { isHeavy, isMemoriamOnly, canShareChapter } from "@/content/heavyChapters";
 
 export function generateStaticParams() {
-  return BOOK_CHAPTERS.map((c) => ({ slug: c.slug }));
+  return BOOK_PUBLIC ? BOOK_CHAPTERS.map((c) => ({ slug: c.slug })) : [];
 }
 
 // CHAPTER NUMBERS DRIFT; TITLES DO NOT. Every chapter URL carries its ordinal
@@ -79,6 +80,7 @@ function chapterDescription(chapter: BookChapter): string {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  if (!BOOK_PUBLIC) return { title: BOOK_TITLE, robots: { index: false, follow: false } };
   const { slug } = await params;
   const chapter = BOOK_CHAPTERS.find((c) => c.slug === slug) ?? canonicalFor(slug);
   if (!chapter) return { title: BOOK_TITLE };
@@ -90,6 +92,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function ChapterPage({ params }: { params: Promise<{ slug: string }> }) {
+  if (!BOOK_PUBLIC) notFound();
   const { slug } = await params;
   const idx = BOOK_CHAPTERS.findIndex((c) => c.slug === slug);
   if (idx === -1) {

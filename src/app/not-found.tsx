@@ -15,10 +15,12 @@ export const metadata = {
   robots: { index: false, follow: true },
 };
 
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
+
 const LINKS: { href: string; label: string; blurb: string }[] = [
   { href: "/learn", label: "Exposure library", blurb: "What your service may have exposed you to, and what the government already links to it." },
   { href: "/presumptives", label: "What VA presumes", blurb: "The published lists, by where and when you served." },
-  { href: "/book", label: "Read the book", blurb: "What Happened to Our Veterans — free, all chapters." },
+  ...(BOOK_PUBLIC ? [{ href: "/book", label: "Read the book", blurb: "What Happened to Our Veterans — free, all chapters." }] : []),
   { href: "/vso", label: "Find a VSO", blurb: "Free, accredited help near you, from VA's own list." },
   { href: "/", label: "Start your free record", blurb: "Where you served, what happened, what it cost you." },
 ];

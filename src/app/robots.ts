@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 
 // ROBOTS — keep crawlers out of anything personal, and out of anything that
 // would only ever serve them a login screen.
@@ -51,6 +52,8 @@ export default function robots(): MetadataRoute.Robots {
           "/buddies",
           // Tokenised witness links — never crawl someone else's statement.
           "/statement/",
+          // The book is private until everyone in it approves (see bookVisibility.ts).
+          ...(BOOK_PUBLIC ? [] : ["/book"]),
         ],
       },
     ],

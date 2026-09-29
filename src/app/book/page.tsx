@@ -1,15 +1,19 @@
 import AppShell from "@/components/AppShell";
 import Link from "next/link";
 import { ServiceRibbon } from "@/components/Patriotic";
+import { notFound } from "next/navigation";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_SUBTITLE, BOOK_AUTHOR } from "@/content/book";
 
 export const metadata = {
   title: BOOK_TITLE,
   description: `${BOOK_SUBTITLE}. ${BOOK_AUTHOR}'s book on what service costs the body — all ${BOOK_CHAPTERS.length} chapters free to read, no sign-in, nothing for sale.`,
   alternates: { canonical: "/book" },
+  ...(BOOK_PUBLIC ? {} : { robots: { index: false, follow: false } }),
 };
 
 export default function BookPage() {
+  if (!BOOK_PUBLIC) notFound();
   return (
     <AppShell title="The Book" publicPage>
       <div className="mx-auto max-w-2xl">

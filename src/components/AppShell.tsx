@@ -7,6 +7,7 @@ import { useAuth } from "./AuthProvider";
 import { ServiceRibbon, StarRow } from "./Patriotic";
 import { TextSizeControl } from "./TextSize";
 import OpsecGate from "./OpsecGate";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 
 type NavItem = { href: string; label: string; d: string; step?: number };
 type NavSection = { title?: string; tag?: string; items: NavItem[] };
@@ -97,7 +98,7 @@ const SECTIONS: NavSection[] = [
     items: [
       { href: "/learn",     label: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
       { href: "/solutions", label: "Whole health",     d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
-      { href: "/book",      label: "Read the book",    d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" },
+      ...(BOOK_PUBLIC ? [{ href: "/book",      label: "Read the book",    d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" }] : []),
     ],
   },
   {
@@ -166,7 +167,7 @@ const PUBLIC_SECTIONS: NavSection[] = [
       { href: "/presumptives", label: "What VA presumes", d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
       { href: "/solutions", label: "Whole health", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
       { href: "/cp-exam", label: "Your C&P exam", d: "M9 11l2 2 4-4M5 4h14a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" },
-      { href: "/book", label: "Read the book", d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" },
+      ...(BOOK_PUBLIC ? [{ href: "/book", label: "Read the book", d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" }] : []),
       { href: "/vso", label: "Find a VSO", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
     ],
   },
