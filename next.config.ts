@@ -29,7 +29,95 @@ function bookRedirects(): { source: string; destination: string; permanent: bool
 // and Google Fonts -- and a CSP that half-works silently breaks the map
 // instead of failing loudly. These five cost nothing and break nothing; the
 // CSP is its own job, done with the preview open beside it.
+// ---------------------------------------------------------------- THE CSP
+//
+// Every host below was enumerated from the running app, not guessed, because a
+// CSP that is merely plausible breaks things quietly. What the browser actually
+// talks to at runtime:
+//
+//   Supabase      REST, auth and storage. Also the SIGNED URLs that the DD-214
+//                 preview and the document list open.
+//   openfreemap   the map's style, tiles, sprites AND glyph fonts -- all four
+//                 are on tiles.openfreemap.org, confirmed by reading the
+//                 liberty style JSON rather than assuming.
+//   Vercel        Analytics and Speed Insights. They normally load same-origin
+//                 from /_vercel/..., but va.vercel-scripts.com is compiled into
+//                 the bundle as the fallback, so it has to be allowed or
+//                 analytics dies silently on the fallback path.
+//
+// Everything else in the codebase that looks like an external host -- va.gov,
+// dailymed, the FDA, the crisis line -- is a LINK, and CSP does not govern
+// navigation. openFDA is fetched by a server component, so it never touches a
+// browser's CSP either.
+//
+// WHY object-src IS NOT 'none'. Every guide says to set it to 'none'. Doing so
+// here would break the DD-214 preview: DD214Assist renders the veteran's own
+// uploaded discharge paper with <object data={signedUrl} type="application/pdf">.
+// A man uploads his DD-214 and gets an empty grey box. frame-src carries the
+// same allowance because browsers disagree about which directive governs a PDF
+// in an <object>.
+//
+// WHY script-src KEEPS 'unsafe-inline'. Next's App Router injects inline
+// hydration scripts on every page. The alternative is a per-request nonce from
+// middleware, which forces all 122 prerendered pages to render dynamically and
+// gives up the edge caching the public education layer runs on. That is a real
+// cost for a small gain in an app with no HTML-injection surface: one
+// dangerouslySetInnerHTML, fed by a typed object literal, and no eval, no
+// Function, no innerHTML anywhere.
+//
+// So the value of this policy is NOT XSS. It is connect-src: if a dependency in
+// this tree were ever compromised, it could not post a veteran's service
+// history to an attacker's server, because the browser would refuse to open the
+// connection. For an app holding this data that is the control worth having.
+const SUPABASE_ORIGIN = (() => {
+  // Read from the env rather than hardcoded, so the policy cannot rot if the
+  // project ever moves. Build-time only -- this never reaches the browser.
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").origin;
+  } catch {
+    return "";
+  }
+})();
+const SUPABASE_WS = SUPABASE_ORIGIN.replace(/^https:/, "wss:");
+const MAP = "https://tiles.openfreemap.org";
+const VERCEL = "https://va.vercel-scripts.com";
+
+const CSP = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  `script-src 'self' 'unsafe-inline' ${VERCEL}`,
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: ${MAP} ${SUPABASE_ORIGIN}`,
+  "font-src 'self' data:",
+  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} ${MAP} ${VERCEL}`,
+  // MapLibre does its tile work in a web worker created from a blob.
+  "worker-src 'self' blob:",
+  "child-src 'self' blob:",
+  `object-src 'self' ${SUPABASE_ORIGIN}`,
+  `frame-src 'self' ${SUPABASE_ORIGIN}`,
+  "manifest-src 'self'",
+  "upgrade-insecure-requests",
+].join("; ");
+
+// REPORT-ONLY UNTIL THE SIGNED-IN PAGES HAVE BEEN WALKED.
+//
+// The public pages were checked directly. The map, the DD-214 preview and
+// Medic Mike are all behind the auth wall and could not be, and those are
+// precisely the three screens that load everything external. Report-Only means
+// the browser logs violations and blocks nothing, so a mistake here costs a
+// console message instead of a veteran's map.
+//
+// TO ENFORCE: sign in, open /map and /account, confirm the console is clean,
+// then flip this to true. One word, and it is the last step of audit finding #9.
+const CSP_ENFORCE = false;
+
 const SECURITY_HEADERS = [
+  {
+    key: CSP_ENFORCE ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only",
+    value: CSP,
+  },
   // Nothing in this app is ever framed by anything, including by itself.
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
