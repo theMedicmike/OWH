@@ -56,14 +56,16 @@ export default function VesselsPage() {
           </p>
           <p className="mt-3 text-sm leading-relaxed text-ink">
             <a
-              href="https://www.publichealth.va.gov/exposures/agentorange/shiplist/index.asp"
+              href="https://www.benefits.va.gov/compensation/claims-postservice-agent_orange.asp"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-brand underline"
             >
               Check VA&apos;s own ship list →
             </a>{" "}
-            then take the answer, and this record, to an accredited VSO. Their help is free.
+            — VA publishes it as a document on that page, under eligibility for service in
+            Vietnam. Then take the answer, and this record, to an accredited VSO. Their help
+            is free.
           </p>
         </div>
 

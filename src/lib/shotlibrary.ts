@@ -296,7 +296,7 @@ export const SHOTS: Shot[] = [
     policyContext: "Prescribed weekly for malaria prevention to personnel deploying to malaria-endemic regions where other antimalarials weren't suitable.",
     labelVerbatim:
       "Mefloquine hydrochloride tablets contain mefloquine hydrochloride, a 4-quinolinemethanol derivative, for oral use.",
-    labelSource: { product: "Mefloquine hydrochloride", manufacturer: "Multiple (generic; originally Lariam, Roche)", setId: "See current FDA-approved prescribing information", url: "https://www.accessdata.fda.gov/drugsatfda_docs/label/2013/019591s024s025lbl.pdf", retrieved: RETRIEVED },
+    labelSource: { product: "Mefloquine hydrochloride", manufacturer: "Multiple (generic; originally Lariam, Roche)", setId: "09716a24-d7da-42b2-af29-c03a1b6670bd", url: "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=09716a24-d7da-42b2-af29-c03a1b6670bd", retrieved: RETRIEVED },
     labelWarning:
       "FDA issued a boxed warning on 29 July 2013: neurologic and psychiatric side effects can occur with mefloquine use and may persist or become permanent after the drug is stopped. If you took it, record when — a clinician taking your history should know what you were prescribed.",
   },
