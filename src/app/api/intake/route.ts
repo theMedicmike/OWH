@@ -23,6 +23,11 @@ If the conversation touches something heavy, be gentle and remind them support i
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+// This prompt is ~520 tokens, under Sonnet 4.6's 1,024-token caching minimum,
+// so unlike the medic route it cannot be cached at all. History is the only
+// lever here, which is why the window is this tight.
+const TURNS = 10;
+
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error("[api/intake] ANTHROPIC_API_KEY is not set");
@@ -55,8 +60,14 @@ export async function POST(req: Request) {
     const crisis = lastUser ? medicMikeCrisisCheck(lastUser.content) : null;
     if (crisis) return Response.json({ text: crisis });
 
-    const total = messages.reduce((n, m) => n + (m.content?.length ?? 0), 0);
-    if (messages.some((m) => (m.content?.length ?? 0) > 4_000) || total > 24_000) {
+    // Same ordering fix as the medic route: take the window, THEN measure it.
+    // Checking the whole conversation meant the total bound before the slice
+    // did, so narrowing the window saved nothing -- and a veteran deep into a
+    // long intake got "that's a lot at once" for a two-word answer, because the
+    // ceiling was counting everything he had already told us.
+    const recent = messages.slice(-TURNS);
+    const total = recent.reduce((n, m) => n + (m.content?.length ?? 0), 0);
+    if (recent.some((m) => (m.content?.length ?? 0) > 4_000) || total > 24_000) {
       return Response.json({ text: "That's a lot at once — send me the short version." }, { status: 413 });
     }
 
@@ -65,13 +76,7 @@ export async function POST(req: Request) {
       model: "claude-sonnet-4-6",
       max_tokens: 700,
       system: SYSTEM_PROMPT,
-      // Was sending the ENTIRE history every turn, so a long intake cost
-      // quadratically more with each message. Bounded at 10 turns rather than
-      // 20: this prompt is ~520 tokens, under Sonnet 4.6's 1,024-token minimum,
-      // so it CANNOT be cached the way the medic route's is -- which leaves the
-      // history as the only lever here. Ten turns is still plenty of context for
-      // an intake that moves one place and one year at a time.
-      messages: messages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
+      messages: recent.map((m) => ({ role: m.role, content: m.content })),
     });
     const text = msg.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")

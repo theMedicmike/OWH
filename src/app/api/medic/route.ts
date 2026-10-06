@@ -15,6 +15,11 @@ type Msg = { role: "user" | "assistant"; content: string };
 // nonprofit's card. A veteran never types 8,000 characters at Mike in one go.
 const MAX_MESSAGE_CHARS = 4_000;
 const MAX_TOTAL_CHARS = 24_000;
+// How many turns of history actually reach the model. Ten is plenty for a
+// conversation that moves one question at a time, and it is the only lever on
+// cost that the prompt cache does not already pull -- the cached system prompt
+// is a tenth price per request, but history is billed in full every time.
+const TURNS = 10;
 
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -58,8 +63,22 @@ export async function POST(req: Request) {
     const crisis = lastUser ? medicMikeCrisisCheck(lastUser.content) : null;
     if (crisis) return Response.json({ text: crisis });
 
-    const oversize = messages.some((m) => (m.content?.length ?? 0) > MAX_MESSAGE_CHARS);
-    const total = messages.reduce((n, m) => n + (m.content?.length ?? 0), 0);
+    // THE WINDOW IS TAKEN FIRST, THEN CHECKED. The order used to be the other
+    // way round, and it made both caps lie:
+    //
+    //   1. MAX_TOTAL_CHARS was measured across the WHOLE conversation while only
+    //      the tail was ever sent, so the cap bound before the slice did and
+    //      narrowing the window saved nothing at all.
+    //   2. Worse for the veteran: a long but entirely reasonable conversation
+    //      accumulated past 24,000 characters and he got "that's a lot at once"
+    //      mid-sentence, for a message that was two words. The ceiling was
+    //      counting things he had said twenty minutes earlier.
+    //
+    // Measured against what is actually forwarded, both caps now mean what they
+    // say, and a conversation can run as long as he needs it to.
+    const recent = messages.slice(-TURNS);
+    const oversize = recent.some((m) => (m.content?.length ?? 0) > MAX_MESSAGE_CHARS);
+    const total = recent.reduce((n, m) => n + (m.content?.length ?? 0), 0);
     if (oversize || total > MAX_TOTAL_CHARS) {
       return Response.json({ text: "That's a lot at once — send me the short version and we'll work from there." }, { status: 413 });
     }
@@ -95,8 +114,7 @@ export async function POST(req: Request) {
       // date or anything per-veteran into it, caching stops silently and the
       // bill goes back up with no error. The check below is the alarm for that.
       system: [{ type: "text", text: MEDIC_MIKE_SYSTEM, cache_control: { type: "ephemeral" } }],
-      // Keep only the last 20 turns to stay fast and bounded.
-      messages: messages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
+      messages: recent.map((m) => ({ role: m.role, content: m.content })),
     });
 
     // If a request neither wrote nor read the cache, the prefix has drifted and
