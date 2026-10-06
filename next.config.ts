@@ -101,17 +101,25 @@ const CSP = [
   "upgrade-insecure-requests",
 ].join("; ");
 
-// REPORT-ONLY UNTIL THE SIGNED-IN PAGES HAVE BEEN WALKED.
+// ENFORCING since 2026-10-05.
 //
-// The public pages were checked directly. The map, the DD-214 preview and
-// Medic Mike are all behind the auth wall and could not be, and those are
-// precisely the three screens that load everything external. Report-Only means
-// the browser logs violations and blocks nothing, so a mistake here costs a
-// console message instead of a veteran's map.
+// It shipped Report-Only first, deliberately. The public pages were walked in a
+// real browser -- /, /vso with a live ZIP search, /learn, /presumptives,
+// /cp-exam -- and reported zero violations. The three screens that load
+// everything external sit behind the auth wall and could not be checked that
+// way: /map (MapLibre's workers, tiles, sprites and glyphs), /account (the
+// DD-214 preview's <object>), and /mike. Michael walked all three signed in and
+// confirmed a clean console on 2026-10-05, so this went to enforcing.
 //
-// TO ENFORCE: sign in, open /map and /account, confirm the console is clean,
-// then flip this to true. One word, and it is the last step of audit finding #9.
-const CSP_ENFORCE = false;
+// IF YOU ADD AN EXTERNAL RESOURCE, IT WILL BE BLOCKED until you add its host
+// above -- silently, from the browser's point of view, with only a console
+// error. Check the console on the page you changed. The most likely future
+// casualties are a new map style host, an embedded video, or a font loaded at
+// runtime instead of through next/font.
+//
+// To debug a suspected CSP break, set this back to false, reproduce, read the
+// violations, add the host, and set it true again.
+const CSP_ENFORCE = true;
 
 const SECURITY_HEADERS = [
   {
