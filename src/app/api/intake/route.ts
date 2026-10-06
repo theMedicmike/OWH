@@ -66,8 +66,12 @@ export async function POST(req: Request) {
       max_tokens: 700,
       system: SYSTEM_PROMPT,
       // Was sending the ENTIRE history every turn, so a long intake cost
-      // quadratically more with each message. Bounded like the medic route.
-      messages: messages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
+      // quadratically more with each message. Bounded at 10 turns rather than
+      // 20: this prompt is ~520 tokens, under Sonnet 4.6's 1,024-token minimum,
+      // so it CANNOT be cached the way the medic route's is -- which leaves the
+      // history as the only lever here. Ten turns is still plenty of context for
+      // an intake that moves one place and one year at a time.
+      messages: messages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
     });
     const text = msg.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")

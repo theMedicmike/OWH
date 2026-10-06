@@ -75,10 +75,37 @@ export async function POST(req: Request) {
     const msg = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 500,
-      system: MEDIC_MIKE_SYSTEM,
+      // PROMPT CACHING, and why the prompt is long on purpose.
+      //
+      // MEDIC_MIKE_SYSTEM is ~2,500 tokens and was re-sent at full price on
+      // every request, which made it the largest single line item in this app's
+      // model spend -- bigger than anything a veteran actually types. Cached, a
+      // read costs a tenth of that, and the cache is keyed on the prefix rather
+      // than the person, so every veteran talking to Mike at the same time hits
+      // the same warm cache.
+      //
+      // DO NOT SHORTEN THE PROMPT TO SAVE MONEY. Sonnet 4.6 will not cache a
+      // prefix under 1,024 tokens, so trimming it below roughly 4,000 characters
+      // makes every request MORE expensive, not less -- while also cutting into
+      // the HARD LINES section, which is the part that stops Mike giving a dose
+      // figure or telling a veteran what to claim.
+      //
+      // A cache hit needs a byte-identical prefix. MEDIC_MIKE_SYSTEM is a
+      // constant, so this holds -- but the day anyone interpolates a name, a
+      // date or anything per-veteran into it, caching stops silently and the
+      // bill goes back up with no error. The check below is the alarm for that.
+      system: [{ type: "text", text: MEDIC_MIKE_SYSTEM, cache_control: { type: "ephemeral" } }],
       // Keep only the last 20 turns to stay fast and bounded.
       messages: messages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
     });
+
+    // If a request neither wrote nor read the cache, the prefix has drifted and
+    // we are paying full price on every call again. Logged, not thrown: a
+    // veteran mid-sentence must not be interrupted by a billing concern.
+    const u = msg.usage as { cache_creation_input_tokens?: number; cache_read_input_tokens?: number };
+    if (!u?.cache_creation_input_tokens && !u?.cache_read_input_tokens) {
+      console.warn("[api/medic] prompt cache MISS on both paths - has the system prompt stopped being constant?");
+    }
     const raw = msg.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
       .map((b) => b.text)
