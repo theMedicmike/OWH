@@ -1,19 +1,38 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { isMissingTableError } from "./supabaseErrors";
+import profiles from "@/data/place-profiles.json";
 
-// The ONE file allowed to query `place_profiles` — same query isolation the
-// vessels, shots and medications tables have.
+// THE PLACE PROFILES — short histories of the installations veterans served at,
+// shown in the "background on this place" panel.
 //
-// What this holds: short historical profiles of places veterans served, shown
-// in the "background on this place" panel. It is public reference text, not
-// anybody's record. Nothing here is keyed to a member, and nothing here may
-// ever be.
+// Static reference data, exactly like the gazetteer and the VSO directory
+// (src/data/vso-directory.json, 1.4 MB, imported the same way). It lives in the
+// repo, it ships with the build, and it is server-side only: the one route that
+// reads it is /api/base-info, so none of this crosses the wire to a browser
+// except the single profile a veteran asked for.
 //
-// What this module deliberately does NOT export: any write path. The table is
-// read-only to every client including the route handlers, because this app
-// carries no service-role key and a server write would therefore be a client
-// write too. Rows arrive as a reviewed seed migration. See 0033 for the full
-// reasoning before adding anything here.
+// WHY THIS IS A FILE AND NOT A TABLE. It was briefly a table (migration 0033,
+// dropped in 0036). Two reasons it moved:
+//
+//   1. The table could take no writes from anyone — correctly, because this app
+//      holds no service-role key, so any policy letting a route write shared
+//      text would let any signed-in veteran write it too. That made the table
+//      seed-only, which is to say: static data, in a database, for no reason.
+//   2. Getting the rows IN was the tell. A seed migration means the prose has to
+//      be transcribed into SQL by whatever is doing the applying. For 361
+//      hand-written historical profiles that is a corruption risk with no
+//      upside — one drifted word in a paragraph a veteran will believe and
+//      repeat. As a file the bytes are never retyped, and `git diff` shows
+//      precisely what changed.
+//
+// WHAT THIS IS NOT: a claim, a rating, an exposure finding, or anything keyed to
+// a member. It is place history only — the system prompt that writes it forbids
+// health, exposure and VA-claim content on purpose, so that a profile can never
+// become an argument about somebody's service connection.
+//
+// Regenerate with: node scripts/build-place-profiles.cjs
+// Review with:     node scripts/qa-place-profiles.cjs
+
+type Entry = { n: string; p: string };
+const PLACES = (profiles as { places: Record<string, Entry> }).places;
 
 export type PlaceProfile = { display_name: string; profile: string };
 
@@ -24,13 +43,12 @@ export function placeKey(name: string): string {
 
 /** Keys to try, in order. IntakeFormView stores place_name as "Name, Region"
  *  when the name does not already contain the region, so the same installation
- *  arrives as either form depending on how it was logged.
+ *  arrives in either form depending on how it was logged.
  *
- *  Resolved at READ time rather than by seeding both spellings. Seeding both
- *  meant generating two separate profiles for one place, which cost twice as
- *  much and — worse — produced two different texts, so what a veteran read
- *  depended on which spelling his check-in happened to carry. One place, one
- *  profile. */
+ *  Resolved at READ time rather than by storing both spellings. Storing both
+ *  meant generating two separate profiles for one place — twice the cost, and
+ *  two DIFFERENT texts, so what a veteran read depended on which spelling his
+ *  check-in happened to carry. One place, one profile. */
 export function placeKeyCandidates(name: string): string[] {
   const exact = placeKey(name);
   const out = [exact];
@@ -42,34 +60,17 @@ export function placeKeyCandidates(name: string): string[] {
   return out;
 }
 
-/** Reviewed profile for this place, or null. Never throws: a missing table or a
- *  database hiccup must degrade to the live model call, never to an error in
- *  front of a veteran who only wanted to read about where he served. */
-export async function lookupPlaceProfile(
-  supabase: SupabaseClient,
-  name: string,
-): Promise<PlaceProfile | null> {
-  const keys = placeKeyCandidates(name).filter(Boolean);
-  if (!keys.length) return null;
-  try {
-    // One round trip for both spellings. Ordered by key length descending so the
-    // more specific "name, region" form wins when both happen to exist.
-    const { data, error } = await supabase
-      .from("place_profiles")
-      .select("display_name, profile, name_key")
-      .in("name_key", keys)
-      .order("name_key", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    // isMissingTableError covers the window between deploying this code and
-    // applying 0033 — the same defensive read the vessels page uses.
-    if (error) return null;
-    return (data as PlaceProfile | null) ?? null;
-  } catch {
-    return null;
+/** The stored profile for this place, or null if we have none — in which case
+ *  the caller falls through to the live model call, exactly as before. This is
+ *  an optimisation and a quality control, never a gate: a place we have not
+ *  written about still gets an answer. */
+export function lookupPlaceProfile(name: string): PlaceProfile | null {
+  for (const key of placeKeyCandidates(name)) {
+    const hit = PLACES[key];
+    if (hit) return { display_name: hit.n, profile: hit.p };
   }
+  return null;
 }
 
-// Re-exported so a caller that wants to distinguish "not set up yet" from
-// "no row for this place" can, without reaching for supabaseErrors itself.
-export { isMissingTableError };
+/** How many we hold. Used by the tests and worth having in a log line. */
+export const PLACE_PROFILE_COUNT = Object.keys(PLACES).length;

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   // and with the cap now at 10/min, a man with a dozen postings would have hit
   // it reading free content. The limiter exists to protect the MODEL budget, so
   // it guards the model call and nothing else.
-  const cached = await lookupPlaceProfile(supabase, name);
+  const cached = lookupPlaceProfile(name);
   if (cached) return Response.json({ text: cached.profile });
 
   if (!rateLimit(`base-info:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {

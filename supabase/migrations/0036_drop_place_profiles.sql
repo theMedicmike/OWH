@@ -1,0 +1,28 @@
+-- 0036 — drop place_profiles. The data moved to src/data/place-profiles.json.
+--
+-- 0033 created this table three hours earlier, so this is a correction, and the
+-- reasoning is worth keeping because the mistake is an easy one to repeat.
+--
+-- The table was right about the security question and wrong about the storage
+-- one. It took no writes from anyone — correctly, because this app holds no
+-- service-role key, so any policy letting a route write shared text would let
+-- any signed-in veteran write it too. But a table that accepts no writes and is
+-- populated only by seed migration is not a database table doing database work.
+-- It is static reference data, in a database, for no reason — and this repo
+-- already has the right home for that: src/data/vso-directory.json, 1.4 MB of
+-- accredited-representative data imported straight into the module that reads
+-- it, same as the gazetteer.
+--
+-- The tell was getting the rows IN. A seed migration means 361 historical
+-- profiles have to be transcribed into SQL by whatever applies it, and these are
+-- paragraphs a veteran will read, believe and repeat about the place he served.
+-- Retyping them anywhere is a corruption risk with no upside. As a file the
+-- bytes are copied, never retyped, and `git diff` shows exactly what changed
+-- when somebody edits one.
+--
+-- Nothing is lost. /api/base-info reads the file, falls through to the live
+-- model call for any place not in it, and a profile found to be wrong is now
+-- removed by deleting its entry and deploying — about two minutes — rather than
+-- by an UPDATE nobody can see in review.
+
+drop table if exists place_profiles;
