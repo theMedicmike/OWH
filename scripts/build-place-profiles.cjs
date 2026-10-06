@@ -99,18 +99,34 @@ const q = (s) => "'" + String(s).replace(/'/g, "''") + "'";
 
   const key = apiKey();
   let failed = 0;
-  for (let i = 0; i < todo.length; i++) {
-    const t = todo[i];
-    try {
-      done[t.key] = { display: t.display, profile: await profileFor(key, t.display) };
-      console.log(`  ${i + 1}/${todo.length}  ${t.display}`);
-    } catch (e) {
-      failed++;
-      console.log(`  ${i + 1}/${todo.length}  FAILED ${t.display}: ${e.message}`);
+  let n = 0;
+
+  // A small worker pool. Serially this is a ~40 minute run for the full
+  // gazetteer, which is long enough that nobody does it; four at a time brings
+  // it under ten. Deliberately modest -- this is one nonprofit's API key, and
+  // burying it in a burst to save five minutes is a poor trade.
+  const CONCURRENCY = Number(args.includes("--concurrency")
+    ? args[args.indexOf("--concurrency") + 1] : 4);
+
+  const queue = [...todo];
+  async function worker() {
+    for (;;) {
+      const t = queue.shift();
+      if (!t) return;
+      const i = ++n;
+      try {
+        done[t.key] = { display: t.display, profile: await profileFor(key, t.display) };
+        console.log(`  ${i}/${todo.length}  ${t.display}`);
+      } catch (e) {
+        failed++;
+        console.log(`  ${i}/${todo.length}  FAILED ${t.display}: ${e.message}`);
+      }
+      // Written after every completion, so an interrupted run loses at most the
+      // handful currently in flight -- and --resume picks up exactly there.
+      fs.writeFileSync(STATE, JSON.stringify(done, null, 1));
     }
-    // Written every time, so an interrupted run loses at most one place.
-    fs.writeFileSync(STATE, JSON.stringify(done, null, 1));
   }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, worker));
 
   const rows = Object.entries(done).filter(([, v]) => v.profile);
   if (!rows.length) return console.log("nothing to write");
