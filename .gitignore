@@ -42,3 +42,4 @@ next-env.d.ts
 
 # keep the env template tracked
 !.env.example
+.place-profiles-cache.json
