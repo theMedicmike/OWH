@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth?.user) return Response.json({ text: "" }, { status: 401 });
 
-  if (!rateLimit(`base-info:${auth.user.id}:${clientKey(req)}`, 20, 60_000)) {
+  if (!rateLimit(`base-info:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {
     return Response.json({ text: "" }, { status: 429 });
   }
   try {

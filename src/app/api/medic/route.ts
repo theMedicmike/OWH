@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
   // Key the limiter on the veteran, not the forwarded IP — an IP is shared on
   // a base or a VA hospital wifi, and is trivially spoofed.
-  if (!rateLimit(`medic:${auth.user.id}:${clientKey(req)}`, 40, 60_000)) {
+  if (!rateLimit(`medic:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {
     return Response.json({ text: "Give me a couple seconds to catch up, then try me again." }, { status: 429 });
   }
 

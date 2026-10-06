@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     return Response.json({ text: "Sign in and we can pick this up." }, { status: 401 });
   }
 
-  if (!rateLimit(`intake:${auth.user.id}:${clientKey(req)}`, 40, 60_000)) {
+  if (!rateLimit(`intake:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {
     return Response.json({ text: "You're sending messages a little fast — give it a few seconds and try again." }, { status: 429 });
   }
 
