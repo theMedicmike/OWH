@@ -3,22 +3,21 @@
 361 profiles. 338 contain at least one checkable assertion; 23 stay general enough to need no verification.
 
 A flag is NOT an error. It means the profile states something specific that a
-veteran will believe and repeat, so a human has to agree with it before this
-is seeded. Work down from the top; the tail is mostly safe prose.
+veteran will believe and repeat, so a human has to agree with it. Work down
+from the top; the tail is mostly safe prose.
 
-If one is wrong, the cheapest fix is to delete that row's line from
-`supabase/migrations/0035_seed_place_profiles.sql` before applying it — the
-place then falls through to the live model call exactly as it does today.
+If one is wrong, delete that place's entry from src/data/place-profiles.json
+and deploy — it then falls through to the live model call as it does today.
 
 ---
 
-## Enewetak Atoll  — 8 to check
+## Enewetak Atoll  — 9 to check
 
 - **year**: 1944 · 1948 · 1958 · 1952
-- **operation**: Operation Flintlock
+- **operation**: Operation Catchpole · Operation Flintlock
 - **superlative**: the largest · the first · the most
 
-> Enewetak Atoll sits in the Marshall Islands, a remote ring of coral and sand in the central Pacific. During World War II, U.S. forces seized it from Japanese defenders in February 1944 in a swift but fierce amphibious assault, opening a new axis of advance toward Japan and demonstrating the growing lethal efficiency of American island-hopping operations. The atoll's capture came just days after the Kwajalein operation, part of Operation Flintlock, and gave the United States a critical forward base deep in Micronesia.
+> Enewetak Atoll sits in the Marshall Islands, a remote ring of coral and sand in the central Pacific. During World War II, U.S. forces seized it from Japanese defenders in February 1944 in a swift but fierce amphibious assault, opening a new axis of advance toward Japan and demonstrating the growing lethal efficiency of American island-hopping operations. The landing — Operation Catchpole — had been planned for May, but Kwajalein fell so quickly to Operation Flintlock two weeks earlier that the timetable was moved up, and the atoll gave the United States a critical forward base deep in Micronesia.
 > After the war, Enewetak took on a different and weightier role. Between 1948 and 1958, it served as a primary site for American nuclear weapons testing, including some of the largest atmospheric detonations ever conducted — among them the first hydrogen bomb test, Ivy Mike, in 1952. The atoll's low, flat profile and isolation made it the chosen proving ground for weapons that would define the Cold War era.
 > Those who worked, tested, or served in any capacity at Enewetak stood at the center of some of the most consequential moments in modern military history, and their presence there mattered.
 

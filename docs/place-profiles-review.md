@@ -3,9 +3,11 @@
 361 profiles, claude-sonnet-4-6, generated 2026-10-06.
 
 Read for invented specifics: unit names, dates, operations, casualty figures.
-The prompt forbids them, which is exactly why they are worth looking for. Any
-profile that states a fact you cannot place, cut from the seed before applying
-it — a vague paragraph is fine, a confident wrong one is not.
+The prompt forbids them, which is exactly why they are worth looking for.
+Run scripts/qa-place-profiles.cjs to sort these by how much they assert.
+
+To pull one: delete its entry from src/data/place-profiles.json. That place
+then falls through to the live model call exactly as it does today.
 
 ## Al Asad Air Base
 
@@ -625,7 +627,7 @@ To those who served in that strange, sun-bleached place at the edge of a new era
 
 ## Enewetak Atoll
 
-Enewetak Atoll sits in the Marshall Islands, a remote ring of coral and sand in the central Pacific. During World War II, U.S. forces seized it from Japanese defenders in February 1944 in a swift but fierce amphibious assault, opening a new axis of advance toward Japan and demonstrating the growing lethal efficiency of American island-hopping operations. The atoll's capture came just days after the Kwajalein operation, part of Operation Flintlock, and gave the United States a critical forward base deep in Micronesia.
+Enewetak Atoll sits in the Marshall Islands, a remote ring of coral and sand in the central Pacific. During World War II, U.S. forces seized it from Japanese defenders in February 1944 in a swift but fierce amphibious assault, opening a new axis of advance toward Japan and demonstrating the growing lethal efficiency of American island-hopping operations. The landing — Operation Catchpole — had been planned for May, but Kwajalein fell so quickly to Operation Flintlock two weeks earlier that the timetable was moved up, and the atoll gave the United States a critical forward base deep in Micronesia.
 
 After the war, Enewetak took on a different and weightier role. Between 1948 and 1958, it served as a primary site for American nuclear weapons testing, including some of the largest atmospheric detonations ever conducted — among them the first hydrogen bomb test, Ivy Mike, in 1952. The atoll's low, flat profile and isolation made it the chosen proving ground for weapons that would define the Cold War era.
 
