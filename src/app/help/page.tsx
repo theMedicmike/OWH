@@ -1,5 +1,6 @@
 import AppShell from "@/components/AppShell";
 import { ServiceRibbon } from "@/components/Patriotic";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 
 export const metadata = {
   title: "How to use this",
@@ -32,7 +33,9 @@ const CORE_STEPS: Step[] = [
     title: "Get in the door",
     body: [
       "Open the internet app you normally use — Safari on an iPhone, Chrome on most Android phones and computers. At the very top of the screen there is a long blank strip where web addresses go. Tap it, type tracethecascade.com exactly as it looks, and press Go.",
-      "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows six things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam,” “Read the book” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife a chapter, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record.",
+      BOOK_PUBLIC
+        ? "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows six things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam,” “Read the book” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife a chapter, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record."
+        : "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows five things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife the page about what you were exposed to, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record.",
       "When you are ready for that, tap “Create account” at the top of the white box in the middle of the screen. Put in your email and a password. If you cannot see what you are typing, tap “Show” next to the password box. (Signed out, that button sits in the menu reading “Start your free record,” and there is a “Sign in” button in the bar across the top.)",
       "Now watch what the screen does. If it says “Check your email,” you are not signed in yet — open the email, tap the link inside, then come back and tap “Sign in.” If instead it takes you straight into the app, you are already in and there is nothing to check. Next time, you only need “Sign in.”",
       "If you forget your password: on the “Sign in” tab there is a small link, “Forgot your password?”. Tap it, put in your email, tap “Send me a reset link,” then check your email. One thing to know — that link is only good for one hour, and it only works once. If you check your email once a day it will be expired by the time you get there, so ask for a fresh one right before you sit down to do it.",
@@ -312,14 +315,21 @@ const MORE_STEPS: Step[] = [
     ],
     tip: "Missed the window? Nothing here is worse for having waited — you just file the standard way once you're out.",
   },
-  {
+  ...(BOOK_PUBLIC ? [] : [{
+    title: "The book is almost here",
+    body: [
+      "What Happened to Our Veterans is in its final review. Every person named in it is reading their own part first, because nothing about them goes out until they say yes. It is not open to read yet.",
+      "When it opens, it will be free, all of it, and you will find it in the menu under “Learn & live well” → “Read the book,” with every chapter able to be read aloud to you.",
+    ],
+  }]),
+  ...(!BOOK_PUBLIC ? [] : [{
     title: "Read the book — free, all of it",
     body: [
       "Menu, under “Learn & live well” → “Read the book.” Every chapter is open to anyone — copy the address of a chapter and send it to whoever needs to read it, and they can read it without an account or a sign-in.",
       "What Happened to Our Veterans, the whole thing, at your own pace. If reading is hard on your eyes, each chapter can be read aloud to you in Medic Mike's voice — it highlights the line it is on and scrolls along with you, and you can set the pace to “Slow,” “Steady” or “Brisk.” If you do not see the listen bar, your browser cannot do it.",
       "Find a passage that says what you have never been able to say? On a phone, tap the small square icon at the top right of that paragraph and choose “Make a card” — it turns the passage into a picture you can send to your family or post. On a computer you can also highlight the words and tap “Make a card” when it pops up. A couple of chapters have sharing switched off, out of respect for the people named in them.",
     ],
-  },
+  }]),
   {
     title: "Look things up",
     body: ["A few places to read rather than build:"],

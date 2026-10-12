@@ -1,5 +1,6 @@
 import AppShell from "@/components/AppShell";
 import { ServiceRibbon } from "@/components/Patriotic";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 
 // This page and /help had no metadata of their own, so both inherited the root
 // title and the root canonical — telling Google the two pages that explain what
@@ -268,9 +269,11 @@ export default function AboutPage() {
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           And we took the wall down off the front half. Everything that teaches — the exposure
-          library, the presumptive lookup, the C&amp;P explainer, whole health, the VSO finder, and
-          all of the book — is now readable by anyone, with no account and no sign-in. That was not
-          a growth decision. A veteran kept telling us he wanted to send his wife a chapter, or send
+          library, the presumptive lookup, the C&amp;P explainer, whole health, the VSO finder{BOOK_PUBLIC ? <>, and
+          all of the book</> : null} — is now readable by anyone, with no account and no sign-in.{BOOK_PUBLIC ? null : <> The
+          book itself is in its final review with the people named in it, and it opens here once every
+          one of them has approved their part.</>} That was not
+          a growth decision. A veteran kept telling us he wanted to send his wife {BOOK_PUBLIC ? "a chapter" : "a page"}, or send
           his doctor the page about what he was standing in, and every link he sent them landed on a
           sign-up form. Asking a man&apos;s wife to create an account before she is allowed to read
           why he cannot sleep is the exact wrong way round. So the reading is open to everybody, and
