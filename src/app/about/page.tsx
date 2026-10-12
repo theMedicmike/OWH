@@ -147,7 +147,7 @@ export default function AboutPage() {
             "Gives active-duty service members a timeline for filing before they separate — Benefits Delivery at Discharge — so a rating decision can be close to ready the day they're out, not months later.",
             "Lets a spouse or caregiver build the whole record for a veteran who can't or won't do it themselves — clearly labeled as their own words, never mistaken for the veteran's.",
             "Reconnects veterans with the brothers and sisters they served beside.",
-            "Gives the whole education half away with no account and no sign-in — the exposure library, the presumptive lookup, the C&P explainer, whole health, the VSO finder and the entire book. A veteran can send any of it to a spouse, a buddy or a doctor, and they can read it without signing up for anything.",
+            (BOOK_PUBLIC ? "Gives the whole education half away with no account and no sign-in — the exposure library, the presumptive lookup, the C&P explainer, whole health, the VSO finder and the entire book. A veteran" : "Gives the whole education half away with no account and no sign-in — the exposure library, the presumptive lookup, the C&P explainer, whole health and the VSO finder. A veteran") + " can send any of it to a spouse, a buddy or a doctor, and they can read it without signing up for anything.",
             "Hands the whole record back. They can download it, print it, or delete it — the locations, the exposures, the conditions, the uploads, all of it — any time, without asking anyone.",
           ].map((item, i) => (
             <li key={i} className="flex gap-2.5">
@@ -173,8 +173,9 @@ export default function AboutPage() {
           to — so a veteran can read it once and understand what they were standing in.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          My book is in here too, free, chapter by chapter. It will read itself out loud to anyone
-          whose eyes are tired.
+          {BOOK_PUBLIC
+            ? "My book is in here too, free, chapter by chapter. It will read itself out loud to anyone whose eyes are tired."
+            : "My book will be in here too, free, chapter by chapter, once everyone named in it has approved their part. It will read itself out loud to anyone whose eyes are tired."}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           There&apos;s a guide called Medic Mike a veteran can talk to or type to at any hour.
