@@ -3,11 +3,11 @@ import Link from "next/link";
 import { ServiceRibbon } from "@/components/Patriotic";
 import { notFound } from "next/navigation";
 import { BOOK_PUBLIC } from "@/lib/bookVisibility";
-import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_SUBTITLE, BOOK_AUTHOR } from "@/content/book";
+import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_SUBTITLE, BOOK_AUTHOR, BOOK_BODY_COUNT } from "@/content/book";
 
 export const metadata = {
   title: BOOK_TITLE,
-  description: `${BOOK_SUBTITLE}. ${BOOK_AUTHOR}'s book on what service costs the body — all ${BOOK_CHAPTERS.length} chapters free to read, no sign-in, nothing for sale.`,
+  description: `${BOOK_SUBTITLE}. ${BOOK_AUTHOR}'s book on what service costs the body — all ${BOOK_BODY_COUNT} chapters free to read, no sign-in, nothing for sale.`,
   alternates: { canonical: "/book" },
   ...(BOOK_PUBLIC ? {} : { robots: { index: false, follow: false } }),
 };
@@ -35,7 +35,7 @@ export default function BookPage() {
               className="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 transition hover:border-brand/40 hover:shadow-sm"
             >
               <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">
-                {c.number}
+                {c.display || ""}
               </span>
               <span className="text-sm font-medium text-ink">{c.title}</span>
             </Link>

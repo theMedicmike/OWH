@@ -268,7 +268,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
       {studioPassage && (
         <CardStudio
           passage={studioPassage}
-          chapterNumber={chapter.number}
+          chapterNumber={chapter.display}
           chapterTitle={chapter.title}
           heavy={heavy}
           memoriamOnly={memoriamOnly}

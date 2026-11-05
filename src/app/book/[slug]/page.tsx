@@ -1,7 +1,7 @@
 import AppShell from "@/components/AppShell";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_AUTHOR, type BookChapter } from "@/content/book";
+import { BOOK_CHAPTERS, BOOK_TITLE, BOOK_AUTHOR, BOOK_BODY_COUNT, chapterLabel, type BookChapter } from "@/content/book";
 import ReaderClient from "@/components/ReaderClient";
 import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 import { isHeavy, isMemoriamOnly, canShareChapter } from "@/content/heavyChapters";
@@ -70,9 +70,9 @@ function clip(text: string, max: number): string {
 // crisis-line note, so nothing leaks; that is luck, not design, and one
 // regeneration of book.ts (scripts/genbook.cjs) would spend it.
 function chapterDescription(chapter: BookChapter): string {
-  const fallback = `Chapter ${chapter.number} of ${BOOK_TITLE} by ${BOOK_AUTHOR}. Free to read, no sign-in.`;
+  const fallback = `${chapterLabel(chapter)} of ${BOOK_TITLE} by ${BOOK_AUTHOR}. Free to read, no sign-in.`;
   if (isHeavy(chapter.slug)) {
-    return `Chapter ${chapter.number} of ${BOOK_TITLE}. This chapter covers difficult material and opens with a content note. Free to read. Veterans Crisis Line: dial 988, then press 1.`;
+    return `${chapterLabel(chapter)} of ${BOOK_TITLE}. This chapter covers difficult material and opens with a content note. Free to read. Veterans Crisis Line: dial 988, then press 1.`;
   }
   if (!canShareChapter(chapter.slug)) return fallback;
   const body = chapter.paragraphs.find((p) => p.type === "p")?.text;
@@ -108,7 +108,7 @@ export default async function ChapterPage({ params }: { params: Promise<{ slug: 
     <AppShell title="The Book" publicPage>
       <article className="mx-auto max-w-2xl">
         <Link href="/book" className="text-xs font-medium text-brand hover:underline">← All chapters</Link>
-        <div className="mt-3 text-xs font-bold uppercase tracking-widest text-accent">Chapter {chapter.number}</div>
+        <div className="mt-3 text-xs font-bold uppercase tracking-widest text-accent">{chapterLabel(chapter)}{chapter.display ? ` of ${BOOK_BODY_COUNT}` : ""}</div>
         <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-ink">{chapter.title}</h1>
 
         <div className="mt-5">

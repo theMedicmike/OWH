@@ -50,9 +50,26 @@ const BOOK_AUTHOR = src.author;
 // Take only the fields this app renders, in a fixed order, so an upstream field
 // addition cannot silently bloat the bundle or leak an editorial-only flag into
 // the client. Anything new upstream must be added here deliberately.
+// Since 2026-11-05 the book numbers only body chapters (industry standard): readers see
+// "Chapter 1 of 67" and front/back matter carry no number. The reader SPA owns the list of
+// front/back matter; read it so the two surfaces can never number differently.
+// display = the number a reader sees (0 for front/back matter). number stays the internal
+// sequence that slugs, gating and links key off.
+const MATTER = JSON.parse(
+  fs.readFileSync("C:/Users/Michael Andrew Jones/wwtov-reader/src/matter.json", "utf8")
+);
+const FRONT = new Set(MATTER.front);
+const BACK = new Set(MATTER.back);
+let bodyN = 0;
+const kindOf = (slug) => {
+  const base = slug.replace(/^\d+-/, "");
+  return FRONT.has(base) ? "front" : BACK.has(base) ? "back" : "body";
+};
 const chapters = src.chapters.map((c) => ({
   slug: c.slug,
   number: c.number,
+  display: kindOf(c.slug) === "body" ? ++bodyN : 0,
+  kind: kindOf(c.slug),
   title: c.title,
   paragraphs: c.paragraphs.map((p) => ({ type: p.type, text: p.text })),
 }));
@@ -92,13 +109,22 @@ const header = `// AUTO-GENERATED from book-data.json — do not edit by hand.
 // Verify:      node scripts/verify-gating.cjs   (confirm heavyChapters keys still resolve)
 
 export type BookParagraph = { type: string; text: string };
-export type BookChapter = { slug: string; number: number; title: string; paragraphs: BookParagraph[] };
+export type BookChapter = { slug: string; number: number; display: number; kind: "front" | "back" | "body"; title: string; paragraphs: BookParagraph[] };
 
 export const BOOK_TITLE = ${JSON.stringify(BOOK_TITLE)};
 export const BOOK_SUBTITLE = ${JSON.stringify(BOOK_SUBTITLE)};
 export const BOOK_AUTHOR = ${JSON.stringify(BOOK_AUTHOR)};
 
 export const BOOK_CHAPTERS: BookChapter[] = ${JSON.stringify(chapters)};
+
+/** Numbered body chapters only; front and back matter are unnumbered. */
+export const BOOK_BODY_COUNT = ${bodyN};
+
+/** "Chapter 12" for a body chapter, "Front matter" / "Back matter" otherwise. */
+export function chapterLabel(c: Pick<BookChapter, "display" | "kind">): string {
+  if (c.display) return "Chapter " + c.display;
+  return c.kind === "front" ? "Front matter" : "Back matter";
+}
 `;
 
 fs.writeFileSync(OUT, header, "utf8");

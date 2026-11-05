@@ -127,7 +127,8 @@ export function drawCard(ctx: CanvasRenderingContext2D, opts: CardOpts) {
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = COLORS.gold;
   ctx.font = `600 23px ${SERIF}`;
-  const eyebrow = `CHAPTER ${opts.chapterNumber} · ${opts.chapterTitle.toUpperCase()}`;
+  // chapterNumber is the display number; 0 = front/back matter, which carries no number.
+  const eyebrow = opts.chapterNumber ? `CHAPTER ${opts.chapterNumber} · ${opts.chapterTitle.toUpperCase()}` : opts.chapterTitle.toUpperCase();
   ctx.fillText(fitOneLine(ctx, eyebrow, W - PAD - 190), PAD, 250);
 
   // scarlet tick — the only scarlet on a standard card
