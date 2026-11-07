@@ -1,6 +1,6 @@
 import AppShell from "@/components/AppShell";
 import { ServiceRibbon } from "@/components/Patriotic";
-import { BOOK_PUBLIC } from "@/lib/bookVisibility";
+import { BOOK_PUBLIC, BOOK_SITE } from "@/lib/bookVisibility";
 
 // This page and /help had no metadata of their own, so both inherited the root
 // title and the root canonical — telling Google the two pages that explain what
@@ -73,7 +73,7 @@ export default function AboutPage() {
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           While I was writing my book, <em>What Happened to Our Veterans</em>, I was talking it
-          through with Edgar Rodriguez — a fellow Marine and a business coach — about Dave&apos;s
+          through with Edgar Rodriguez, a Marine like Dave and a business coach, about Dave&apos;s
           story, and how hard it was to connect his health to his service. That conversation is
           where it clicked: &ldquo;connecting the dots of service&rdquo; wasn&apos;t just going to be
           a chapter in the book. It was the whole problem.
@@ -173,9 +173,26 @@ export default function AboutPage() {
           to — so a veteran can read it once and understand what they were standing in.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          {BOOK_PUBLIC
-            ? "My book is in here too, free, chapter by chapter. It will read itself out loud to anyone whose eyes are tired."
-            : "My book will be in here too, free, chapter by chapter, once everyone named in it has approved their part. It will read itself out loud to anyone whose eyes are tired."}
+          {BOOK_PUBLIC ? (
+            "My book is in here too, free, chapter by chapter. It will read itself out loud to anyone whose eyes are tired."
+          ) : (
+            <>
+              My book is free to read on its own site,{" "}
+              <a href={BOOK_SITE} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
+                whathappenedtoourveterans.com
+              </a>
+              , with no account and no sign-up. It will read itself out loud to anyone whose eyes are tired.
+              The two bills it argues for are there too: the{" "}
+              <a href={BOOK_SITE + "/#bill"} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
+                Breaking the Cascade Act
+              </a>{" "}
+              and the{" "}
+              <a href={BOOK_SITE + "/#blood"} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
+                Veterans&rsquo; Own Blood Act
+              </a>
+              , both ready for introduction.
+            </>
+          )}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted">
           There&apos;s a guide called Medic Mike a veteran can talk to or type to at any hour.
@@ -272,8 +289,11 @@ export default function AboutPage() {
           And we took the wall down off the front half. Everything that teaches — the exposure
           library, the presumptive lookup, the C&amp;P explainer, whole health, the VSO finder{BOOK_PUBLIC ? <>, and
           all of the book</> : null} — is now readable by anyone, with no account and no sign-in.{BOOK_PUBLIC ? null : <> The
-          book itself is in its final review with the people named in it, and it opens here once every
-          one of them has approved their part.</>} That was not
+          book is open to anyone too, free, at{" "}
+          <a href={BOOK_SITE} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand hover:underline">
+            whathappenedtoourveterans.com
+          </a>
+          .</>} That was not
           a growth decision. A veteran kept telling us he wanted to send his wife {BOOK_PUBLIC ? "a chapter" : "a page"}, or send
           his doctor the page about what he was standing in, and every link he sent them landed on a
           sign-up form. Asking a man&apos;s wife to create an account before she is allowed to read

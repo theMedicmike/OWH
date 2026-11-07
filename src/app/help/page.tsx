@@ -316,10 +316,11 @@ const MORE_STEPS: Step[] = [
     tip: "Missed the window? Nothing here is worse for having waited — you just file the standard way once you're out.",
   },
   ...(BOOK_PUBLIC ? [] : [{
-    title: "The book is almost here",
+    title: "Read the book, free, all of it",
     body: [
-      "What Happened to Our Veterans is in its final review. Every person named in it is reading their own part first, because nothing about them goes out until they say yes. It is not open to read yet.",
-      "When it opens, it will be free, all of it, and you will find it in the menu under “Learn & live well” → “Read the book,” with every chapter able to be read aloud to you.",
+      "What Happened to Our Veterans is free to read on its own site: type whathappenedtoourveterans.com into the address bar. There is no account and no sign-up, and every chapter can be read aloud to you. It opens there, not inside this app.",
+      "The two bills the book argues for are on that site too, each under its own name at the top: the Breaking the Cascade Act and the Veterans' Own Blood Act. Both are ready for introduction in Congress.",
+      "On “Connect the dots,” each of the four floors has a line that opens the chapter of the book about it, on the book's site, in a new tab.",
     ],
   }]),
   ...(!BOOK_PUBLIC ? [] : [{
