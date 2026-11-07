@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { ServiceRibbon } from "./Patriotic";
-import { BOOK_PUBLIC, BOOK_SITE } from "@/lib/bookVisibility";
+import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 import { EXPOSURE_LABEL, CONDITION_EXPOSURES, connectedConditionLabels } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
 import { recordProgress, conditionNextAction, VA_FORMS, FILE_ONLINE_URL } from "@/lib/nextaction";
@@ -377,16 +377,6 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                       >
                         Read &ldquo;{f.chapterTitle}&rdquo; →
                       </Link>
-                    )}
-                    {!BOOK_PUBLIC && f.chapterSlug && (
-                      <a
-                        href={`${BOOK_SITE}/#${f.chapterSlug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-1.5 inline-block text-[12px] font-semibold text-brand hover:underline"
-                      >
-                        Read &ldquo;{f.chapterTitle}&rdquo; in the book →
-                      </a>
                     )}
                   </div>
                 </div>

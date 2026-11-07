@@ -7,8 +7,3 @@
 //
 // To put the book back: set this to true, build, deploy. That is the whole change.
 export const BOOK_PUBLIC = false;
-
-// The book itself is public on its own site (whathappenedtoourveterans.com, free, no sign-up), along
-// with both bills. While BOOK_PUBLIC is false, every "read the book" mention here links out to it
-// instead of to /book. Its router accepts a chapter's base slug after the #, numbered or not.
-export const BOOK_SITE = "https://whathappenedtoourveterans.com";
