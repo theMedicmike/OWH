@@ -196,6 +196,13 @@ const LEARN_FILES = [
     // assistants are told what this nonprofit IS. Nothing is fetched from it
     // and a veteran can never click it. Added 2026-08-14 for the SEO pass.
     "schema.org",
+    // whathappenedtoourveterans.com — the founder's book and the two bills, free to read with no
+    // account. A founder-owned site, so it is exactly what this rule exists to stop, and it is here
+    // only because Michael approved it by name on 2026-11-07 ("allow the book link"). The book's text
+    // already ships inside this app (src/content/book.ts); this lets About, Help and the four floors on
+    // "Connect the dots" open it on its own site while BOOK_PUBLIC is false. The exception is this ONE
+    // host (and its bills. subdomain). operationwholehealth.org stays banned below, unchanged.
+    "whathappenedtoourveterans.com",
   ];
   const walk = (dir) =>
     fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {

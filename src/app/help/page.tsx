@@ -154,7 +154,7 @@ const MORE_STEPS: Step[] = [
     title: "See how it all connects",
     body: [
       "Menu → 4 “Connect the dots.”",
-      "The first thing on the page is not about your claim at all. It is headed “The cascade doesn't stop at your body” and lays out four floors — The body, The conscience, The family, The institution" + (BOOK_PUBLIC ? " — with a line into the chapter of the book about each." : ".") + " Where your own entries touch a floor, it gets tagged “on your record.” It is there because what service costs does not stop at your health, and the family floor is where a spouse or caregiver is pointed at the Account setting that puts their name on what they write.",
+      "The first thing on the page is not about your claim at all. It is headed “The cascade doesn't stop at your body” and lays out four floors — The body, The conscience, The family, The institution — with a line into the chapter of the book about each. Where your own entries touch a floor, it gets tagged “on your record.” It is there because what service costs does not stop at your health, and the family floor is where a spouse or caregiver is pointed at the Account setting that puts their name on what they write.",
       "Below that is “Presumptive pathways” — it checks your logged service dates and locations against programs like the PACT Act, Agent Orange, Camp Lejeune, Gulf War and radiation, and flags anything that may apply. It only ever flags a question for your VSO to confirm — never a yes.",
       "Then the big picture: your exposures down one side, your conditions down the other, and lines drawn between the ones the government already links. Tap any line to see the citation behind it.",
       "Keep scrolling for the one panel on this page you should not skip: “Benefits you may be leaving on the table.” It lists conditions the VA already links to exposures you have documented — and that are not on your record yet. If you live with any of them, even mildly, tap “Add a condition to your record” and add it. It is the only place in this app that tells you about something you have not thought to claim. It is a prompt to take to your clinician, not a diagnosis, and it only appears when there is actually something to say.",
@@ -320,6 +320,7 @@ const MORE_STEPS: Step[] = [
     body: [
       "What Happened to Our Veterans is free to read on its own site: type whathappenedtoourveterans.com into the address bar. There is no account and no sign-up, and every chapter can be read aloud to you. It opens there, not inside this app.",
       "The two bills the book argues for are on that site too, each under its own name at the top: the Breaking the Cascade Act and the Veterans' Own Blood Act. Both are ready for introduction in Congress.",
+      "On “Connect the dots,” each of the four floors has a line that opens the chapter of the book about it, on the book's site, in a new tab.",
     ],
   }]),
   ...(!BOOK_PUBLIC ? [] : [{
