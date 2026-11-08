@@ -38,6 +38,7 @@ const PUBLIC_ROUTES: { path: string; priority: number; changeFrequency: Freq }[]
   { path: "/vso", priority: 0.8, changeFrequency: "weekly" },
   { path: "/learn/timeline", priority: 0.7, changeFrequency: "monthly" },
   { path: "/learn/women-veterans", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/learn/korea", priority: 0.7, changeFrequency: "monthly" },
 
   // Opened to signed-out visitors 2026-08-16 — they were already listed in the
   // signed-out sidebar and were the only two links there that hit a login card.

@@ -93,6 +93,23 @@ export const INJURY_LIBRARY: InjuryEntry[] = [
       { label: "Scars/Disfigurement DBQ", detail: `Function loss from a burn is evaluated separately from the scar itself. Retrieved ${RETRIEVED}.` },
     ],
   },
+  {
+    slug: "cold-injury",
+    name: "Cold injury / frostbite",
+    hook: "The feet that never warmed back up, decades later.",
+    incidentClasses: ["cold_injury", "captivity_pow"],
+    evidence:
+      "Ask for an evaluation of cold injury residuals by name, and name every part that froze. VA looks for an in-service injury and a medical opinion tying what you have now to it. Many cold injuries were never written down. If you engaged in combat, VA must accept your own account when it fits the circumstances of that service, even with no record of the injury.",
+    ratingStructure:
+      "Diagnostic Code 7122 reaches any part of the body and evaluates each hand, foot, ear or nose separately. It looks at pain, numbness or cold sensitivity, along with findings such as tissue loss, nail or color changes, impaired sensation, abnormal sweating and X-ray changes.",
+    associatedNote:
+      "VA evaluates amputated fingers or toes, squamous cell carcinoma at the site of a cold injury scar, peripheral neuropathy and Raynaud's on their own. Frostbite residuals are presumed connected only for former prisoners of war held in conditions consistent with frostbite, at 10 percent or more.",
+    citations: [
+      { label: "38 CFR §4.104, Diagnostic Code 7122", detail: "Cold injury residuals, including Notes 1 and 2 on separate evaluation. Retrieved 2026-11-08." },
+      { label: "38 CFR §§3.307(a)(5), 3.309(c)", detail: "The presumption for former prisoners of war. Retrieved 2026-11-08." },
+      { label: "38 U.S.C. §1154(b)", detail: "A combat veteran's own account of an in-service injury. Retrieved 2026-11-08." },
+    ],
+  },
 ];
 
 export const INJURY_BY_SLUG: Record<string, InjuryEntry> = Object.fromEntries(

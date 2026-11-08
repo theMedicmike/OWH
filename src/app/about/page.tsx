@@ -120,6 +120,7 @@ export default function AboutPage() {
             "Tells them what was documented where they stood — so they don't have to be a chemist to figure it out.",
             "Connects those exposures to their health conditions, in plain English, with the actual citations.",
             "Shows more than one road: a straight line from an exposure to a condition, a condition the PACT Act already presumes is connected, or a condition that grew out of another one.",
+            "Goes back as far as the service does. Korean War battle areas are on the map, and a family tracing a parent's frozen feet or DMZ tour has a guide written for them.",
             "Says the thing nobody says: a condition that existed before service can still count if service made it permanently worse.",
             "Lets the people they served with confirm what they witnessed — privately, only what they actually saw, and only for a veteran who has switched corroboration on.",
             "Lets a veteran ask anyone to confirm their record — on this app or not. A private link, no account needed, for a spouse, a battle buddy who never signed up, or a commander.",

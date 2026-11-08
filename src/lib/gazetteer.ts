@@ -388,6 +388,35 @@ export const GAZETTEER: GazEntry[] = [
   { name: "Camp Walker / Camp Henry (Daegu)", region: "South Korea", lat: 35.84, lng: 128.59 },
   { name: "K-16 Seoul Air Base (Seongnam)", region: "South Korea", lat: 37.44, lng: 127.11 },
   { name: "Chinhae Naval Base", region: "South Korea", lat: 35.14, lng: 128.66 },
+  { name: "Camp Greaves (Paju)", region: "South Korea", lat: 37.93, lng: 126.81 },
+  { name: "Camp Howze (Paju)", region: "South Korea", lat: 37.8, lng: 126.85 },
+  { name: "Korean DMZ, southern fence and guard posts", region: "South Korea", lat: 38.25, lng: 127.0 },
+
+  // ── Korean War, 1950-53. Battle areas, not bases: approximate on purpose, the
+  // veteran places the actual pin. Added with the chapter "The Cold That Stayed".
+  { name: "Chosin Reservoir (Changjin)", region: "North Korea, Korean War", lat: 40.45, lng: 127.2 },
+  { name: "Hagaru-ri", region: "North Korea, Korean War", lat: 40.37, lng: 127.26 },
+  { name: "Yudam-ni", region: "North Korea, Korean War", lat: 40.48, lng: 127.11 },
+  { name: "Koto-ri", region: "North Korea, Korean War", lat: 40.28, lng: 127.3 },
+  { name: "Hungnam", region: "North Korea, Korean War", lat: 39.83, lng: 127.62 },
+  { name: "Wonsan", region: "North Korea, Korean War", lat: 39.15, lng: 127.45 },
+  { name: "Pyongyang", region: "North Korea, Korean War", lat: 39.02, lng: 125.75 },
+  { name: "Kunu-ri", region: "North Korea, Korean War", lat: 39.6, lng: 125.9 },
+  { name: "Unsan", region: "North Korea, Korean War", lat: 39.9, lng: 125.87 },
+  { name: "Pusan (Busan)", region: "South Korea, Korean War", lat: 35.1, lng: 129.04 },
+  { name: "Pusan Perimeter (Naktong River)", region: "South Korea, Korean War", lat: 35.7, lng: 128.4 },
+  { name: "Inchon (Incheon)", region: "South Korea, Korean War", lat: 37.48, lng: 126.6 },
+  { name: "Kimpo Air Base (K-14)", region: "South Korea, Korean War", lat: 37.56, lng: 126.79 },
+  { name: "Suwon Air Base (K-13)", region: "South Korea, Korean War", lat: 37.24, lng: 127.01 },
+  { name: "Taegu Air Base (K-2)", region: "South Korea, Korean War", lat: 35.89, lng: 128.66 },
+  { name: "Koje-do POW camp", region: "South Korea, Korean War", lat: 34.86, lng: 128.62 },
+  { name: "Panmunjom", region: "Korean DMZ", lat: 37.96, lng: 126.67 },
+  { name: "Imjin River", region: "Korea, Korean War", lat: 37.95, lng: 126.85 },
+  { name: "Iron Triangle (Chorwon)", region: "Korea, Korean War", lat: 38.25, lng: 127.22 },
+  { name: "Pork Chop Hill and Old Baldy", region: "Korea, Korean War", lat: 38.27, lng: 127.03 },
+  { name: "Bloody Ridge", region: "Korea, Korean War", lat: 38.26, lng: 128.04 },
+  { name: "Heartbreak Ridge", region: "Korea, Korean War", lat: 38.3, lng: 128.03 },
+  { name: "The Punchbowl (Haean Basin)", region: "Korea, Korean War", lat: 38.28, lng: 128.13 },
 
   // ── Europe — the Cold War bases a whole generation served on, nearly all now
   //    closed, and none of them findable until now

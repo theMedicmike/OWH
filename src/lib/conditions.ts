@@ -101,7 +101,7 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Shoulder pain / rotator cuff", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion", "airborne_jump"], link: "event" },
   { label: "Hip pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion"], link: "event" },
   { label: "Ankle or foot pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "repetitive_motion", "airborne_jump", "cold_injury"], link: "event", alt: "plantar fasciitis, flat feet" },
-  { label: "Arthritis", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion"], link: "event" },
+  { label: "Arthritis", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "repetitive_motion", "cold_injury"], link: "event" },
   { label: "Chronic muscle or joint pain", system: "Bones, joints & muscles", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both" },
   { label: "Fibromyalgia", system: "Bones, joints & muscles", exposures: ["gulf_war_agent"], programs: ["gulf_war"], link: "both" },
 
@@ -109,7 +109,7 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Traumatic brain injury (TBI)", system: "Head & nerves", exposures: [], incidents: ["blast_ied", "vehicle_accident", "fall", "training_injury", "physical_assault", "combat_action", "aircraft_mishap", "electrical_injury", "industrial_accident"], link: "event", alt: "blast exposure, concussion" },
   { label: "Migraines / chronic headaches", system: "Head & nerves", exposures: ["gulf_war_agent", "chemical_solvent"], programs: ["gulf_war"], link: "both" },
   { label: "Peripheral neuropathy (early-onset)", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent", "pesticide"], programs: ["agent_orange"], link: "both", alt: "numbness, tingling, burning — began within a YEAR of exposure (the window is part of the rule)" },
-  { label: "Peripheral neuropathy (later onset)", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent"], link: "both", alt: "numbness, tingling, burning in hands or feet" },
+  { label: "Peripheral neuropathy (later onset)", system: "Head & nerves", exposures: ["heavy_metal", "chemical_solvent", "nerve_agent"], incidents: ["cold_injury"], link: "both", alt: "numbness, tingling, burning in hands or feet" },
   { label: "Memory or concentration problems", system: "Head & nerves", exposures: ["heavy_metal", "nerve_agent", "gulf_war_agent"], programs: ["gulf_war"], link: "both" },
   { label: "Parkinson's disease", system: "Head & nerves", exposures: ["pesticide", "chemical_solvent", "water_contamination"], programs: ["agent_orange", "lejeune"], link: "place" },
   { label: "Parkinsonism / tremor", system: "Head & nerves", exposures: ["pesticide", "chemical_solvent", "heavy_metal"], programs: ["agent_orange"], link: "place" },
@@ -258,10 +258,10 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Elbow pain", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall"], link: "event", alt: "tennis elbow" },
   { label: "Carpal tunnel syndrome", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury"], link: "event" },
   { label: "Sciatica / radiculopathy", system: "Bones, joints & muscles", exposures: [], incidents: ["fall", "training_injury", "vehicle_accident"], link: "event", alt: "shooting leg pain, pinched nerve" },
-  { label: "Degenerative joint disease", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident"], link: "event", alt: "osteoarthritis, worn joints" },
+  { label: "Degenerative joint disease", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "vehicle_accident", "cold_injury"], link: "event", alt: "osteoarthritis, worn joints" },
   { label: "Limited range of motion", system: "Bones, joints & muscles", exposures: [], incidents: ["training_injury", "fall", "blast_ied"], link: "event", alt: "can't bend, stiffness" },
   { label: "Surgical scars or hardware", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "vehicle_accident", "fall", "training_injury"], link: "event", alt: "plates, screws, rods" },
-  { label: "Amputation or loss of use", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "vehicle_accident", "combat_action", "industrial_accident", "aircraft_mishap"], link: "event" },
+  { label: "Amputation or loss of use", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "vehicle_accident", "combat_action", "industrial_accident", "aircraft_mishap", "cold_injury"], link: "event" },
   { label: "TMJ / jaw problems", system: "Bones, joints & muscles", exposures: [], incidents: ["blast_ied", "physical_assault", "training_injury"], link: "event", alt: "jaw pain, clicking" },
   { label: "Chronic pain syndrome", system: "Bones, joints & muscles", exposures: [], link: "both" },
   { label: "Osteoporosis / bone loss", system: "Bones, joints & muscles", exposures: ["heavy_metal"], link: "both" },
@@ -292,6 +292,7 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Heart valve problem or murmur", system: "Heart & circulation", exposures: [], link: "both" },
   { label: "Varicose veins", system: "Heart & circulation", exposures: [], link: "event" },
   { label: "Blood clots / DVT", system: "Heart & circulation", exposures: [], link: "both" },
+  { label: "Cold injury residuals", system: "Bones, joints & muscles", exposures: [], incidents: ["cold_injury"], link: "event", alt: "old frostbite, frozen feet, trench foot, hands or feet that hurt in the cold" },
   { label: "Poor circulation in hands or feet", system: "Heart & circulation", exposures: ["heavy_metal"], incidents: ["cold_injury"], link: "both", alt: "Raynaud's, cold hands" },
   { label: "Heart failure", system: "Heart & circulation", exposures: [], link: "both" },
 
@@ -336,7 +337,7 @@ export const CONDITIONS: ConditionDef[] = [
   { label: "Excessive sweating", system: "Skin", exposures: [], link: "both", alt: "hyperhidrosis" },
   { label: "Hair loss", system: "Skin", exposures: ["heavy_metal"], link: "both", alt: "alopecia" },
   { label: "Vitiligo / skin discoloration", system: "Skin", exposures: [], link: "both" },
-  { label: "Skin cancer (non-melanoma)", system: "Skin", exposures: ["radiation"], link: "place", alt: "basal cell, squamous cell" },
+  { label: "Skin cancer (non-melanoma)", system: "Skin", exposures: ["radiation"], incidents: ["cold_injury"], link: "both", alt: "basal cell, squamous cell" },
   { label: "Sun damage / chronic sunburn", system: "Skin", exposures: [], incidents: ["fire_burn"], link: "event" },
 
   // ── Immune & blood ──

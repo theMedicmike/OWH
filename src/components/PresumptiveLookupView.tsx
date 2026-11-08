@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   PACT_SCOPE,
   AGENT_ORANGE_SCOPE,
+  COLD_INJURY_SCOPE,
   LEJEUNE_SCOPE,
   GULF_WAR_SCOPE,
   RADIATION_SCOPE,
@@ -44,7 +45,7 @@ type Program = {
 };
 
 const ERAS = [
-  { v: "vietnam", label: "Vietnam era (1961–1975)" },
+  { v: "vietnam", label: "Vietnam era (1961–1975), including Korean DMZ service" },
   { v: "cold_war", label: "Cold War / between conflicts (1976–1989)" },
   { v: "gulf", label: "Gulf War (1990–2001)" },
   { v: "post911", label: "Post-9/11 (2001–present)" },
@@ -55,6 +56,7 @@ const ERAS = [
 const LOCATIONS = [
   { v: "vietnam", label: "Vietnam, Thailand, Laos or Cambodia" },
   { v: "korea_dmz", label: "Korean DMZ" },
+  { v: "korea_other", label: "Korea, away from the DMZ" },
   { v: "swa", label: "Iraq, Kuwait, Saudi Arabia or the Persian Gulf" },
   { v: "afghanistan", label: "Afghanistan, Djibouti, Syria, Jordan or Yemen" },
   { v: "lejeune", label: "Camp Lejeune or MCAS New River" },
@@ -85,6 +87,13 @@ const PROGRAMS: Program[] = [
     eras: ["gulf", "post911"],
     locations: ["swa", "afghanistan"],
     extra: GULF_WAR_DEADLINE_LINE,
+  },
+  {
+    key: "cold_injury",
+    name: "Cold injury — presumed only for former prisoners of war",
+    scope: COLD_INJURY_SCOPE,
+    eras: ["wwii", "korea"],
+    locations: ["korea_dmz", "korea_other", "other"],
   },
   {
     key: "lejeune",
@@ -183,6 +192,16 @@ export default function PresumptiveLookupView() {
             </p>
           </div>
         )
+      )}
+
+      {(era === "korea" || location === "korea_dmz" || location === "korea_other") && (
+        <Link href="/learn/korea" className="block rounded-xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50">
+          <div className="text-sm font-semibold text-ink">Served in Korea? Read the cold and the DMZ →</div>
+          <div className="mt-1 text-xs leading-relaxed text-muted">
+            The DMZ herbicide window runs September 1, 1967 to August 31, 1971. If that is when you served, choose
+            Vietnam era above. This guide covers that, cold injury, records and family benefits.
+          </div>
+        </Link>
       )}
 
       <Link href="/vso" className="block rounded-xl border border-brand/30 bg-brand/5 p-5 text-center transition hover:border-brand/50">

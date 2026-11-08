@@ -18,6 +18,8 @@
 //   PACT locations/dates .... 38 U.S.C. §1119(c)
 //   PACT conditions ......... 38 U.S.C. §1120; 38 CFR §§3.320, 3.320a, 3.320b
 //   Agent Orange locations .. 38 U.S.C. §1116(d) (PACT Act §403)
+//   Korean DMZ .............. 38 U.S.C. §1116B; VA's unit + physically-there test
+//   Former POW frostbite .... 38 CFR §§3.307(a)(5), 3.309(c)
 //   Agent Orange conditions . 38 CFR §3.309(e); 38 U.S.C. §1116(a)(2)
 //   Camp Lejeune ............ 38 CFR §3.307(a)(7) (30+ days, Aug 1953–Dec 1987)
 //   Camp Lejeune diseases ... 38 CFR §3.309(f)
@@ -51,7 +53,12 @@ export const PACT_SCOPE =
   "Presumed exposure applies to service in — or the airspace above — Bahrain, Iraq, Kuwait, Oman, Qatar, Saudi Arabia, Somalia or the UAE (including the Persian Gulf, Red Sea, Gulf of Aden, Gulf of Oman and Arabian Sea) on or after August 2, 1990; OR Afghanistan, Djibouti, Egypt, Jordan, Lebanon, Syria, Yemen or Uzbekistan on or after September 11, 2001. (38 U.S.C. §1119(c).) Service elsewhere carries no PACT presumption.";
 
 export const AGENT_ORANGE_SCOPE =
-  "Presumed herbicide exposure covers: Vietnam 1/9/1962–5/7/1975 (including inland waterways and within 12 nautical miles of the Vietnam/Cambodia demarcation line); Thailand, any U.S. or Royal Thai base, 1/9/1962–6/30/1976; Laos 12/1/1965–9/30/1969; Cambodia at Mimot or Krek 4/16–4/30/1969; Guam or American Samoa 1/9/1962–7/31/1980; Johnston Atoll or a ship that called there 1/1/1972–9/30/1977; the Korean DMZ 9/1/1967–8/31/1971; and C-123 aircrew. (38 U.S.C. §1116(d).) Commercial pesticide exposure carries no presumption.";
+  "Presumed herbicide exposure covers: Vietnam 1/9/1962–5/7/1975 (including inland waterways and within 12 nautical miles of the Vietnam/Cambodia demarcation line); Thailand, any U.S. or Royal Thai base, 1/9/1962–6/30/1976; Laos 12/1/1965–9/30/1969; Cambodia at Mimot or Krek 4/16–4/30/1969; Guam or American Samoa 1/9/1962–7/31/1980; Johnston Atoll or a ship that called there 1/1/1972–9/30/1977; the Korean DMZ 9/1/1967–8/31/1971, where VA and the Department of War must determine the unit operated in the DMZ area and the veteran was physically there; and C-123 aircrew. (38 U.S.C. §§1116(d), 1116B.) Commercial pesticide exposure carries no presumption.";
+
+// Cold injury is NOT a presumption for most veterans. Saying so plainly is the
+// point: the book chapter calls this a hole in the law.
+export const COLD_INJURY_SCOPE =
+  "VA presumes organic residuals of frostbite are connected to service only for former prisoners of war, when VA finds they were interned in climatic conditions consistent with frostbite and the condition is at least 10 percent disabling. (38 CFR §§3.307(a)(5), 3.309(c).) Veterans who were never captured have no presumption. They claim cold injury residuals directly (Diagnostic Code 7122, 38 CFR §4.104), and a combat veteran's own account of the injury counts as evidence under 38 U.S.C. §1154(b).";
 
 export const LEJEUNE_SCOPE =
   "Requires 30 or more days — consecutive or not — at Camp Lejeune or MCAS New River between August 1, 1953 and December 31, 1987. Applies to veterans, reservists and National Guard. (38 CFR §3.307(a)(7).) The eight presumptive diseases are listed at 38 CFR §3.309(f). No VA presumption of exposure applies to contaminated water at any other installation.";
@@ -80,6 +87,20 @@ export function pactScope(tours: TourFacts[]): ScopeResult {
   };
 }
 
+// "Korea" alone is never enough: the presumption is for the DMZ, and the app
+// cannot see a unit. Bases near the fence and bases far south of it both land
+// in KOREA_ANY and get the honest answer: a VSO has to place the unit.
+// "Camp Carroll" is matched through "waegwan" or "korea" because Vietnam had a
+// Camp Carroll too.
+const KOREA_DMZ = ["dmz", "demilitarized zone", "panmunjom"];
+const KOREA_ANY = ["korea", "camp casey", "camp hovey", "camp stanley", "camp red cloud", "camp greaves", "camp howze", "camp humphreys", "camp walker", "camp henry", "osan air", "kunsan", "yongsan", "uijeongbu", "dongducheon", "waegwan", "daegu", "taegu", "chinhae", "seoul", "busan", "pusan", "incheon", "inchon"];
+const inKoreaWindow = (t: TourFacts) => (t.year ?? 0) >= 1967 && (t.year ?? 0) <= 1971;
+
+const KOREA_DMZ_NOTE =
+  "You logged the Korean DMZ area in the covered years (September 1, 1967 to August 31, 1971). VA and the Department of War must also determine that your unit operated in the DMZ area and that you were physically there. The app can't confirm that. Unit records, morning reports and orders help, and a VSO can tell you whether your unit is already recognized.";
+const KOREA_NEARBY_NOTE =
+  "You logged Korea between 1967 and 1971, at a place the app can't tie to the DMZ. The herbicide presumption covers service in or near the DMZ, from September 1, 1967 to August 31, 1971, where VA confirms your unit operated in the DMZ area and you were physically there. Bases well south of it, including Camp Carroll, are not covered, and exposure there has to be proved case by case. Ask a VSO how close your unit was.";
+
 export function agentOrangeScope(tours: TourFacts[]): ScopeResult {
   const inScope = tours.some((t) => {
     const y = t.year ?? 0;
@@ -88,10 +109,15 @@ export function agentOrangeScope(tours: TourFacts[]): ScopeResult {
     if (has(t.place, ["laos"])) return y >= 1965 && y <= 1969;
     if (has(t.place, ["guam", "american samoa"])) return y >= 1962 && y <= 1980;
     if (has(t.place, ["johnston atoll"])) return y >= 1972 && y <= 1977;
-    if (has(t.place, ["dmz", "korea"])) return y >= 1967 && y <= 1971;
     return false;
   });
   if (inScope) return { status: "in-scope", scope: AGENT_ORANGE_SCOPE };
+  if (tours.some((t) => has(t.place, KOREA_DMZ) && inKoreaWindow(t))) {
+    return { status: "in-scope", scope: AGENT_ORANGE_SCOPE, note: KOREA_DMZ_NOTE };
+  }
+  if (tours.some((t) => has(t.place, KOREA_ANY) && inKoreaWindow(t))) {
+    return { status: "unknown", scope: AGENT_ORANGE_SCOPE, note: KOREA_NEARBY_NOTE };
+  }
   return {
     status: "unknown",
     scope: AGENT_ORANGE_SCOPE,

@@ -60,6 +60,10 @@ export default function LearnIndex() {
             <div className="text-sm font-semibold text-ink">Women veterans &amp; service →</div>
             <div className="mt-1 text-xs text-muted">Deployment roles, MST care, and where the real resources are.</div>
           </Link>
+          <Link href="/learn/korea" className="block rounded-xl border border-brand/30 bg-brand/5 p-4 transition hover:border-brand/50">
+            <div className="text-sm font-semibold text-ink">Korea: the cold and the DMZ →</div>
+            <div className="mt-1 text-xs text-muted">Cold injury, the DMZ herbicide dates, records and family benefits.</div>
+          </Link>
           <Link href="/cp-exam" className="block rounded-xl border border-brand/30 bg-brand/5 p-4 transition hover:border-brand/50">
             <div className="text-sm font-semibold text-ink">Your C&amp;P exam, demystified →</div>
             <div className="mt-1 text-xs text-muted">What it is, who examines you, and how to prepare.</div>
