@@ -213,6 +213,62 @@ check(
   "a negated causal sentence should still be swapped for the standard refusal — if this now passes through, someone added a negation exemption; read the note above before keeping it",
 );
 
+// ── ROUTE ORDER: the crisis reply must answer before every gate ─────────────
+// The fixtures above prove the crisis check fires. They cannot prove anyone
+// sees it. Both chat routes used to check the API key, sign-in and rate limit
+// BEFORE the crisis check, so a veteran typing "I want to die" with an expired
+// session, after a burst of messages, or with the key unset got "Sign in" or
+// "give me a couple seconds" and no crisis number. The crisis reply is fixed
+// text that needs no key, no account and no model, so it must return ahead of
+// all of them, and ahead of the size cap and the symptom router too.
+//
+// Checked on the source with comments stripped, the way coi-firewall rule 13
+// holds the symptom router ahead of the model: no network, no secrets, and no
+// TypeScript toolchain inside a check that gates the build.
+const stripComments = (s) =>
+  s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "").replace(/(?<!:)\/\/.*$/gm, "");
+const ROUTE_GATES = [
+  ["the size cap (413)", /status:\s*413\b/],
+  ["the API-key check", /process\.env\.ANTHROPIC_API_KEY/],
+  ["the sign-in check", /\.auth\.getUser\s*\(/],
+  ["the sign-in reply (401)", /status:\s*401\b/],
+  ["the rate limit", /\brateLimit\s*\(/],
+  ["the rate-limit reply (429)", /status:\s*429\b/],
+  ["the model call", /\.messages\.create\s*\(/],
+];
+const CRISIS_FIRST_ROUTES = {
+  "src/app/api/medic/route.ts": [...ROUTE_GATES, ["the symptom router", /\bmedicMikeSymptomRoute\s*\(/]],
+  "src/app/api/intake/route.ts": ROUTE_GATES,
+};
+for (const [file, gates] of Object.entries(CRISIS_FIRST_ROUTES)) {
+  const code = stripComments(fs.readFileSync(path.join(root, file), "utf8"));
+  const callIdx = code.search(/\bmedicMikeCrisisCheck\s*\(/);
+  const returnIdx = code.search(/\bif\s*\(\s*crisis\s*\)\s*return\b/);
+  if (callIdx < 0 || returnIdx < callIdx) {
+    check(
+      "route-crisis-missing",
+      false,
+      `${file} no longer calls medicMikeCrisisCheck() and returns its reply early with \`if (crisis) return ...\`. ` +
+        "If it was renamed, update this check; if it was removed, put it back.",
+    );
+    continue;
+  }
+  for (const [label, re] of gates) {
+    const gateIdx = code.search(re);
+    check(
+      "route-gate-not-found",
+      gateIdx >= 0,
+      `${file}: could not find ${label} (${re}). If it moved or was renamed, update this check so it still holds the crisis reply ahead of it.`,
+    );
+    check(
+      "route-crisis-order",
+      gateIdx < 0 || returnIdx < gateIdx,
+      `${file}: ${label} runs BEFORE the crisis reply returns. Nothing may stand between crisis language and the crisis line: ` +
+        "not sign-in, not the rate limit, not a missing key, not the size cap.",
+    );
+  }
+}
+
 if (failures.length) {
   console.error("\n  MEDIC MIKE GUARDRAILS FAILED — build stopped\n");
   for (const f of failures) console.error(`  [${f.split(":")[0]}] ${f.slice(f.indexOf(":") + 2)}\n`);
@@ -223,4 +279,4 @@ if (failures.length) {
   );
   process.exit(1);
 }
-console.log(`verify-mike: ok (${MUST_CRISIS.length + MUST_NOT_CRISIS.length + MUST_ROUTE.length + MUST_NOT_ROUTE.length + MUST_REPLACE.length + MUST_PASS.length} fixtures)`);
+console.log(`verify-mike: ok (${MUST_CRISIS.length + MUST_NOT_CRISIS.length + MUST_ROUTE.length + MUST_NOT_ROUTE.length + MUST_REPLACE.length + MUST_PASS.length} fixtures, ${Object.keys(CRISIS_FIRST_ROUTES).length} routes crisis-first)`);

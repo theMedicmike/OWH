@@ -22,30 +22,6 @@ const MAX_TOTAL_CHARS = 24_000;
 const TURNS = 10;
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    // Never hand a veteran an environment-variable name. He can do nothing with
-    // it, and it is read aloud by the text-to-speech voice.
-    console.error("[api/medic] ANTHROPIC_API_KEY is not set");
-    return Response.json({ text: "Medic Mike isn't available right now. Try me again in a bit." });
-  }
-
-  // Require a signed-in veteran. The pages that call this are gated by
-  // AppShell, but the route itself was open to the internet: any script could
-  // drain the nonprofit's Anthropic budget, and the per-instance rate limit in
-  // lib/ratelimit is explicitly documented as "not a hard guarantee" because
-  // Vercel spins new instances with fresh empty buckets.
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth?.user) {
-    return Response.json({ text: "Sign in and I'll be right here." }, { status: 401 });
-  }
-
-  // Key the limiter on the veteran, not the forwarded IP — an IP is shared on
-  // a base or a VA hospital wifi, and is trivially spoofed.
-  if (!rateLimit(`medic:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {
-    return Response.json({ text: "Give me a couple seconds to catch up, then try me again." }, { status: 429 });
-  }
-
   try {
     const { messages } = (await req.json()) as { messages: Msg[] };
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -55,7 +31,16 @@ export async function POST(req: Request) {
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
 
     // 🔴 CRISIS FIRST. Ahead of the symptom router, ahead of the model, ahead of
-    // everything. The router's STANDALONE_DIAGNOSIS_ASK matches "what's wrong
+    // everything -- including the API-key, sign-in and rate-limit gates, which
+    // used to run before this line. A veteran who typed "I want to die" with an
+    // expired session, after a burst of messages, or while the key was missing
+    // got "Sign in", "give me a couple seconds" or "not available", and no
+    // crisis number. This reply needs no key, no account and no model, so those
+    // gates have nothing to protect here. It stays ahead of the size cap below
+    // too: a long message with crisis language in it must never be answered
+    // "send me the short version". scripts/verify-mike.cjs holds the order.
+    //
+    // The router's STANDALONE_DIAGNOSIS_ASK matches "what's wrong
     // with me", which is inside "I don't know what's wrong with me anymore. I
     // want to die." — so before this line, that message was answered with a
     // paragraph about clinicians and no crisis number at all. Static text; no
@@ -81,6 +66,30 @@ export async function POST(req: Request) {
     const total = recent.reduce((n, m) => n + (m.content?.length ?? 0), 0);
     if (oversize || total > MAX_TOTAL_CHARS) {
       return Response.json({ text: "That's a lot at once — send me the short version and we'll work from there." }, { status: 413 });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      // Never hand a veteran an environment-variable name. He can do nothing with
+      // it, and it is read aloud by the text-to-speech voice.
+      console.error("[api/medic] ANTHROPIC_API_KEY is not set");
+      return Response.json({ text: "Medic Mike isn't available right now. Try me again in a bit." });
+    }
+
+    // Require a signed-in veteran. The pages that call this are gated by
+    // AppShell, but the route itself was open to the internet: any script could
+    // drain the nonprofit's Anthropic budget, and the per-instance rate limit in
+    // lib/ratelimit is explicitly documented as "not a hard guarantee" because
+    // Vercel spins new instances with fresh empty buckets.
+    const supabase = await createClient();
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user) {
+      return Response.json({ text: "Sign in and I'll be right here." }, { status: 401 });
+    }
+
+    // Key the limiter on the veteran, not the forwarded IP — an IP is shared on
+    // a base or a VA hospital wifi, and is trivially spoofed.
+    if (!rateLimit(`medic:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {
+      return Response.json({ text: "Give me a couple seconds to catch up, then try me again." }, { status: 429 });
     }
 
     // Council ruling 2026-08-14: symptom→claimability matching must be blocked
