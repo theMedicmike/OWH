@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
 import MapPanel from "@/components/MapPanel";
+import PlaceQuickAdd from "@/components/PlaceQuickAdd";
 
 export default async function MapPage() {
   const supabase = await createClient();
@@ -30,11 +31,20 @@ export default async function MapPage() {
 
   return (
     <AppShell title="Where you served">
-      <p className="mb-4 text-sm text-muted">
-        {sites?.length ?? 0} known exposure sites loaded. Click anywhere on the map to drop a pin where you
-        served, then tag what you were exposed to.
-      </p>
-      <MapPanel sites={sites ?? []} />
+      <div className="space-y-10">
+        {/* The quick way first: search, Add, pick the year. */}
+        <PlaceQuickAdd sites={sites ?? []} />
+
+        {/* The map, for dates, a story, what you were around, or an exact pin. */}
+        <section>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Or use the map</h2>
+          <p className="mb-4 mt-1 text-[15px] leading-relaxed text-muted">
+            Tap anywhere to drop a pin where you served, then add the dates, what you were around, and your own
+            words.
+          </p>
+          <MapPanel sites={sites ?? []} />
+        </section>
+      </div>
     </AppShell>
   );
 }
