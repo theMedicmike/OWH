@@ -94,9 +94,12 @@ export default function HealthView() {
   const [openSystem, setOpenSystem] = useState<string | null>(null);
   const [detailFor, setDetailFor] = useState<string | null>(null);
   const [freeText, setFreeText] = useState("");
-  const [showFree, setShowFree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // The condition just added with one tap, so its row can show the single
+  // optional follow-up (when did it start) right where his thumb is.
+  const [justAdded, setJustAdded] = useState<{ id: string; label: string } | null>(null);
+  const [onsetSaved, setOnsetSaved] = useState<string | null>(null);
 
   const chosen = useMemo(() => new Set(conditions.map((c) => c.label)), [conditions]);
 
@@ -215,10 +218,25 @@ export default function HealthView() {
     setBusy(true); setErr(null);
     const mid = await memberId();
     if (!mid) { setBusy(false); setErr("Couldn't find your record — try again."); return; }
-    const { error } = await supabase.from("conditions").insert({ member_id: mid, label, claim_status: "none" });
+    const { data, error } = await supabase
+      .from("conditions")
+      .insert({ member_id: mid, label, claim_status: "none" })
+      .select("id")
+      .single();
     if (error) setErr(`Couldn't add that: ${error.message}`);
-    else await load();
+    else {
+      setJustAdded({ id: (data as { id: string }).id, label });
+      setOnsetSaved(null);
+      await load();
+    }
     setBusy(false);
+  }
+
+  // The one follow-up after a one-tap add. Optional, one tap, and it writes
+  // only the coarse answer he gave (in service / after / not sure), never a year.
+  async function setOnset(id: string, v: string) {
+    await patch(id, { onset_precision: v });
+    setOnsetSaved(PRECISION.find((p) => p.v === v)?.label ?? v);
   }
 
   async function remove(id: string) {
@@ -250,7 +268,6 @@ export default function HealthView() {
     if (!label) return;
     await add(label);
     setFreeText("");
-    setShowFree(false);
   }
 
   if (!ready) return <p className="text-sm text-muted">Loading…</p>;
@@ -263,10 +280,65 @@ export default function HealthView() {
     );
   }
 
-  const pill = (on: boolean) =>
-    `rounded-xl border px-3 py-2.5 text-left text-[13px] leading-snug transition ${
-      on ? "border-brand bg-brand text-white font-semibold" : "border-line bg-surface text-ink hover:border-brand/40 hover:bg-canvas"
-    }`;
+  // One row per condition: the name, an Add button, and once added, "Added"
+  // plus the single optional follow-up under the row he just tapped. Same
+  // shape as the medications and shots lists, so it is learned once.
+  const followUp = (label: string) => {
+    const mine = justAdded && justAdded.label === label ? justAdded : null;
+    if (!mine) return null;
+    return (
+      <div aria-live="polite">
+        <p className="text-[15px] font-semibold text-success">{label} is on your record.</p>
+        {onsetSaved ? (
+          <p className="mt-1 text-[15px] text-muted">Saved: started {onsetSaved.toLowerCase()}.</p>
+        ) : (
+          <>
+            <p className="field-label mt-3">When did it start? (optional)</p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {PRECISION.map((p) => (
+                <button key={p.v} type="button" onClick={() => setOnset(mine.id, p.v)} className="btn btn-secondary w-full">
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-sm text-muted">More detail, like the year and who diagnosed it, is below under What you&apos;ve told us.</p>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const conditionRow = (label: string, alt?: string) => {
+    const has = chosen.has(label);
+    const showFollow = justAdded?.label === label;
+    return (
+      <div key={label} className="border-t border-line first:border-t-0">
+        <div className="row">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold leading-snug">{label}</span>
+            {alt && <span className="mt-0.5 block text-sm leading-snug text-muted">{alt}</span>}
+          </span>
+          {has ? (
+            <span className="flex min-h-11 flex-none items-center gap-1.5 px-2 text-[15px] font-semibold text-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="m5 12 4 4L19 7" /></svg>
+              Added
+            </span>
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => add(label)}
+              aria-label={`Add ${label} to your conditions`}
+              className="btn btn-secondary min-w-[5.5rem] flex-none"
+            >
+              Add
+            </button>
+          )}
+        </div>
+        {showFollow && <div className="border-t border-line bg-canvas px-4 pb-4 pt-3">{followUp(label)}</div>}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-5">
@@ -285,126 +357,99 @@ export default function HealthView() {
 
       {/* ── Ask ─────────────────────────────────────────────────────────── */}
       <div>
-        <h2 className="text-lg font-bold text-ink">What are you dealing with?</h2>
+        <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">What are you dealing with?</h2>
         <p className="mt-1 text-[15px] leading-relaxed text-muted">
-          Tap everything that applies — you can change any of it later. Start with what bothers you most;
+          Tap Add on everything that applies. You can remove any of it later. Start with what bothers you most;
           you don&apos;t have to know whether it&apos;s &ldquo;service connected.&rdquo; That&apos;s what
           the rest of this is for.
         </p>
       </div>
 
       {err && (
-        <div role="status" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700">{err}</div>
+        <div role="status" className="rounded-xl border border-scarlet/30 bg-scarlet/5 px-4 py-3 text-[15px] font-medium text-scarlet">{err}</div>
       )}
 
       {/* ── Search ──────────────────────────────────────────────────────── */}
-      <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-4 w-4"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /></svg>
-        </span>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search — try “ringing”, “breathing”, “back”…"
-          className="w-full card py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/15"
-        />
-        {results.length > 0 && (
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {results.map((c) => (
-              <button key={c.label} type="button" disabled={busy} aria-pressed={chosen.has(c.label)}
-                onClick={() => add(c.label)} className={pill(chosen.has(c.label))}>
-                {chosen.has(c.label) && <span className="mr-1 text-accent">✓</span>}
-                {c.label}
-                {c.alt && <span className="mt-0.5 block text-[13px] font-normal opacity-70">{c.alt}</span>}
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="sticky top-16 z-10 -mx-1 bg-canvas/95 px-1 py-1 backdrop-blur">
+        <label htmlFor="condition-search" className="sr-only">Search conditions</label>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-5 w-5"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /></svg>
+          </span>
+          <input
+            id="condition-search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search, e.g. ringing, breathing, back"
+            className="field pl-11"
+            autoComplete="off"
+          />
+        </div>
       </div>
+
+      {q && (
+        results.length > 0 ? (
+          <div className="card overflow-hidden">{results.map((c) => conditionRow(c.label, c.alt))}</div>
+        ) : (
+          <p className="text-[15px] text-muted">Nothing matches that. Add it in your own words below.</p>
+        )
+      )}
 
       {/* ── One tap for the common case ─────────────────────────────────── */}
       {!q && (
-        <div>
-          <div className="text-[13px] font-semibold text-ink">Most veterans start here</div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {COMMON_STARTERS.filter((l) => !chosen.has(l)).map((l) => (
-              <button
-                key={l}
-                type="button"
-                disabled={busy}
-                onClick={() => add(l)}
-                className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-ink transition hover:border-brand hover:bg-brand/5 hover:text-brand"
-              >
-                + {l}
-              </button>
-            ))}
-          </div>
-          <p className="mt-2 text-[13px] text-faint">
-            Not here? Search above, or open a body system below — there are far more.
-          </p>
-        </div>
+        <section>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Most veterans start here</h3>
+          <div className="card mt-3 overflow-hidden">{COMMON_STARTERS.map((l) => conditionRow(l))}</div>
+        </section>
       )}
 
       {/* ── Browse by body system ───────────────────────────────────────── */}
       {!q && (
-        <div className="space-y-2">
+        <section className="space-y-2">
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Or browse by body system</h3>
           {groups.map((g) => {
             const open = openSystem === g.system;
-            const picked = g.items.filter((i) => chosen.has(i.label)).length;
+            const has = g.items.some((i) => chosen.has(i.label));
             return (
-              <div key={g.system} className="overflow-hidden card">
+              <div key={g.system} className="card overflow-hidden">
                 <button
                   type="button"
                   aria-expanded={open}
                   onClick={() => setOpenSystem(open ? null : g.system)}
-                  className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
+                  className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left"
                 >
-                  <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <span className="flex items-center gap-2 text-[15px] font-semibold text-ink">
                     {g.system}
-                    {picked > 0 && <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-label="you have items here" />}
+                    {has && <span className="rounded-full bg-success-soft px-2 py-0.5 text-[13px] font-semibold text-success">On your record</span>}
                   </span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className={`h-4 w-4 flex-none text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="M6 9l6 6 6-6" /></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className={`h-5 w-5 flex-none text-muted transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
                 </button>
-                {open && (
-                  <div className="grid grid-cols-1 gap-2 border-t border-line p-3 sm:grid-cols-2">
-                    {g.items.map((c) => (
-                      <button key={c.label} type="button" disabled={busy} aria-pressed={chosen.has(c.label)}
-                        onClick={() => add(c.label)} className={pill(chosen.has(c.label))}>
-                        {chosen.has(c.label) && <span className="mr-1 text-accent">✓</span>}
-                        {c.label}
-                        {c.alt && <span className="mt-0.5 block text-[13px] font-normal opacity-70">{c.alt}</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {open && <div className="border-t border-line">{g.items.map((c) => conditionRow(c.label, c.alt))}</div>}
               </div>
             );
           })}
-
-          {/* Something else — free text, kept verbatim */}
-          {showFree ? (
-            <div className="rounded-xl border border-accent/40 bg-accent/5 p-3">
-              <label className="text-[13px] font-semibold text-ink">In your own words — what is it called?</label>
-              <div className="mt-2 flex gap-2">
-                <input
-                  autoFocus value={freeText} onChange={(e) => setFreeText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") addFreeText(); if (e.key === "Escape") setShowFree(false); }}
-                  placeholder="e.g. constrictive bronchiolitis with GERD"
-                  className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
-                />
-                <button onClick={addFreeText} disabled={!freeText.trim() || busy}
-                  className="btn btn-primary disabled:opacity-50">Add</button>
-              </div>
-              <p className="mt-1.5 text-[13px] text-faint">Kept exactly as you write it — your diagnosis, your words.</p>
-            </div>
-          ) : (
-            <button onClick={() => setShowFree(true)}
-              className="w-full rounded-xl border-2 border-dashed border-line py-3 text-sm font-semibold text-muted transition hover:border-brand hover:text-brand">
-              ＋ Something else — type it yourself
-            </button>
-          )}
-        </div>
+        </section>
       )}
+
+      {/* Something else — free text, kept verbatim */}
+      <section className="card p-4 sm:p-5">
+        <label htmlFor="condition-free" className="field-label">Not on the list? Type it in your own words</label>
+        <div className="flex gap-2">
+          <input
+            id="condition-free"
+            value={freeText}
+            onChange={(e) => setFreeText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") addFreeText(); }}
+            placeholder="e.g. constrictive bronchiolitis"
+            className="field flex-1"
+          />
+          <button onClick={addFreeText} disabled={!freeText.trim() || busy} className="btn btn-primary flex-none">Add</button>
+        </div>
+        <p className="mt-1.5 text-sm text-muted">Kept exactly as you write it. Your diagnosis, your words.</p>
+        {justAdded && !CONDITION_BY_LABEL[justAdded.label] && !COMMON_STARTERS.includes(justAdded.label) && (
+          <div className="mt-3 rounded-xl bg-canvas p-3">{followUp(justAdded.label)}</div>
+        )}
+      </section>
 
       {/* Capture first, classify later. Sits above the conditions list on
           purpose: a veteran who came here because something is happening
