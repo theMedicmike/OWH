@@ -165,6 +165,23 @@ export function mosNoiseLookup(rawMos: string | null | undefined, branch: string
   return row ? { code, title: row.title, rating: row.rating } : null;
 }
 
+/** Tap-to-fill suggestions while a veteran types his job code or title on the
+ *  service form. Code and title ONLY, never the noise rating, and only from his
+ *  own branch's rows (same no-cross-branch rule as the lookup). This table is a
+ *  partial listing, so it suggests; it never limits what can be typed. */
+export function mosSuggestions(query: string, branch: string | null | undefined, limit = 5): { code: string; title: string }[] {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2 || !branch) return [];
+  const byBranch = TABLE[branch];
+  if (!byBranch) return [];
+  const out: { code: string; title: string }[] = [];
+  for (const [code, row] of Object.entries(byBranch)) {
+    if (code.toLowerCase().startsWith(q) || row.title.toLowerCase().includes(q)) out.push({ code, title: row.title });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 // Only these labels get the noise line — Vertigo stays on the generic event
 // sentence (the listing is an auditory-claims reference).
 export const NOISE_CONDITIONS = new Set(["Tinnitus", "Hearing loss"]);

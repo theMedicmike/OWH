@@ -9,6 +9,7 @@ import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { daysInMonth } from "@/lib/serviceDates";
 import { EXPOSURES, EXPOSURE_LABEL } from "@/lib/education";
 import MonthYearWheel from "./MonthYearWheel";
+import { mosSuggestions } from "@/lib/mosNoise";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -152,12 +153,10 @@ function StepBar({ step }: { step: number }) {
 
 function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden card shadow-sm">
-      <div className="border-b-[3px] border-brand bg-brand px-6 py-4">
-        <h2 className="text-lg font-bold text-white">{title}</h2>
-        {subtitle && <p className="mt-0.5 text-sm text-white/70">{subtitle}</p>}
-      </div>
-      <div className="p-6">{children}</div>
+    <div className="card p-5 sm:p-6">
+      <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">{title}</h2>
+      {subtitle && <p className="mt-2 text-[15px] leading-relaxed text-muted">{subtitle}</p>}
+      <div className="mt-6">{children}</div>
     </div>
   );
 }
@@ -165,15 +164,31 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-semibold text-ink">{label}</label>
-      {hint && <p className="mb-1.5 text-[13px] text-muted">{hint}</p>}
+      <div className="field-label">{label}</div>
+      {hint && <p className="-mt-0.5 mb-2 text-sm leading-relaxed text-muted">{hint}</p>}
       {children}
     </div>
   );
 }
 
-const inputCls = "w-full rounded-xl border border-line bg-canvas px-4 py-2.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/15 transition";
-const selectCls = inputCls + " appearance-none cursor-pointer";
+// A big tap tile for a choice from a short list (branch, boot camp). Chosen
+// reads as the primary button; everything else as a quiet secondary.
+function Tile({ on, onClick, children, sub }: { on: boolean; onClick: () => void; children: React.ReactNode; sub?: string }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={`btn w-full flex-col items-start justify-center text-left ${on ? "btn-primary" : "btn-secondary"} min-h-14`}
+    >
+      <span className="block leading-snug">{children}</span>
+      {sub && <span className={`block text-sm font-normal leading-snug ${on ? "text-white/80" : "text-muted"}`}>{sub}</span>}
+    </button>
+  );
+}
+
+const inputCls = "field";
+const selectCls = "field appearance-none cursor-pointer";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -585,25 +600,22 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       <StepBar step={step} />
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div role="alert" className="rounded-xl border border-scarlet/30 bg-scarlet/5 px-4 py-3 text-[15px] font-medium text-scarlet">{error}</div>
       )}
 
       {/* ── Step 1: Your Service ─────────────────────────────────────────── */}
       {step === 0 && (
         <SectionCard
           title="Your service"
-          subtitle="Tell us about your military career. Everything here is private and stays in your record."
+          subtitle="Mostly taps. Everything here is private and stays in your record."
         >
-          <div className="space-y-5">
-            <Field label="Your name" hint="How should we address you in your record?">
-              <input className={inputCls} placeholder="e.g. John Smith" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            </Field>
-
-            <Field label="Branch of service">
-              <select className={selectCls} value={branch} onChange={(e) => setBranch(e.target.value)}>
-                <option value="">Select your branch…</option>
-                {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
-              </select>
+          <div className="space-y-7">
+            <Field label="Which branch?">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {BRANCHES.map((b) => (
+                  <Tile key={b} on={branch === b} onClick={() => { if (branch !== b) setBootCamp(""); setBranch(b); }}>{b}</Tile>
+                ))}
+              </div>
             </Field>
 
             {/* Boot camp — the one place every veteran has been, and the
@@ -611,18 +623,17 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
             {branch && (
               <Field
                 label="Where did you go to boot camp?"
-                hint="Everybody remembers boot camp — and it counts. Some training posts carry documented exposures of their own."
+                hint="Everybody remembers boot camp, and it counts. Some training posts carry documented exposures of their own."
               >
-                <select className={selectCls} value={bootCamp} onChange={(e) => setBootCamp(e.target.value)}>
-                  <option value="">Select…</option>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {bootCampsFor(branch).map((b) => (
-                    <option key={b.name} value={b.name}>{b.name} — {b.region}</option>
+                    <Tile key={b.name} on={bootCamp === b.name} onClick={() => setBootCamp(b.name)} sub={b.region}>{b.name}</Tile>
                   ))}
-                  <option value="__other">Somewhere else / I&apos;ll add it on the map</option>
-                </select>
+                  <Tile on={bootCamp === "__other"} onClick={() => setBootCamp("__other")} sub="Add it on the map later">Somewhere else</Tile>
+                </div>
                 {bootCamp && bootCamp !== "__other" && (
-                  <div className="mt-2">
-                    <label className="mb-1 block text-[13px] text-muted">When?</label>
+                  <div className="mt-4">
+                    <div className="field-label">When did you get there?</div>
                     <MonthYearWheel
                       month={bootCampMonth}
                       year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
@@ -633,16 +644,16 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                       approximate={bootCampApprox}
                       onApproximateChange={setBootCampApprox}
                     />
-                    <span className="mt-1 block text-[13px] text-faint">
-                      We&apos;ll drop your first pin here — you can move or remove it any time.
+                    <span className="mt-1.5 block text-sm text-muted">
+                      This becomes your first place on the map. You can move or remove it any time.
                     </span>
                   </div>
                 )}
               </Field>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Service start">
+            <div className="grid gap-6 sm:grid-cols-2">
+              <Field label="When did you start?">
                 <MonthYearWheel
                   month={startMonth}
                   year={parseInt(startYear) || new Date().getUTCFullYear()}
@@ -654,13 +665,13 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                   onApproximateChange={setStartApprox}
                 />
               </Field>
-              <Field label="Service end">
-                <label className="mb-2 flex cursor-pointer items-center gap-2 text-[13px] text-muted">
+              <Field label="When did you get out?">
+                <label className="mb-3 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-line bg-white px-3.5 text-[15px] font-medium text-ink hover:bg-canvas">
                   {/* Does not clear the year — saveStep1 already writes null when
                       this is ticked, and clearing it only lost the separation date
                       of anyone who ticked the box to see what it did. */}
-                  <input type="checkbox" checked={currentlyServing} onChange={(e) => setCurrentlyServing(e.target.checked)} className="rounded" />
-                  I am currently serving
+                  <input type="checkbox" checked={currentlyServing} onChange={(e) => setCurrentlyServing(e.target.checked)} className="h-6 w-6 accent-brand" />
+                  I am still serving
                 </label>
                 {!currentlyServing && (
                   <MonthYearWheel
@@ -678,16 +689,30 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
               </Field>
             </div>
 
-            <Field label="MOS / Rate / AFSC / NEC" hint="Your military job code — optional but helpful for your record.">
-              <input className={inputCls} placeholder="e.g. 11B, HM, 1N0X1" value={mos} onChange={(e) => setMos(e.target.value)} />
+            <Field label="Your job (optional)" hint="Your MOS, rate, AFSC or NEC. Type the code, or the job name and tap it if it shows up.">
+              <input id="intake-mos" className={inputCls} placeholder="e.g. 11B, or infantry" value={mos} onChange={(e) => setMos(e.target.value)} autoComplete="off" />
+              {(() => {
+                const sugg = mosSuggestions(mos, branch).filter((s) => s.code.toLowerCase() !== mos.trim().toLowerCase());
+                if (!sugg.length) return null;
+                return (
+                  <div className="mt-2 card overflow-hidden">
+                    {sugg.map((s) => (
+                      <button key={s.code} type="button" onClick={() => setMos(s.code)} className="row w-full text-left">
+                        <span className="min-w-0 flex-1 text-[15px]"><span className="font-semibold">{s.code}</span> <span className="text-muted">{s.title}</span></span>
+                        <span className="flex-none text-[15px] font-semibold text-brand">Use</span>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
             </Field>
 
-            <button
-              onClick={saveStep1}
-              disabled={saving}
-              className="w-full rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-600 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Save & continue"}
+            <Field label="Your name (optional)" hint="How should we address you in your record?">
+              <input className={inputCls} placeholder="e.g. John Smith" value={displayName} onChange={(e) => setDisplayName(e.target.value)} autoComplete="name" />
+            </Field>
+
+            <button onClick={saveStep1} disabled={saving} className="btn btn-primary btn-lg w-full">
+              {saving ? "Saving…" : "Save and continue"}
             </button>
           </div>
         </SectionCard>
