@@ -77,7 +77,10 @@ export async function createServiceEvent(
     eventDay: number | null;
     datePrecision: DatePrecision;
     provenance: Provenance;
-    informedConsent: InformedConsent;
+    /** null when the question was never asked (the one-tap add on a shot's
+     *  library page). The column is nullable; an unasked question is stored
+     *  as unanswered, never guessed. Provenance, by contrast, is always asked. */
+    informedConsent: InformedConsent | null;
     note: string;
   },
 ): Promise<{ status: "saved" } | { status: "error"; message: string }> {

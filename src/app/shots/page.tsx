@@ -29,11 +29,13 @@ export default function ShotsPage() {
         <ShotsListCard />
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Link href="/shots/library" className="rounded-lg border border-line bg-surface p-4 text-sm font-medium text-ink hover:bg-canvas">
-            What these shots were — the library
+          <Link href="/shots/library" className="card block p-4 transition hover:border-brand/40">
+            <span className="block text-[15px] font-semibold text-ink">Shot library</span>
+            <span className="mt-0.5 block text-sm text-muted">Every shot, its FDA label word for word. Add any one to your record in one tap.</span>
           </Link>
-          <Link href="/shots/history" className="rounded-lg border border-line bg-surface p-4 text-sm font-medium text-ink hover:bg-canvas">
-            What the rules said, and when
+          <Link href="/shots/history" className="card block p-4 transition hover:border-brand/40">
+            <span className="block text-[15px] font-semibold text-ink">What the rules said, and when</span>
+            <span className="mt-0.5 block text-sm text-muted">The timeline of military vaccine policy, and where the record has gaps.</span>
           </Link>
         </div>
 

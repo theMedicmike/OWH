@@ -47,22 +47,33 @@
   --ease-out: cubic-bezier(.16, .84, .44, 1);
 }
 
-html,
-body {
-  height: 100%;
+/* Everything below sits in Tailwind's own layers (base, then components) so
+   a utility class on an element always wins. Unlayered CSS beats every
+   Tailwind utility in v4, which is how `lg:hidden` on a button styled with
+   `.btn` used to stay visible on desktop, `px-0` lost to `.btn` padding, and
+   `border-brand` lost to the default border colour below. */
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
 }
 
-body {
-  background: var(--color-canvas);
-  color: var(--color-ink);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-* {
-  border-color: var(--color-line);
-}
+@layer components {
 
 /* ═══════════════════════════════════════════════════════════════════════
    BROWSER SURFACES: the parts nobody draws still carry the design.
@@ -222,6 +233,8 @@ a.row:hover, button.row:hover { background: var(--color-canvas); }
 }
 .spine-dot[data-state="done"] { background: var(--color-brand); border-color: var(--color-brand); }
 .spine-dot[data-state="next"] { border-color: var(--color-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 22%, transparent); }
+
+} /* end @layer components */
 
 /* ═══════════════════════════════════════════════════════════════════════
    MOTION: few, short, and all opacity/transform/clip. No parallax, no scroll

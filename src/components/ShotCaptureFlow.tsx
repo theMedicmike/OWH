@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import MonthYearWheel from "./MonthYearWheel";
-import { SHOTS, GROUP_LABEL, type Shot, type ShotGroup } from "@/lib/shotlibrary";
+import { SHOTS, SHOT_BY_SLUG, GROUP_LABEL, type Shot, type ShotGroup } from "@/lib/shotlibrary";
 import { createServiceEvent, INFORMED_CONSENT_OPTIONS, type Provenance, type InformedConsent, type DatePrecision, type ServiceEventKind } from "@/lib/serviceEvents";
 
 const GROUPS: ShotGroup[] = ["basic", "posted", "yearly", "other"];
@@ -16,10 +16,18 @@ const PROVENANCE_OPTIONS: { value: Provenance; label: string }[] = [
 
 type Picked = { label: string; refSlug: string | null; kind: ServiceEventKind };
 
-export default function ShotCaptureFlow() {
+const pickedFor = (s: Shot): Picked => ({ label: s.name, refSlug: s.slug, kind: s.group === "other" ? "medication" : "vaccination" });
+
+// `initialSlug` comes from /shots/add?shot=<slug>, the "add it with the date"
+// link on a shot's library page, so the veteran lands on that shot's form
+// instead of searching for it again.
+export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string } = {}) {
   const [query, setQuery] = useState("");
   const [openGroup, setOpenGroup] = useState<ShotGroup | null>(null);
-  const [picked, setPicked] = useState<Picked | null>(null);
+  const [picked, setPicked] = useState<Picked | null>(() => {
+    const s = initialSlug ? SHOT_BY_SLUG[initialSlug] : undefined;
+    return s ? pickedFor(s) : null;
+  });
   const [freeText, setFreeText] = useState("");
 
   const filtered = useMemo(() => {
@@ -29,7 +37,7 @@ export default function ShotCaptureFlow() {
   }, [query]);
 
   function pickShot(s: Shot) {
-    setPicked({ label: s.name, refSlug: s.slug, kind: s.group === "other" ? "medication" : "vaccination" });
+    setPicked(pickedFor(s));
   }
   function pickFreeText() {
     const label = freeText.trim();

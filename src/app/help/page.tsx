@@ -236,7 +236,7 @@ const MORE_STEPS: Step[] = [
     points: [
       "“Where your record actually is” — two questions, your branch and the year you separated (or “I'm still serving”), and it tells you which office actually holds your shot record. milConnect gets you your DD-214, not this — it's a different file in a different building.",
       "“＋ Add a shot” — search for it or pick from a short list grouped by when you'd have gotten it. Say when (year, or “I'm not sure”), and how you know — “I remember it,” “It's in my record,” or “I have the document.” That last part matters: remembered isn't worse than documented, it's just different, and whoever reads this later needs to know which is which.",
-      "“What these shots were — the library →” — every one has the actual FDA label, word for word, plus what the government said about it and when.",
+      "“Shot library” — every one has the actual FDA label, word for word, plus what the government said about it and when. Open any shot and tap how you know (“I remember it,” “It’s in my record,” or “I have the document”) to put it on your shot record in one step; the year can be added through “＋ Add a shot” if you know it.",
       "“What the rules said, and when →” — the timeline of military vaccine policy, and a section headed “What we could and could not confirm” that says plainly where the record has real gaps.",
     ],
     warn: {

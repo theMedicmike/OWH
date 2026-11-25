@@ -1,35 +1,43 @@
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import { Chevron } from "@/components/ui";
 import { SHOTS, GROUP_LABEL, type ShotGroup } from "@/lib/shotlibrary";
 
 const GROUPS: ShotGroup[] = ["basic", "posted", "yearly", "other"];
 
 export default function ShotLibraryPage() {
   return (
-    <AppShell title="What these shots were">
-      <p className="mb-4 text-sm text-muted">
-        The FDA-approved label for each one, word for word — plus what the government said about it, and when.
-      </p>
-      <div className="space-y-5">
+    <AppShell title="Shot library">
+      <div className="space-y-7">
+        <div>
+          <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">Shot library</h2>
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+            The FDA-approved label for each one, word for word, plus what the government said about it, and when.
+            Open any shot to add it to your record in one tap.
+          </p>
+        </div>
         {GROUPS.map((g) => {
           const items = SHOTS.filter((s) => s.group === g).sort((a, b) => a.name.localeCompare(b.name));
           if (!items.length) return null;
           return (
-            <div key={g}>
-              <h2 className="mb-2 text-[13px] font-medium text-muted">{GROUP_LABEL[g]}</h2>
-              <div className="divide-y divide-line card">
+            <section key={g}>
+              <h3 className="text-lg font-semibold tracking-tight text-ink">{GROUP_LABEL[g]}</h3>
+              <div className="card mt-3 overflow-hidden">
                 {items.map((s) => (
-                  <Link key={s.slug} href={`/shots/library/${s.slug}`} className="flex items-baseline justify-between gap-2 px-4 py-3 text-sm hover:bg-canvas">
-                    <span className="font-medium text-ink">{s.name}</span>
-                    <span className="text-[13px] text-muted">{s.hook}</span>
+                  <Link key={s.slug} href={`/shots/library/${s.slug}`} className="row group">
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold leading-snug">{s.name}</span>
+                      <span className="mt-0.5 block text-sm leading-snug text-muted">{s.hook}</span>
+                    </span>
+                    <Chevron className="text-faint transition-colors group-hover:text-ink" />
                   </Link>
                 ))}
               </div>
-            </div>
+            </section>
           );
         })}
+        <Link href="/shots" className="btn btn-secondary w-full">Your shot record</Link>
       </div>
-      <Link href="/shots" className="mt-6 block text-center text-sm font-semibold text-brand hover:underline">Your shot record</Link>
     </AppShell>
   );
 }
