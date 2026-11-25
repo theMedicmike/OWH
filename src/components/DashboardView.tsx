@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import VerifyCard from "./VerifyCard";
-import { ServiceRibbon, RibbonDivider } from "./Patriotic";
 import { EXPOSURE_LABEL, connectedConditionLabels } from "@/lib/education";
 import { recordProgress } from "@/lib/nextaction";
 import PresumptivePathwaysCard from "./PresumptivePathwaysCard";
@@ -12,23 +11,27 @@ import { listServiceEvents } from "@/lib/serviceEvents";
 import { listMemberIncidents } from "@/lib/incidents";
 import { listMedications } from "@/lib/medications";
 import { listVessels } from "@/lib/vessels";
-
+import { Card, SectionTitle, LinkRow, SpineRow, Chevron, type SpineState } from "./ui";
 
 type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
 type Conn = { id: string; direction: "sent" | "received"; status: string; other_name: string | null; place: string | null; ev_year: number | null };
 
-const QUICK = [
-  { href: "/mike", title: "Talk to Medic Mike", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
-  { href: "/journey", title: "Connect the dots", d: "M5 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM7.5 10.5l9-5M7.5 13l9 5" },
-  { href: "/map", title: "Open the map", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
-  { href: "/shots", title: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
-  { href: "/injuries", title: "Injuries & events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
-  { href: "/medications", title: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
-  { href: "/vessels", title: "Ships you served aboard", d: "M12 2v6M9 5h6M3 13h18l-2.2 6.2a2 2 0 0 1-1.9 1.3H7.1a2 2 0 0 1-1.9-1.3zM5.5 13V9h13v4" },
-  { href: "/intake/ai", title: "Voice guided intake", d: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" },
-  { href: "/learn", title: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
-  { href: "/solutions", title: "Whole health", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
-  { href: "/report", title: "Your claim packet", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5z" },
+function IconPath({ d }: { d: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+      <path d={d} />
+    </svg>
+  );
+}
+
+// Everything that is not one of the six steps, so nothing shipped is
+// invisible from Home. These are menus, not scorecards: nothing here implies
+// anything is owed.
+const MORE = [
+  { href: "/mike", title: "Talk to Medic Mike", detail: "Ask anything, in your own words.", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
+  { href: "/intake/ai", title: "Voice guided intake", detail: "Talk through your service instead of typing it.", d: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" },
+  { href: "/learn", title: "Exposure library", detail: "What the government documents, by place and substance.", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
+  { href: "/solutions", title: "Whole health", detail: "Ways to live well with what you carry.", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
 ];
 
 export default function DashboardView() {
@@ -50,7 +53,7 @@ export default function DashboardView() {
   const [stillServing, setStillServing] = useState(false);
   // Shots, injuries and medications are tracked as STATE, never as a running
   // tally. A number here would tell a veteran by arithmetic that his memory is
-  // deficient — the same reasoning that bans a count on the shots list itself.
+  // deficient, the same reasoning that bans a count on the shots list itself.
   const [hasShots, setHasShots] = useState(false);
   const [hasInjuries, setHasInjuries] = useState(false);
   const [incidentClasses, setIncidentClasses] = useState<string[]>([]);
@@ -68,10 +71,9 @@ export default function DashboardView() {
       setBranch((m.data?.branch as string) ?? null);
       const ss = m.data?.service_start ? new Date(m.data.service_start as string).getUTCFullYear() : null;
       const se = m.data?.service_end ? new Date(m.data.service_end as string).getUTCFullYear() : null;
-      // A still-serving member reads "2018–present", never "2018–?" — a "?" here
-      // looks like an incomplete record when in fact he answered the question.
+      // A still-serving member reads "2018 to present", never "2018 to ?".
       const serving = m.data?.still_serving === true;
-      setYears(ss || se ? (serving ? `${ss ?? "?"}–present` : `${ss ?? "?"}–${se ?? "?"}`) : null);
+      setYears(ss || se ? (serving ? `${ss ?? "?"} to present` : `${ss ?? "?"} to ${se ?? "?"}`) : null);
       setStillServing(serving);
 
       const [ci, exprows, cond, conns, files] = await Promise.all([
@@ -97,16 +99,15 @@ export default function DashboardView() {
       setCounts({ exposures: exRows.length, conditions: condRows.length, corroborations: corr });
       const allConns = (conns.data ?? []) as Conn[];
       setBuddies(allConns.filter((x) => x.status === "accepted"));
-      // A human is waiting — that must never be invisible on the home screen.
+      // A human is waiting. That must never be invisible on the home screen.
       setPendingReqs(allConns.filter((x) => x.direction === "received" && x.status === "pending"));
       setHasDD214(((files.data ?? []).filter((f) => f.name !== ".emptyFolderPlaceholder")).length > 0);
 
-      // The four newer sections. Each goes through its own data module — the
+      // The four newer sections. Each goes through its own data module: the
       // shots, medications and vessels tables are query-isolated to those files
       // by the COI firewall, and routing through them is what keeps that true.
       // All four return an { error } shape rather than throwing, so an unrun
-      // migration leaves the tile reading "Not yet" instead of breaking the
-      // whole dashboard.
+      // migration leaves the row reading "Not yet" instead of breaking Home.
       const [ev, inc, meds, ves] = await Promise.all([
         listServiceEvents(supabase),
         listMemberIncidents(supabase),
@@ -116,9 +117,6 @@ export default function DashboardView() {
       setHasShots("events" in ev && ev.events.length > 0);
       setHasVessels("vessels" in ves && ves.vessels.length > 0);
       setHasInjuries("incidents" in inc && inc.incidents.length > 0);
-      // The incident CLASSES, not just "are there any" — the completeness math
-      // needs them to connect an event-linked condition (tinnitus, knees) the
-      // same way exposure classes connect an exposure-linked one.
       setIncidentClasses("incidents" in inc ? Array.from(new Set(inc.incidents.map((i) => i.incidentClass))) : []);
       setHasMeds("medications" in meds && meds.medications.length > 0);
 
@@ -127,7 +125,6 @@ export default function DashboardView() {
   }, [user, supabase]);
 
   const greeting = name || user?.email?.split("@")[0] || "there";
-  const initial = (name || user?.email || "V").trim().charAt(0).toUpperCase();
   const checkins = rows.length;
 
   async function removeCheckin(id: string) {
@@ -137,7 +134,7 @@ export default function DashboardView() {
   }
 
   // Shared with JourneyView via lib/education so the two completeness views
-  // can never disagree — and so an event-linked condition counts.
+  // can never disagree, and so an event-linked condition counts.
   const connectedCount = connectedConditionLabels(condLabels, classes, incidentClasses).length;
   const prog = recordProgress({
     hasService: !!(branch || years),
@@ -151,44 +148,7 @@ export default function DashboardView() {
     filedConditions: filedCount,
   });
 
-  // Every section of the record gets a tile. The old five predated the shot
-  // record, injuries, medications and the packet, and two of them ("Corrobo-
-  // rations" and "Battle buddies") pointed at the same page — so a veteran
-  // could look at this grid and reasonably conclude four shipped features
-  // didn't exist. Counts only where a number is a neutral fact (places,
-  // exposures, buddies); everything health-adjacent reads as state, because
-  // "11 conditions" is a picture of everything wrong with you.
-  const stats = [
-    { label: "Locations", value: checkins, href: "/locations" },
-    { label: "Exposures", value: counts.exposures, href: "/exposures" },
-    { label: "Your health", value: counts.conditions > 0 ? "On file" : "Not yet", href: "/health" },
-    { label: "Shot record", value: hasShots ? "On file" : "Not yet", href: "/shots" },
-    { label: "Injuries & events", value: hasInjuries ? "On file" : "Not yet", href: "/injuries" },
-    { label: "Medications", value: hasMeds ? "On file" : "Not yet", href: "/medications" },
-    { label: "Battle buddies", value: buddies.length, href: "/buddies" },
-    { label: "Claim packet", value: prog.claimReady ? "Ready" : "Not yet", href: "/report" },
-  ];
-
-  // The ships tile is the ONE tile in this grid that is conditional, and the
-  // reason is worth keeping. Every other section applies to every veteran, so a
-  // "Not yet" on it is a real to-do. A ship is not: an infantryman will never have
-  // one, and a permanent "Not yet" would be this grid telling him his record is
-  // missing something that cannot exist. So it appears for the sea-going
-  // branches, and for anyone who has already added a ship regardless of what
-  // their branch says — plenty of soldiers rode Army watercraft, and a man who
-  // has already told us about his ship must never watch the tile vanish.
-  // It is in "Jump back in" unconditionally, because that is a menu, not a
-  // scorecard, and nothing there implies anything is owed.
-  const seaGoing = /navy|marine|coast guard/i.test(branch ?? "");
-  if (seaGoing || hasVessels) {
-    stats.splice(6, 0, {
-      label: "Ships",
-      value: hasVessels ? "On file" : "Not yet",
-      href: "/vessels",
-    });
-  }
-
-  // The SOP, in order: who you are → what you live with → where you served.
+  // The SOP, in order: who you are, what you live with, where you served.
   // The map comes third on purpose. A pin dropped before the app knows the
   // veteran and their conditions has nothing to connect itself to.
   const hasServiceInfo = !!(branch || years);
@@ -196,32 +156,47 @@ export default function DashboardView() {
     ? {
         href: "/intake",
         cta: "Start with your service",
-        blurb:
-          "Let's start with your service — branch, years, and your job. It's short, and everything else in your record builds on it.",
+        blurb: "Branch, years, and your job. It is short, and everything else in your record builds on it.",
       }
     : counts.conditions === 0
     ? {
         href: "/health",
         cta: "Add what you live with",
-        blurb:
-          "Next: what you're living with now. Add the conditions and roughly when each started — that's what the rest of your record gets connected to.",
+        blurb: "The conditions you carry, and roughly when each one started. That is what the rest of your record gets connected to.",
       }
     : {
         href: "/map",
         cta: "Map where you served",
-        blurb:
-          "Now the map. Drop a pin where you served and we'll show you the exposures the government already documents there — and connect them to what you've already told us.",
+        blurb: "Drop a pin where you served and we show you the exposures the government already documents there, connected to what you have told us.",
       };
+
+  // The six steps, as the sidebar lists them, each with its state in plain
+  // words. The first one not done is the lit one.
+  const steps: { href: string; label: string; detail: string; done: boolean; word?: string }[] = [
+    { href: "/intake", label: "Your service", detail: "Branch, years, and your job.", done: hasServiceInfo },
+    { href: "/health", label: "Your conditions", detail: "What you live with, and when it started.", done: counts.conditions > 0 },
+    { href: "/map", label: "Where you served", detail: "Every base and deployment, on the map.", done: checkins > 0 },
+    { href: "/journey", label: "Connect the dots", detail: "What in your service links to what in your health.", done: connectedCount > 0 },
+    { href: "/buddies", label: "Battle buddies", detail: "The people who were there.", done: buddies.length > 0 || counts.corroborations > 0 },
+    { href: "/report", label: "Claim packet", detail: "A cited packet for your clinician and VSO.", done: prog.claimReady, word: prog.claimReady ? "Ready" : "Not yet" },
+  ];
+  const nextIndex = steps.findIndex((s) => !s.done);
+  const stateFor = (i: number): SpineState => (steps[i].done ? "done" : i === nextIndex ? "next" : "todo");
+
+  // The ships row is the ONE conditional row. Every other section applies to
+  // every veteran, so a "Not yet" on it is a real to-do. A ship is not: an
+  // infantryman will never have one. It appears for the sea-going branches,
+  // and for anyone who has already added a ship regardless of branch.
+  const seaGoing = /navy|marine|coast guard/i.test(branch ?? "");
 
   const [reqErr, setReqErr] = useState<string | null>(null);
   async function respondReq(id: string, accept: boolean) {
     setReqErr(null);
-    // The RPC never throws — it RETURNS 'accepted'/'declined' or a failure
-    // code ('no_member'/'not_found'/'forbidden'). Only a confirmed outcome
-    // may dismiss the card; a failed Accept must never look successful.
+    // The RPC never throws. It RETURNS 'accepted'/'declined' or a failure
+    // code. Only a confirmed outcome may dismiss the card.
     const { data, error } = await supabase.rpc("respond_buddy_connection", { p_connection_id: id, p_accept: accept });
     if (error || (data !== "accepted" && data !== "declined")) {
-      setReqErr("That didn't go through — try again in a moment.");
+      setReqErr("That did not go through. Try again in a moment.");
       return;
     }
     const req = pendingReqs.find((r) => r.id === id);
@@ -229,216 +204,193 @@ export default function DashboardView() {
     if (data === "accepted" && req) setBuddies((prev) => [...prev, { ...req, status: "accepted" }]);
   }
 
+  const returning = loaded && hasServiceInfo && counts.conditions > 0 && checkins > 0;
+  const doorLabel = !loaded
+    ? "Your record"
+    : !returning
+      ? (!hasServiceInfo ? "Start here" : "Next step")
+      : prog.claimReady
+        ? "Your record is claim-ready"
+        : "Pick up where you left off";
+  const doorTitle = !loaded
+    ? "Loading your record…"
+    : !returning
+      ? startStep.cta
+      : prog.next
+        ? prog.next.cta
+        : "Open your claim packet";
+  const doorHref = !returning ? startStep.href : prog.next ? prog.next.href : "/report";
+  const doorBlurb = !loaded
+    ? ""
+    : !returning
+      ? startStep.blurb
+      : prog.next
+        ? prog.claimReady
+          ? `Your record is claim-ready. Make it stronger. Next: ${prog.next.label.toLowerCase()}.`
+          : `You are ${prog.remaining.length} step${prog.remaining.length === 1 ? "" : "s"} from a claim-ready record. Next: ${prog.next.label.toLowerCase()}.`
+        : "Every dot is connected. Assemble your claim packet and bring it to an accredited VSO (Veterans Service Officer, free help) to file.";
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="overflow-hidden rounded-2xl bg-brand text-brand-foreground">
-        <ServiceRibbon />
-        <div className="flex items-center gap-4 p-6">
-          <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-white/15 text-xl font-bold">
-            {initial}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-lg font-semibold tracking-tight">Welcome back, {greeting}.</div>
-            <div className="text-sm text-white/70">
-              {[branch, years].filter(Boolean).join(" · ") || "Let's build your record."}
-            </div>
-          </div>
-        </div>
+    <div className="space-y-8">
+      {/* Greeting: the one place the serif speaks on this screen */}
+      <div>
+        <h2 className="display text-[1.85rem] text-ink sm:text-[2.125rem]">Welcome back, {greeting}.</h2>
+        <p className="mt-1.5 text-[15px] text-muted">{[branch, years].filter(Boolean).join(", ") || "Let's build your record."}</p>
       </div>
 
-      <VerifyCard />
+      {/* The one lit door. The only navy surface on the screen, and the only
+          raised one: the contrast is what says "this is next" without a
+          label that says so. */}
+      <section className="on-navy card-raise rounded-2xl bg-brand p-6 text-white sm:p-7" aria-live="polite">
+        <p className="text-[15px] font-medium text-white/65">{doorLabel}</p>
+        <h3 className="mt-1 text-[1.375rem] font-semibold leading-tight tracking-tight sm:text-2xl">{doorTitle}</h3>
+        {doorBlurb && <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-white/80">{doorBlurb}</p>}
+        {loaded && (
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <Link href={doorHref} className="btn btn-light btn-lg">
+              {doorTitle}
+            </Link>
+            {!returning && !hasServiceInfo && (
+              <Link href="/intake/ai" className="text-[15px] font-semibold text-white/85 underline-offset-4 hover:underline">
+                Or answer a few questions instead
+              </Link>
+            )}
+            {returning && prog.claimReady && prog.next && (
+              <Link href="/report" className="text-[15px] font-semibold text-white/85 underline-offset-4 hover:underline">
+                Or open your claim packet
+              </Link>
+            )}
+          </div>
+        )}
+      </section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {stats.map((s) => (
-          <Link
-            key={s.label}
-            href={s.href}
-            className="group lift press surface-rest overflow-hidden rounded-xl border border-line bg-surface hover:border-brand/40"
-          >
-            <div className="metal h-1" />
-            <div className="p-4">
-              <div className="text-2xl font-bold text-ink">{loaded ? s.value : "—"}</div>
-              <div className="mt-0.5 flex items-center gap-1 text-xs leading-snug text-muted">
-                {s.label}
-                <span className="opacity-0 transition group-hover:opacity-100">→</span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* A veteran reached out — the human moment outranks everything below it */}
+      {/* A veteran reached out: the human moment outranks everything below it */}
       {pendingReqs.length > 0 && (
-        <div className="rounded-xl border border-accent/40 bg-accent/5 p-5">
-          <div className="text-xs font-semibold uppercase tracking-wide text-accent">Battle buddies</div>
-          {reqErr && <p role="status" className="mt-1 text-xs font-medium text-red-600">{reqErr}</p>}
+        <Card className="border-accent/40 bg-accent/5 p-5">
+          <h3 className="text-lg font-semibold tracking-tight text-ink">A battle buddy asked to connect</h3>
+          {reqErr && <p role="status" className="mt-1 text-sm font-medium text-scarlet">{reqErr}</p>}
           {pendingReqs.map((r) => (
-            <div key={r.id} className="mt-2 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-ink">
+            <div key={r.id} className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[15px] text-ink">
                 <strong>{r.other_name || "A veteran"}</strong> who served{r.place ? ` near ${r.place}` : " where you did"}
                 {r.ev_year ? ` around ${r.ev_year}` : ""} asked to connect.
               </p>
               <div className="flex gap-2">
-                <button onClick={() => respondReq(r.id, true)} className="rounded-lg bg-brand px-3.5 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600">Accept</button>
-                <button onClick={() => respondReq(r.id, false)} className="rounded-lg border border-line px-3.5 py-1.5 text-sm text-muted hover:bg-canvas">Decline</button>
+                <button onClick={() => respondReq(r.id, true)} className="btn btn-primary">Accept</button>
+                <button onClick={() => respondReq(r.id, false)} className="btn btn-secondary">Decline</button>
               </div>
             </div>
           ))}
-        </div>
+        </Card>
       )}
 
-      {/* A denial just happened — surface the path forward without waiting to be asked */}
+      {/* A denial just happened: surface the path forward without waiting to be asked */}
       {deniedCount > 0 && (
-        <Link href="/denied" className="block rounded-xl border border-line bg-surface p-5 transition hover:border-brand/40">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {deniedCount} condition{deniedCount === 1 ? "" : "s"} denied
-          </div>
-          <div className="mt-1 text-sm font-semibold text-ink">A denial isn&apos;t the end — see your next steps →</div>
+        <Link href="/denied" className="card row rounded-2xl">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold">A denial is not the end</span>
+            <span className="mt-0.5 block text-sm text-muted">
+              {deniedCount} condition{deniedCount === 1 ? "" : "s"} denied. See your next steps.
+            </span>
+          </span>
+          <Chevron className="text-faint" />
         </Link>
       )}
 
-      {/* Still serving — BDD is the fastest path to benefits with no gap in coverage */}
+      {/* Still serving: BDD is the fastest path to benefits with no gap in coverage */}
       {stillServing && (
-        <Link href="/bdd" className="block rounded-xl border border-line bg-surface p-5 transition hover:border-brand/40">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted">Still serving</div>
-          <div className="mt-1 text-sm font-semibold text-ink">File before you separate — see the BDD timeline →</div>
+        <Link href="/bdd" className="card row rounded-2xl">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold">File before you separate</span>
+            <span className="mt-0.5 block text-sm text-muted">You are still serving. See the BDD timeline.</span>
+          </span>
+          <Chevron className="text-faint" />
         </Link>
       )}
 
-      {/* Self-decides whether to render — only shows once a logged tour falls
-          inside a presumptive program's dates and locations */}
+      {/* Self-decides whether to render: only once a logged tour falls inside
+          a presumptive program's dates and locations */}
       <PresumptivePathwaysCard compact />
 
-      {/* Start here (brand-new) / Resume (returning) — one lit door either way.
-          This is the ONE raised surface on the Dashboard. Everything else rests
-          flat; the contrast between them is what makes this read as the next
-          thing to do without needing a label that says so. */}
-      <div className="surface-raise rise rise-2 rounded-xl border border-accent/30 bg-accent/5 p-5">
-        {!loaded ? (
-          <>
-            <div className="text-xs font-semibold uppercase tracking-wide text-accent">Your record</div>
-            <p className="mt-1.5 text-sm text-muted">Loading your record…</p>
-          </>
-        ) : !hasServiceInfo || counts.conditions === 0 || checkins === 0 ? (
-          <>
-            {/* THE ORDER IS THE POINT. This used to open every brand-new
-                veteran on "drop a pin" — which sent them to the map before the
-                app knew who they were or what they were carrying, so the pin
-                had nothing to connect to and they had to double back. Medic
-                Mike was repeating that same wrong first step, because the app
-                itself was saying it. The SOP is: service, then health, then
-                the map. Whichever of those three is missing first is the one
-                door lit here. */}
-            <div className="text-xs font-semibold uppercase tracking-wide text-accent">
-              {!hasServiceInfo ? "Start here" : "Next step"}
-            </div>
-            <p className="mt-1.5 text-sm leading-relaxed text-ink">
-              Welcome{name ? `, ${name}` : ""}. {startStep.blurb}
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <Link href={startStep.href} className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-                {startStep.cta}
-              </Link>
-              {!hasServiceInfo && (
-                <Link href="/intake/ai" className="text-sm font-semibold text-brand hover:underline">
-                  or answer a few questions instead →
-                </Link>
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-accent">
-                {prog.claimReady ? "Your record is claim-ready" : "Pick up where you left off"}
-              </div>
-              <span className="flex-none text-xs font-semibold text-muted">{prog.done} of {prog.total} · {prog.pct}%</span>
-            </div>
-            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-line">
-              <span className="block h-2 rounded-full bg-accent transition-all" style={{ width: `${prog.pct}%` }} />
-            </div>
-            {prog.next ? (
-              <>
-                <p className="mt-3 text-sm text-ink">
-                  {prog.claimReady
-                    ? <>Your record is claim-ready. Make it stronger — next: {prog.next.label.toLowerCase()}.</>
-                    : <>You&apos;re <strong>{prog.remaining.length}</strong> step{prog.remaining.length === 1 ? "" : "s"} from a
-                  claim-ready record. Next: {prog.next.label.toLowerCase()}.</>}
-                </p>
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <Link href={prog.next.href} className="inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-                    {prog.next.cta}
-                  </Link>
-                  {prog.claimReady && (
-                    <Link href="/report" className="text-sm font-semibold text-brand hover:underline">
-                      or open your claim packet →
-                    </Link>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="mt-3 text-sm text-ink">
-                  Every dot is connected. Assemble your claim packet and bring it to an accredited VSO (Veterans Service Officer — free help) to file.
-                </p>
-                <Link href="/report" className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-                  Open your claim packet
-                </Link>
-              </>
-            )}
-          </>
-        )}
-      </div>
+      <VerifyCard />
 
-      <RibbonDivider label="Your record" />
+      {/* The spine: six steps, in order, each with its state in plain words */}
+      <section>
+        <SectionTitle title="Your record" lede="Six steps, in order. Tap any one to open it." />
+        <Card className="mt-3 overflow-hidden">
+          <ol className="spine p-2">
+            {steps.map((s, i) => (
+              <SpineRow
+                key={s.href}
+                href={s.href}
+                step={i + 1}
+                label={s.label}
+                detail={s.detail}
+                state={loaded ? stateFor(i) : "todo"}
+                statusWord={loaded ? s.word : " "}
+              />
+            ))}
+          </ol>
+        </Card>
+      </section>
+
+      {/* Everything else on file. Counts only where a number is a neutral
+          fact (places, exposures); everything health-adjacent reads as state. */}
+      <section>
+        <SectionTitle title="Also in your record" />
+        <Card className="mt-3 overflow-hidden">
+          <LinkRow href="/locations" label="Your locations" status={loaded ? String(checkins) : " "} tone="ink" />
+          <LinkRow href="/exposures" label="Your exposures" status={loaded ? String(counts.exposures) : " "} tone="ink" />
+          <LinkRow href="/shots" label="Your shot record" status={loaded ? (hasShots ? "On file" : "Not yet") : " "} tone={hasShots ? "success" : "faint"} />
+          <LinkRow href="/injuries" label="Injuries & events" status={loaded ? (hasInjuries ? "On file" : "Not yet") : " "} tone={hasInjuries ? "success" : "faint"} />
+          <LinkRow href="/medications" label="Your medications" status={loaded ? (hasMeds ? "On file" : "Not yet") : " "} tone={hasMeds ? "success" : "faint"} />
+          {(seaGoing || hasVessels) && (
+            <LinkRow href="/vessels" label="Ships you served aboard" status={loaded ? (hasVessels ? "On file" : "Not yet") : " "} tone={hasVessels ? "success" : "faint"} />
+          )}
+          <LinkRow href="/first-page" label="Your First Page" detail="The one sheet you hand a specialist." />
+        </Card>
+      </section>
 
       {/* Timeline + buddies */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-line bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-ink">Your timeline</div>
-            <Link href="/map" className="text-xs font-medium text-brand hover:underline">Open map →</Link>
+        <Card className="p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold tracking-tight text-ink">Your timeline</h3>
+            <Link href="/map" className="btn btn-ghost btn-sm">Open map</Link>
           </div>
           {checkins === 0 ? (
-            <div className="mt-3">
-              <p className="text-sm text-muted">No locations yet. Start by marking one place you served.</p>
-              <Link href="/map" className="mt-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
-                Drop your first pin
-              </Link>
+            <div className="mt-2">
+              <p className="text-[15px] leading-relaxed text-muted">No locations yet. Start by marking one place you served.</p>
+              <Link href="/map" className="btn btn-secondary mt-4">Drop your first pin</Link>
             </div>
           ) : (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 divide-y divide-line">
               {rows.slice(0, 6).map((r) => (
-                <li key={r.id} className="border-t border-line pt-2 text-sm first:border-0 first:pt-0">
+                <li key={r.id} className="py-2.5 text-[15px] first:pt-0">
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-medium text-ink">{r.place_name || "A logged location"}</span>
-                    <span className="flex-none text-xs text-muted">{r.date_start ? new Date(r.date_start).getUTCFullYear() : "—"}</span>
+                    <span className="font-semibold text-ink">{r.place_name || "A logged location"}</span>
+                    <span className="tnum flex-none text-sm text-muted">{r.date_start ? new Date(r.date_start).getUTCFullYear() : "No year"}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <div className="text-xs text-muted">
-                      {(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", ") || "—"}
+                    <div className="text-sm text-muted">
+                      {(r.exposures ?? []).map((e) => EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class).join(", ") || "No exposures ticked"}
                     </div>
                     {confirmDel === r.id ? (
-                      // The confirm action is deliberately NOT also called "Remove".
-                      // The trigger and the confirm used to share the word, so a
-                      // veteran could not tell whether his first tap had worked --
-                      // and the safe option stays rightmost, where the finger
-                      // already is. This deletes claim evidence; it should read
-                      // like it does.
-                      <span className="flex flex-none items-center gap-2 text-xs">
-                        <button onClick={() => removeCheckin(r.id)} className="font-semibold text-red-600 hover:underline">Delete</button>
+                      // The confirm action is deliberately NOT also called
+                      // "Remove", and the safe option stays rightmost, where the
+                      // finger already is. This deletes claim evidence.
+                      <span className="flex flex-none items-center gap-3 text-sm">
+                        <button onClick={() => removeCheckin(r.id)} className="font-semibold text-scarlet hover:underline">Delete</button>
                         <button onClick={() => setConfirmDel(null)} className="font-semibold text-ink hover:underline">Keep it</button>
                       </span>
                     ) : (
-                      <button onClick={() => setConfirmDel(r.id)} className="flex-none text-xs text-faint transition hover:text-red-600" aria-label="Remove location">
+                      <button onClick={() => setConfirmDel(r.id)} className="flex-none rounded-lg px-2 py-1 text-sm text-faint transition hover:text-scarlet" aria-label={`Remove ${r.place_name || "location"}`}>
                         Remove
                       </button>
                     )}
                   </div>
                   {confirmDel === r.id && (
-                    <p className="mt-1.5 rounded-lg border border-scarlet/30 bg-scarlet/5 px-2.5 py-1.5 text-[11px] leading-relaxed text-ink">
+                    <p className="mt-2 rounded-xl border border-scarlet/30 bg-scarlet/5 px-3 py-2 text-[13px] leading-relaxed text-ink">
                       Deletes this check-in
                       {(r.exposures ?? []).length > 0
                         ? ` and the ${(r.exposures ?? []).length} exposure${(r.exposures ?? []).length === 1 ? "" : "s"} you ticked here`
@@ -449,55 +401,46 @@ export default function DashboardView() {
                 </li>
               ))}
               {checkins > 6 && (
-                <li className="pt-1 text-xs">
-                  <Link href="/locations" className="font-medium text-brand hover:underline">Manage all {checkins} locations →</Link>
+                <li className="pt-2.5">
+                  <Link href="/locations" className="btn btn-ghost btn-sm">Manage all {checkins} locations</Link>
                 </li>
               )}
             </ul>
           )}
-        </div>
+        </Card>
 
-        <div className="rounded-xl border border-line bg-surface p-5">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-ink">Your battle buddies</div>
-            <Link href="/buddies" className="text-xs font-medium text-brand hover:underline">Find buddies →</Link>
+        <Card className="p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold tracking-tight text-ink">Your battle buddies</h3>
+            <Link href="/buddies" className="btn btn-ghost btn-sm">Find buddies</Link>
           </div>
           {buddies.length === 0 ? (
-            <div className="mt-3">
-              <p className="text-sm text-muted">No connections yet. Reconnect with the veterans who served where you did — privately, and only if you both agree.</p>
-              <Link href="/buddies" className="mt-3 inline-block rounded-lg border border-line px-4 py-2 text-sm font-semibold text-brand hover:bg-canvas">
-                Find battle buddies
-              </Link>
+            <div className="mt-2">
+              <p className="text-[15px] leading-relaxed text-muted">No connections yet. Reconnect with the veterans who served where you did, privately, and only if you both agree.</p>
+              <Link href="/buddies" className="btn btn-secondary mt-4">Find battle buddies</Link>
             </div>
           ) : (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 divide-y divide-line">
               {buddies.map((b, i) => (
-                <li key={i} className="border-t border-line pt-2 text-sm first:border-0 first:pt-0">
-                  <div className="font-medium text-ink">{b.other_name || "A fellow veteran"}</div>
-                  <div className="text-xs text-muted">Served near {b.place || "the same place"}{b.ev_year ? ` in ${b.ev_year}` : ""}</div>
+                <li key={i} className="py-2.5 text-[15px] first:pt-0">
+                  <div className="font-semibold text-ink">{b.other_name || "A fellow veteran"}</div>
+                  <div className="text-sm text-muted">Served near {b.place || "the same place"}{b.ev_year ? ` in ${b.ev_year}` : ""}</div>
                 </li>
               ))}
             </ul>
           )}
-        </div>
+        </Card>
       </div>
 
-      {/* Quick actions */}
-      <div>
-        <div className="mb-2 text-sm font-semibold text-ink">Jump back in</div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {QUICK.map((q) => (
-            <Link key={q.href} href={q.href} className="flex items-center gap-3 rounded-xl border border-line bg-surface p-4 transition hover:border-brand/40 hover:shadow-sm">
-              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-brand/10 text-brand">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
-                  <path d={q.d} />
-                </svg>
-              </span>
-              <span className="text-sm font-semibold text-ink">{q.title}</span>
-            </Link>
+      {/* More */}
+      <section>
+        <SectionTitle title="More" />
+        <Card className="mt-3 overflow-hidden">
+          {MORE.map((q) => (
+            <LinkRow key={q.href} href={q.href} label={q.title} detail={q.detail} icon={<IconPath d={q.d} />} />
           ))}
-        </div>
-      </div>
+        </Card>
+      </section>
     </div>
   );
 }

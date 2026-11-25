@@ -26,20 +26,21 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* The one display voice: a calm serif, used only at headline size (the
+     greeting, the page-level statement, the landing headline). Everything a
+     veteran reads or taps stays in the sans. */
+  --font-display: var(--font-source-serif);
 
   /* ── DEPTH ────────────────────────────────────────────────────────────
-     Direction A's layering, rendered on the light ground rather than on
-     navy (chosen 2026-08-14). Three levels, and the rule is that hierarchy
-     comes from CONTRAST between them, not from putting a border on
-     everything: `raise` is for the one primary card on a screen, `rest` for
-     ordinary surfaces, `lift` is the hover state. A page where every
-     surface is elevated reads exactly as flat as one where none is. */
+     Three levels. Hierarchy comes from CONTRAST between them, not from a
+     border on everything: `raise` is for the one primary surface on a
+     screen, `rest` for ordinary surfaces, `lift` is the hover state. */
   --shadow-rest:  0 1px 2px rgba(21, 33, 46, .05);
-  --shadow-raise: 0 1px 2px rgba(21, 33, 46, .05), 0 14px 32px -12px rgba(21, 33, 46, .24);
+  --shadow-raise: 0 1px 2px rgba(21, 33, 46, .06), 0 16px 40px -16px rgba(21, 33, 46, .28);
   --shadow-lift:  0 2px 4px rgba(21, 33, 46, .07), 0 20px 40px -14px rgba(21, 33, 46, .28);
 
-  /* Gold that reads as metal instead of mustard. Non-text only — the flat
-     accent is ~3:1 on white, so it can rule and fill but never carry words. */
+  /* Gold that reads as metal instead of mustard. Non-text only. Kept for the
+     pages that still use it until they are rolled onto the new system. */
   --grad-metal: linear-gradient(145deg, #d9a353, #b8802f);
   --grad-navy:  linear-gradient(158deg, #1d3f63, #12293f);
 
@@ -64,22 +65,171 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOTION — Direction B, chosen 2026-08-14.
+   BROWSER SURFACES: the parts nobody draws still carry the design.
+   ═══════════════════════════════════════════════════════════════════════ */
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 16%, white);
+  color: var(--color-ink);
+}
 
-   The brief was that the app felt "static, no life." The fix is not more
-   animation; it is that things respond when a veteran touches them. Three
-   primitives, deliberately few, and every one of them opacity/transform
-   only so nothing triggers layout or repaint mid-scroll.
+/* One visible focus ring for every keyboard user, on every page. Mouse
+   clicks do not show it; Tab does. On navy surfaces it flips to white. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+.on-navy :focus-visible,
+.on-navy:focus-visible {
+  outline-color: #ffffff;
+}
 
-   Hard limits, because this audience sets them: nothing lasts longer than
-   ~600ms, nothing moves more than a few pixels, and there is NO parallax,
-   no scroll-triggered reveal, and no autoplay anywhere. Visually-induced
-   dizziness is a hallmark of post-concussive and vestibular injury, which
-   is a live condition for a large share of the people using this. The
-   whole system collapses to nothing under prefers-reduced-motion.
+/* Numbers that line up: years, dates, counts. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TYPE: one sans for everything a veteran reads or taps, one serif for the
+   single statement at the top of a screen. Nothing veteran-facing is set
+   smaller than 13px.
+   ═══════════════════════════════════════════════════════════════════════ */
+.display {
+  font-family: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRIMITIVES: the few shapes every screen is built from. A page picks from
+   these instead of inventing a card, a button or a row of its own, which is
+   how sixty screens end up looking like one app.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* 1. RISE — content arrives instead of appearing. Stagger with rise-2..6. */
+/* Surface: one card style. Flat by default; `.card-raise` is for the one
+   surface on a screen that is the next thing to do. */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+}
+.card-raise {
+  box-shadow: var(--shadow-raise);
+}
+
+/* Buttons: 44px minimum, so a thumb or a shaky hand lands on them. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.125rem;
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .14s var(--ease-out), background-color .14s var(--ease-out), border-color .14s var(--ease-out), color .14s var(--ease-out);
+}
+.btn:active { transform: scale(.98); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--color-brand); color: var(--color-brand-foreground); }
+.btn-primary:hover { background: var(--color-brand-600); }
+.btn-secondary { background: var(--color-surface); color: var(--color-ink); border: 1px solid var(--color-line); }
+.btn-secondary:hover { background: var(--color-canvas); border-color: #d4dbe4; }
+.btn-light { background: #ffffff; color: var(--color-brand); }
+.btn-light:hover { background: #eef2f7; }
+.btn-ghost { color: var(--color-brand); padding-inline: 0.5rem; }
+.btn-ghost:hover { text-decoration: underline; text-underline-offset: 3px; }
+.btn-danger { background: var(--color-scarlet); color: #ffffff; }
+.btn-danger:hover { filter: brightness(1.08); }
+.btn-lg { min-height: 3.25rem; padding-inline: 1.5rem; font-size: 1.0625rem; border-radius: 0.875rem; }
+.btn-sm { min-height: 2.25rem; padding-inline: 0.875rem; font-size: 0.875rem; border-radius: 0.625rem; }
+
+/* Fields: 48px tall, 16px text, a ring on focus. */
+.field {
+  width: 100%;
+  min-height: 3rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-line);
+  background: #ffffff;
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--color-ink);
+  transition: border-color .14s var(--ease-out), box-shadow .14s var(--ease-out);
+}
+.field::placeholder { color: var(--color-faint); }
+.field:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand) 14%, transparent);
+}
+.field-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+/* Rows: a tappable line in a list. 56px minimum. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-ink);
+  transition: background-color .14s var(--ease-out);
+}
+a.row:hover, button.row:hover { background: var(--color-canvas); }
+.row + .row { border-top: 1px solid var(--color-line); }
+
+/* The spine: the steps of a record, drawn as dots on one line. This is the
+   app's one signature shape. It is literally connecting the dots, and it is
+   the same device in the sidebar, on the Dashboard and on the landing page,
+   so a veteran learns it once. */
+.spine { list-style: none; margin: 0; padding: 0; }
+.spine-item { position: relative; }
+.spine-item::before {
+  content: "";
+  position: absolute;
+  left: calc(1rem + 0.625rem - 1px);
+  top: 2.25rem;
+  bottom: -0.75rem;
+  width: 2px;
+  background: var(--color-line);
+}
+.spine-item:last-child::before { display: none; }
+.spine-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  border-radius: 9999px;
+  border: 2px solid #cfd6df;
+  background: var(--color-surface);
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
+}
+.spine-dot[data-state="done"] { background: var(--color-brand); border-color: var(--color-brand); }
+.spine-dot[data-state="next"] { border-color: var(--color-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 22%, transparent); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOTION: few, short, and all opacity/transform/clip. No parallax, no scroll
+   reveals, no autoplay: dizziness is a live symptom for a large share of the
+   people using this. Everything collapses under prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* RISE: content arrives instead of appearing. */
 @keyframes ctd-rise {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: none; }
@@ -91,26 +241,27 @@ body {
 .rise-5 { animation-delay: .24s; }
 .rise-6 { animation-delay: .30s; }
 
-/* 2. PRESS — the control pushes back under the thumb. This is the single
-      biggest contributor to "feels alive"; a button that does not move on
-      touch reads as a picture of a button. */
+/* REVEAL: the one orchestrated moment in the app. The sample record on the
+   landing page draws itself in, left to right, once. */
+@keyframes ctd-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+.reveal { animation: ctd-reveal 1.1s var(--ease-out) .35s both; }
+
+/* PRESS: the control pushes back under the thumb. */
 .press { transition: transform .14s var(--ease-out), background-color .14s var(--ease-out), box-shadow .14s var(--ease-out); }
 .press:active { transform: scale(.972); }
 
-/* 3. LIFT — a card acknowledges the cursor. Paired with press on anything
-      that is both hoverable and tappable. */
+/* LIFT: a card acknowledges the cursor. */
 .lift { transition: transform .18s var(--ease-out), box-shadow .18s var(--ease-out), border-color .18s var(--ease-out); }
 .lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
 .lift:active { transform: translateY(0) scale(.99); }
 
-/* Depth helpers, so a page picks a level explicitly rather than inheriting
-   a border on every box. */
 .surface-rest  { box-shadow: var(--shadow-rest); }
 .surface-raise { box-shadow: var(--shadow-raise); }
 
-/* Direction A's contour field, kept as a texture rather than an image: no
-   external asset, no stock photography of veterans (which reads false), and
-   it costs nothing to load. Sits behind navy headers only. */
+/* Kept for the pages not yet rolled onto the new system. */
 .topo-field {
   background-image:
     repeating-radial-gradient(ellipse 140% 90% at 18% -20%,
@@ -118,21 +269,17 @@ body {
     repeating-radial-gradient(ellipse 120% 80% at 88% 10%,
       rgba(150, 196, 240, .05) 0 1px, transparent 1px 28px);
 }
-
-/* The one gold that is allowed to look like metal. Never behind text. */
 .metal { background-image: var(--grad-metal); }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise { animation: none; opacity: 1; transform: none; }
-  .press, .lift { transition: none; }
-  .press:active, .lift:hover, .lift:active { transform: none; }
+  .rise, .reveal { animation: none; opacity: 1; transform: none; clip-path: none; }
+  .press, .lift, .btn { transition: none; }
+  .press:active, .lift:hover, .lift:active, .btn:active { transform: none; }
 }
 
 /* The claim packet is meant to be printed and handed to a VSO. Browsers strip
    background colors by default, which would erase the service timeline
-   entirely — its bars, band, and onset diamonds are all backgrounds. Force
-   them to survive; the print:border fallbacks keep shapes visible even when a
-   printer or user setting still drops fills. */
+   entirely. Force them to survive. */
 @media print {
   .print-exact,
   .print-exact * {

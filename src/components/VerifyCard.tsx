@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { Chevron } from "./ui";
 
 type MemberVerify = { verification_status: string; consent: Record<string, unknown> };
 
@@ -45,51 +46,43 @@ export default function VerifyCard() {
 
   if (verified) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success-soft px-4 py-3 text-sm">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-success">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-success/30 bg-success-soft px-4 py-3 text-[15px]">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-success" aria-hidden="true">
           <path d="m9 12 2 2 4-4M12 3l7 4v5c0 4.4-3 8.3-7 9-4-0.7-7-4.6-7-9V7z" />
         </svg>
-        <span className="font-medium text-success">Service verified</span>
+        <span className="font-semibold text-success">Service verified</span>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-5">
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold text-ink">Verify your service</div>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${attested ? "bg-warn-soft text-warn" : "bg-canvas text-faint"}`}>
+    <div className="card p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Verify your service</h3>
+          <p className="mt-1 text-[15px] leading-relaxed text-muted">
+            Confirming your service is what makes your record credible to the VA and to researchers.
+          </p>
+        </div>
+        <span className={`flex-none rounded-full px-2.5 py-1 text-[13px] font-semibold ${attested ? "bg-warn-soft text-warn" : "bg-canvas text-muted"}`}>
           {attested ? "Self-attested" : "Unverified"}
         </span>
       </div>
-      <p className="mt-1 text-sm text-muted">
-        Confirming your service is what makes your record credible to the VA and to researchers.
-      </p>
 
       <div className="mt-4 space-y-2.5">
         {!attested && (
-          <button
-            onClick={affirm}
-            className="w-full rounded-lg border border-brand bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600"
-          >
+          <button onClick={affirm} className="btn btn-primary w-full">
             I affirm I am a U.S. veteran or service member
           </button>
         )}
-        <Link
-          href="/account"
-          className="flex w-full items-center justify-between rounded-lg border border-line px-4 py-2 text-sm text-ink hover:bg-canvas"
-        >
+        <Link href="/account" className="btn btn-secondary w-full justify-between">
           <span>Upload your DD-214 for verified status</span>
-          <span className="text-faint">→</span>
+          <Chevron className="text-faint" />
         </Link>
-        <button
-          disabled
-          className="flex w-full cursor-not-allowed items-center justify-between rounded-lg border border-line px-4 py-2 text-sm text-faint"
-          title="Coming soon"
-        >
+        <div className="flex min-h-11 items-center justify-between rounded-xl border border-dashed border-line px-4 text-[15px] text-faint" aria-disabled="true">
           <span>Verify with ID.me</span>
-          <span className="rounded-full bg-canvas px-2 py-0.5 text-[11px]">Coming soon</span>
-        </button>
+          <span className="rounded-full bg-canvas px-2.5 py-0.5 text-[13px] font-medium">Coming soon</span>
+        </div>
       </div>
     </div>
   );

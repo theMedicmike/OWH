@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { ServiceRibbon, StarRow } from "./Patriotic";
 import { TextSizeControl } from "./TextSize";
 import OpsecGate from "./OpsecGate";
 import { BOOK_PUBLIC } from "@/lib/bookVisibility";
@@ -13,85 +12,56 @@ type NavItem = { href: string; label: string; d: string; step?: number };
 type NavSection = { title?: string; tag?: string; items: NavItem[] };
 
 // The nav IS the pipeline. A veteran should be able to read the sidebar and
-// know exactly what building a record takes, and where they are in it — six
-// numbered steps, in order, ending at the packet. Everything that isn't a step
-// sits below the line so it can't be mistaken for one.
+// know exactly what building a record takes, and where they are in it: six
+// steps, in order, ending at the packet, drawn as dots on one line. Everything
+// that isn't a step sits below so it can't be mistaken for one.
 const SECTIONS: NavSection[] = [
   {
     items: [
-      { href: "/dashboard", label: "Dashboard", d: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" },
+      { href: "/dashboard", label: "Dashboard", d: "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" },
       { href: "/mike",      label: "Talk to Medic Mike", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
     ],
   },
   {
     title: "Build your record",
     items: [
-      // ORDER = THE SOP. Conditions used to sit at 4, after the map at 2,
-      // which put the map before the app knew what a veteran was carrying —
-      // the same wrong first step the Dashboard card and Medic Mike were
-      // giving. Service, then health, then the map. If these move again,
-      // the landing page's POINTS list, the Dashboard's start-here card,
-      // Medic Mike's WHERE SOMEONE STARTS block, and the step numbers
+      // ORDER = THE SOP. Service, then health, then the map. If these move
+      // again, the landing page's POINTS list, the Dashboard's start-here
+      // card, Medic Mike's WHERE SOMEONE STARTS block, and the step numbers
       // written into /help's prose all have to move with them.
-      { step: 1, href: "/intake",  label: "Your service",     d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
-      { step: 2, href: "/health",  label: "Your conditions",  d: "M19 14c1.5-1.6 3-3.3 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5C2 10.7 3.5 12.4 5 14l7 7 7-7z" },
-      { step: 3, href: "/map",     label: "Where you served", d: "M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" },
-      { step: 4, href: "/journey", label: "Connect the dots", d: "M5 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM7.5 10.5l9-5M7.5 13l9 5" },
-      { step: 5, href: "/buddies", label: "Battle buddies",   d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" },
-      { step: 6, href: "/report",  label: "Claim packet",     d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM9 13h6M9 17h6" },
+      { step: 1, href: "/intake",  label: "Your service",     d: "" },
+      { step: 2, href: "/health",  label: "Your conditions",  d: "" },
+      { step: 3, href: "/map",     label: "Where you served", d: "" },
+      { step: 4, href: "/journey", label: "Connect the dots", d: "" },
+      { step: 5, href: "/buddies", label: "Battle buddies",   d: "" },
+      { step: 6, href: "/report",  label: "Claim packet",     d: "" },
     ],
   },
   {
-    // Its own section, deliberately NOT nested inside "Learn & live well" —
-    // council ruling 2026-08-07/2026-08-09: discoverable ALONGSIDE the Exposure
-    // Library and Whole Health, never visually equated as a sibling card under
-    // the same heading. No step number: renumbering breaks the help page, which
-    // hardcodes step numbers in prose in six places. "Your shot record," not
-    // "Vaccines" — it puts the app on the side of the paperwork, not the argument.
+    // Its own section, deliberately NOT nested inside "Learn & live well":
+    // council ruling 2026-08-07/2026-08-09. Discoverable ALONGSIDE the Exposure
+    // Library and Whole Health, never visually equated as a sibling under the
+    // same heading. No step numbers: renumbering breaks the help page, which
+    // hardcodes step numbers in prose in six places.
+    title: "Also in your record",
     items: [
       { href: "/shots", label: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
-      // Same "no step number" reasoning as shots above — discoverable
-      // alongside it, not a numbered step. Plain name, not clinical: council
-      // ruling 2026-08-11 ("Injuries & events," not "Trauma Intake").
       { href: "/injuries", label: "Injuries & events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
-      // Same "no step number" reasoning as the two above. A ship is a service
-      // fact, not a place and not a numbered step — and it sits here rather
-      // than under "Where you served" because a vessel is the one thing in this
-      // app that a map genuinely cannot hold. Plain name for the same reason
-      // shots is "Your shot record": "Ships you served aboard" is what a sailor
-      // would say, "Vessel record" is what a database would.
       { href: "/vessels", label: "Ships you served aboard", d: "M12 2v6M9 5h6M3 13h18l-2.2 6.2a2 2 0 0 1-1.9 1.3H7.1a2 2 0 0 1-1.9-1.3zM5.5 13V9h13v4" },
-      // Same reasoning as the two above — discoverable alongside them, never a
-      // numbered step. "Your medications," not "Drug side effects": the page
-      // documents what you take, it does not tell you what a drug did to you.
       { href: "/medications", label: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
       // The First Page (decided 2026-11-24): the one two-sided sheet a veteran
-      // hands a specialist, printed from this record. Not a numbered step, because
-      // it faces the clinic, not the claim: it reads from the record and writes
-      // nothing back into it. Same "discoverable alongside" reasoning as above.
+      // hands a specialist. Not a numbered step, because it faces the clinic,
+      // not the claim.
       { href: "/first-page", label: "Your First Page", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM8 12h8M8 16h5" },
-      // Council ruling 2026-08-14. Dropdown-only lookup of the PUBLISHED
-      // presumptive lists — where and when only, never a question about the
-      // veteran's health. The symptom-driven version veterans asked for was
-      // refused outright: matching described symptoms to claimable conditions
-      // is diagnosis. If a free-text box ever appears in that flow, this
-      // becomes the feature the council said no to.
+      // Council ruling 2026-08-14: dropdown-only lookup of the PUBLISHED
+      // presumptive lists. Never a question about the veteran's health.
       { href: "/presumptives", label: "What VA presumes", d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
     ],
   },
   {
-    // 🔴 WHAT HAPPENS AFTER THE PACKET. Both of these already existed and both
-    // were in PUBLIC_SECTIONS below — and in NEITHER case were they in this
-    // list. So a visitor could read the VSO finder signed out, create an
-    // account, and lose it from his menu: the app's entire endpoint, reachable
-    // afterwards only from a link buried inside the packet page. The C&P
-    // explainer was worse, because /help told him to look for it "under Learn
-    // & live well," where it has never been.
-    //
-    // Deliberately NOT numbered and deliberately not inside "Build your
-    // record": step 6 hands you a packet and the record is finished. These are
-    // what you do with it, and a seventh number would tell a veteran who
-    // stopped at the packet that he is not done. He is.
+    // What happens after the packet. Deliberately NOT numbered: step 6 hands
+    // you a packet and the record is finished. A seventh number would tell a
+    // veteran who stopped at the packet that he is not done. He is.
     title: "When you're ready to file",
     items: [
       { href: "/vso",     label: "Find a VSO",    d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
@@ -108,7 +78,7 @@ const SECTIONS: NavSection[] = [
   },
   {
     title: "Just for you",
-    tag: "private",
+    tag: "Private",
     items: [{ href: "/estimator", label: "Exposure insights", d: "M3 12h4l3 8 4-16 3 8h4" }],
   },
   {
@@ -123,7 +93,7 @@ const BOTTOM_LINKS: NavItem[] = [
 
 function Icon({ d }: { d: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] flex-none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 flex-none" aria-hidden="true">
       <path d={d} />
     </svg>
   );
@@ -134,36 +104,30 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
     <Link
       href={item.href}
       onClick={onClick}
-      className={`press flex items-center gap-3 py-2 pr-3 text-sm transition-all ${
-        active
-          ? "rounded-r-lg border-l-[3px] border-accent bg-white/15 pl-2.5 font-semibold text-white"
-          : "rounded-lg pl-3 text-white/65 hover:translate-x-0.5 hover:bg-white/10 hover:text-white"
+      aria-current={active ? "page" : undefined}
+      className={`press flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-[15px] leading-snug transition-colors ${
+        active ? "bg-white/14 font-semibold text-white" : "text-white/72 hover:bg-white/8 hover:text-white"
       }`}
     >
       {item.step ? (
-        <span
-          className={`flex h-[18px] w-[18px] flex-none items-center justify-center rounded-full text-[10px] font-bold ${
-            active ? "bg-accent text-white" : "bg-white/10 text-white/70"
-          }`}
-        >
-          {item.step}
+        // A dot on the spine. The line between dots is drawn by the list.
+        <span className="relative flex h-5 w-5 flex-none items-center justify-center" aria-hidden="true">
+          <span className={`h-3 w-3 rounded-full border-2 ${active ? "border-accent bg-accent" : "border-white/55 bg-brand"}`} />
         </span>
       ) : (
         <Icon d={item.d} />
       )}
-      {item.label}
+      <span>
+        {item.step ? <span className="sr-only">Step {item.step}: </span> : null}
+        {item.label}
+      </span>
     </Link>
   );
 }
 
 // Education routes that render for anyone, signed in or not. Every one of
-// them is the same page for every visitor — no record is read, nothing is
-// personalised — which is the only reason it's safe to open them.
-//
-// This is also the entire SEO strategy. Before this, 7 of 37 routes were
-// crawlable and the best writing on the site (the exposure library, the book,
-// whole health) was invisible to search because it sat behind a login. No
-// amount of sitemap or structured-data work fixes that; only this does.
+// them is the same page for every visitor, which is the only reason it's
+// safe to open them. This is also the entire SEO strategy.
 const PUBLIC_SECTIONS: NavSection[] = [
   {
     title: "Learn",
@@ -186,7 +150,7 @@ export default function AppShell({
   title: string;
   children: React.ReactNode;
   /** Renders for signed-out visitors too. Only ever set on pages that read
-   *  no personal record — see PUBLIC_SECTIONS above. */
+   *  no personal record. See PUBLIC_SECTIONS above. */
   publicPage?: boolean;
 }) {
   const { user, ready, signOut } = useAuth();
@@ -196,41 +160,29 @@ export default function AppShell({
   const [menu, setMenu] = useState(false);
 
   const isDashboard = pathname === "/dashboard";
-  // history.length > 1 means there is somewhere real to go back TO. A veteran who
-  // opened a bookmark or followed a link straight into a deep page has no history,
-  // and router.back() would either do nothing or throw him out of the app
-  // entirely — so he goes to the Dashboard instead. A back button that sometimes
-  // does nothing is worse than none: he taps it twice and decides the app is broken.
+  // history.length > 1 means there is somewhere real to go back TO. A veteran
+  // who opened a bookmark straight into a deep page has no history, so he goes
+  // Home instead. A back button that sometimes does nothing is worse than none.
   function goBack() {
     if (typeof window !== "undefined" && window.history.length > 1) router.back();
     else router.push("/dashboard");
   }
 
-  // Auth still resolving. A PUBLIC page must never wait for it.
-  //
-  // This component is server-rendered and `ready` is false on the server, so
-  // returning a spinner here meant every public page shipped "Loading…" as its
-  // entire crawlable HTML. Measured live 2026-09-07: /learn returned 42 KB of
-  // markup containing no visible text at all. All 127 public education pages,
-  // the whole book, and every link preview a veteran texted to his wife were
-  // empty to Google, to AI assistants and to reader modes.
-  //
-  // A public page now renders immediately with the signed-out rail; the account
-  // controls fill in on hydration. A personal page still waits, because showing
-  // its frame before we know who is asking is worse than a spinner.
+  // Auth still resolving. A PUBLIC page must never wait for it: this
+  // component is server-rendered and `ready` is false on the server, so a
+  // spinner here would ship "Loading…" as the entire crawlable HTML of every
+  // public page. A personal page still waits.
   if (!ready && !publicPage) {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-muted">Loading…</div>;
+    return <div className="flex min-h-screen items-center justify-center text-[15px] text-muted">Loading…</div>;
   }
 
-  // A signed-out visitor on a personal page still gets stopped here. On an
-  // education page they get the page — that is the whole change.
   if (!user && !publicPage) {
     return (
       <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-7 text-center shadow-sm">
-          <h1 className="text-lg font-semibold text-ink">Please sign in</h1>
-          <p className="mt-1 text-sm text-muted">You need an account to view this page.</p>
-          <Link href="/" className="mt-4 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+        <div className="card w-full max-w-sm p-7 text-center">
+          <h1 className="text-xl font-semibold tracking-tight text-ink">Please sign in</h1>
+          <p className="mt-1 text-[15px] text-muted">You need an account to view this page.</p>
+          <Link href="/" className="btn btn-primary mt-5 w-full">
             Go to sign in
           </Link>
         </div>
@@ -239,125 +191,120 @@ export default function AppShell({
   }
 
   const signedOut = !user;
-  // A signed-out visitor sees only the pages they can actually open. Showing
-  // them the full record-building rail would be six links that all bounce off
-  // a login wall.
   const sections = signedOut ? PUBLIC_SECTIONS : SECTIONS;
 
-  // The whole sidebar scrolls — not just <nav>. With ~440px of fixed chrome
-  // below the nav, a short viewport (phone landscape) used to clip the crisis
-  // line off-screen with no way to reach it, which defeats the entire point of
-  // keeping 988 one tap away.
+  // The whole sidebar scrolls, not just <nav>, so a short viewport (phone
+  // landscape) can never clip the crisis line off-screen.
   const sidebar = (
-    <div className="topo-field flex h-full flex-col overflow-y-auto bg-brand">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5">
+    <div className="on-navy flex h-full flex-col overflow-y-auto bg-brand">
+      <div className="flex items-center gap-3 px-4 pb-4 pt-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/owh-round.png" alt="OWH" className="h-11 w-11 flex-none object-contain" />
-        <div className="leading-tight">
-          <div className="text-sm font-bold tracking-tight text-white">Connecting the Dots</div>
-          <div className="text-[11px] text-white/45">of Service</div>
+        <img src="/owh-round.png" alt="Operation Whole Health" className="h-10 w-10 flex-none object-contain" />
+        <div className="min-w-0 leading-tight">
+          <div className="text-[15px] font-semibold tracking-tight text-white">Connecting the Dots</div>
+          <div className="text-[13px] text-white/55">of Service</div>
         </div>
+        {open && (
+          <button
+            onClick={() => setOpen(false)}
+            className="ml-auto flex h-10 w-10 flex-none items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white lg:hidden"
+            aria-label="Close menu"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-5 w-5" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Service-ribbon accent */}
-      <ServiceRibbon className="opacity-90" />
-
-      {/* Nav */}
-      <nav className="flex-1 space-y-4 px-3 py-2">
-        {sections.map((section, si) => (
-          <div key={si} className="space-y-0.5">
-            {section.title && (
-              <div className="flex items-center gap-1.5 px-3 pb-1 pt-1">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/35">
-                  {section.title}
-                </span>
-                {section.tag && (
-                  <span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/40">
-                    {section.tag}
-                  </span>
-                )}
+      <nav className="flex-1 space-y-5 px-3 pb-2" aria-label="Main">
+        {sections.map((section, si) => {
+          const isSpine = section.items.some((i) => i.step);
+          return (
+            <div key={si}>
+              {section.title && (
+                <div className="flex items-center gap-2 px-3 pb-1.5">
+                  <span className="text-[13px] font-medium text-white/50">{section.title}</span>
+                  {section.tag && (
+                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[12px] font-medium text-white/55">{section.tag}</span>
+                  )}
+                </div>
+              )}
+              <div
+                className={
+                  isSpine
+                    ? "relative space-y-0.5 before:absolute before:bottom-5 before:left-[calc(0.75rem+0.625rem-1px)] before:top-5 before:w-0.5 before:bg-white/15 before:content-['']"
+                    : "space-y-0.5"
+                }
+              >
+                {section.items.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    item={item}
+                    active={pathname === item.href || pathname.startsWith(item.href + "/")}
+                    onClick={() => setOpen(false)}
+                  />
+                ))}
               </div>
-            )}
-            {section.items.map((item) => (
-              <NavLink
-                key={item.href}
-                item={item}
-                active={pathname === item.href || pathname.startsWith(item.href + "/")}
-                onClick={() => setOpen(false)}
-              />
+            </div>
+          );
+        })}
+
+        <div>
+          <div className="px-3 pb-1.5">
+            <span className="text-[13px] font-medium text-white/50">The mission</span>
+          </div>
+          <div className="space-y-0.5">
+            {BOTTOM_LINKS.map((item) => (
+              <NavLink key={item.href} item={item} active={pathname === item.href} onClick={() => setOpen(false)} />
             ))}
           </div>
-        ))}
+        </div>
       </nav>
 
-      {/* The mission */}
-      <div className="border-t border-white/10 px-3 py-2 space-y-0.5">
-        <div className="px-3 pb-1 pt-1">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white/35">The mission</span>
-        </div>
-        {BOTTOM_LINKS.map((item) => (
-          <NavLink
-            key={item.href}
-            item={item}
-            active={pathname === item.href}
-            onClick={() => setOpen(false)}
-          />
-        ))}
-      </div>
-
-      {/* A quiet divider. The 250th-anniversary chip that used to sit here was
-          removed 2026-08-14 — a celebratory mark is the wrong note in a rail a
-          veteran opens to document what service cost him. */}
-      <div className="px-3 pt-3">
-        <StarRow count={7} />
-      </div>
-
-      {/* User / sign out — or, for a visitor reading the library, the reason
-          to start a record of their own. */}
+      {/* User / sign out, or, for a visitor reading the library, the reason to
+          start a record of their own. Then the floor: the crisis line is
+          always one tap away, on every page. */}
       <div className="border-t border-white/10 p-3">
         {signedOut ? (
-          <Link
-            href="/"
-            className="press mb-1 block rounded-lg bg-white/15 px-3 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-white/25"
-          >
+          <Link href="/" className="btn btn-light w-full">
             Start your free record
           </Link>
         ) : (
-          <>
-            <div className="truncate px-2 text-xs text-white/35">{user?.email}</div>
+          <div className="flex items-center gap-2 px-1">
+            <span className="min-w-0 flex-1 truncate text-[13px] text-white/55">{user?.email}</span>
             <button
               onClick={signOut}
-              className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-white/55 transition hover:bg-white/10 hover:text-white"
+              className="flex-none rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-white/70 hover:bg-white/10 hover:text-white"
             >
               Sign out
             </button>
-          </>
+          </div>
         )}
-        {/* The floor: the crisis line is always one tap away, on every page.
-            The book closes every chapter with it; an app that asks veterans to
-            relive their exposures owes them the same. */}
         <a
           href="tel:988"
-          className="mt-2 flex items-center gap-2 rounded-lg bg-scarlet/90 px-3 py-2 text-xs font-bold text-white transition hover:brightness-110"
+          className="btn mt-3 w-full justify-start gap-3 bg-scarlet px-3.5 text-left text-white hover:brightness-110"
         >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5 flex-none" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 flex-none" aria-hidden="true">
             <path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" />
           </svg>
-          <span className="leading-tight">Veterans Crisis Line<br /><span className="font-medium text-white/80">988, then press 1</span></span>
+          <span className="leading-tight">
+            <span className="block text-[14px] font-semibold">Veterans Crisis Line</span>
+            <span className="block text-[13px] font-medium text-white/85">988, then press 1</span>
+          </span>
         </a>
-        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 px-2 text-[10px] text-white/30">
-          <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-white/60">Send feedback</a>
-          <Link href="/trust" className="hover:text-white/60">What this is</Link>
-          <Link href="/privacy" className="hover:text-white/60">Privacy</Link>
-          <Link href="/terms" className="hover:text-white/60">Terms</Link>
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-1 text-[13px] text-white/45">
+          <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-white/80">Send feedback</a>
+          <Link href="/trust" className="hover:text-white/80">What this is</Link>
+          <Link href="/privacy" className="hover:text-white/80">Privacy</Link>
+          <Link href="/terms" className="hover:text-white/80">Terms</Link>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[256px_1fr]">
+    <div className="min-h-screen lg:grid lg:grid-cols-[272px_1fr]">
       {/* Sidebar (desktop) */}
       <aside className="hidden lg:block print:hidden">
         <div className="sticky top-0 h-screen overflow-hidden">{sidebar}</div>
@@ -367,118 +314,102 @@ export default function AppShell({
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-ink/50" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-64 shadow-2xl">{sidebar}</div>
+          <div className="absolute left-0 top-0 h-full w-[18rem] max-w-[88vw] shadow-2xl">{sidebar}</div>
         </div>
       )}
 
       {/* Main column */}
       <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-white/95 px-5 py-3 backdrop-blur print:hidden">
+        <header className="sticky top-0 z-30 flex min-h-14 items-center gap-2 border-b border-line bg-white/92 px-3 py-2 backdrop-blur sm:px-5 print:hidden">
           <button
             onClick={() => setOpen(true)}
-            className="rounded-lg border border-line p-1.5 text-muted hover:bg-canvas lg:hidden"
+            className="btn btn-secondary h-11 w-11 flex-none px-0 lg:hidden"
             aria-label="Open menu"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className="h-5 w-5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className="h-5 w-5" aria-hidden="true">
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          {/* Back. Every screen gets one, from the shell, because ad-hoc "←" links
-              on some pages and not others is how a veteran gets stranded — and on
-              a phone the whole menu is hidden behind the button to the left, so
-              without this the only way out of a deep page is to know it is there.
-              Uses real history when there is any, and falls back to the Dashboard
-              when he arrived cold from a link or a bookmark, so it can never be a
-              dead button. Hidden on the Dashboard itself, which is the floor. */}
+          {/* Back, from the shell, on every screen but Home. Labeled, not just
+              an arrow, so there is never a question of what it does. */}
           {!isDashboard && (
-            <button
-              onClick={goBack}
-              className="rounded-lg border border-line p-1.5 text-muted transition hover:bg-canvas hover:text-ink"
-              aria-label="Go back"
-              title="Back"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+            <button onClick={goBack} className="btn btn-secondary btn-sm flex-none pl-2.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
+              Back
             </button>
           )}
-          <h1 className="text-base font-bold tracking-tight text-ink">{title}</h1>
+          <h1 className="min-w-0 truncate px-1 text-[17px] font-semibold tracking-tight text-ink">{title}</h1>
 
-          <Link
-            href="/support"
-            className="ml-auto flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-canvas"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5 text-red-500" aria-hidden="true">
+          <Link href="/support" className="btn btn-secondary btn-sm ml-auto flex-none rounded-full">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5 text-scarlet" aria-hidden="true">
               <path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" />
             </svg>
-            Need support?
+            <span className="hidden sm:inline">Need support?</span>
+            <span className="sm:hidden">Support</span>
           </Link>
 
-          {/* Account menu — or, for a signed-out reader, a way in. */}
           {signedOut ? (
-            <Link
-              href="/"
-              className="press rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition hover:bg-brand-600"
-            >
+            <Link href="/" className="btn btn-primary btn-sm flex-none">
               Sign in
             </Link>
           ) : (
-          <div className="relative">
-            <button
-              onClick={() => setMenu((m) => !m)}
-              className="flex items-center gap-2 rounded-full border border-line py-1 pl-1 pr-3 text-sm text-ink transition hover:bg-canvas"
-              aria-label="Account menu"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
-                {(user?.email?.[0] ?? "U").toUpperCase()}
-              </span>
-              <span className="hidden max-w-[140px] truncate font-medium sm:block">{user?.email}</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${menu ? "rotate-180" : ""}`}>
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
+            <div className="relative flex-none">
+              <button
+                onClick={() => setMenu((m) => !m)}
+                className="btn btn-secondary btn-sm rounded-full pl-1 pr-2.5"
+                aria-label="Account menu"
+                aria-expanded={menu}
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-[13px] font-bold text-white">
+                  {(user?.email?.[0] ?? "U").toUpperCase()}
+                </span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${menu ? "rotate-180" : ""}`} aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
 
-            {menu && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
-                <div className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
-                  <div className="border-b border-line px-4 py-3">
-                    <div className="text-xs text-faint">Signed in as</div>
-                    <div className="truncate text-sm font-semibold text-ink">{user?.email}</div>
+              {menu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
+                  <div className="card card-raise absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden">
+                    <div className="border-b border-line px-4 py-3">
+                      <div className="text-[13px] text-muted">Signed in as</div>
+                      <div className="truncate text-[15px] font-semibold text-ink">{user?.email}</div>
+                    </div>
+                    <TextSizeControl />
+                    <Link
+                      href="/account"
+                      onClick={() => setMenu(false)}
+                      className="flex min-h-11 items-center gap-2.5 px-4 text-[15px] text-ink transition hover:bg-canvas"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-muted" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />
+                      </svg>
+                      Account settings
+                    </Link>
+                    <button
+                      onClick={() => { setMenu(false); signOut(); }}
+                      className="flex min-h-11 w-full items-center gap-2.5 border-t border-line px-4 text-left text-[15px] font-medium text-scarlet transition hover:bg-scarlet/5"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                      </svg>
+                      Sign out
+                    </button>
                   </div>
-                  <TextSizeControl />
-                  <Link
-                    href="/account"
-                    onClick={() => setMenu(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink transition hover:bg-canvas"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] text-muted">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />
-                    </svg>
-                    Account settings
-                  </Link>
-                  <button
-                    onClick={() => { setMenu(false); signOut(); }}
-                    className="flex w-full items-center gap-2.5 border-t border-line px-4 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-                    </svg>
-                    Sign out
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                </>
+              )}
+            </div>
           )}
         </header>
 
-        <main className="flex-1 px-5 py-6 sm:px-7 lg:px-9">
-          <div className="mx-auto w-full max-w-4xl">
+        <main className="flex-1 px-4 py-6 sm:px-7 sm:py-8 lg:px-10">
+          <div className="mx-auto w-full max-w-3xl">
             {/* OpsecGate is the one-time "keep it unclassified" screen a
                 veteran confirms before entering anything into their own
-                record. A signed-out reader has nothing to enter, so gating
-                the library behind it would be a wall in front of a book. */}
+                record. A signed-out reader has nothing to enter. */}
             {signedOut ? children : <OpsecGate>{children}</OpsecGate>}
           </div>
         </main>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import CrisisSupport from "@/components/CrisisSupport";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -16,6 +16,16 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// The one display face. Used only through the `.display` class in
+// globals.css, at headline size: the greeting, the landing statement, the
+// top line of a screen. Everything a veteran reads or taps stays in Geist.
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
+  subsets: ["latin"],
+  weight: ["600"],
+  style: ["normal"],
 });
 
 export const metadata: Metadata = {
@@ -149,7 +159,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <script
