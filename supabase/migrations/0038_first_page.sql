@@ -1,4 +1,4 @@
--- 0037 — The First Page (Service Health Summary v1), decided 2026-11-24.
+-- 0038 — The First Page (Service Health Summary v1), decided 2026-11-24.
 --
 -- Connecting the Dots is the HOME of a veteran's digital passport; the First
 -- Page is the one fixed-format sheet the app prints before a specialist visit.
