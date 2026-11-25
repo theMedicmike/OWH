@@ -184,8 +184,9 @@ const longClaims = "I filed for tinnitus and my back in 2012 and the examiner sp
 check("crisis-whole-message", M.medicMikeCrisisCheck(longClaims + " I want to die") === M.MEDIC_MIKE_CRISIS, "crisis language at the END of a long message was not caught — is the check reading only a prefix again?");
 check("crisis-long-benign", M.medicMikeCrisisCheck(longClaims) === null, "a long, ordinary claims message wrongly returned the crisis reply");
 check("crisis-non-string", M.medicMikeCrisisCheck(undefined) === null && M.medicMikeCrisisCheck("") === null, "the crisis check must return null, not throw, on an empty or non-string message");
-// The routes scan up to MAX_CRISIS_SCAN_CHARS (200,000) before sign-in. The
-// gate is linear; this proves the words are found at the very end of that.
+// The gate itself has no length limit (the routes read up to
+// MAX_CRISIS_SCAN_CHARS, 100,000, before sign-in). This proves the words are
+// found at the very end of 150,000 characters.
 const veryLong = longClaims.repeat(40).slice(0, 150_000);
 check("crisis-whole-message-150k", M.medicMikeCrisisCheck(veryLong + " I don't want to be here anymore.") === M.MEDIC_MIKE_CRISIS, "crisis language at the end of a 150,000-character message was not caught");
 check("crisis-long-benign-150k", M.medicMikeCrisisCheck(veryLong) === null, "a 150,000-character ordinary claims message wrongly returned the crisis reply");

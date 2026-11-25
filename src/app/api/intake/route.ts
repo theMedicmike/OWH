@@ -31,7 +31,7 @@ const TURNS = 10;
 // runs before sign-in, so a stranger can't make it scan megabytes. The whole
 // last message is read up to this size; anything longer is answered with the
 // size reply and the crisis line, never scanned in part.
-const MAX_CRISIS_SCAN_CHARS = 200_000;
+const MAX_CRISIS_SCAN_CHARS = 100_000;
 
 export async function POST(req: Request) {
   // 🔴 The same crisis pre-check the medic route runs, and in the same place:

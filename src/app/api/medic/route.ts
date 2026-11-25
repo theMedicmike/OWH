@@ -22,14 +22,14 @@ const MAX_TOTAL_CHARS = 24_000;
 // is a tenth price per request, but history is billed in full every time.
 const TURNS = 10;
 // The crisis check runs BEFORE sign-in (below), so it must stay cheap for a
-// stranger too. It reads the WHOLE last message up to this size — under
-// 100ms of pattern matching at the very worst, measured 2026-11-24 — which is
-// far past anything a person types (the size check turns away anything over
-// MAX_MESSAGE_CHARS anyway, but only AFTER the crisis check has read it). A
-// last message longer than this is answered with the size reply AND the
+// stranger too. It reads the WHOLE last message up to this size — roughly
+// 50-120ms of pattern matching at the very worst, measured 2026-11-24 — which
+// is 25 times anything a person can send (the size check turns away anything
+// over MAX_MESSAGE_CHARS anyway, but only AFTER the crisis check has read it).
+// A last message longer than this is answered with the size reply AND the
 // crisis line instead. It is never scanned in part: the check always reads a
 // whole message or none of it. verify-mike.cjs keeps this at 100,000 or more.
-const MAX_CRISIS_SCAN_CHARS = 200_000;
+const MAX_CRISIS_SCAN_CHARS = 100_000;
 
 export async function POST(req: Request) {
   // 🔴 CRISIS FIRST — before the API-key check, before sign-in, before the rate

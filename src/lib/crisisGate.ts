@@ -323,6 +323,7 @@ const SUBSTITUTIONS: Array<[RegExp, string]> = [
   [/\bkil\b/g, "kill"],
   [/\b(?:my ?slef|my ?sefl|mysef|myslef|mysefl)\b/g, "myself"],
   [/\b(?:lfie|lyfe)\b/g, "life"],
+  [/\bw o\b/g, "without"], // "w/o", once punctuation became spaces
 ];
 
 export function normalizeForCrisis(input: string): string {
@@ -709,6 +710,50 @@ const RED_TEAM_RULES: CrisisRule[] = [
     id: "rt-checking-out-tonight",
     re: r(String.raw`\b(?:im|ill|im going to|going to) (?:be )?(?:checking out|check out|tapping out|tap out|logging off|log off)(?: for good)?(?: tonight| today| tomorrow| this weekend)\b(?! (?:from|of|at|after|before)\b)`),
   },
+  // ── Round 3 (held-out, run once untuned: 2 of 15 caught; these rules came after) ──
+  // "I'm done waiting, tonight's it"
+  {
+    id: "rt-tonights-it",
+    re: r(String.raw`\b(?:tonights|tonight is|todays|today is) (?:it|the night|the day)$`),
+    also: r(String.raw`\b(?:im done|done waiting|cant do this|cant take|goodbye|im sorry|no more|for good|gets better|end it)\b`),
+  },
+  // "I took the safety off and I'm just sitting here"
+  {
+    id: "rt-safety-off",
+    re: r(String.raw`\b(?:took|take|taking|flipped|flip|clicked|click|thumbed) (?:the |my )?safety off\b`),
+    unless: r(String.raw`\b(?:range|hunting|hunt|deer|elk|target|targets|competition|qualif\w*|instructor|class|course|drill)\b`),
+  },
+  // "would anyone even notice if I disappeared"
+  {
+    id: "rt-would-anyone-notice",
+    re: r(String.raw`\b(?:would|will|does|do) (?:anyone|anybody|people|everyone|my family)(?: even| really)? (?:notice|care|miss me)(?: if| when) (?:i|im) (?:disappeared|disappear|was gone|were gone|died|die|was dead|wasnt here|gone|dead)\b(?! (?:from|for a|for the|for some|off)\b)`),
+  },
+  // "I googled how many feet you need to fall to die"
+  {
+    id: "rt-how-far-to-die",
+    re: r(String.raw`\bhow (?:many|much|high|far|tall)\b(?: \w+){0,6} (?:fall|jump|drop|falling|jumping) to (?:die|your death|my death|kill)\b|\bhow (?:high|far|tall)\b(?: \w+){0,5} (?:to|before you|before i|so you|so i) (?:die|dont survive|wont survive|kill (?:yourself|myself))\b`),
+  },
+  // "the voices are telling me to do it"
+  {
+    id: "rt-voices",
+    re: r(String.raw`\bvoices?\b(?: \w+){0,3} (?:telling|tell|tells|told|commanding|ordering|say|saying|says|keep saying) (?:me )?to (?:do it|end it|kill|hurt|die|jump|shoot|cut)\b`),
+  },
+  // "a letter to my kids for after I'm gone", "what do I do with my dog after I'm gone" (not survivor-benefit questions)
+  {
+    id: "rt-after-im-gone",
+    re: r(String.raw`\b(?:after|when|once|for when) (?:im|i am|i was) gone\b(?! (?:on|to|for|from|at|in|overseas|abroad|deployed|out|tdy|this|next)\b)`),
+    also: r(String.raw`\b(?:letters?|notes?|dog|cat|pets?|guns?|someone to take|take care of|goodbye|my kids|my wife|my husband)\b`),
+    unless: r(String.raw`\b(?:dic|benefits?|pension|survivors?|sbp|insurance|burial|claims?|va|will|estate|trust|tricare|chapter 35|dea)\b`),
+  },
+  // Spanish: "estoy cansado de vivir"
+  { id: "rt-spanish-tired-of-living", re: r(String.raw`\bcansad[oa]s? de (?:vivir|la vida|existir|estar vivo|estar viva)\b`) },
+  // "I've been thinking the only way out is a bullet"
+  {
+    id: "rt-only-way-out",
+    re: r(String.raw`\bonly (?:way|way out|option|answer|solution|escape|exit|thing left)\b(?: \w+){0,3} (?:is|would be|left is) (?:a |the |my )?(?:bullet|rope|noose|pills|gun|death|dying|suicide|to die|ending it|to end it|to kill myself|${FIREARM})\b`),
+  },
+  // "I want to disappear and never be found"
+  { id: "rt-disappear-never-found", re: r(String.raw`\bdisappear\b(?: \w+){0,2} (?:and )?(?:never|not) (?:be found|come back|return|be seen)\b|\b(?:vanish|disappear) without a trace\b`) },
 ];
 
 // ═════════════════════════════════════════════════════════════════════════════
