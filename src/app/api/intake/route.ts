@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { rateLimit, clientKey } from "@/lib/ratelimit";
 import { createClient } from "@/lib/supabase/server";
-import { medicMikeCrisisCheck } from "@/lib/medicMike";
+import { medicMikeCrisisCheck, medicMikeWithCrisisFooter } from "@/lib/medicMike";
 
 const SYSTEM_PROMPT = `You are the intake guide for "Connecting the Dots of Service," an app that helps U.S. and allied veterans and military first responders build a record of where they served and what they were exposed to.
 
@@ -27,39 +27,60 @@ type Msg = { role: "user" | "assistant"; content: string };
 // so unlike the medic route it cannot be cached at all. History is the only
 // lever here, which is why the window is this tight.
 const TURNS = 10;
+// Same ceiling as the medic route, and for the same reason: the crisis check
+// runs before sign-in, so a stranger can't make it scan megabytes. The whole
+// last message is read up to this size; anything longer is answered with the
+// size reply and the crisis line, never scanned in part.
+const MAX_CRISIS_SCAN_CHARS = 200_000;
 
 export async function POST(req: Request) {
+  // 🔴 The same crisis pre-check the medic route runs, and in the same place:
+  // FIRST, before the API-key check, sign-in, the rate limit and the size
+  // check (brain item B3, 2026-10-14). This is a second conversation surface
+  // with its own prompt, and its prompt mentions 988 but nothing deterministic
+  // enforced it — a veteran typing something desperate here depended entirely
+  // on the model choosing to notice. Shared with Mike so the two can never
+  // drift apart on the one answer that must not vary.
+  let messages: Msg[] = [];
+  try {
+    const body: unknown = await req.json();
+    const list = (body as { messages?: unknown } | null)?.messages;
+    if (Array.isArray(list)) messages = list as Msg[];
+  } catch {
+    return Response.json({ text: medicMikeWithCrisisFooter("Something went wrong reaching the guide. Try again.") });
+  }
+  if (messages.length === 0) {
+    return Response.json({ text: medicMikeWithCrisisFooter("Say that again for me?") }, { status: 400 });
+  }
+
+  const lastUser = [...messages].reverse().find((m) => m?.role === "user");
+  const lastText = typeof lastUser?.content === "string" ? lastUser.content : "";
+  if (lastText.length > MAX_CRISIS_SCAN_CHARS) {
+    return Response.json({ text: medicMikeWithCrisisFooter("That's a lot at once — send me the short version.") }, { status: 413 });
+  }
+  const crisis = medicMikeCrisisCheck(lastText);
+  if (crisis) return Response.json({ text: crisis });
+
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error("[api/intake] ANTHROPIC_API_KEY is not set");
-    return Response.json({ text: "The guide isn't available right now. Try again in a bit." });
+    return Response.json({ text: medicMikeWithCrisisFooter("The guide isn't available right now. Try again in a bit.") });
   }
 
   // Same exposure the medic route had: the page is gated, the endpoint was not.
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth?.user) {
-    return Response.json({ text: "Sign in and we can pick this up." }, { status: 401 });
+    return Response.json({ text: medicMikeWithCrisisFooter("Sign in and we can pick this up.") }, { status: 401 });
   }
 
   if (!rateLimit(`intake:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {
-    return Response.json({ text: "You're sending messages a little fast — give it a few seconds and try again." }, { status: 429 });
+    return Response.json(
+      { text: medicMikeWithCrisisFooter("You're sending messages a little fast — give it a few seconds and try again.") },
+      { status: 429 },
+    );
   }
 
   try {
-    const { messages } = (await req.json()) as { messages: Msg[] };
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return Response.json({ text: "Say that again for me?" }, { status: 400 });
-    }
-
-    // 🔴 The same crisis pre-check the medic route runs. This is a second
-    // conversation surface with its own prompt, and its prompt mentions 988 but
-    // nothing deterministic enforced it — a veteran typing something desperate
-    // here depended entirely on the model choosing to notice. Shared with Mike
-    // so the two can never drift apart on the one answer that must not vary.
-    const lastUser = [...messages].reverse().find((m) => m.role === "user");
-    const crisis = lastUser ? medicMikeCrisisCheck(lastUser.content) : null;
-    if (crisis) return Response.json({ text: crisis });
-
     // Same ordering fix as the medic route: take the window, THEN measure it.
     // Checking the whole conversation meant the total bound before the slice
     // did, so narrowing the window saved nothing -- and a veteran deep into a
@@ -68,7 +89,7 @@ export async function POST(req: Request) {
     const recent = messages.slice(-TURNS);
     const total = recent.reduce((n, m) => n + (m.content?.length ?? 0), 0);
     if (recent.some((m) => (m.content?.length ?? 0) > 4_000) || total > 24_000) {
-      return Response.json({ text: "That's a lot at once — send me the short version." }, { status: 413 });
+      return Response.json({ text: medicMikeWithCrisisFooter("That's a lot at once — send me the short version.") }, { status: 413 });
     }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -85,6 +106,6 @@ export async function POST(req: Request) {
     return Response.json({ text });
   } catch (e) {
     console.error("[api/intake]", e);
-    return Response.json({ text: "Something went wrong reaching the guide. Try again." });
+    return Response.json({ text: medicMikeWithCrisisFooter("Something went wrong reaching the guide. Try again.") });
   }
 }

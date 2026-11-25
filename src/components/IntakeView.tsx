@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_LABEL } from "@/lib/education";
 import { searchGazetteer } from "@/lib/gazetteer";
+import { medicMikeCrisisCheck, medicMikeWithCrisisFooter } from "@/lib/medicMike";
 
 
 type Proposal = {
@@ -85,7 +86,9 @@ export default function IntakeView() {
       const { clean, proposals } = parseProposals(reply ?? "");
       setMessages((prev) => [...prev, { role: "assistant", content: clean, proposals }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I couldn't reach the guide just now. Try again in a moment." }]);
+      // Answered on the device: the server's crisis check first, else the crisis line on the fallback.
+      const offline = medicMikeCrisisCheck(text) ?? medicMikeWithCrisisFooter("Sorry, I couldn't reach the guide just now. Try again in a moment.");
+      setMessages((prev) => [...prev, { role: "assistant", content: offline }]);
     } finally {
       setBusy(false);
     }

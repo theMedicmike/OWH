@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDIC_MIKE_GREETING } from "@/lib/medicMike";
+import { MEDIC_MIKE_GREETING, medicMikeCrisisCheck, medicMikeWithCrisisFooter } from "@/lib/medicMike";
 import { pickMaleVoice } from "@/lib/voice";
 import MikeAvatar from "./MikeAvatar";
+
+// When the server can't answer, reply on the device: the same crisis check the
+// server runs comes first, and any other fallback carries the crisis line.
+function offlineReply(userText: string, fallback: string): string {
+  return medicMikeCrisisCheck(userText) ?? medicMikeWithCrisisFooter(fallback);
+}
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -82,13 +88,13 @@ export default function MedicMike() {
         body: JSON.stringify({ messages: next }),
       });
       const data = await res.json();
-      const answer = (data?.text as string) || "I didn't quite catch that — mind saying it again?";
+      const answer = (data?.text as string) || offlineReply(text, "I didn't quite catch that — mind saying it again?");
       const updated: Msg[] = [...messagesRef.current, { role: "assistant", content: answer }];
       messagesRef.current = updated;
       setMessages(updated);
       speak(answer);
     } catch {
-      const updated: Msg[] = [...messagesRef.current, { role: "assistant", content: "I lost the signal for a second — try me again." }];
+      const updated: Msg[] = [...messagesRef.current, { role: "assistant", content: offlineReply(text, "I lost the signal for a second — try me again.") }];
       messagesRef.current = updated;
       setMessages(updated);
     } finally {

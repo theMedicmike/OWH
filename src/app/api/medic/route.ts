@@ -5,6 +5,7 @@ import {
   medicMikeCrisisCheck,
   medicMikeFilterVaccineCausation,
   medicMikeSymptomRoute,
+  medicMikeWithCrisisFooter,
 } from "@/lib/medicMike";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,13 +21,56 @@ const MAX_TOTAL_CHARS = 24_000;
 // cost that the prompt cache does not already pull -- the cached system prompt
 // is a tenth price per request, but history is billed in full every time.
 const TURNS = 10;
+// The crisis check runs BEFORE sign-in (below), so it must stay cheap for a
+// stranger too. It reads the WHOLE last message up to this size — under
+// 100ms of pattern matching at the very worst, measured 2026-11-24 — which is
+// far past anything a person types (the size check turns away anything over
+// MAX_MESSAGE_CHARS anyway, but only AFTER the crisis check has read it). A
+// last message longer than this is answered with the size reply AND the
+// crisis line instead. It is never scanned in part: the check always reads a
+// whole message or none of it. verify-mike.cjs keeps this at 100,000 or more.
+const MAX_CRISIS_SCAN_CHARS = 200_000;
 
 export async function POST(req: Request) {
+  // 🔴 CRISIS FIRST — before the API-key check, before sign-in, before the rate
+  // limit, before the size check, the symptom router and the model. The reply
+  // is static text: no model call, no cost, nothing stored, so a veteran in
+  // crisis gets the number even when he is signed out, rate limited, or the key
+  // is missing. (Brain item B3, 2026-10-14. Before this, five replies came
+  // ahead of the check and none of them carried the number.)
+  //
+  // The router's STANDALONE_DIAGNOSIS_ASK matches "what's wrong with me", which
+  // is inside "I don't know what's wrong with me anymore. I want to die." — so
+  // before the check ran first, that message was answered with a paragraph
+  // about clinicians and no crisis number at all.
+  let messages: Msg[] = [];
+  try {
+    const body: unknown = await req.json();
+    const list = (body as { messages?: unknown } | null)?.messages;
+    if (Array.isArray(list)) messages = list as Msg[];
+  } catch {
+    return Response.json({ text: medicMikeWithCrisisFooter("Something got between me and the signal. Try me again.") });
+  }
+  if (messages.length === 0) {
+    return Response.json({ text: medicMikeWithCrisisFooter("Say that again for me?") }, { status: 400 });
+  }
+
+  const lastUser = [...messages].reverse().find((m) => m?.role === "user");
+  const lastText = typeof lastUser?.content === "string" ? lastUser.content : "";
+  if (lastText.length > MAX_CRISIS_SCAN_CHARS) {
+    return Response.json(
+      { text: medicMikeWithCrisisFooter("That's a lot at once — send me the short version and we'll work from there.") },
+      { status: 413 },
+    );
+  }
+  const crisis = medicMikeCrisisCheck(lastText);
+  if (crisis) return Response.json({ text: crisis });
+
   if (!process.env.ANTHROPIC_API_KEY) {
     // Never hand a veteran an environment-variable name. He can do nothing with
     // it, and it is read aloud by the text-to-speech voice.
     console.error("[api/medic] ANTHROPIC_API_KEY is not set");
-    return Response.json({ text: "Medic Mike isn't available right now. Try me again in a bit." });
+    return Response.json({ text: medicMikeWithCrisisFooter("Medic Mike isn't available right now. Try me again in a bit.") });
   }
 
   // Require a signed-in veteran. The pages that call this are gated by
@@ -37,32 +81,19 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth?.user) {
-    return Response.json({ text: "Sign in and I'll be right here." }, { status: 401 });
+    return Response.json({ text: medicMikeWithCrisisFooter("Sign in and I'll be right here.") }, { status: 401 });
   }
 
   // Key the limiter on the veteran, not the forwarded IP — an IP is shared on
   // a base or a VA hospital wifi, and is trivially spoofed.
   if (!rateLimit(`medic:${auth.user.id}:${clientKey(req)}`, 10, 60_000)) {
-    return Response.json({ text: "Give me a couple seconds to catch up, then try me again." }, { status: 429 });
+    return Response.json(
+      { text: medicMikeWithCrisisFooter("Give me a couple seconds to catch up, then try me again.") },
+      { status: 429 },
+    );
   }
 
   try {
-    const { messages } = (await req.json()) as { messages: Msg[] };
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return Response.json({ text: "Say that again for me?" }, { status: 400 });
-    }
-
-    const lastUser = [...messages].reverse().find((m) => m.role === "user");
-
-    // 🔴 CRISIS FIRST. Ahead of the symptom router, ahead of the model, ahead of
-    // everything. The router's STANDALONE_DIAGNOSIS_ASK matches "what's wrong
-    // with me", which is inside "I don't know what's wrong with me anymore. I
-    // want to die." — so before this line, that message was answered with a
-    // paragraph about clinicians and no crisis number at all. Static text; no
-    // model call; nothing stored.
-    const crisis = lastUser ? medicMikeCrisisCheck(lastUser.content) : null;
-    if (crisis) return Response.json({ text: crisis });
-
     // THE WINDOW IS TAKEN FIRST, THEN CHECKED. The order used to be the other
     // way round, and it made both caps lie:
     //
@@ -80,14 +111,17 @@ export async function POST(req: Request) {
     const oversize = recent.some((m) => (m.content?.length ?? 0) > MAX_MESSAGE_CHARS);
     const total = recent.reduce((n, m) => n + (m.content?.length ?? 0), 0);
     if (oversize || total > MAX_TOTAL_CHARS) {
-      return Response.json({ text: "That's a lot at once — send me the short version and we'll work from there." }, { status: 413 });
+      return Response.json(
+        { text: medicMikeWithCrisisFooter("That's a lot at once — send me the short version and we'll work from there.") },
+        { status: 413 },
+      );
     }
 
     // Council ruling 2026-08-14: symptom→claimability matching must be blocked
     // by a PRODUCT-LEVEL routing rule, not prompt language alone. This runs
     // BEFORE the model is called, so Mike never gets the chance to attempt the
     // inference — a prompt that drifts can't leak past a request never made.
-    const routed = lastUser ? medicMikeSymptomRoute(lastUser.content) : null;
+    const routed = lastText ? medicMikeSymptomRoute(lastText) : null;
     if (routed) return Response.json({ text: routed });
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -136,6 +170,6 @@ export async function POST(req: Request) {
     // Server-side only. A raw API error string in Mike's speech bubble gets read
     // aloud to a veteran by the browser's voice.
     console.error("[api/medic]", e);
-    return Response.json({ text: "Something got between me and the signal. Try me again." });
+    return Response.json({ text: medicMikeWithCrisisFooter("Something got between me and the signal. Try me again.") });
   }
 }

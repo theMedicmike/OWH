@@ -5,6 +5,8 @@
 // Ease) so improving him in one place makes him smarter everywhere. When you
 // bring over the exact VAE persona, paste it here and both apps follow.
 
+import { crisisHit } from "./crisisGate";
+
 export const MEDIC_MIKE_GREETING =
   "Hey — I'm Medic Mike. I'm here to help you connect the dots between where you served and how you're feeling, and to help you build your record. Ask me anything, or tap the mic and just talk to me. Where do you want to start?";
 
@@ -68,7 +70,10 @@ Stay in character as Medic Mike. Keep it short, keep it real, and always leave t
 // A prompt is not a guarantee — this is the backstop. If a reply ever pairs a
 // vaccine/ingredient token with a causal verb, it never reaches the veteran;
 // the API route swaps it for this constant instead. Do not delete this block
-// in a refactor — scripts/coi-firewall.cjs asserts it exists verbatim.
+// in a refactor — scripts/verify-mike.cjs (prebuild) runs this filter against
+// fixtures AND checks that /api/medic still passes every model reply through
+// it. (coi-firewall.cjs does NOT guard this block; an earlier comment here said
+// it did.)
 const VACCINE_TOKEN =
   /\b(anthrax|smallpox|ACAM2000|COVID(?:-19)?|aluminum|aluminium|thimerosal|squalene|formaldehyde|vaccine|vaccination|immuniz\w*|adjuvant)\b/i;
 // "gives you" and "because of" were removed: they are ordinary English carrying
@@ -144,53 +149,49 @@ const AP = "['’]?";
 // makes one promise the app can keep: the number, immediately, every time.
 // Nothing here is sent to a model, so it cannot drift.
 //
-// Deliberately broad. A false positive costs a veteran one paragraph he did not
-// need, next to a phone number he can ignore. A false negative costs something
-// that cannot be undone. That asymmetry decides every judgement call below.
-const CRISIS_TOKEN = new RegExp(
-  [
-    `\\bi\\s+want\\s+to\\s+die\\b`,
-    `\\bi\\s+wanna\\s+die\\b`,
-    `\\bwant\\s+to\\s+be\\s+dead\\b`,
-    `\\bkill\\s+myself\\b`,
-    `\\bkilling\\s+myself\\b`,
-    `\\bend\\s+(my\\s+life|it\\s+all|things)\\b`,
-    `\\bending\\s+(my\\s+life|it\\s+all)\\b`,
-    `\\btake\\s+my\\s+own\\s+life\\b`,
-    `\\bsuicid\\w*`,
-    `\\bunalive\\b`,
-    `\\bkms\\b`,
-    `\\bhurt\\s+myself\\b`,
-    `\\bharm\\s+myself\\b`,
-    `\\bself[-\\s]?harm\\b`,
-    `\\bdon${AP}?t\\s+want\\s+to\\s+(be\\s+here|live|wake\\s+up)\\b`,
-    `\\bnot\\s+worth\\s+living\\b`,
-    `\\bbetter\\s+off\\s+(without\\s+me|dead)\\b`,
-    `\\bno\\s+(reason|point)\\s+(to\\s+)?(go\\s+on|living|live)\\b`,
-    `\\bcan${AP}?t\\s+(go\\s+on|do\\s+this\\s+anymore|take\\s+(it|this)\\s+anymore)\\b`,
-    `\\beat\\s+my\\s+(gun|pistol)\\b`,
-    `\\bmy\\s+(gun|pistol|rifle)\\s+is\\s+(right\\s+)?(here|out|loaded)\\b`,
-  ].join("|"),
-  "i",
-);
+// The patterns live in ./crisisGate.ts, shared word for word with Veterans At
+// Ease (consolidated and red-teamed 2026-11-24). Deliberately broad: a false
+// positive costs a veteran one paragraph he did not need, next to a phone
+// number he can ignore; a false negative costs something that cannot be undone.
+// To change what it catches, add the phrase to scripts/crisis-fixtures*.json
+// first, then change crisisGate.ts until `node scripts/verify-mike.cjs` passes.
 
+// The facts in this reply are fixed: Veterans Crisis Line, dial 988 then press
+// 1, text 838255, chat at VeteransCrisisLine.net, 911 in immediate danger.
+// Calm, short, no exclamation points. It names "someone you're worried about"
+// because family members type here too, and it ends with a way back in case
+// the check misread an ordinary sentence — the price of being broad.
+// (verify-mike.cjs checks every one of those facts on every build.)
 export const MEDIC_MIKE_CRISIS =
   "I'm going to stop everything else for a second, because what you just said matters more than any of it.\n\n" +
-  "The Veterans Crisis Line is 988, then press 1. You can text 838255. You can chat at veteranscrisisline.net. " +
-  "It's free, it's confidential, it's answered by people who have been where you are, and you do not have to be " +
-  "in crisis to call — you just have to want to talk to somebody.\n\n" +
-  "If you're in danger right now, call 911 or get to an emergency room.\n\n" +
-  "I'm not going anywhere. I can't be the person you need on this one, but that line can be, and I'd like you to " +
-  "use it. When you're ready, I'll still be right here to help with your record.";
+  "The Veterans Crisis Line is there right now: dial 988, then press 1. You can also text 838255, or chat at VeteransCrisisLine.net. " +
+  "It's free and confidential, and it's there for you or for someone you're worried about.\n\n" +
+  "If you're in immediate danger, call 911.\n\n" +
+  "I'm not going anywhere. If I misread you, tell me and we'll keep going.";
+
+// One line, added to every reply that is sent INSTEAD of a real answer — the
+// key isn't set, signed out, rate limited, an empty or unreadable request, a
+// model error. Those replies can't run the crisis check's judgement, so they
+// all carry the number.
+export const MEDIC_MIKE_CRISIS_FOOTER = "If you're in crisis: dial 988, then press 1.";
+
+export function medicMikeWithCrisisFooter(text: string): string {
+  return text + "\n\n" + MEDIC_MIKE_CRISIS_FOOTER;
+}
 
 /**
- * Runs FIRST on every inbound message, ahead of the symptom router.
+ * Runs FIRST on every inbound message — in /api/medic and /api/intake it runs
+ * before the API-key check, sign-in, the rate limit, the size check, the
+ * symptom router and the model.
  *
- * Returns the crisis reply when a message carries crisis language, otherwise
- * null. Static text — no model is called, nothing is logged, nothing is stored.
+ * Checks the WHOLE message (never a prefix) with the shared gate in
+ * ./crisisGate.ts. Returns the crisis reply when the message carries crisis
+ * language, otherwise null. Static text — no model is called, nothing is
+ * logged, nothing is stored. Also safe to call in the browser: the chat
+ * components use it when the network fails.
  */
 export function medicMikeCrisisCheck(userMessage: string): string | null {
-  return CRISIS_TOKEN.test(userMessage.slice(0, 1200)) ? MEDIC_MIKE_CRISIS : null;
+  return crisisHit(userMessage) ? MEDIC_MIKE_CRISIS : null;
 }
 
 // Asks that ARE the regulated inference on their own, with no symptom list
