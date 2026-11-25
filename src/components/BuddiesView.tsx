@@ -16,7 +16,7 @@ type Connection = {
   other_contact: string | null;
 };
 
-const card = "rounded-xl border border-line bg-surface p-5";
+const card = "card p-5";
 
 export default function BuddiesView() {
   const { user, supabase } = useAuth();
@@ -104,7 +104,7 @@ export default function BuddiesView() {
           />
           <span>
             <span className="font-medium text-ink">Let others who served where I did corroborate my exposures</span>
-            <span className="mt-0.5 block text-xs text-muted">Only your place, time, and exposure type are shared for matching — never your name or health details.</span>
+            <span className="mt-0.5 block text-[13px] text-muted">Only your place, time, and exposure type are shared for matching — never your name or health details.</span>
           </span>
         </label>
         <label className="mt-3 flex items-start gap-3 text-sm">
@@ -116,12 +116,12 @@ export default function BuddiesView() {
           />
           <span>
             <span className="font-medium text-ink">I&apos;m open to reconnecting with battle buddies</span>
-            <span className="mt-0.5 block text-xs text-muted">A veteran who served where you did can ask to connect. Your name and contact are shared only after you accept.</span>
+            <span className="mt-0.5 block text-[13px] text-muted">A veteran who served where you did can ask to connect. Your name and contact are shared only after you accept.</span>
           </span>
         </label>
         {contactable && (
           <div className="mt-3">
-            <label className="mb-1 block text-xs font-medium text-muted">How should a buddy reach you? (shared only when you both connect)</label>
+            <label className="mb-1 block text-[13px] font-medium text-muted">How should a buddy reach you? (shared only when you both connect)</label>
             <div className="flex gap-2">
               <input
                 value={contactNote}
@@ -145,7 +145,7 @@ export default function BuddiesView() {
       {pendingReceived.length > 0 && (
         <div className={card}>
           <div className="text-sm font-semibold text-ink">Reconnection requests</div>
-          <div className="mt-1 text-xs text-muted">A veteran who served where you did wants to reconnect. Their name is shown only if you accept.</div>
+          <div className="mt-1 text-[13px] text-muted">A veteran who served where you did wants to reconnect. Their name is shown only if you accept.</div>
           <ul className="mt-3 space-y-2">
             {pendingReceived.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line p-3">
@@ -154,8 +154,8 @@ export default function BuddiesView() {
                   {c.ev_year ? <span className="text-muted"> in {c.ev_year}</span> : null}
                 </span>
                 <div className="flex gap-2">
-                  <button onClick={() => respond(c.id, true)} className="rounded-md bg-brand px-3 py-1 text-xs font-semibold text-brand-foreground hover:bg-brand-600">Accept</button>
-                  <button onClick={() => respond(c.id, false)} className="rounded-md border border-line px-3 py-1 text-xs text-muted hover:bg-canvas">Decline</button>
+                  <button onClick={() => respond(c.id, true)} className="rounded-md bg-brand px-3 py-1 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600">Accept</button>
+                  <button onClick={() => respond(c.id, false)} className="rounded-md border border-line px-3 py-1 text-[13px] text-muted hover:bg-canvas">Decline</button>
                 </div>
               </li>
             ))}
@@ -171,11 +171,11 @@ export default function BuddiesView() {
             {accepted.map((c) => (
               <li key={c.id} className="rounded-lg border border-line p-3 text-sm">
                 <div className="font-medium text-ink">{c.other_name || "A fellow veteran"}</div>
-                <div className="text-xs text-muted">Served near {c.place || "the same place"}{c.ev_year ? ` in ${c.ev_year}` : ""}</div>
+                <div className="text-[13px] text-muted">Served near {c.place || "the same place"}{c.ev_year ? ` in ${c.ev_year}` : ""}</div>
                 {c.other_contact ? (
                   <div className="mt-1 text-sm text-ink">Reach them: <span className="font-medium">{c.other_contact}</span></div>
                 ) : (
-                  <div className="mt-1 text-xs text-muted">No contact shared yet.</div>
+                  <div className="mt-1 text-[13px] text-muted">No contact shared yet.</div>
                 )}
               </li>
             ))}
@@ -186,7 +186,7 @@ export default function BuddiesView() {
       {/* Candidates: corroborate + reconnect */}
       <div className={card}>
         <div className="text-sm font-semibold text-ink">Veterans who served where you did</div>
-        <div className="mt-1 text-xs text-muted">
+        <div className="mt-1 text-[13px] text-muted">
           Confirm an exposure you witnessed (it strengthens both records), or ask to reconnect with the veteran who logged it.
         </div>
 
@@ -201,20 +201,20 @@ export default function BuddiesView() {
                 <li key={c.exposure_id} className="rounded-lg border border-line p-3">
                   <div className="text-sm text-ink">
                     A veteran logged{" "}
-                    <span className="rounded-md bg-brand/10 px-2 py-0.5 text-xs text-brand">{EXPOSURE_LABEL[c.exposure_class] ?? c.exposure_class}</span>{" "}
+                    <span className="rounded-md bg-brand/10 px-2 py-0.5 text-[13px] text-brand">{EXPOSURE_LABEL[c.exposure_class] ?? c.exposure_class}</span>{" "}
                     near <span className="font-medium">{c.place || "your location"}</span>
                     {c.ev_year ? <span className="text-muted"> in {c.ev_year}</span> : null}
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {isConfirmed ? (
-                      <span className="text-xs font-medium text-success">✓ You confirmed this</span>
+                      <span className="text-[13px] font-medium text-success">✓ You confirmed this</span>
                     ) : (
-                      <button onClick={() => confirm(c)} className="rounded-md border border-line px-3 py-1 text-xs text-ink hover:bg-canvas">I was there too</button>
+                      <button onClick={() => confirm(c)} className="rounded-md border border-line px-3 py-1 text-[13px] text-ink hover:bg-canvas">I was there too</button>
                     )}
                     {req ? (
-                      <span className="text-xs text-muted">{req}</span>
+                      <span className="text-[13px] text-muted">{req}</span>
                     ) : (
-                      <button onClick={() => reconnect(c)} className="rounded-md bg-brand px-3 py-1 text-xs font-semibold text-brand-foreground hover:bg-brand-600">Reconnect</button>
+                      <button onClick={() => reconnect(c)} className="rounded-md bg-brand px-3 py-1 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600">Reconnect</button>
                     )}
                   </div>
                 </li>
@@ -223,11 +223,11 @@ export default function BuddiesView() {
           </ul>
         )}
         {sentPending.length > 0 && (
-          <p className="mt-3 text-xs text-muted">{sentPending.length} reconnection request{sentPending.length === 1 ? "" : "s"} waiting for a reply.</p>
+          <p className="mt-3 text-[13px] text-muted">{sentPending.length} reconnection request{sentPending.length === 1 ? "" : "s"} waiting for a reply.</p>
         )}
       </div>
 
-      <p className="px-1 text-xs leading-relaxed text-faint">
+      <p className="px-1 text-[13px] leading-relaxed text-faint">
         Confirm only what you actually witnessed. Reconnection is double opt-in — names and contact details are shared
         only when both veterans agree. There&apos;s no public messaging here; you connect, then talk on your own terms.
       </p>

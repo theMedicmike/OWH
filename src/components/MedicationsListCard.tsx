@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { listMedications, deleteMedication, type Medication } from "@/lib/medications";
 
-const card = "rounded-xl border border-line bg-surface p-5";
+const card = "card p-5";
 
 function whenLabel(m: Medication): string {
   if (m.started_year && m.stopped_year) return `${m.started_year}–${m.stopped_year}`;
@@ -55,7 +55,7 @@ export default function MedicationsListCard() {
     <div className={card}>
       <div className="flex items-center justify-between">
         <div className="text-sm font-semibold text-ink">What you take</div>
-        <Link href="/medications/add" className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600">
+        <Link href="/medications/add" className="rounded-md bg-brand px-3 py-1.5 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600">
           ＋ Add one
         </Link>
       </div>
@@ -73,22 +73,22 @@ export default function MedicationsListCard() {
                   <div className="text-sm font-medium text-ink">
                     {m.name}
                     {m.brand_name && m.brand_name.toLowerCase() !== m.name.toLowerCase() && (
-                      <span className="font-normal text-muted"> · {m.brand_name}</span>
+                      <span className="font-normal text-muted">, {m.brand_name}</span>
                     )}
                   </div>
-                  <div className="text-xs text-muted">
+                  <div className="text-[13px] text-muted">
                     {m.taken_for ? `for ${m.taken_for}` : "no reason noted yet"}
-                    {when && <span className="text-faint"> · {when}</span>}
+                    {when && <span className="text-faint">, {when}</span>}
                   </div>
                 </div>
                 <div className="flex flex-none items-center gap-2">
-                  <Link href={`/medications/${m.id}`} className="text-xs font-semibold text-brand hover:underline">
+                  <Link href={`/medications/${m.id}`} className="text-[13px] font-semibold text-brand hover:underline">
                     Open
                   </Link>
                   {confirmDel === m.id ? (
-                    <button onClick={() => remove(m.id)} className="text-xs font-semibold text-scarlet hover:underline">Confirm remove</button>
+                    <button onClick={() => remove(m.id)} className="text-[13px] font-semibold text-scarlet hover:underline">Confirm remove</button>
                   ) : (
-                    <button onClick={() => setConfirmDel(m.id)} className="text-xs text-faint hover:text-red-600">Remove</button>
+                    <button onClick={() => setConfirmDel(m.id)} className="text-[13px] text-faint hover:text-red-600">Remove</button>
                   )}
                 </div>
               </li>

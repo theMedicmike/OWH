@@ -134,7 +134,7 @@ function StepBar({ step }: { step: number }) {
                   </svg>
                 ) : i + 1}
               </div>
-              <span className={`mt-1.5 text-center text-[11px] font-medium leading-tight ${
+              <span className={`mt-1.5 text-center text-[13px] font-medium leading-tight ${
                 i === step ? "text-brand" : i < step ? "text-accent" : "text-faint"
               }`}>
                 {label}
@@ -152,7 +152,7 @@ function StepBar({ step }: { step: number }) {
 
 function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+    <div className="overflow-hidden card shadow-sm">
       <div className="border-b-[3px] border-brand bg-brand px-6 py-4">
         <h2 className="text-lg font-bold text-white">{title}</h2>
         {subtitle && <p className="mt-0.5 text-sm text-white/70">{subtitle}</p>}
@@ -166,7 +166,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (
     <div>
       <label className="mb-1.5 block text-sm font-semibold text-ink">{label}</label>
-      {hint && <p className="mb-1.5 text-xs text-muted">{hint}</p>}
+      {hint && <p className="mb-1.5 text-[13px] text-muted">{hint}</p>}
       {children}
     </div>
   );
@@ -622,7 +622,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                 </select>
                 {bootCamp && bootCamp !== "__other" && (
                   <div className="mt-2">
-                    <label className="mb-1 block text-xs text-muted">When?</label>
+                    <label className="mb-1 block text-[13px] text-muted">When?</label>
                     <MonthYearWheel
                       month={bootCampMonth}
                       year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
@@ -633,7 +633,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                       approximate={bootCampApprox}
                       onApproximateChange={setBootCampApprox}
                     />
-                    <span className="mt-1 block text-[11px] text-faint">
+                    <span className="mt-1 block text-[13px] text-faint">
                       We&apos;ll drop your first pin here — you can move or remove it any time.
                     </span>
                   </div>
@@ -655,7 +655,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                 />
               </Field>
               <Field label="Service end">
-                <label className="mb-2 flex cursor-pointer items-center gap-2 text-xs text-muted">
+                <label className="mb-2 flex cursor-pointer items-center gap-2 text-[13px] text-muted">
                   {/* Does not clear the year — saveStep1 already writes null when
                       this is ticked, and clearing it only lost the separation date
                       of anyone who ticked the box to see what it did. */}
@@ -687,7 +687,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
               disabled={saving}
               className="w-full rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-600 disabled:opacity-60"
             >
-              {saving ? "Saving…" : "Save & continue →"}
+              {saving ? "Saving…" : "Save & continue"}
             </button>
           </div>
         </SectionCard>
@@ -715,7 +715,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
             </button>
             {showNaval && (
               <div className="border-t border-accent/20 px-4 py-3">
-                <p className="text-sm leading-relaxed text-muted">
+                <p className="text-[15px] leading-relaxed text-muted">
                   A ship or sub doesn&apos;t sit in one place on the map, so it gets its own page:{" "}
                   <a href="/vessels" className="font-semibold text-brand underline">Ships you served aboard</a> —
                   the vessel, the hull number and your dates, which is what a VSO writes a records request
@@ -726,7 +726,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                     app. They are still worth pinning — they are real places with
                     documented exposures — but they are the second sentence now,
                     not the first. */}
-                <p className="mt-2 text-sm leading-relaxed text-muted">
+                <p className="mt-2 text-[15px] leading-relaxed text-muted">
                   Worth pinning here as well: your <strong className="text-ink">homeport</strong> and the{" "}
                   <strong className="text-ink">shipyard</strong> where your vessel was overhauled. That&apos;s
                   where the documented exposures were — asbestos, solvents and fuels, the sealed-atmosphere
@@ -734,14 +734,14 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                 </p>
                 {navalSites.length > 0 ? (
                   <>
-                    <div className="mt-3 text-[11px] font-bold uppercase tracking-wide text-muted">Quick-add a naval site</div>
+                    <div className="mt-3 text-[13px] font-medium text-muted">Quick-add a naval site</div>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       {navalSites.map((s) => (
                         <button
                           key={s.name}
                           type="button"
                           onClick={() => addNavalSite(s)}
-                          className="rounded-full border border-line bg-white px-2.5 py-1 text-xs text-ink transition hover:border-brand hover:text-brand"
+                          className="rounded-full border border-line bg-white px-2.5 py-1 text-[13px] text-ink transition hover:border-brand hover:text-brand"
                         >
                           + {navalShort(s.name)}
                         </button>
@@ -749,7 +749,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                     </div>
                   </>
                 ) : (
-                  <p className="mt-2 text-xs text-faint">
+                  <p className="mt-2 text-[13px] text-faint">
                     Type your homeport or shipyard in a location below — it&apos;ll auto-fill the documented exposures.
                   </p>
                 )}
@@ -769,7 +769,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                     {locations.length > 1 && (
                       <button
                         onClick={() => setLocations((prev) => prev.filter((l) => l.id !== loc.id))}
-                        className="text-xs text-muted hover:text-red-600"
+                        className="text-[13px] text-muted hover:text-red-600"
                       >
                         Remove
                       </button>
@@ -797,7 +797,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                             </span>
                           )}
                           {openDrop === loc.id && loc.name.trim() !== loc.matchedSite && siteMatches(loc.name).length > 0 && (
-                            <div className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-line bg-white shadow-lg">
+                            <div className="absolute z-20 mt-1 max-h-64 w-full overflow-auto card shadow-lg">
                               {siteMatches(loc.name).map((s) => (
                                 <button
                                   key={s.name}
@@ -807,7 +807,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                                 >
                                   <span className="text-sm font-semibold text-ink">{s.name}</span>
                                   {(s.exposure_classes?.length ?? 0) > 0 && (
-                                    <span className="text-[11px] text-muted">
+                                    <span className="text-[13px] text-muted">
                                       Documented: {(s.exposure_classes ?? []).slice(0, 3).map((c) => EXPOSURE_LABEL[c] ?? c).join(", ")}
                                       {(s.exposure_classes?.length ?? 0) > 3 ? "…" : ""}
                                     </span>
@@ -837,7 +837,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                         />
                       </Field>
                       <div>
-                        <label className="flex items-center gap-2 text-xs text-muted">
+                        <label className="flex items-center gap-2 text-[13px] text-muted">
                           <input
                             type="checkbox"
                             checked={loc.toYear.trim() !== ""}
@@ -870,7 +870,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                       hint="Check everything you remember — the app fills in the rest based on documented sources."
                     >
                       {loc.matchedSite && loc.confirmed.length > 0 && (
-                        <div className="mb-3 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-xs text-success">
+                        <div className="mb-3 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-[13px] text-success">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
                           </svg>
@@ -897,7 +897,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                               />
                               <span className="flex-1">{exp.label}</span>
                               {isConfirmed && (
-                                <span className="rounded bg-success px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                                <span className="rounded bg-success px-1.5 py-0.5 text-[13px] font-bold text-white">
                                   Confirmed
                                 </span>
                               )}
@@ -907,7 +907,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                       </div>
 
                       <div className="mt-3">
-                        <label className="mb-1.5 block text-xs font-medium text-muted">
+                        <label className="mb-1.5 block text-[13px] font-medium text-muted">
                           Something else? Add an exposure that isn&apos;t listed.
                         </label>
                         <input
@@ -916,7 +916,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                           value={loc.other}
                           onChange={(e) => updateLocation(loc.id, { other: e.target.value })}
                         />
-                        <p className="mt-1.5 text-[11px] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
+                        <p className="mt-1.5 text-[13px] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
                       </div>
                     </Field>
                   </div>
@@ -941,7 +941,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
               disabled={saving}
               className="flex-1 rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-600 disabled:opacity-60"
             >
-              {saving ? "Saving locations…" : "Save & continue →"}
+              {saving ? "Saving locations…" : "Save & continue"}
             </button>
           </div>
         </div>
@@ -1000,7 +1000,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
               disabled={saving}
               className="flex-1 rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-600 disabled:opacity-60"
             >
-              {saving ? "Saving…" : "Save my record →"}
+              {saving ? "Saving…" : "Save my record"}
             </button>
           </div>
         </div>
@@ -1008,7 +1008,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
 
       {/* ── Step 4: Done ─────────────────────────────────────────────────── */}
       {step === 3 && (
-        <div className="rounded-2xl border border-line bg-white p-8 text-center shadow-sm">
+        <div className="card p-8 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-success">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
@@ -1026,7 +1026,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
               🤝 Find your battle buddies
             </button>
             <button onClick={() => router.push("/report")} className="rounded-xl bg-brand px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-600">
-              📄 View my claim packet →
+              📄 View my claim packet
             </button>
           </div>
         </div>

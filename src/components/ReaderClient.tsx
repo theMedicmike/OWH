@@ -165,7 +165,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <div className="flex items-center gap-2">
           <MikeAvatar size={28} />
-          <span className="text-xs font-semibold leading-tight">Listen — read by<br className="hidden sm:block" /> Medic Mike</span>
+          <span className="text-[13px] font-semibold leading-tight">Listen — read by<br className="hidden sm:block" /> Medic Mike</span>
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
@@ -188,15 +188,15 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
 
         <div className="flex items-center gap-1 rounded-full bg-white/10 p-0.5">
           {PACES.map((p) => (
-            <button key={p.label} onClick={() => setPace(p.rate)} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${rate === p.rate ? "bg-white text-brand" : "text-white/70 hover:text-white"}`}>{p.label}</button>
+            <button key={p.label} onClick={() => setPace(p.rate)} className={`rounded-full px-2 py-0.5 text-[13px] font-medium transition ${rate === p.rate ? "bg-white text-brand" : "text-white/70 hover:text-white"}`}>{p.label}</button>
           ))}
         </div>
 
-        <span className="text-[11px] text-white/70">
+        <span className="text-[13px] text-white/70">
           {activeIdx >= 0 ? `Passage ${activeIdx + 1} of ${chunks.length}` : `${chunks.length} passages`}
         </span>
 
-        <a href="tel:988" className="flex items-center gap-1 rounded-full bg-scarlet/90 px-2 py-1 text-[11px] font-bold text-white hover:brightness-110" title="Veterans Crisis Line">
+        <a href="tel:988" className="flex items-center gap-1 rounded-full bg-scarlet/90 px-2 py-1 text-[13px] font-bold text-white hover:brightness-110" title="Veterans Crisis Line">
           <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3"><path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" /></svg>
           988
         </a>
@@ -204,7 +204,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
       <div className="mt-2 h-0.5 w-full overflow-hidden rounded-full bg-white/15">
         <span className="block h-0.5 rounded-full bg-accent transition-all" style={{ width: `${chunks.length ? ((activeIdx + 1) / chunks.length) * 100 : 0}%` }} />
       </div>
-      {!ready && <div className="mt-1 text-[10px] text-white/60">Warming up Mike&apos;s voice…</div>}
+      {!ready && <div className="mt-1 text-[13px] text-white/60">Warming up Mike&apos;s voice…</div>}
     </div>
   );
 
@@ -212,7 +212,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
     <>
       {bar}
       {!supported && (
-        <p className="mb-5 rounded-lg border border-line bg-canvas px-3 py-2 text-xs text-muted print:hidden">
+        <p className="mb-5 rounded-lg border border-line bg-canvas px-3 py-2 text-[13px] text-muted print:hidden">
           Read-aloud works in Chrome, Edge, or Safari.
         </p>
       )}
@@ -249,7 +249,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
       {finished && nextSlug && (
         <div className="mt-6 rounded-xl border border-accent/30 bg-accent/5 p-4 text-center print:hidden">
           <div className="text-sm font-semibold text-ink">Chapter finished.</div>
-          <Link href={`/book/${nextSlug}`} className="mt-2 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">Read the next chapter →</Link>
+          <Link href={`/book/${nextSlug}`} className="mt-2 btn btn-primary">Read the next chapter</Link>
         </div>
       )}
 
@@ -258,7 +258,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
         <button
           onClick={() => openStudio(selChip.text)}
           style={{ position: "fixed", left: selChip.x, top: selChip.y, transform: "translate(-50%, -115%)" }}
-          className="z-40 flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-white shadow-lg print:hidden"
+          className="z-40 flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-[13px] font-semibold text-white shadow-lg print:hidden"
         >
           <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><path d="M6 17h3l2-4V6H5v7h3l-2 4zm8 0h3l2-4V6h-6v7h3l-2 4z" /></svg>
           Make a card

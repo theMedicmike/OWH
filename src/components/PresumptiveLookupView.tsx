@@ -127,30 +127,30 @@ export default function PresumptiveLookupView() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <p className="text-sm leading-relaxed text-muted">
+      <p className="text-[15px] leading-relaxed text-muted">
         For certain places and time windows, VA <strong>presumes</strong> the exposure — meaning a veteran
         doesn&apos;t have to prove it happened. Pick where and when you served to see which programs cover
         that service, in the law&apos;s own words.
       </p>
 
-      <div className="rounded-xl border border-line bg-surface p-5">
+      <div className="card p-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="era" className="mb-1 block text-xs font-medium text-muted">When did you serve?</label>
+            <label htmlFor="era" className="mb-1 block text-[13px] font-medium text-muted">When did you serve?</label>
             <select id="era" value={era} onChange={(e) => setEra(e.target.value)} className={field}>
               <option value="">Any time period</option>
               {ERAS.map((e) => <option key={e.v} value={e.v}>{e.label}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="loc" className="mb-1 block text-xs font-medium text-muted">Where did you serve?</label>
+            <label htmlFor="loc" className="mb-1 block text-[13px] font-medium text-muted">Where did you serve?</label>
             <select id="loc" value={location} onChange={(e) => setLocation(e.target.value)} className={field}>
               <option value="">Anywhere</option>
               {LOCATIONS.map((l) => <option key={l.v} value={l.v}>{l.label}</option>)}
             </select>
           </div>
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-faint">
+        <p className="mt-3 text-[13px] leading-relaxed text-faint">
           Only where and when — this tool never asks about your health, and it can&apos;t tell you whether you
           personally qualify. That is VA&apos;s decision, and an accredited VSO is who confirms it.
         </p>
@@ -158,24 +158,24 @@ export default function PresumptiveLookupView() {
 
       {matches !== null && (
         matches.length === 0 ? (
-          <div className="rounded-xl border border-line bg-surface p-5">
+          <div className="card p-5">
             <div className="text-sm font-semibold text-ink">No presumptive program matches that combination</div>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
+            <p className="mt-2 text-[15px] leading-relaxed text-muted">
               That doesn&apos;t rule anything out, and it doesn&apos;t mean an exposure didn&apos;t happen. Most
               claims are built by documenting the exposure directly rather than relying on a presumption — which
               is what the rest of this app is for. A VSO can also check your service against the full lists.
             </p>
-            <Link href="/map" className="mt-2 inline-block text-xs font-semibold text-brand hover:underline">
+            <Link href="/map" className="mt-2 inline-block text-[13px] font-semibold text-brand hover:underline">
               → Map where you served
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="text-xs font-semibold uppercase tracking-wide text-accent">
+            <div className="text-[13px] font-medium text-muted">
               Programs that cover this service
             </div>
             {matches.map((p) => (
-              <div key={p.key} className="rounded-xl border border-line bg-surface p-5">
+              <div key={p.key} className="card p-5">
                 <div className="text-sm font-semibold text-ink">{p.name}</div>
                 <p className="mt-2 text-[13px] leading-relaxed text-muted">{p.scope}</p>
                 {p.extra && (
@@ -185,7 +185,7 @@ export default function PresumptiveLookupView() {
                 )}
               </div>
             ))}
-            <p className="px-1 text-xs leading-relaxed text-faint">
+            <p className="px-1 text-[13px] leading-relaxed text-faint">
               These are the covered locations and dates as written in law — not a decision about your service.
               Meeting a location and date window is one requirement among several, and only VA decides whether a
               presumption applies to you.
@@ -196,8 +196,8 @@ export default function PresumptiveLookupView() {
 
       {(era === "korea" || location === "korea_dmz" || location === "korea_other") && (
         <Link href="/learn/korea" className="block rounded-xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50">
-          <div className="text-sm font-semibold text-ink">Served in Korea? Read the cold and the DMZ →</div>
-          <div className="mt-1 text-xs leading-relaxed text-muted">
+          <div className="text-sm font-semibold text-ink">Served in Korea? Read the cold and the DMZ</div>
+          <div className="mt-1 text-[13px] leading-relaxed text-muted">
             The DMZ herbicide window runs September 1, 1967 to August 31, 1971. If that is when you served, choose
             Vietnam era above. This guide covers that, cold injury, records and family benefits.
           </div>
@@ -205,8 +205,8 @@ export default function PresumptiveLookupView() {
       )}
 
       <Link href="/vso" className="block rounded-xl border border-brand/30 bg-brand/5 p-5 text-center transition hover:border-brand/50">
-        <div className="text-sm font-semibold text-ink">Have a VSO confirm what applies to you →</div>
-        <div className="mt-1 text-xs text-muted">Free, every time, no matter which VSO you pick.</div>
+        <div className="text-sm font-semibold text-ink">Have a VSO confirm what applies to you</div>
+        <div className="mt-1 text-[13px] text-muted">Free, every time, no matter which VSO you pick.</div>
       </Link>
     </div>
   );

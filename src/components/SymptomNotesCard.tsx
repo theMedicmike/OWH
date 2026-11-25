@@ -99,7 +99,7 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
 
   if (notSetUp) {
     return (
-      <div className="rounded-xl border border-line bg-surface p-5">
+      <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Something going on?</div>
         <p className="mt-2 text-sm text-muted">This isn&apos;t switched on yet — check back soon.</p>
       </div>
@@ -107,9 +107,9 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
   }
 
   return (
-    <div className="surface-rest rounded-xl border border-line bg-surface p-5">
+    <div className="surface-rest card p-5">
       <div className="text-sm font-semibold text-ink">Something going on? Write it down.</div>
-      <p className="mt-1 text-xs leading-relaxed text-muted">
+      <p className="mt-1 text-[13px] leading-relaxed text-muted">
         You don&apos;t have to know what it is or which condition it belongs to. Get it down while it&apos;s
         fresh, in your own words — you can file it against a condition later, or ask your VSO to help you
         work out where it goes.
@@ -120,34 +120,34 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
         onChange={(e) => { setText(e.target.value); setSaved(false); }}
         rows={3}
         placeholder="e.g. Couldn't sleep again, chest tight until about 4am."
-        className="mt-3 w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+        className="mt-3 field"
       />
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-xs text-muted">
+        <label className="flex items-center gap-2 text-[13px] text-muted">
           When
           <input
             type="date"
             value={when}
             max={todayISO()}
             onChange={(e) => setWhen(e.target.value)}
-            className="rounded-md border border-line bg-white px-2 py-1.5 text-xs text-ink focus:border-brand focus:outline-none"
+            className="rounded-md border border-line bg-white px-2 py-1.5 text-[13px] text-ink focus:border-brand focus:outline-none"
           />
         </label>
         <button
           onClick={save}
           disabled={busy || !text.trim()}
-          className="press rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
+          className="press btn btn-primary disabled:opacity-50"
         >
           {busy ? "Saving…" : "Save it"}
         </button>
-        {saved && <span className="text-xs font-medium text-success">Saved. It&apos;s on your record.</span>}
+        {saved && <span className="text-[13px] font-medium text-success">Saved. It&apos;s on your record.</span>}
       </div>
-      {err && <p className="mt-2 text-xs text-scarlet">{err}</p>}
+      {err && <p className="mt-2 text-[13px] text-scarlet">{err}</p>}
 
       {notes.length > 0 && (
         <div className="mt-5 border-t border-line pt-4">
-          <div className="text-xs font-semibold text-ink">Not filed yet</div>
-          <p className="mt-0.5 text-[11px] leading-relaxed text-faint">
+          <div className="text-[13px] font-semibold text-ink">Not filed yet</div>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-faint">
             These are saved and dated. Filing one puts it in that condition&apos;s history, keeping the date you
             wrote it. Nothing here is lost if you leave it unfiled.
           </p>
@@ -155,8 +155,8 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
             {notes.map((n) => (
               <li key={n.id} className="rounded-lg border border-line bg-canvas p-3">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[11px] font-semibold text-muted">{pretty(n.noticed_on)}</span>
-                  <button onClick={() => remove(n.id)} className="text-[11px] text-faint hover:text-red-600">
+                  <span className="text-[13px] font-semibold text-muted">{pretty(n.noticed_on)}</span>
+                  <button onClick={() => remove(n.id)} className="text-[13px] text-faint hover:text-red-600">
                     Remove
                   </button>
                 </div>
@@ -164,12 +164,12 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
 
                 {conditions.length > 0 ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <label className="text-[11px] text-muted">File under</label>
+                    <label className="text-[13px] text-muted">File under</label>
                     <select
                       defaultValue=""
                       disabled={filing === n.id}
                       onChange={(e) => { if (e.target.value) file(n, e.target.value); }}
-                      className="rounded-md border border-line bg-white px-2 py-1 text-xs text-ink focus:border-brand focus:outline-none"
+                      className="rounded-md border border-line bg-white px-2 py-1 text-[13px] text-ink focus:border-brand focus:outline-none"
                     >
                       <option value="">{filing === n.id ? "Filing…" : "Choose a condition…"}</option>
                       {conditions.map((c) => (
@@ -178,7 +178,7 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
                     </select>
                   </div>
                 ) : (
-                  <p className="mt-2 text-[11px] leading-relaxed text-faint">
+                  <p className="mt-2 text-[13px] leading-relaxed text-faint">
                     Once you&apos;ve added a condition above, you&apos;ll be able to file this under it.
                   </p>
                 )}

@@ -10,11 +10,11 @@ export default function Error({ reset }: { error: Error & { digest?: string }; r
       </p>
       <button
         onClick={() => reset()}
-        className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition hover:bg-brand-600"
+        className="mt-4 btn btn-primary"
       >
         Try again
       </button>
-      <p className="mt-6 text-xs text-faint">
+      <p className="mt-6 text-[13px] text-faint">
         If things feel heavy, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
       </p>
     </div>

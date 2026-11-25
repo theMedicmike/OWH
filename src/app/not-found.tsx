@@ -36,15 +36,15 @@ export default function NotFound() {
           <li key={l.href}>
             <Link
               href={l.href}
-              className="block rounded-xl border border-line bg-surface p-4 transition hover:border-brand/40 hover:shadow-sm"
+              className="block card p-4 transition hover:border-brand/40 hover:shadow-sm"
             >
-              <span className="text-sm font-semibold text-brand">{l.label} →</span>
-              <span className="mt-0.5 block text-xs leading-snug text-muted">{l.blurb}</span>
+              <span className="text-sm font-semibold text-brand">{l.label}</span>
+              <span className="mt-0.5 block text-[13px] leading-snug text-muted">{l.blurb}</span>
             </Link>
           </li>
         ))}
       </ul>
-      <p className="mt-6 text-sm leading-relaxed text-muted">
+      <p className="mt-6 text-[15px] leading-relaxed text-muted">
         If you are in crisis, the Veterans Crisis Line is{" "}
         <strong className="text-ink">988, then press 1</strong> — free, confidential, 24 hours a day.
       </p>

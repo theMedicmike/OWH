@@ -48,33 +48,33 @@ export default function PresumptivePathwaysCard({ compact = false }: { compact?:
   if (compact) {
     if (inScope.length === 0) return null;
     return (
-      <Link href="/journey" className="block rounded-xl border border-line bg-surface p-5 transition hover:border-brand/40">
-        <div className="text-xs font-semibold uppercase tracking-wide text-muted">
+      <Link href="/journey" className="block card p-5 transition hover:border-brand/40">
+        <div className="text-[13px] font-medium text-muted">
           {inScope.length} presumptive pathway{inScope.length === 1 ? "" : "s"} may apply
         </div>
-        <div className="mt-1 text-sm font-semibold text-ink">Your logged service may fall inside a presumptive program — see which →</div>
+        <div className="mt-1 text-sm font-semibold text-ink">Your logged service may fall inside a presumptive program — see which</div>
       </Link>
     );
   }
 
   if (tours.length === 0) {
     return (
-      <div className="rounded-xl border border-line bg-surface p-5">
+      <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Presumptive pathways</div>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
+        <p className="mt-2 text-[15px] leading-relaxed text-muted">
           Once you&apos;ve logged where and when you served, this checks it against the government&apos;s own
           presumptive programs — PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation — and flags anything
           your dates and locations may fall inside.
         </p>
-        <Link href="/map" className="mt-2 inline-block text-xs font-semibold text-brand hover:underline">→ Map where you served</Link>
+        <Link href="/map" className="mt-2 inline-block text-[13px] font-semibold text-brand hover:underline">→ Map where you served</Link>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-5">
+    <div className="card p-5">
       <div className="text-sm font-semibold text-ink">Presumptive pathways</div>
-      <p className="mt-1 text-xs leading-relaxed text-faint">
+      <p className="mt-1 text-[13px] leading-relaxed text-faint">
         Checked against your logged service. A presumption belongs to a veteran whose dates and locations meet a
         specific legal window — never a property of a condition alone. Only VA decides it; ask an accredited VSO
         to confirm.
@@ -88,8 +88,8 @@ export default function PresumptivePathwaysCard({ compact = false }: { compact?:
               <div className="text-sm font-semibold text-ink">
                 {PROGRAM_LABEL[x.p] ?? x.p}
                 {x.s.status === "in-scope"
-                  ? <span className="ml-2 rounded bg-success-soft px-1.5 py-0.5 text-[10px] font-medium text-success">may apply</span>
-                  : <span className="ml-2 rounded bg-canvas px-1.5 py-0.5 text-[10px] font-medium text-muted">can&apos;t tell yet</span>}
+                  ? <span className="ml-2 rounded bg-success-soft px-1.5 py-0.5 text-[13px] font-medium text-success">may apply</span>
+                  : <span className="ml-2 rounded bg-canvas px-1.5 py-0.5 text-[13px] font-medium text-muted">can&apos;t tell yet</span>}
               </div>
               <p className="mt-1 text-[12px] leading-relaxed text-muted">{x.s.scope}</p>
               {x.s.note && <p className="mt-1 text-[12px] leading-relaxed text-ink/80">{x.s.note}</p>}
@@ -98,8 +98,8 @@ export default function PresumptivePathwaysCard({ compact = false }: { compact?:
         </ul>
       )}
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-        <Link href="/presumptives" className="text-xs font-semibold text-brand hover:underline">→ Look up any era or location</Link>
-        <Link href="/vso" className="text-xs font-semibold text-brand hover:underline">→ Find a VSO to confirm this</Link>
+        <Link href="/presumptives" className="text-[13px] font-semibold text-brand hover:underline">→ Look up any era or location</Link>
+        <Link href="/vso" className="text-[13px] font-semibold text-brand hover:underline">→ Find a VSO to confirm this</Link>
       </div>
     </div>
   );

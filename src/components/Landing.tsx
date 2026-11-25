@@ -102,10 +102,10 @@ export default function Landing() {
       <section className="on-navy relative hidden flex-col justify-between bg-brand px-12 py-10 text-white lg:flex xl:px-16">
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/owh-logo.png" alt="Operation Whole Health" className="h-12 w-auto object-contain" />
+          <img src="/owh-logo.png" alt="Operation Whole Health" className="h-14 w-auto object-contain" />
         </div>
 
-        <div className="my-10 max-w-xl">
+        <div className="my-8 max-w-xl">
           <h1 className="display text-[2.75rem] leading-[1.08] text-white xl:text-[3.25rem]">
             Connect the dots between your service and your health.
           </h1>
@@ -113,9 +113,6 @@ export default function Landing() {
             A living record of where you served, what you were around, and what you live with now, so the VA
             can finally see the connection.
           </p>
-          <div className="mt-9 max-w-md">
-            <Steps onNavy />
-          </div>
         </div>
 
         <div className="max-w-xl space-y-4">

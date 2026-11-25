@@ -143,7 +143,7 @@ export default function IntakeView() {
                 className={
                   msg.role === "user"
                     ? "max-w-[80%] rounded-xl bg-brand px-3.5 py-2 text-sm text-brand-foreground"
-                    : "max-w-[85%] rounded-xl border border-line bg-surface px-3.5 py-2 text-sm leading-relaxed text-ink"
+                    : "max-w-[85%] card px-3.5 py-2 text-[15px] leading-relaxed text-ink"
                 }
               >
                 {msg.content}
@@ -154,32 +154,32 @@ export default function IntakeView() {
               <div key={pi} className="ml-9 mt-2 overflow-hidden rounded-xl border border-line bg-canvas">
                 <div className="h-1 bg-accent" />
                 <div className="p-3">
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-accent">Proposed check-in</div>
+                  <div className="text-[13px] font-medium text-muted">Proposed check-in</div>
                   <div className="mt-0.5 text-sm font-medium text-ink">{p.place}</div>
-                  <div className="text-xs text-muted">Year {p.year}</div>
+                  <div className="text-[13px] text-muted">Year {p.year}</div>
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     {p.exposures.map((e) => (
-                      <span key={e} className="rounded-md bg-brand/5 px-2 py-0.5 text-xs font-medium text-brand">
+                      <span key={e} className="rounded-md bg-brand/5 px-2 py-0.5 text-[13px] font-medium text-brand">
                         {EXPOSURE_LABEL[e] ?? e}
                       </span>
                     ))}
                   </div>
                   <div className="mt-2">
                     {!user ? (
-                      <span className="text-xs text-muted">Sign in on the map to save this.</span>
+                      <span className="text-[13px] text-muted">Sign in on the map to save this.</span>
                     ) : p.status === "saved" ? (
-                      <span className="text-xs font-medium text-success">Saved to your timeline ✓</span>
+                      <span className="text-[13px] font-medium text-success">Saved to your timeline ✓</span>
                     ) : p.status === "saved_approx" ? (
-                      <span className="text-xs font-medium text-success">
+                      <span className="text-[13px] font-medium text-success">
                         Saved to your timeline ✓ — we couldn&apos;t pinpoint the exact spot, so you can set it on the map when you&apos;re ready.
                       </span>
                     ) : p.status === "error" ? (
-                      <span className="text-xs text-red-600">Couldn&apos;t save just now — please try again.</span>
+                      <span className="text-[13px] text-red-600">Couldn&apos;t save just now — please try again.</span>
                     ) : (
                       <button
                         onClick={() => saveProposal(mi, pi)}
                         disabled={p.status === "saving"}
-                        className="rounded-md bg-brand px-3 py-1 text-xs font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-60"
+                        className="rounded-md bg-brand px-3 py-1 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-60"
                       >
                         {p.status === "saving" ? "Saving…" : "Save to my timeline"}
                       </button>
@@ -194,7 +194,7 @@ export default function IntakeView() {
         <div ref={endRef} />
       </div>
 
-      <div className="mt-4 flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2">
+      <div className="mt-4 flex items-center gap-2 card px-3 py-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -211,7 +211,7 @@ export default function IntakeView() {
         </button>
       </div>
 
-      <p className="mt-3 text-xs leading-relaxed text-faint">
+      <p className="mt-3 text-[13px] leading-relaxed text-faint">
         Your guide helps you remember and record; it does not diagnose. If anything feels heavy, the Veterans Crisis
         Line is one tap away: dial 988, then press 1.
       </p>

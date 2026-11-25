@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
-import { ServiceRibbon } from "./Patriotic";
 
 // A one-time OPSEC / NDA acknowledgment a veteran must accept before building their
 // record. Protects the veteran (their oath + any non-disclosure agreements) and the
@@ -66,8 +65,8 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
-        <ServiceRibbon />
+      <div className="overflow-hidden card">
+        
         <div className="p-6">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand/10 text-brand">
@@ -77,11 +76,11 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
             </span>
             <div>
               <h2 className="text-lg font-bold tracking-tight text-ink">Before you begin — keep it unclassified</h2>
-              <p className="text-xs text-muted">A one-time agreement. It protects you as much as us.</p>
+              <p className="text-[13px] text-muted">A one-time agreement. It protects you as much as us.</p>
             </div>
           </div>
 
-          <div className="mt-4 space-y-3 text-sm leading-relaxed text-ink">
+          <div className="mt-4 space-y-3 text-[15px] leading-relaxed text-ink">
             <p>
               Your record only needs the <strong>broad strokes</strong>: the general place you served, the
               rough year, and the exposure types. That&apos;s all the VA&apos;s presumptive links are built
@@ -112,7 +111,7 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
           <button
             onClick={agree}
             disabled={!checked || busy}
-            className="mt-4 w-full rounded-xl bg-brand px-6 py-3 text-sm font-bold text-brand-foreground transition hover:bg-brand-600 disabled:opacity-50"
+            className="mt-4 w-full btn btn-primary btn-lg"
           >
             {busy ? "One moment…" : "I agree — start my record"}
           </button>

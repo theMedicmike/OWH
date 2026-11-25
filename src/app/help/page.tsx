@@ -1,5 +1,4 @@
 import AppShell from "@/components/AppShell";
-import { ServiceRibbon } from "@/components/Patriotic";
 import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 
 export const metadata = {
@@ -365,22 +364,22 @@ function StepList({ steps, start }: { steps: Step[]; start: number }) {
       {steps.map((step, i) => (
         <li
           key={i}
-          className="relative flex gap-4 rounded-xl border border-line bg-surface px-5 py-4"
+          className="relative flex gap-4 card px-5 py-4"
         >
-          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand text-xs font-bold text-brand-foreground">
+          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand text-[13px] font-semibold text-brand-foreground">
             {start + i}
           </span>
           <div className="min-w-0">
-            <div className="font-semibold text-ink">{step.title}</div>
+            <div className="text-[17px] font-semibold text-ink">{step.title}</div>
 
             {step.caution && (
-              <div className="mt-2 rounded-lg border border-scarlet/30 bg-scarlet/5 px-3.5 py-2.5 text-sm leading-relaxed text-ink">
+              <div className="mt-2 rounded-lg border border-scarlet/30 bg-scarlet/5 px-3.5 py-2.5 text-[15px] leading-relaxed text-ink">
                 {step.caution}
               </div>
             )}
 
             {step.body.map((p, j) => (
-              <p key={j} className="mt-2 text-sm leading-relaxed text-muted">
+              <p key={j} className="mt-2 text-[15px] leading-relaxed text-muted">
                 {p}
               </p>
             ))}
@@ -388,7 +387,7 @@ function StepList({ steps, start }: { steps: Step[]; start: number }) {
             {step.points && (
               <ul className="mt-2 space-y-2">
                 {step.points.map((p, j) => (
-                  <li key={j} className="flex gap-2.5 text-sm leading-relaxed text-muted">
+                  <li key={j} className="flex gap-2.5 text-[15px] leading-relaxed text-muted">
                     <span className="mt-[9px] h-1.5 w-1.5 flex-none rounded-full bg-brand/40" />
                     <span>{p}</span>
                   </li>
@@ -397,14 +396,14 @@ function StepList({ steps, start }: { steps: Step[]; start: number }) {
             )}
 
             {step.warn && (
-              <div className="mt-3 rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm leading-relaxed text-ink">
+              <div className="mt-3 rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-[15px] leading-relaxed text-ink">
                 <span className="font-semibold">{step.warn.label}: </span>
                 {step.warn.text}
               </div>
             )}
 
             {step.tip && (
-              <div className="mt-2.5 text-xs leading-relaxed italic text-brand">{step.tip}</div>
+              <div className="mt-2.5 text-[13px] leading-relaxed italic text-brand">{step.tip}</div>
             )}
           </div>
         </li>
@@ -423,17 +422,21 @@ export default function HelpPage() {
     <AppShell title="How to use this" publicPage>
       <div className="mx-auto max-w-2xl">
         <div className="mb-6">
-          <p className="text-sm font-semibold uppercase tracking-widest text-accent">User guide</p>
-          <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink">
-            Connecting the Dots of Service
+          <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">
+            How to use Connecting the Dots
           </h2>
-          <ServiceRibbon className="mt-3 w-40 rounded-full opacity-90" />
-          <p className="mt-1 text-sm text-muted">
+          
+          <p className="mt-3 text-[15px] leading-relaxed text-muted">
             A simple, step-by-step guide. No tech experience needed.
           </p>
+          <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-2">
+            <a href="#part-one" className="btn btn-secondary btn-sm">The five steps</a>
+            <a href="#part-two" className="btn btn-secondary btn-sm">When you have time</a>
+            <a href="#worth-knowing" className="btn btn-secondary btn-sm">Worth knowing</a>
+          </nav>
         </div>
 
-        <div className="mb-4 rounded-xl border border-line bg-surface px-5 py-4 text-sm leading-relaxed text-ink">
+        <div className="mb-4 card px-5 py-4 text-[15px] leading-relaxed text-ink">
           <span className="font-semibold">What this is, in one breath:</span> this app helps you
           write down where you served, what you were around, and what you live with now — and then
           hands it all back to you as one organized packet you can give to a Veterans Service
@@ -448,7 +451,7 @@ export default function HelpPage() {
           <p className="mt-2.5">Take your time. You cannot break this.</p>
         </div>
 
-        <div className="mb-6 rounded-xl border-2 border-brand bg-brand/5 px-5 py-4 text-sm leading-relaxed text-ink">
+        <div className="mb-6 rounded-xl border-2 border-brand bg-brand/5 px-5 py-4 text-[15px] leading-relaxed text-ink">
           <span className="font-semibold text-brand">Before anything else.</span> If today is a hard
           day, you do not have to be in crisis to call. Veterans Crisis Line — dial{" "}
           <strong>988</strong>, then press <strong>1</strong>. Or text <strong>838255</strong>.
@@ -456,11 +459,11 @@ export default function HelpPage() {
           <strong>&ldquo;Need support?&rdquo;</strong> button on every screen of this app, too.
         </div>
 
-        <div className="mb-3 border-t-2 border-brand/20 pt-5">
-          <p className="text-sm font-semibold uppercase tracking-widest text-accent">
-            Part one — the five steps that matter
-          </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">
+        <div id="part-one" className="mb-3 scroll-mt-20 border-t border-line pt-6">
+          <h3 className="text-xl font-semibold tracking-tight text-ink">
+            Part one: the five steps that matter
+          </h3>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
             Do these five. When you&apos;re done you&apos;ll have a packet in your hand. Everything
             after step 5 is optional and can wait for another day.
           </p>
@@ -470,26 +473,26 @@ export default function HelpPage() {
 
         <div className="mt-5 rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
           <div className="font-semibold text-brand">That&apos;s the whole job.</div>
-          <p className="mt-1 text-sm leading-relaxed text-ink">
+          <p className="mt-1 text-[15px] leading-relaxed text-ink">
             Five steps. If you stop right here, you&apos;ve done it — you have a documented record
             and a packet, which is more than most veterans walk in with. Everything below is extra.
             Come back to it when you feel like it, or never.
           </p>
         </div>
 
-        <div className="mb-3 mt-8 border-t-2 border-brand/20 pt-5">
-          <p className="text-sm font-semibold uppercase tracking-widest text-accent">
-            Part two — when you&apos;ve got time
-          </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">
+        <div id="part-two" className="mb-3 mt-10 scroll-mt-20 border-t border-line pt-6">
+          <h3 className="text-xl font-semibold tracking-tight text-ink">
+            Part two: when you have time
+          </h3>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
             None of this is required. Pick what interests you and ignore the rest.
           </p>
         </div>
 
         <StepList steps={MORE_STEPS} start={6} />
 
-        <h3 className="mt-8 text-base font-bold text-ink">A few things worth knowing</h3>
-        <div className="mt-2 space-y-3 text-sm leading-relaxed text-muted">
+        <h3 id="worth-knowing" className="mt-10 scroll-mt-20 border-t border-line pt-6 text-xl font-semibold tracking-tight text-ink">A few things worth knowing</h3>
+        <div className="mt-2 space-y-3 text-[15px] leading-relaxed text-muted">
           <p>
             <strong className="text-ink">Finding your way around.</strong> On a phone the menu hides
             behind the small button in the top-left corner with three short lines stacked on top of
@@ -584,7 +587,7 @@ export default function HelpPage() {
           <div className="font-semibold text-brand">
             If you&apos;re struggling, you are not alone.
           </div>
-          <div className="mt-1 space-y-2 text-sm leading-relaxed text-ink">
+          <div className="mt-1 space-y-2 text-[15px] leading-relaxed text-ink">
             <p>
               You do not have to be in crisis to call. You don&apos;t have to be enrolled in VA
               care, and you don&apos;t have to explain yourself.
@@ -609,7 +612,7 @@ export default function HelpPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-xs leading-relaxed text-faint">
+        <p className="mt-6 text-[13px] leading-relaxed text-faint">
           Operation Whole Health is a Patriot-founded 501(c)(3) nonprofit. This app is free and sells
           nothing. It assembles your own information with documented sources to assist an accredited
           VSO — whose help is always free — and a clinician. It is a record — not a diagnosis, not

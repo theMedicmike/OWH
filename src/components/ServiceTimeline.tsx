@@ -138,7 +138,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
               solid band. Calling that active duty asserts a false fact into a
               document a VA rater reads. Until service periods are captured
               properly, the label must claim only the span, never the status. */}
-          <span className="absolute left-0 top-0 text-[10px] font-semibold uppercase tracking-wide text-brand">
+          <span className="absolute left-0 top-0 text-[12px] font-semibold text-brand">
             In service
           </span>
           <div
@@ -191,7 +191,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
       {/* Conditions — when your health changed */}
       {dated.length > 0 && (
         <>
-          <div className="mt-4 border-t border-dashed border-line pt-2 text-[10px] font-semibold uppercase tracking-wide text-accent">
+          <div className="mt-4 border-t border-dashed border-line pt-2 text-[12px] font-semibold text-muted">
             Health changes
           </div>
           <div className="mt-1 space-y-1.5">
@@ -239,7 +239,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
       )}
 
       {undated.length > 0 && (
-        <p className="mt-3 border-t border-line pt-2 text-[11px] leading-relaxed text-faint">
+        <p className="mt-3 border-t border-line pt-2 text-[13px] leading-relaxed text-muted">
           <span className="font-semibold text-muted">No year yet:</span>{" "}
           {undated.map((c) => c.label).join(", ")}. Adding the year each began puts them on this
           timeline — the gap between an exposure and the first symptom is often the most persuasive
@@ -247,7 +247,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
         </p>
       )}
 
-      <p className="mt-3 text-[11px] leading-relaxed text-faint">
+      <p className="mt-3 text-[13px] leading-relaxed text-muted">
         A timeline of what you logged — dates and gaps as you reported them. It documents sequence,
         not causation; a clinician and an accredited VSO (Veterans Service Officer — free help) weigh
         what it means.

@@ -53,14 +53,14 @@ export default function MedicationCaptureFlow() {
 
   return (
     <div className="mx-auto max-w-lg space-y-5">
-      <div className="rounded-xl border border-line bg-canvas p-4 text-xs leading-relaxed text-muted">
+      <div className="rounded-xl border border-line bg-canvas p-4 text-[13px] leading-relaxed text-muted">
         Nothing here is submitted anywhere. This is your own list of what you take, kept in your record until
         you choose to bring it to a VSO or your clinician. Nothing you write is touched by AI.
       </div>
 
       <div>
         <label className="mb-1 block text-sm font-semibold text-ink">Which medication?</label>
-        <p className="mb-2 text-xs leading-relaxed text-faint">
+        <p className="mb-2 text-[13px] leading-relaxed text-faint">
           Type the name — generic or brand, whichever you know it by. If it isn&apos;t in the list, type it anyway;
           the FDA&apos;s own database covers far more than we can list here.
         </p>
@@ -68,7 +68,7 @@ export default function MedicationCaptureFlow() {
           value={picked ? picked.generic : query}
           onChange={(e) => { setPicked(null); setQuery(e.target.value); }}
           placeholder="e.g. ibuprofen, Motrin, sertraline…"
-          className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+          className="field"
         />
         {!picked && suggestions.length > 0 && (
           <ul className="mt-2 space-y-1">
@@ -80,15 +80,15 @@ export default function MedicationCaptureFlow() {
                   className="w-full rounded-lg border border-line bg-white px-3 py-2 text-left text-sm hover:border-brand hover:bg-canvas"
                 >
                   <span className="font-medium text-ink">{s.generic}</span>
-                  {s.brands.length > 0 && <span className="text-muted"> · {s.brands.join(", ")}</span>}
-                  <span className="block text-xs text-faint">{s.klass}</span>
+                  {s.brands.length > 0 && <span className="text-muted">, {s.brands.join(", ")}</span>}
+                  <span className="block text-[13px] text-faint">{s.klass}</span>
                 </button>
               </li>
             ))}
           </ul>
         )}
         {picked?.historicalNote && (
-          <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-xs leading-relaxed text-muted">
+          <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[13px] leading-relaxed text-muted">
             {picked.historicalNote}
           </p>
         )}
@@ -100,7 +100,7 @@ export default function MedicationCaptureFlow() {
               that a drug was treating a service-connected condition. */}
           <div>
             <label className="mb-1 block text-sm font-semibold text-ink">What were you taking it for?</label>
-            <p className="mb-2 text-xs leading-relaxed text-faint">
+            <p className="mb-2 text-[13px] leading-relaxed text-faint">
               This is the part that matters most. If a medication was treating something already connected to your
               service, that changes which routes your VSO can look at.
             </p>
@@ -108,7 +108,7 @@ export default function MedicationCaptureFlow() {
               value={takenFor}
               onChange={(e) => setTakenFor(e.target.value)}
               placeholder="e.g. my back, sleep, PTSD, blood pressure"
-              className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+              className="field"
             />
           </div>
 
@@ -124,7 +124,7 @@ export default function MedicationCaptureFlow() {
                   type="button"
                   aria-pressed={stillTaking === o.v}
                   onClick={() => setStillTaking(stillTaking === o.v ? null : o.v)}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition ${stillTaking === o.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-canvas"}`}
+                  className={`rounded-full border px-3 py-1.5 text-[13px] transition ${stillTaking === o.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-canvas"}`}
                 >
                   {o.label}
                 </button>
@@ -134,11 +134,11 @@ export default function MedicationCaptureFlow() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted">Started around</label>
+              <label className="mb-1 block text-[13px] font-medium text-muted">Started around</label>
               <WheelPicker options={YEAR_OPTIONS} index={startedIdx} onChange={setStartedIdx} ariaLabel="Year you started" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted">Stopped around</label>
+              <label className="mb-1 block text-[13px] font-medium text-muted">Stopped around</label>
               <WheelPicker
                 options={YEAR_OPTIONS}
                 index={stoppedIdx}
@@ -150,17 +150,17 @@ export default function MedicationCaptureFlow() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Anything else worth noting (optional)</label>
+            <label className="mb-1 block text-[13px] font-medium text-muted">Anything else worth noting (optional)</label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
               placeholder="Who prescribed it, how long you were on it, anything you noticed."
-              className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+              className="field"
             />
           </div>
 
-          {err && <p className="text-xs text-scarlet">{err}</p>}
+          {err && <p className="text-[13px] text-scarlet">{err}</p>}
 
           <div className="flex gap-2">
             <button

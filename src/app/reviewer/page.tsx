@@ -45,9 +45,9 @@ export default function ReviewerPage() {
         <PrintButton label="Print this cover sheet" />
       </div>
 
-      <div className="rounded-xl border border-line bg-surface p-4">
-        <div className="text-[11px] font-bold uppercase tracking-wide text-accent">What you&apos;re looking at</div>
-        <p className="mt-1.5 text-sm leading-relaxed text-ink">
+      <div className="card p-4">
+        <div className="text-[13px] font-medium text-muted">What you&apos;re looking at</div>
+        <p className="mt-1.5 text-[15px] leading-relaxed text-ink">
           The attached packet is a <strong>veteran-entered record</strong> — where they served, the
           documented exposures tied to those places and years, the conditions they live with, supporting
           citations, and a clinician hand-off sheet. It states facts and documented sources. It is{" "}
@@ -57,15 +57,15 @@ export default function ReviewerPage() {
         </p>
       </div>
 
-      <div className="pt-2 text-[11px] font-bold uppercase tracking-widest text-accent">Five questions</div>
+      <div className="pt-2 text-[13px] font-medium text-muted">Five questions</div>
 
       {QUESTIONS.map((item, i) => (
-        <div key={i} className="rounded-xl border border-line bg-surface p-4">
+        <div key={i} className="card p-4">
           <div className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand text-xs font-bold text-brand-foreground">{i + 1}</span>
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand text-[13px] font-bold text-brand-foreground">{i + 1}</span>
             <div className="flex-1">
               <p className="text-sm font-semibold text-ink">{item.q}</p>
-              <p className="mt-0.5 text-xs text-muted">{item.hint}</p>
+              <p className="mt-0.5 text-[13px] text-muted">{item.hint}</p>
               <Lines />
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function ReviewerPage() {
       ))}
 
       <div className="rounded-xl border-2 border-brand bg-brand/5 p-4">
-        <p className="text-sm leading-relaxed text-ink">
+        <p className="text-[15px] leading-relaxed text-ink">
           Thank you for your time and your expertise. Please send any notes to{" "}
           <a href="mailto:michael@operationwholehealth.org?subject=Reviewer%20feedback%20%E2%80%94%20Connecting%20the%20Dots" className="font-semibold text-brand hover:underline">michael@operationwholehealth.org</a>,
           or hand this sheet back to the veteran. Your honest read — even &ldquo;this isn&apos;t ready
@@ -84,11 +84,11 @@ export default function ReviewerPage() {
       <div className="grid grid-cols-2 gap-6 pt-2 text-sm">
         <div>
           <div className="h-6 border-b border-ink" />
-          <div className="mt-1 text-xs text-muted">Reviewer name &amp; role (VSO / clinician)</div>
+          <div className="mt-1 text-[13px] text-muted">Reviewer name &amp; role (VSO / clinician)</div>
         </div>
         <div>
           <div className="h-6 border-b border-ink" />
-          <div className="mt-1 text-xs text-muted">Date</div>
+          <div className="mt-1 text-[13px] text-muted">Date</div>
         </div>
       </div>
     </InfoPage>

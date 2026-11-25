@@ -11,7 +11,7 @@ export default function BuddiesPage() {
       <BuddiesView />
 
       <div className="mt-8 mb-4 border-t border-line pt-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Not on this app? Ask them directly</h2>
+        <h2 className="text-sm font-semibold text-muted">Not on this app? Ask them directly</h2>
       </div>
       <WitnessRequestsCard />
     </AppShell>

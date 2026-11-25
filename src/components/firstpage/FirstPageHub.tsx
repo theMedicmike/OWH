@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useAuth } from "../AuthProvider";
 import { buildPage, lintPage, listPages, listVisits, NOT_SET_UP, type FpPage, type FpVisit, type LintProblem, type PageData } from "@/lib/firstPage";
 import { Notice, Stance } from "./Controls";
+import { SpineRow, type SpineState } from "../ui";
 
-// The First Page hub: where the veteran (or the person helping him) sees what
-// is filled in, what the page still needs, and prints it for a visit.
-
+// The nine parts of the page, in the order they are best filled in. Each one
+// knows how to tell whether it has been done, from the page data alone.
 type Section = { href: string; label: string; what: string; done: (p: PageData) => boolean };
 
 const SECTIONS: Section[] = [
@@ -52,106 +52,102 @@ export default function FirstPageHub() {
   if (error === NOT_SET_UP) return <Notice error={NOT_SET_UP} />;
   if (error) return <Notice error={error} />;
 
-  return (
-    <div className="space-y-5">
-      <Stance />
+  const doneFlags = SECTIONS.map((s) => (page ? s.done(page) : false));
+  const nextIndex = doneFlags.findIndex((d) => !d);
+  const stateFor = (i: number): SpineState => (doneFlags[i] ? "done" : i === nextIndex ? "next" : "todo");
 
-      <div className="rounded-xl border border-brand/30 bg-brand/5 p-5">
-        <div className="text-sm font-semibold text-ink">One sheet. Two sides. Same layout every time.</div>
-        <p className="mt-1 text-sm leading-relaxed text-muted">
+  return (
+    <div className="space-y-7">
+      <div>
+        <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">One sheet. Two sides. Same layout every time.</h2>
+        <p className="mt-3 text-[15px] leading-relaxed text-muted">
           The front is what a specialist needs in the first ninety seconds: allergies, who came with you, three lines in
           your own words, your problems with dates, your medicines copied from the pharmacy printout, what has been
           tried, and your two questions. The back is where you served, what you were around, the numbers that changed,
           what could not be found, and every source. Every row names where it came from and when.
         </p>
-        <p className="mt-2 text-xs leading-relaxed text-faint">
+        <p className="mt-2 text-[15px] leading-relaxed text-muted">
           Build it once. Print it before every visit. Hand it over at check-in. The doctor reads it; you do not start
           from zero.
         </p>
       </div>
 
+      <Stance />
+
       {loading ? (
-        <p className="text-sm text-muted">Loading your page…</p>
+        <p className="text-[15px] text-muted">Loading your page…</p>
       ) : (
         <>
-          <ul className="space-y-2">
-            {SECTIONS.map((s) => {
-              const done = page ? s.done(page) : false;
-              return (
-                <li key={s.href}>
-                  <Link href={s.href} className="flex items-start gap-3 rounded-xl border border-line bg-surface p-4 transition hover:border-brand/50">
-                    <span aria-hidden="true" className={`mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full border text-[11px] font-bold ${done ? "border-success bg-success-soft text-success" : "border-line text-faint"}`}>
-                      {done ? "✓" : ""}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-ink">{s.label}</span>
-                      <span className="block text-xs leading-relaxed text-muted">{s.what}</span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <section>
+            <h3 className="text-lg font-semibold tracking-tight text-ink">Build the page</h3>
+            <div className="card mt-3 overflow-hidden">
+              <ol className="spine p-2">
+                {SECTIONS.map((s, i) => (
+                  <SpineRow key={s.href} href={s.href} step={i + 1} label={s.label} detail={s.what} state={stateFor(i)} />
+                ))}
+              </ol>
+            </div>
+          </section>
 
-          <div className="rounded-xl border border-line bg-surface p-5">
-            <div className="text-sm font-semibold text-ink">Print</div>
+          <section className="card p-5 sm:p-6">
+            <h3 className="text-lg font-semibold tracking-tight text-ink">Print</h3>
             {lint.length === 0 ? (
-              <p className="mt-1 text-xs leading-relaxed text-success">The page passes every check. It can be printed.</p>
+              <p className="mt-1 text-[15px] leading-relaxed text-success">The page passes every check. It can be printed.</p>
             ) : (
               <>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
+                <p className="mt-1 text-[15px] leading-relaxed text-muted">
                   The page will not print until every row has a source and a year, and nothing on it reads like a
                   conclusion. Still to fix:
                 </p>
-                <ul className="mt-2 space-y-1">
+                <ul className="mt-3 space-y-1.5">
                   {lint.slice(0, 12).map((l, i) => (
-                    <li key={i} className="text-xs leading-relaxed text-ink"><span className="font-semibold">{l.where}</span> {l.what}</li>
+                    <li key={i} className="text-[15px] leading-relaxed text-ink"><span className="font-semibold">{l.where}</span> {l.what}</li>
                   ))}
-                  {lint.length > 12 && <li className="text-xs text-faint">and {lint.length - 12} more.</li>}
+                  {lint.length > 12 && <li className="text-sm text-muted">and {lint.length - 12} more.</li>}
                 </ul>
               </>
             )}
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {visits.length === 0 ? (
-                <Link href="/first-page/visit" className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600">Set up a visit first</Link>
+                <Link href="/first-page/visit" className="btn btn-primary">Set up a visit first</Link>
               ) : (
                 visits.map((v) => (
-                  <Link key={v.id} href={`/first-page/print?visit=${v.id}`} className="rounded-lg border border-brand px-4 py-2 text-sm font-semibold text-brand hover:bg-brand/5">
+                  <Link key={v.id} href={`/first-page/print?visit=${v.id}`} className="btn btn-secondary">
                     Preview and print for {v.specialist || "this visit"}{v.visit_date ? `, ${v.visit_date}` : ""}
                   </Link>
                 ))
               )}
             </div>
-          </div>
+          </section>
 
           {versions.length > 0 && (
-            <div className="rounded-xl border border-line bg-surface p-5">
-              <div className="text-sm font-semibold text-ink">Pages you have printed</div>
+            <section className="card p-5 sm:p-6">
+              <h3 className="text-lg font-semibold tracking-tight text-ink">Pages you have printed</h3>
               <ul className="mt-2 divide-y divide-line">
                 {versions.map((v) => (
-                  <li key={v.id} className="py-2 text-xs text-muted">
+                  <li key={v.id} className="py-2.5 text-[15px] text-muted">
                     Version {v.version_date}{v.assembled_by ? `, assembled by ${v.assembled_by}` : ""}{v.signed ? ", signed by the veteran" : ", not signed"}.
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-xs leading-relaxed text-faint">A correction is a new version, never a hand edit. Corrections go to the helper named on side 2.</p>
-            </div>
+              <p className="mt-3 text-sm leading-relaxed text-muted">A correction is a new version, never a hand edit. Corrections go to the helper named on side 2.</p>
+            </section>
           )}
         </>
       )}
 
-      <div className="rounded-xl border border-line bg-surface p-5">
-        <div className="text-sm font-semibold text-ink">What stays private</div>
-        <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted">
+      <section className="card p-5 sm:p-6">
+        <h3 className="text-lg font-semibold tracking-tight text-ink">What stays private</h3>
+        <ul className="mt-3 space-y-2 text-[15px] leading-relaxed text-muted">
           <li>Your recording and the words your browser heard sit in your own private storage. Only you can open them, and you can delete them at any time.</li>
           <li>Nothing on this page is written, rewritten or listened to by AI. The words are yours, copied as you said them.</li>
           <li>Rows you leave off never print. Mental-health conditions, sexual trauma and assault start off and stay off unless you turn them on.</li>
           <li>The page is printed from your device. Nothing is sent to a clinic, to VA or to Operation Whole Health by this app. You hand it over yourself.</li>
           <li>Each print is kept as a dated version so a wrong row can be corrected by re-issuing the page, never by a hand edit.</li>
         </ul>
-      </div>
+      </section>
 
-      <p className="px-1 text-xs leading-relaxed text-faint">
+      <p className="px-1 text-sm leading-relaxed text-muted">
         This section documents. It does not diagnose, does not advise you, does not file for you, and is not your
         representative. If you or someone you know is struggling, the Veterans Crisis Line is here 24/7: dial 988, then
         press 1. Text 838255.

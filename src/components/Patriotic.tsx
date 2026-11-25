@@ -30,9 +30,9 @@ export function ServiceRibbon({ className = "" }: { className?: string }) {
 export function RibbonDivider({ label, className = "" }: { label: string; className?: string }) {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <ServiceRibbon className="flex-1 rounded-full opacity-70" />
-      <span className="flex-none text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{label}</span>
-      <ServiceRibbon className="flex-1 rounded-full opacity-70" />
+      
+      <span className="flex-none text-[13px] font-medium text-muted">{label}</span>
+      
     </div>
   );
 }
@@ -52,12 +52,12 @@ export function StarRow({ count = 7, className = "" }: { count?: number; classNa
 export function Anniversary250({ className = "" }: { className?: string }) {
   return (
     <div className={`rounded-lg border border-accent/50 px-3 py-2 text-center ${className}`}>
-      <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold tracking-wider text-accent">
+      <div className="flex items-center justify-center gap-1.5 text-[13px] font-semibold tracking-wider text-accent">
         <span>1776</span>
         <Star className="h-2 w-2" />
         <span>2026</span>
       </div>
-      <div className="mt-0.5 text-[9px] uppercase tracking-[0.14em] text-white/45">250 years of service</div>
+      <div className="mt-0.5 text-[12px] uppercase tracking-[0.14em] text-white/45">250 years of service</div>
     </div>
   );
 }

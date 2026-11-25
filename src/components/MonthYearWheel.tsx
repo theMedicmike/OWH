@@ -66,7 +66,7 @@ export default function MonthYearWheel({
     <div>
       <div className="flex gap-1.5">
         <div className="flex-[1.3]">
-          <div className="mb-1 text-center text-[11px] font-medium text-muted">Year</div>
+          <div className="mb-1 text-center text-[13px] font-medium text-muted">Year</div>
           <WheelPicker
             options={years.map(String)}
             index={yearIndex}
@@ -75,7 +75,7 @@ export default function MonthYearWheel({
           />
         </div>
         <div className="flex-1">
-          <div className="mb-1 text-center text-[11px] font-medium text-muted">Month</div>
+          <div className="mb-1 text-center text-[13px] font-medium text-muted">Month</div>
           <WheelPicker
             options={MONTH_LABELS}
             index={monthIndex}
@@ -85,7 +85,7 @@ export default function MonthYearWheel({
           />
         </div>
         <div className="flex-1">
-          <div className="mb-1 text-center text-[11px] font-medium text-muted">Day</div>
+          <div className="mb-1 text-center text-[13px] font-medium text-muted">Day</div>
           <WheelPicker
             options={dayOptions}
             index={dayIndex}
@@ -96,7 +96,7 @@ export default function MonthYearWheel({
         </div>
       </div>
       {onApproximateChange && (
-        <label className="mt-1.5 flex items-center gap-2 text-[11px] text-muted">
+        <label className="mt-1.5 flex items-center gap-2 text-[13px] text-muted">
           <input type="checkbox" checked={!!approximate} onChange={(e) => onApproximateChange(e.target.checked)} />
           I&apos;m not sure of the exact date — this is my best guess
         </label>

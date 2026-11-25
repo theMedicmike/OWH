@@ -19,66 +19,66 @@ export default async function ShotDetailPage({ params }: { params: Promise<{ slu
   return (
     <AppShell title="Shot record">
       <article className="mx-auto max-w-2xl space-y-5">
-        <Link href="/shots/library" className="text-xs font-medium text-brand hover:underline">← What these shots were</Link>
+        <Link href="/shots/library" className="text-sm font-semibold text-brand hover:underline">What these shots were</Link>
 
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-ink">{s.name}</h1>
-            <span className="rounded-md bg-canvas px-2 py-0.5 text-xs font-medium text-muted">{s.circumstance}</span>
+            <span className="rounded-md bg-canvas px-2 py-0.5 text-[13px] font-medium text-muted">{s.circumstance}</span>
           </div>
           <p className="mt-1 text-sm text-muted">{s.hook}</p>
         </div>
 
-        <section className="rounded-xl border border-line bg-surface p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">What it was for, and who got it</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink">{s.policyContext}</p>
+        <section className="card p-5">
+          <h2 className="text-[13px] font-medium text-muted">What it was for, and who got it</h2>
+          <p className="mt-2 text-[15px] leading-relaxed text-ink">{s.policyContext}</p>
         </section>
 
-        <section className="rounded-xl border border-line bg-surface p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">Ingredients, as printed on the FDA label</h2>
-          <p className="mt-1 text-xs leading-relaxed text-faint">
+        <section className="card p-5">
+          <h2 className="text-[13px] font-medium text-muted">Ingredients, as printed on the FDA label</h2>
+          <p className="mt-1 text-[13px] leading-relaxed text-faint">
             This is quoted from the manufacturer&apos;s FDA-approved label, word for word, including the units. We
             don&apos;t convert it, round it, or interpret it. What it means for you is a question for your clinician.
           </p>
           <p className="mt-3 whitespace-pre-line font-mono text-[13px] leading-relaxed text-ink">{s.labelVerbatim}</p>
-          <p className="mt-3 text-[11px] leading-relaxed text-faint">
+          <p className="mt-3 text-[13px] leading-relaxed text-faint">
             Source: {s.labelSource.product}, {s.labelSource.manufacturer}. FDA-approved prescribing information, Section 11 DESCRIPTION.
             {s.labelSource.setId !== "See current FDA-approved prescribing information" && ` DailyMed SetID ${s.labelSource.setId}.`}
             {" "}Retrieved {s.labelSource.retrieved}.{" "}
-            <a href={s.labelSource.url} target="_blank" rel="noreferrer" className="text-brand hover:underline">View the label →</a>
+            <a href={s.labelSource.url} target="_blank" rel="noreferrer" className="text-brand hover:underline">View the label</a>
           </p>
         </section>
 
-        <section className="rounded-xl border border-line bg-surface p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">What the label itself warns about</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink">{s.labelWarning ?? NO_SPECIFIC_WARNING}</p>
+        <section className="card p-5">
+          <h2 className="text-[13px] font-medium text-muted">What the label itself warns about</h2>
+          <p className="mt-2 text-[15px] leading-relaxed text-ink">{s.labelWarning ?? NO_SPECIFIC_WARNING}</p>
         </section>
 
         {s.established && (
-          <section className="rounded-xl border border-line bg-surface p-5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">What is and isn&apos;t established</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink">{s.established}</p>
+          <section className="card p-5">
+            <h2 className="text-[13px] font-medium text-muted">What is and isn&apos;t established</h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-ink">{s.established}</p>
           </section>
         )}
 
-        <section className="rounded-xl border border-line bg-surface p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">Where this was supposed to be written down</h2>
+        <section className="card p-5">
+          <h2 className="text-[13px] font-medium text-muted">Where this was supposed to be written down</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {RECORD_FORMS.map((f) => (
-              <Link key={f} href="/shots/record" className="rounded-full border border-line bg-canvas px-3 py-1 text-xs font-medium text-ink hover:border-brand hover:text-brand">
+              <Link key={f} href="/shots/record" className="rounded-full border border-line bg-canvas px-3 py-1 text-[13px] font-medium text-ink hover:border-brand hover:text-brand">
                 {f}
               </Link>
             ))}
           </div>
         </section>
 
-        <p className="px-1 text-xs leading-relaxed text-faint">
+        <p className="px-1 text-[13px] leading-relaxed text-faint">
           This page documents. It does not diagnose, does not advise you, does not file for you, and is not your
           representative (38 CFR 14.629). If you or someone you know is struggling, the Veterans Crisis Line is
           here 24/7 — dial 988, then press 1.
         </p>
 
-        <Link href="/shots" className="block text-center text-xs font-medium text-brand hover:underline">← Your shot record</Link>
+        <Link href="/shots" className="block text-center text-sm font-semibold text-brand hover:underline">Your shot record</Link>
       </article>
     </AppShell>
   );

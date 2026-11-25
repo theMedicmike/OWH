@@ -20,7 +20,7 @@ export default async function MedicationDetailPage({ params }: { params: Promise
     if (res.error === "not-set-up") {
       return (
         <AppShell title="Your medications">
-          <div className="mx-auto max-w-2xl rounded-xl border border-line bg-surface p-5">
+          <div className="mx-auto max-w-2xl card p-5">
             <div className="text-sm font-semibold text-ink">This feature isn&apos;t switched on yet</div>
             <p className="mt-2 text-sm text-muted">
               Nothing is wrong with your record — the database update for it hasn&apos;t been applied. Check back

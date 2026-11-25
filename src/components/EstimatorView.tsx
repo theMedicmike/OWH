@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { ServiceRibbon } from "./Patriotic";
 import { METAL_KEY_TO_SLUG, CONTAMINANT_KEY_TO_SLUG, ORGAN_NAME_TO_SLUG, TOXICANT_BY_SLUG } from "@/lib/toxlibrary";
 import { EXPOSURE_LABEL } from "@/lib/education";
 import WheelPicker from "./WheelPicker";
@@ -94,7 +93,7 @@ type Munition = { key: string; label: string; m: Contribution };
 const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = [
   {
     group: "Small arms",
-    metals: "lead · antimony · copper",
+    metals: "lead, antimony, copper",
     items: [
       { key: "m556", label: "5.56mm rifle", m: { pb: 18, sb: 4 } },
       { key: "m762", label: "7.62mm", m: { pb: 18, sb: 4 } },
@@ -104,7 +103,7 @@ const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = 
   },
   {
     group: "Cannon & crew-served",
-    metals: "lead · tungsten",
+    metals: "lead, tungsten",
     items: [
       { key: "c2530", label: "25 / 30mm cannon", m: { pb: 15, w: 6 } },
       { key: "g40", label: "40mm grenade", m: { pb: 12, as: 4 } },
@@ -112,7 +111,7 @@ const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = 
   },
   {
     group: "Tank & artillery",
-    metals: "tungsten · cobalt · lead · blast",
+    metals: "tungsten, cobalt, lead, blast",
     items: [
       { key: "t120", label: "120mm tank main gun", m: { w: 25, u: 15, pb: 12, co: 6 } },
       { key: "a155", label: "155mm howitzer / mortars", m: { pb: 15, as: 6, ba: 5 } },
@@ -120,7 +119,7 @@ const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = 
   },
   {
     group: "Ordnance & bombs",
-    metals: "heavy metals · barium · blast",
+    metals: "heavy metals, barium, blast",
     items: [
       { key: "demo", label: "Grenades / demolitions", m: { pb: 10, as: 8, ba: 6 } },
       { key: "b500", label: "500 lb bombs", m: { pb: 8, as: 6 } },
@@ -129,7 +128,7 @@ const MUNITION_GROUPS: { group: string; metals: string; items: Munition[] }[] = 
   },
   {
     group: "Armor-piercing",
-    metals: "depleted uranium · tungsten",
+    metals: "depleted uranium, tungsten",
     items: [{ key: "du", label: "Depleted-uranium rounds", m: { u: 45, w: 15 } }],
   },
 ];
@@ -260,7 +259,7 @@ export default function EstimatorView() {
 
   if (!user) {
     return (
-      <div className="rounded-xl border border-line bg-surface p-6">
+      <div className="card p-6">
         <p className="text-sm text-muted">
           Sign in on the map to build your record, then come back here for your estimate.
         </p>
@@ -271,21 +270,21 @@ export default function EstimatorView() {
     );
   }
 
-  const card = "rounded-xl border border-line bg-surface p-5";
+  const card = "card p-5";
 
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-accent/30 bg-accent/5">
-        <ServiceRibbon />
+        
         <div className="p-5">
-          <div className="text-xs font-bold uppercase tracking-wide text-accent">Private — for you and your clinician</div>
-          <p className="mt-1.5 text-sm leading-relaxed text-ink">
+          <div className="text-[13px] font-medium text-muted">Private — for you and your clinician</div>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-ink">
             A standard blood test mostly shows <strong>recent</strong> exposure — last week, not your career.
             Many service toxicants <strong>bioaccumulate</strong>: lead settles into bone for decades and can
             remobilize years later; others lodge in organs. So a &ldquo;normal&rdquo; result doesn&apos;t rule
             out a lifetime of stored exposure.
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-ink">
+          <p className="mt-2 text-[15px] leading-relaxed text-ink">
             This tool <strong>translates what you were exposed to</strong> into where those toxicants tend to
             accumulate and the tests that can reveal them. It does <strong>not</strong> measure what is in your
             body, and it is <strong>not</strong> part of your VA claim — keep it private and don&apos;t submit
@@ -296,7 +295,7 @@ export default function EstimatorView() {
 
       <div className={card}>
         <div className="text-sm font-medium text-ink">Your service profile</div>
-        <div className="mt-1 text-xs text-muted">
+        <div className="mt-1 text-[13px] text-muted">
           {logged.length > 0
             ? "Built from the exposures you logged on the map, plus the details below."
             : "Log exposures on the map and they'll feed this automatically. Add the details below too."}
@@ -305,7 +304,7 @@ export default function EstimatorView() {
         {logged.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {logged.map((e) => (
-              <span key={e} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-xs text-muted">
+              <span key={e} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-[13px] text-muted">
                 {EXPOSURE_LABEL[e] ?? e}
               </span>
             ))}
@@ -314,7 +313,7 @@ export default function EstimatorView() {
 
         <div className="mt-4 grid gap-3">
           <div className="flex items-center gap-3">
-            <label className="w-28 text-xs text-muted">Primary role</label>
+            <label className="w-28 text-[13px] text-muted">Primary role</label>
             <select value={role} onChange={(e) => setRole(e.target.value)} className="flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-sm">
               <option value="">Select your role…</option>
               {Object.keys(ROLES).map((r) => (
@@ -323,7 +322,7 @@ export default function EstimatorView() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <label className="w-28 text-xs text-muted">Years of service</label>
+            <label className="w-28 text-[13px] text-muted">Years of service</label>
             <div className="w-28">
               <WheelPicker options={YEARS_OF_SERVICE} index={years} onChange={setYears} ariaLabel="Years of service" />
             </div>
@@ -333,22 +332,22 @@ export default function EstimatorView() {
 
       <div className={card}>
         <div className="text-sm font-medium text-ink">Weapons &amp; munitions exposure</div>
-        <div className="mt-1 text-xs text-muted">
+        <div className="mt-1 text-[13px] text-muted">
           Roughly how much were you around each, across your whole service? No exact numbers needed.
         </div>
 
         {MUNITION_GROUPS.map((g) => (
           <div key={g.group} className="mt-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-ink">{g.group}</span>
-              <span className="text-[11px] text-faint">{g.metals}</span>
+              <span className="text-[13px] font-medium text-ink">{g.group}</span>
+              <span className="text-[13px] text-faint">{g.metals}</span>
             </div>
             {g.items.map((it) => {
               const cur = munRates[it.key] ?? 0;
               return (
                 <div key={it.key} className="flex items-center justify-between gap-3 border-t border-line py-2">
                   <span className="text-sm text-ink">{it.label}</span>
-                  <div className="flex flex-none overflow-hidden rounded-md border border-line text-xs">
+                  <div className="flex flex-none overflow-hidden rounded-md border border-line text-[13px]">
                     {RATES.map((label, ri) => {
                       const on = cur === ri;
                       return (
@@ -377,9 +376,9 @@ export default function EstimatorView() {
       <div className={card}>
         <div className="flex items-center justify-between">
           <div className="text-sm font-semibold text-ink">Estimated exposure likelihood — metals</div>
-          <span className="text-xs text-muted">{confidence} confidence</span>
+          <span className="text-[13px] text-muted">{confidence} confidence</span>
         </div>
-        <p className="mt-1 text-xs text-muted">How likely your service led to meaningful exposure to each metal — not a measurement of what&apos;s in your body now.</p>
+        <p className="mt-1 text-[13px] text-muted">How likely your service led to meaningful exposure to each metal — not a measurement of what&apos;s in your body now.</p>
         <div className="mt-3 space-y-2.5">
           {present.length === 0 && <p className="text-sm text-muted">Set your role, munitions, and exposures to see your estimate.</p>}
           {present.map((m) => {
@@ -392,7 +391,7 @@ export default function EstimatorView() {
               <div key={m.key}>
                 <div className="flex justify-between text-sm">
                   {slug ? (
-                    <Link href={`/learn/${slug}`} className="font-medium text-brand hover:underline">{m.name} →</Link>
+                    <Link href={`/learn/${slug}`} className="font-medium text-brand hover:underline">{m.name}</Link>
                   ) : (
                     <span className="text-ink">{m.name}</span>
                   )}
@@ -404,13 +403,13 @@ export default function EstimatorView() {
                 {tox && (
                   <button
                     onClick={() => setExpanded((prev) => { const n = new Set(prev); n.has(m.key) ? n.delete(m.key) : n.add(m.key); return n; })}
-                    className="mt-1 text-[11px] font-medium text-muted hover:text-brand"
+                    className="mt-1 text-[13px] font-medium text-muted hover:text-brand"
                   >
                     {open ? "Hide why this is flagged ▲" : "Why is this flagged? ▼"}
                   </button>
                 )}
                 {tox && open && (
-                  <div className="mt-1.5 rounded-lg bg-canvas p-2.5 text-xs leading-relaxed text-muted">
+                  <div className="mt-1.5 rounded-lg bg-canvas p-2.5 text-[13px] leading-relaxed text-muted">
                     <p><span className="font-semibold text-ink">Why it&apos;s flagged:</span> {tox.where}</p>
                     <p className="mt-1.5"><span className="font-semibold text-ink">How sure is this:</span> Not sure at the level of an individual — this reflects documented sources for your role, not a measurement of what&apos;s actually in your body. There is no model that turns a service history into a body-burden number.</p>
                     <p className="mt-1.5"><span className="font-semibold text-ink">What a real test involves:</span> {tox.tests[0]}</p>
@@ -420,12 +419,12 @@ export default function EstimatorView() {
             );
           })}
         </div>
-        <p className="mt-3 text-xs text-faint">Tracking {METALS.length} metals; showing the ones your profile flags. <Link href="/learn" className="font-medium text-brand hover:underline">Open the full exposure library →</Link></p>
+        <p className="mt-3 text-[13px] text-faint">Tracking {METALS.length} metals; showing the ones your profile flags. <Link href="/learn" className="font-medium text-brand hover:underline">Open the full exposure library</Link></p>
       </div>
 
       <div className={card}>
         <div className="text-sm font-medium text-ink">Chemical &amp; other contaminants</div>
-        <div className="mt-1 text-xs text-muted">
+        <div className="mt-1 text-[13px] text-muted">
           Exposure load from what you logged. Unlike metals, these don&apos;t build up in tissue — they act on organs and the body&apos;s defenses.
         </div>
         <div className="mt-3 space-y-2.5">
@@ -441,7 +440,7 @@ export default function EstimatorView() {
               <div key={c.key}>
                 <div className="flex justify-between gap-3 text-sm">
                   {CONTAMINANT_KEY_TO_SLUG[c.key] ? (
-                    <Link href={`/learn/${CONTAMINANT_KEY_TO_SLUG[c.key]}`} className="font-medium text-brand hover:underline">{c.name} →</Link>
+                    <Link href={`/learn/${CONTAMINANT_KEY_TO_SLUG[c.key]}`} className="font-medium text-brand hover:underline">{c.name}</Link>
                   ) : (
                     <span className="text-ink">{c.name}</span>
                   )}
@@ -457,19 +456,19 @@ export default function EstimatorView() {
         {(cSystems.length > 0 || cDepletes.length > 0) && (
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
-              <div className="text-xs font-medium text-ink">Systems at risk</div>
+              <div className="text-[13px] font-medium text-ink">Systems at risk</div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {cSystems.map((o) => (
-                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted">{o}</span>
+                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-[13px] text-muted">{o}</span>
                 ))}
               </div>
             </div>
             {cDepletes.length > 0 && (
               <div>
-                <div className="text-xs font-medium text-ink">Defenses these can affect</div>
+                <div className="text-[13px] font-medium text-ink">Defenses these can affect</div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {cDepletes.map((o) => (
-                    <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-xs text-success">{o}</span>
+                    <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-[13px] text-success">{o}</span>
                   ))}
                 </div>
               </div>
@@ -487,15 +486,15 @@ export default function EstimatorView() {
       <div className="grid gap-4">
         <div className={card}>
           <div className="text-sm font-semibold text-ink">Where these metals tend to accumulate</div>
-          <p className="mt-1 text-xs text-muted">Documented biology — where each flagged metal is known to settle if exposure occurred.</p>
+          <p className="mt-1 text-[13px] text-muted">Documented biology — where each flagged metal is known to settle if exposure occurred.</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {organs.length ? (
               organs.map((o) => {
                 const s = ORGAN_NAME_TO_SLUG[o];
                 return s ? (
-                  <Link key={o} href={`/learn/organ/${s}`} className="rounded-md bg-brand/5 px-2 py-1 text-xs font-medium text-brand hover:bg-brand/10">{o} →</Link>
+                  <Link key={o} href={`/learn/organ/${s}`} className="rounded-md bg-brand/5 px-2 py-1 text-[13px] font-medium text-brand hover:bg-brand/10">{o}</Link>
                 ) : (
-                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-xs text-muted">{o}</span>
+                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-[13px] text-muted">{o}</span>
                 );
               })
             ) : (
@@ -519,7 +518,7 @@ export default function EstimatorView() {
 
       <div className="rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
         <div className="font-semibold text-brand">A note on testing — stay safe</div>
-        <p className="mt-1 text-sm leading-relaxed text-ink">
+        <p className="mt-1 text-[15px] leading-relaxed text-ink">
           Ask your clinician for <strong>standard, unprovoked</strong> tests (for example, a 24-hour urine
           collected <em>without</em> a chelating agent). <strong>Avoid &ldquo;provoked&rdquo; or
           &ldquo;chelation-challenge&rdquo; urine tests, and any unsupervised chelation or &ldquo;detox&rdquo;
@@ -528,7 +527,7 @@ export default function EstimatorView() {
         </p>
       </div>
 
-      <p className="border-t border-line px-1 pt-4 text-xs leading-relaxed text-faint">
+      <p className="border-t border-line px-1 pt-4 text-[13px] leading-relaxed text-faint">
         This is an exposure-history estimate — the lowest tier of evidence — meant to guide testing and a
         conversation with your clinician. It does not measure what is in your body, is not a diagnosis, never
         replaces medical care, and is not part of your VA claim. The exposure-to-toxicant mapping and weighting
@@ -536,7 +535,7 @@ export default function EstimatorView() {
         dial 988, then press 1.
       </p>
 
-      <p className="rounded-lg border border-line bg-canvas px-4 py-3 text-xs leading-relaxed text-muted">
+      <p className="rounded-lg border border-line bg-canvas px-4 py-3 text-[13px] leading-relaxed text-muted">
         <span className="font-semibold text-ink">Corrected 6 August 2026.</span> An earlier version of this page
         said the mapping and weightings &ldquo;will be reviewed and calibrated by the scientific advisory
         board.&rdquo; No such board exists, and that validation cannot currently be performed by anyone — there

@@ -77,8 +77,8 @@ export default function CardStudio({ passage, chapterNumber, chapterTitle, heavy
   }
 
   const chip = (on: boolean) =>
-    `rounded-full border px-3 py-1 text-xs font-medium transition ${on ? "border-brand bg-brand/10 text-brand" : "border-line text-muted hover:bg-canvas"}`;
-  const fbtn = "flex items-center justify-center gap-1.5 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-ink transition hover:border-brand/40 hover:bg-canvas";
+    `rounded-full border px-3 py-1 text-[13px] font-medium transition ${on ? "border-brand bg-brand/10 text-brand" : "border-line text-muted hover:bg-canvas"}`;
+  const fbtn = "flex items-center justify-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[13px] font-semibold text-ink transition hover:border-brand/40 hover:bg-canvas";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 p-0 sm:items-center sm:p-4" onClick={onClose}>
@@ -113,25 +113,25 @@ export default function CardStudio({ passage, chapterNumber, chapterTitle, heavy
         </div>
 
         {/* Caption */}
-        <label className="mt-3 block text-xs font-medium text-muted">Caption</label>
+        <label className="mt-3 block text-[13px] font-medium text-muted">Caption</label>
         <textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           rows={4}
-          className="mt-1 w-full rounded-lg border border-line bg-canvas px-3 py-2 text-xs leading-relaxed text-ink focus:border-brand focus:bg-white focus:outline-none"
+          className="mt-1 w-full rounded-lg border border-line bg-canvas px-3 py-2 text-[13px] leading-relaxed text-ink focus:border-brand focus:bg-white focus:outline-none"
         />
 
-        <p className="mt-2 text-[11px] text-faint">Share what moved you. This is your call.</p>
+        <p className="mt-2 text-[13px] text-faint">Share what moved you. This is your call.</p>
 
         {/* Primary + fallbacks */}
         {status ? (
-          <div className="mt-3 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-xs font-medium text-success">{status}</div>
+          <div className="mt-3 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-[13px] font-medium text-success">{status}</div>
         ) : (
           <>
             <button
               onClick={onShare}
               disabled={busy || !ready}
-              className="mt-3 w-full rounded-xl bg-brand px-6 py-3 text-sm font-bold text-brand-foreground transition hover:bg-brand-600 disabled:opacity-60"
+              className="mt-3 w-full btn btn-primary btn-lg"
             >
               {busy ? "Opening…" : !ready ? "Preparing…" : "Share…"}
             </button>
@@ -144,7 +144,7 @@ export default function CardStudio({ passage, chapterNumber, chapterTitle, heavy
                 <a className={fbtn} href={smsHref(caption)}>Text it</a>
                 <a className={fbtn} href={tweetHref(caption)} target="_blank" rel="noreferrer">Post on X</a>
                 <a className={fbtn} href={facebookHref()} target="_blank" rel="noreferrer">Facebook</a>
-                <p className="col-span-2 text-[11px] leading-relaxed text-faint">Instagram has no web share — save the image, then post it there.</p>
+                <p className="col-span-2 text-[13px] leading-relaxed text-faint">Instagram has no web share — save the image, then post it there.</p>
               </div>
             )}
           </>

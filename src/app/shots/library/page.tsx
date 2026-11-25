@@ -16,12 +16,12 @@ export default function ShotLibraryPage() {
           if (!items.length) return null;
           return (
             <div key={g}>
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{GROUP_LABEL[g]}</h2>
-              <div className="divide-y divide-line rounded-xl border border-line bg-surface">
+              <h2 className="mb-2 text-[13px] font-medium text-muted">{GROUP_LABEL[g]}</h2>
+              <div className="divide-y divide-line card">
                 {items.map((s) => (
                   <Link key={s.slug} href={`/shots/library/${s.slug}`} className="flex items-baseline justify-between gap-2 px-4 py-3 text-sm hover:bg-canvas">
                     <span className="font-medium text-ink">{s.name}</span>
-                    <span className="text-xs text-muted">{s.hook}</span>
+                    <span className="text-[13px] text-muted">{s.hook}</span>
                   </Link>
                 ))}
               </div>
@@ -29,7 +29,7 @@ export default function ShotLibraryPage() {
           );
         })}
       </div>
-      <Link href="/shots" className="mt-6 block text-center text-xs font-medium text-brand hover:underline">← Your shot record</Link>
+      <Link href="/shots" className="mt-6 block text-center text-sm font-semibold text-brand hover:underline">Your shot record</Link>
     </AppShell>
   );
 }

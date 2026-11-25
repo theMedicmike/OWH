@@ -10,7 +10,7 @@ import { INCIDENT_LABEL, type IncidentClass } from "@/lib/education";
 import { evidentiaryNoteFor, isMarkersBased } from "@/lib/incidentCopy";
 import WheelPicker from "./WheelPicker";
 
-const card = "rounded-xl border border-line bg-surface p-5";
+const card = "card p-5";
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function yr(d: string | null): number | null {
@@ -87,8 +87,8 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
 
   return (
     <div className="mt-3 border-t border-line pt-3">
-      <div className="text-xs font-semibold text-ink">What you&apos;ve noticed since</div>
-      <p className="mt-0.5 text-[11px] leading-relaxed text-faint">
+      <div className="text-[13px] font-semibold text-ink">What you&apos;ve noticed since</div>
+      <p className="mt-0.5 text-[13px] leading-relaxed text-faint">
         Dated, in your own words — this is what a claims examiner actually looks at to judge whether symptoms
         have been consistent since the event. Add to it any time.
       </p>
@@ -97,13 +97,13 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
           {notes.map((n) => (
             <li key={n.id} className="rounded-lg border border-line bg-canvas p-2.5">
               <div className="flex items-start justify-between gap-2">
-                <span className="text-[11px] font-semibold text-muted">
+                <span className="text-[13px] font-semibold text-muted">
                   {n.noticed_year ? `Noticed around ${n.noticed_year}` : "No date given"}
                 </span>
-                <button onClick={() => remove(n.id)} className="text-[11px] text-faint hover:text-red-600">Remove</button>
+                <button onClick={() => remove(n.id)} className="text-[13px] text-faint hover:text-red-600">Remove</button>
               </div>
               <p className="mt-1 text-[13px] leading-relaxed text-ink">{n.note}</p>
-              <span className="mt-1 block text-[10px] text-faint">
+              <span className="mt-1 block text-[13px] text-faint">
                 Logged {new Date(n.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
               </span>
             </li>
@@ -112,7 +112,7 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
       )}
       {adding ? (
         <div className="mt-2 rounded-lg border border-brand/30 bg-brand/5 p-3">
-          <div className="text-[11px] font-medium text-muted">About when did you notice this?</div>
+          <div className="text-[13px] font-medium text-muted">About when did you notice this?</div>
           <div className="mt-1 w-24">
             <NoteYearPicker year={noticedYear} minYear={incidentYear ?? 1940} onChange={setNoticedYear} />
           </div>
@@ -123,16 +123,16 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
             placeholder="What you've noticed since — in your own words, no AI help, nobody else's wording."
             className="mt-2 w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
           />
-          {err && <p className="mt-1 text-[11px] text-scarlet">{err}</p>}
+          {err && <p className="mt-1 text-[13px] text-scarlet">{err}</p>}
           <div className="mt-2 flex gap-2">
-            <button onClick={save} disabled={busy || !text.trim()} className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
+            <button onClick={save} disabled={busy || !text.trim()} className="rounded-md bg-brand px-3 py-1.5 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
               {busy ? "Saving…" : "Save"}
             </button>
-            <button onClick={() => setAdding(false)} className="rounded-md border border-line px-3 py-1.5 text-xs text-muted hover:bg-canvas">Cancel</button>
+            <button onClick={() => setAdding(false)} className="rounded-md border border-line px-3 py-1.5 text-[13px] text-muted hover:bg-canvas">Cancel</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="mt-2 text-xs font-semibold text-brand hover:underline">
+        <button onClick={() => setAdding(true)} className="mt-2 text-[13px] font-semibold text-brand hover:underline">
           + Add what you&apos;ve noticed
         </button>
       )}
@@ -185,8 +185,8 @@ function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; i
 
   return (
     <div className="mt-3 border-t border-line pt-3">
-      <div className="text-xs font-semibold text-ink">Who else was there? (optional)</div>
-      <p className="mt-0.5 text-[11px] leading-relaxed text-faint">
+      <div className="text-[13px] font-semibold text-ink">Who else was there? (optional)</div>
+      <p className="mt-0.5 text-[13px] leading-relaxed text-faint">
         Private — this stays on your record and isn&apos;t sent to anyone. To actually ask someone for a
         statement, use <Link href="/buddies" className="font-semibold text-brand hover:underline">Battle buddies → Ask them directly</Link>.
       </p>
@@ -196,10 +196,10 @@ function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; i
             <li key={w.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-canvas px-2.5 py-1.5">
               <span className="text-[13px] text-ink">
                 {w.name}
-                {w.relationship && <span className="text-muted"> · {w.relationship}</span>}
-                {w.contact && <span className="text-faint"> · {w.contact}</span>}
+                {w.relationship && <span className="text-muted">, {w.relationship}</span>}
+                {w.contact && <span className="text-faint">, {w.contact}</span>}
               </span>
-              <button onClick={() => remove(w.id)} className="text-[11px] text-faint hover:text-red-600">Remove</button>
+              <button onClick={() => remove(w.id)} className="text-[13px] text-faint hover:text-red-600">Remove</button>
             </li>
           ))}
         </ul>
@@ -224,16 +224,16 @@ function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; i
             placeholder="Phone or email, if you have it (optional)"
             className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
           />
-          {err && <p className="text-[11px] text-scarlet">{err}</p>}
+          {err && <p className="text-[13px] text-scarlet">{err}</p>}
           <div className="flex gap-2">
-            <button onClick={save} disabled={busy || !name.trim()} className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
+            <button onClick={save} disabled={busy || !name.trim()} className="rounded-md bg-brand px-3 py-1.5 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
               {busy ? "Saving…" : "Save"}
             </button>
-            <button onClick={() => setAdding(false)} className="rounded-md border border-line px-3 py-1.5 text-xs text-muted hover:bg-canvas">Cancel</button>
+            <button onClick={() => setAdding(false)} className="rounded-md border border-line px-3 py-1.5 text-[13px] text-muted hover:bg-canvas">Cancel</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="mt-2 text-xs font-semibold text-brand hover:underline">
+        <button onClick={() => setAdding(true)} className="mt-2 text-[13px] font-semibold text-brand hover:underline">
           + Add someone who was there
         </button>
       )}
@@ -281,7 +281,7 @@ export default function InjuriesListCard() {
     <div className={card}>
       <div className="flex items-center justify-between">
         <div className="text-sm font-semibold text-ink">Your entries</div>
-        <Link href="/injuries/add" className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-600">＋ Log one</Link>
+        <Link href="/injuries/add" className="rounded-md bg-brand px-3 py-1.5 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600">＋ Log one</Link>
       </div>
       {!incidents.length ? (
         <p className="mt-3 text-sm text-muted">Nothing logged yet. Start with whatever you remember — your own account is real evidence.</p>
@@ -295,27 +295,27 @@ export default function InjuriesListCard() {
                 <div className="flex items-center justify-between gap-2 p-3">
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-ink">{INCIDENT_LABEL[r.incidentClass] ?? r.incidentClass}</div>
-                    <div className="text-xs text-muted">
+                    <div className="text-[13px] text-muted">
                       {dateLabel(r)}
-                      {r.placeName ? ` · ${r.placeName}` : ""}
-                      {r.provenance && <span className="text-faint"> · {PROVENANCE_LABEL[r.provenance]}</span>}
+                      {r.placeName ? `, ${r.placeName}` : ""}
+                      {r.provenance && <span className="text-faint">, {PROVENANCE_LABEL[r.provenance]}</span>}
                     </div>
                   </div>
                   <div className="flex flex-none items-center gap-2">
-                    <button onClick={() => setOpenId(open ? null : r.id)} className="text-xs font-semibold text-brand hover:underline">
+                    <button onClick={() => setOpenId(open ? null : r.id)} className="text-[13px] font-semibold text-brand hover:underline">
                       {open ? "Hide" : "Open"}
                     </button>
                     {confirmDel === r.id ? (
-                      <button onClick={() => remove(r)} className="text-xs font-semibold text-scarlet hover:underline">Confirm remove</button>
+                      <button onClick={() => remove(r)} className="text-[13px] font-semibold text-scarlet hover:underline">Confirm remove</button>
                     ) : (
-                      <button onClick={() => setConfirmDel(r.id)} className="text-xs text-faint hover:text-red-600">Remove</button>
+                      <button onClick={() => setConfirmDel(r.id)} className="text-[13px] text-faint hover:text-red-600">Remove</button>
                     )}
                   </div>
                 </div>
                 {open && (
                   <div className="border-t border-line bg-canvas p-3">
                     {r.detail && <p className="text-[13px] italic leading-relaxed text-ink/85">&ldquo;{r.detail}&rdquo;</p>}
-                    <p className="mt-1 text-[11px] leading-relaxed text-faint">{note.headline}</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-faint">{note.headline}</p>
                     <NotesSection incidentId={r.id} incidentYear={yr(r.dateStart)} />
                     <WitnessesSection incidentId={r.id} incidentClass={r.incidentClass} />
                   </div>

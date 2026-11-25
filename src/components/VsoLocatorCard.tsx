@@ -5,7 +5,7 @@ import Link from "next/link";
 import { VSO_LOCATOR_URL } from "@/lib/nextaction";
 import type { VsoSearch, VsoResult } from "@/lib/vsoDirectory";
 
-const card = "rounded-xl border border-line bg-surface p-5";
+const card = "card p-5";
 
 // FIND A VSO — now an actual search, not a link to someone else's search.
 //
@@ -65,7 +65,7 @@ export default function VsoLocatorCard() {
     <div className="space-y-4">
       <div className={`${card} surface-raise border-brand/30 bg-brand/5`}>
         <div className="text-sm font-semibold text-ink">Find accredited help near you</div>
-        <p className="mt-1 text-sm leading-relaxed text-muted">
+        <p className="mt-1 text-[15px] leading-relaxed text-muted">
           {/* Corrected 2026-09-08. This said free help "is what accreditation
               means", conflating two different rules. Accreditation (38 CFR
               14.629) is authorisation to represent a veteran; the no-fee rule
@@ -100,7 +100,7 @@ export default function VsoLocatorCard() {
             {busy ? "Searching…" : "Search"}
           </button>
         </form>
-        {err && <p className="mt-2 text-xs text-scarlet">{err}</p>}
+        {err && <p className="mt-2 text-[13px] text-scarlet">{err}</p>}
       </div>
 
       {res?.status === "invalid" && (
@@ -110,7 +110,7 @@ export default function VsoLocatorCard() {
       {res?.status === "none" && (
         <div className={card}>
           <div className="text-sm font-semibold text-ink">Nothing listed around {res.zip}</div>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">
             That doesn&apos;t mean there&apos;s no help near you — this list is organized by where a
             representative is registered, which isn&apos;t always where they work. Use VA&apos;s live search
             below, or call your county veterans office.
@@ -126,13 +126,13 @@ export default function VsoLocatorCard() {
                 ? `Accredited in ${res.zip}`
                 : `Accredited near ${res.zip}`}
             </div>
-            <span className="text-xs text-muted">
-              {freeCount > 0 && <>{freeCount} free {freeCount === 1 ? "option" : "options"} · </>}
+            <span className="text-[13px] text-muted">
+              {freeCount > 0 && <>{freeCount} free {freeCount === 1 ? "option" : "options"}, </>}
               VA list of {res.generated}
             </span>
           </div>
           {res.scope === "nearby" && (
-            <p className="mt-1 text-xs leading-relaxed text-faint">
+            <p className="mt-1 text-[13px] leading-relaxed text-faint">
               Nothing was registered in {res.zip} exactly, so this is the wider area around it.
             </p>
           )}
@@ -141,11 +141,11 @@ export default function VsoLocatorCard() {
             {res.results.map((r, i) => (
               <li key={`${r.name}-${r.zip}-${i}`} className="rounded-lg border border-line bg-canvas p-3">
                 <div className="text-sm font-semibold text-ink">{r.name}</div>
-                <div className="mt-0.5 text-xs text-muted">
+                <div className="mt-0.5 text-[13px] text-muted">
                   {KIND_LABEL[r.kind]}
-                  {r.reps > 1 && <> · {r.reps} representatives here</>}
+                  {r.reps > 1 && <>, {r.reps} representatives here</>}
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
                   <span>{[r.city, r.state].filter(Boolean).join(", ")} {r.zip}</span>
                   {r.phone && (
                     <a href={`tel:${r.phone.replace(/\D/g, "")}`} className="font-semibold text-brand hover:underline">
@@ -157,7 +157,7 @@ export default function VsoLocatorCard() {
             ))}
           </ul>
 
-          <p className="mt-3 border-t border-line pt-3 text-[11px] leading-relaxed text-faint">
+          <p className="mt-3 border-t border-line pt-3 text-[13px] leading-relaxed text-faint">
             From VA&apos;s published accreditation lists, taken {res.generated}. Accreditation can change — confirm
             on VA&apos;s live search before you rely on it. Operation Whole Health has no relationship with any
             organization here and receives nothing from any of them. Which representative you choose is your
@@ -168,16 +168,16 @@ export default function VsoLocatorCard() {
 
       <div className={card}>
         <div className="text-sm font-semibold text-ink">VA&apos;s own live search</div>
-        <p className="mt-1 text-sm leading-relaxed text-muted">
+        <p className="mt-1 text-[15px] leading-relaxed text-muted">
           The authoritative copy, updated continuously. Always worth checking before you call.
         </p>
         <a
           href={VSO_LOCATOR_URL}
           target="_blank"
           rel="noreferrer"
-          className="press mt-3 inline-block rounded-lg border border-line px-4 py-2 text-sm font-semibold text-brand hover:bg-canvas"
+          className="press mt-3 inline-block btn btn-secondary"
         >
-          Open VA&apos;s search →
+          Open VA&apos;s search
         </a>
       </div>
 
@@ -197,7 +197,7 @@ export default function VsoLocatorCard() {
           <li>Your DD-214 (discharge papers)</li>
           <li>Any medical records or diagnoses you already have</li>
         </ul>
-        <Link href="/report" className="mt-3 inline-block text-xs font-semibold text-brand hover:underline">Build your packet →</Link>
+        <Link href="/report" className="mt-3 inline-block text-[13px] font-semibold text-brand hover:underline">Build your packet</Link>
       </div>
     </div>
   );

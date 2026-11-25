@@ -61,7 +61,7 @@ export default function DocumentsCard() {
   return (
     <div className="rounded-xl border border-zinc-200 p-5">
       <div className="text-sm font-medium text-zinc-900">Your records</div>
-      <div className="mt-1 text-xs text-zinc-500">
+      <div className="mt-1 text-[13px] text-zinc-500">
         Upload your DD-214, medical records, lab results, or claim letters. Private to you.
         {" "}<span className="font-medium">Tip: your SSN is printed in Box 3 of a DD-214, and image
         scans print with your claim packet — cover the SSN before you photograph the page. The app
@@ -73,7 +73,7 @@ export default function DocumentsCard() {
         <input type="file" className="hidden" onChange={onUpload} disabled={busy} />
       </label>
 
-      {err && <p className="mt-2 text-xs text-rose-500">{err}</p>}
+      {err && <p className="mt-2 text-[13px] text-rose-500">{err}</p>}
 
       {files.length > 0 && (
         <ul className="mt-3 divide-y divide-zinc-100">
@@ -82,7 +82,7 @@ export default function DocumentsCard() {
               <button onClick={() => view(f.name)} className="truncate text-left text-blue-600 hover:underline">
                 {f.name.replace(/^\d+-/, "")}
               </button>
-              <button onClick={() => remove(f.name)} className="flex-none text-xs text-zinc-400 hover:text-rose-500">
+              <button onClick={() => remove(f.name)} className="flex-none text-[13px] text-zinc-400 hover:text-rose-500">
                 remove
               </button>
             </li>
@@ -96,7 +96,7 @@ export default function DocumentsCard() {
           the estimator on 2026-08-06 and this second instance survived that pass
           because it says "science board" rather than "advisory board". Do not
           reinstate any promise that a person or panel checks these documents. */}
-      <p className="mt-3 text-xs text-zinc-400">
+      <p className="mt-3 text-[13px] text-zinc-400">
         Stored privately, visible only to you — nobody here reads them. Uploading records is how you move a
         claim beyond self-reported: the paper is what a VA rater weighs most heavily, and having it in one
         place means you can hand it to your VSO in one go.

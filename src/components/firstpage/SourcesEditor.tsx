@@ -72,15 +72,15 @@ export default function SourcesEditor() {
       <Stance />
       <Notice error={error} />
 
-      <div className="rounded-xl border border-line bg-surface p-5">
+      <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Add a document</div>
-        <p className="mt-1 text-xs leading-relaxed text-muted">
+        <p className="mt-1 text-[13px] leading-relaxed text-muted">
           Each one gets a number. Rows on the page point at that number. Write the date as it appears on the document,
           and say where the request stands if it has not arrived.
         </p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {SUGGESTIONS.map((s) => (
-            <button key={s.label} type="button" onClick={() => { setLabel(s.label); if (s.author) setAuthor(s.author); }} className="rounded-full border border-line px-2.5 py-1 text-xs text-muted hover:border-brand hover:text-brand">
+            <button key={s.label} type="button" onClick={() => { setLabel(s.label); if (s.author) setAuthor(s.author); }} className="rounded-full border border-line px-2.5 py-1 text-[13px] text-muted hover:border-brand hover:text-brand">
               {s.label}
             </button>
           ))}
@@ -91,29 +91,29 @@ export default function SourcesEditor() {
           <Input label="Who wrote it" value={author} onChange={setAuthor} placeholder="e.g. VA, the pharmacy, Carol Pruitt, daughter" />
           <StatusSelect value={status} onChange={setStatus} />
           <div>
-            <label className="mb-1 block text-xs font-semibold text-muted">The file, if you have it (optional)</label>
-            <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="block w-full text-xs text-muted" />
-            <p className="mt-1 text-xs text-faint">Stored privately in your records. Cover any Social Security number before you photograph a page.</p>
+            <label className="mb-1 block text-[13px] font-semibold text-muted">The file, if you have it (optional)</label>
+            <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="block w-full text-[13px] text-muted" />
+            <p className="mt-1 text-[13px] text-faint">Stored privately in your records. Cover any Social Security number before you photograph a page.</p>
           </div>
         </div>
         <div className="mt-3"><PrimaryButton onClick={add} disabled={busy || !label.trim()}>{busy ? "Saving…" : "Add to the list"}</PrimaryButton></div>
       </div>
 
-      <div className="rounded-xl border border-line bg-surface p-5">
+      <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Your sources</div>
         {rows.length === 0 ? (
-          <p className="mt-1 text-xs text-faint">Nothing yet. The DD-214, the VA download and the pharmacy printout are the usual first three.</p>
+          <p className="mt-1 text-[13px] text-faint">Nothing yet. The DD-214, the VA download and the pharmacy printout are the usual first three.</p>
         ) : (
           <ul className="mt-2 divide-y divide-line">
             {rows.map((s) => (
               <li key={s.id} className="flex flex-wrap items-start justify-between gap-2 py-2">
                 <div className="text-sm text-ink">
                   <span className="font-semibold">{s.number}.</span> {s.label}{s.source_date ? `, ${s.source_date}` : ""}{s.author ? `. ${s.author}.` : ""}
-                  <span className="ml-2 rounded-full border border-line px-2 py-0.5 text-[11px] text-muted">{SOURCE_STATUS_LABEL[s.status]}</span>
-                  {s.document_path && <span className="ml-2 text-[11px] text-success">file attached</span>}
+                  <span className="ml-2 rounded-full border border-line px-2 py-0.5 text-[13px] text-muted">{SOURCE_STATUS_LABEL[s.status]}</span>
+                  {s.document_path && <span className="ml-2 text-[13px] text-success">file attached</span>}
                 </div>
                 <div className="flex items-center gap-2">
-                  <select value={s.status} onChange={(e) => setRowStatus(s, e.target.value as SourceStatus)} className="rounded-md border border-line bg-white px-2 py-1 text-xs text-ink">
+                  <select value={s.status} onChange={(e) => setRowStatus(s, e.target.value as SourceStatus)} className="rounded-md border border-line bg-white px-2 py-1 text-[13px] text-ink">
                     {(Object.keys(SOURCE_STATUS_LABEL) as SourceStatus[]).map((st) => <option key={st} value={st}>{SOURCE_STATUS_LABEL[st]}</option>)}
                   </select>
                   <QuietButton danger onClick={async () => { await deleteSource(supabase, s.id); refresh(); }}>remove</QuietButton>
@@ -122,7 +122,7 @@ export default function SourcesEditor() {
             ))}
           </ul>
         )}
-        <p className="mt-3 text-xs leading-relaxed text-faint">
+        <p className="mt-3 text-[13px] leading-relaxed text-faint">
           A request that has not come back still belongs on the list. The page prints it under &quot;No record found for&quot;
           so the doctor sees the gap instead of guessing.
         </p>

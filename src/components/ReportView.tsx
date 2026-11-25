@@ -5,7 +5,6 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { EXPOSURE_BASIS, CONDITION_BASIS } from "@/lib/citations";
-import { ServiceRibbon } from "./Patriotic";
 import { downloadClaimPdf } from "@/lib/claimPdf";
 import { VA_FORMS, FILE_ONLINE_URL } from "@/lib/nextaction";
 import ServiceTimeline, { latencyFor, type TimelineData } from "./ServiceTimeline";
@@ -419,9 +418,9 @@ export default function ReportView() {
   if (!ready) return <p className="text-sm text-muted">Loading…</p>;
   if (!user) {
     return (
-      <div className="rounded-xl border border-line bg-surface p-6">
+      <div className="card p-6">
         <p className="text-sm text-muted">Sign in to generate your claim packet.</p>
-        <Link href="/" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">← Go to sign in</Link>
+        <Link href="/" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">Go to sign in</Link>
       </div>
     );
   }
@@ -686,16 +685,16 @@ export default function ReportView() {
     }
   }
 
-  const sectionTitle = "mb-2 text-[13px] font-bold uppercase tracking-wide text-brand";
+  const sectionTitle = "mb-2 text-[13px] font-bold text-brand";
   const sectionWrap = "mt-6 break-inside-avoid border-t border-line pt-5 first:mt-0 first:border-0 first:pt-0";
 
   return (
     <div>
       <div className="mb-4 print:hidden">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs text-muted">A claim-support packet to bring to your VSO and clinician.</span>
+          <span className="text-[13px] text-muted">A claim-support packet to bring to your VSO and clinician.</span>
           <div className="flex items-center gap-2">
-            <button onClick={handleDownload} disabled={pdfBusy} className="flex-none rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-60">
+            <button onClick={handleDownload} disabled={pdfBusy} className="flex-none btn btn-primary disabled:opacity-60">
               {pdfBusy ? "Building PDF…" : "Download PDF"}
             </button>
             <button onClick={() => window.print()} className="flex-none rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:bg-canvas">
@@ -703,7 +702,7 @@ export default function ReportView() {
             </button>
           </div>
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-faint">
+        <p className="mt-2 text-[13px] leading-relaxed text-faint">
           Download PDF saves the packet as a file you can print or email — it works even inside an
           in-app browser like Gmail&apos;s. On some phones the PDF opens in a viewer first; use the
           share icon there to save or print it. Print works best on a computer.
@@ -726,8 +725,8 @@ export default function ReportView() {
             </ol>
           </div>
         )}
-        <Link href="/reviewer" className="mt-2 inline-block text-xs font-medium text-brand hover:underline">
-          Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top →
+        <Link href="/reviewer" className="mt-2 inline-block text-sm font-semibold text-brand hover:underline">
+          Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top
         </Link>
       </div>
 
@@ -759,63 +758,63 @@ export default function ReportView() {
 
       {/* How to actually file this — the bridge from packet to filed claim */}
       <div className="mb-4 rounded-xl border border-brand/20 bg-brand/5 p-5 print:hidden">
-        <div className="text-[13px] font-bold uppercase tracking-wide text-brand">How to file this</div>
-        <p className="mt-1 text-xs leading-relaxed text-muted">
+        <div className="text-[13px] font-bold text-brand">How to file this</div>
+        <p className="mt-1 text-[13px] leading-relaxed text-muted">
           Your packet is evidence — here&apos;s how to turn it into a filed claim. Filing is <strong>free</strong>, and
           an accredited VSO will help you for free. You never have to pay anyone to file a VA claim.
         </p>
         <ol className="mt-3 space-y-3">
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">1</span>
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[13px] font-bold text-brand">1</span>
             <div>
               <div className="text-sm font-semibold text-ink">Lock in your date</div>
-              <p className="text-xs leading-relaxed text-muted">{VA_FORMS.intent.blurb}</p>
-              <a href={VA_FORMS.intent.url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand hover:underline">
-                About VA Form {VA_FORMS.intent.number} (Intent to File) →
+              <p className="text-[13px] leading-relaxed text-muted">{VA_FORMS.intent.blurb}</p>
+              <a href={VA_FORMS.intent.url} target="_blank" rel="noreferrer" className="text-[13px] font-semibold text-brand hover:underline">
+                About VA Form {VA_FORMS.intent.number} (Intent to File)
               </a>
             </div>
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">2</span>
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[13px] font-bold text-brand">2</span>
             <div>
               <div className="text-sm font-semibold text-ink">Get free help from a VSO</div>
-              <p className="text-xs leading-relaxed text-muted">
+              <p className="text-[13px] leading-relaxed text-muted">
                 A Veterans Service Officer (VSO) — through DAV, VFW, or the American Legion — reviews your packet and
                 files with you at no cost. Bring the 5-question cover sheet above.
               </p>
-              <Link href="/vso" className="text-xs font-semibold text-brand hover:underline">
-                Find an accredited VSO near you →
+              <Link href="/vso" className="text-[13px] font-semibold text-brand hover:underline">
+                Find an accredited VSO near you
               </Link>
             </div>
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">3</span>
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[13px] font-bold text-brand">3</span>
             <div>
               <div className="text-sm font-semibold text-ink">File the claim</div>
-              <p className="text-xs leading-relaxed text-muted">
+              <p className="text-[13px] leading-relaxed text-muted">
                 Submit VA Form {VA_FORMS.claim.number} online at VA.gov (or on paper with your VSO), and attach this
                 packet and your DD-214.
               </p>
-              <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand hover:underline">
-                File a disability claim online at VA.gov →
+              <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-[13px] font-semibold text-brand hover:underline">
+                File a disability claim online at VA.gov
               </a>
             </div>
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">4</span>
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[13px] font-bold text-brand">4</span>
             <div>
               <div className="text-sm font-semibold text-ink">Watch for a C&amp;P exam letter</div>
-              <p className="text-xs leading-relaxed text-muted">
+              <p className="text-[13px] leading-relaxed text-muted">
                 VA usually schedules a Compensation &amp; Pension exam before deciding — a different clinician than
                 your own, asking VA&apos;s specific medical questions.
               </p>
-              <Link href="/cp-exam" className="text-xs font-semibold text-brand hover:underline">
-                What to expect at a C&amp;P exam →
+              <Link href="/cp-exam" className="text-[13px] font-semibold text-brand hover:underline">
+                What to expect at a C&amp;P exam
               </Link>
             </div>
           </li>
         </ol>
-        <p className="mt-3 border-t border-brand/15 pt-3 text-xs leading-relaxed text-muted">
+        <p className="mt-3 border-t border-brand/15 pt-3 text-[13px] leading-relaxed text-muted">
           Denied before, or expecting a denial? It is common, even for strong claims — and it isn&apos;t the end. You
           can file a{" "}
           <a href={VA_FORMS.supplemental.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Supplemental Claim (20-0995)</a>,
@@ -826,19 +825,19 @@ export default function ReportView() {
         </p>
       </div>
 
-      <div className="rounded-xl border border-line bg-white p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">
+      <div className="card p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">
         {/* Cover */}
-        <ServiceRibbon className="mb-4 rounded-full" />
+        
         <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/owh-logo.png" alt="Operation Whole Health" className="h-12 w-auto object-contain" />
-          <div className="text-right text-xs text-muted">
+          <div className="text-right text-[13px] text-muted">
             Prepared<br />{today}
-            <div className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-accent">America&apos;s 250th · 1776–2026</div>
+            <div className="mt-1 text-[13px] font-medium text-muted">America&apos;s 250th · 1776–2026</div>
           </div>
         </div>
         <div className="border-b border-line pb-4">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-accent">Connecting the Dots of Service · Operation Whole Health</div>
+          <div className="text-[13px] font-medium text-muted">Connecting the Dots of Service · Operation Whole Health</div>
           <h2 className="mt-1 text-xl font-bold tracking-tight text-ink">Claim Support Packet</h2>
           <p className="mt-0.5 text-sm text-muted">
             {member?.display_name || user.email}
@@ -849,11 +848,11 @@ export default function ReportView() {
           </p>
           {/* Same string the PDF header prints — see the note on itfLine above. */}
           <p className="mt-0.5 text-sm text-muted">{itfLine}</p>
-          <div className="mt-2 inline-block rounded-md border border-line bg-canvas px-2.5 py-1 text-[11px] font-semibold text-muted">
+          <div className="mt-2 inline-block rounded-md border border-line bg-canvas px-2.5 py-1 text-[13px] font-semibold text-muted">
             A self-prepared record — not a medical diagnosis or a legal opinion.
           </div>
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-muted">
+        <p className="mt-3 text-[13px] leading-relaxed text-muted">
           Prepared from veteran-entered data. This is a self-reported record with documented-source citations to
           assist an accredited VSO and a clinician. It is not a diagnosis or a determination of service connection.
         </p>
@@ -864,20 +863,20 @@ export default function ReportView() {
             person: this block is read by the person deciding the claim. */}
         {contentionFacts.length > 0 && (
           <section className="mt-5 break-inside-avoid rounded-lg border border-line p-4">
-            <div className="text-[13px] font-bold uppercase tracking-wide text-brand">Contentions at a glance</div>
+            <div className="text-[13px] font-bold text-brand">Contentions at a glance</div>
             <ul className="mt-2 space-y-3">
               {contentionFacts.map((c) => (
                 <li key={c.label}>
                   <div className="text-sm font-semibold text-ink">{c.label}</div>
-                  <div className="mt-0.5 text-xs text-ink">
+                  <div className="mt-0.5 text-[13px] text-ink">
                     {[c.began ? `Began ${c.began}` : null, c.diagnosis, c.evidence].filter(Boolean).join("  ·  ")}
                   </div>
-                  <div className="mt-0.5 text-xs text-muted">{c.theory}</div>
-                  <div className="mt-0.5 text-[11px] leading-relaxed text-faint">{c.elementLine}</div>
+                  <div className="mt-0.5 text-[13px] text-muted">{c.theory}</div>
+                  <div className="mt-0.5 text-[13px] leading-relaxed text-faint">{c.elementLine}</div>
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[11px] leading-relaxed text-faint">
+            <p className="mt-2 text-[13px] leading-relaxed text-faint">
               Every line above is veteran-reported unless a citation says otherwise. The detail behind each is in
               sections 1&ndash;3; the clinician&apos;s question is in section 5.
             </p>
@@ -886,8 +885,8 @@ export default function ReportView() {
 
         {/* ── Page one: the service timeline ─────────────────────────────── */}
         <section className="mt-5 break-inside-avoid rounded-lg border border-line p-4">
-          <div className="text-[13px] font-bold uppercase tracking-wide text-brand">Service timeline</div>
-          <p className="mt-0.5 text-xs text-muted">
+          <div className="text-[13px] font-bold text-brand">Service timeline</div>
+          <p className="mt-0.5 text-[13px] text-muted">
             Where this veteran served, what is documented at those places, and when their health changed.
           </p>
           <div className="mt-3">
@@ -897,8 +896,8 @@ export default function ReportView() {
 
         {/* Plain-language summary */}
         <div className="mt-5 rounded-lg border border-brand/20 bg-brand/5 p-4">
-          <div className="text-[13px] font-bold uppercase tracking-wide text-brand">What this means</div>
-          <p className="mt-1.5 text-sm leading-relaxed text-ink">
+          <div className="text-[13px] font-bold text-brand">What this means</div>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-ink">
             You logged service at {rows.length} location{rows.length === 1 ? "" : "s"}. Documented exposures include{" "}
             {classesPresent.length ? classesPresent.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ") : "none yet"}.{" "}
             {conditions.length > 0
@@ -909,7 +908,7 @@ export default function ReportView() {
             Your next step: bring this packet to an accredited VSO (DAV, VFW, American Legion), and ask a clinician to
             review the hand-off sheet on the last page.
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-muted print:hidden">
+          <p className="mt-2 text-[13px] leading-relaxed text-muted print:hidden">
             If the VA denies a first claim — which is common, even for strong ones — it isn&apos;t the end. You can
             appeal or file a supplemental claim, and this packet strengthens that too. If things feel heavy, the
             Veterans Crisis Line is one tap away: dial 988, then press 1.
@@ -941,7 +940,7 @@ export default function ReportView() {
                     {words && (
                       <div className="mt-0.5 pl-4 text-[13px] italic leading-relaxed text-ink/85">
                         In the veteran&apos;s words — &ldquo;{words}&rdquo;{" "}
-                        <span className="not-italic text-[11px] text-faint">Veteran-reported</span>
+                        <span className="not-italic text-[13px] text-faint">Veteran-reported</span>
                       </div>
                     )}
                   </li>
@@ -968,7 +967,7 @@ export default function ReportView() {
                     {v.title}
                     {v.when && <span className="font-normal text-muted"> · {v.when}</span>}
                   </div>
-                  {v.role && <div className="text-xs text-muted">{v.role}</div>}
+                  {v.role && <div className="text-[13px] text-muted">{v.role}</div>}
                   {v.note && (
                     <p className="mt-1 whitespace-pre-wrap text-sm italic leading-relaxed text-ink">
                       In the veteran&apos;s words — &ldquo;{v.note}&rdquo; (Veteran-reported)
@@ -977,7 +976,7 @@ export default function ReportView() {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
               Request the deck logs for the vessels and dates above (National Archives). They are the ship&apos;s
               own daily record of her position and are the document that establishes where this veteran was. Where
               a herbicide presumption is at issue, VA&apos;s published list of ships associated with service in
@@ -1002,11 +1001,11 @@ export default function ReportView() {
                     <span className="font-semibold">{EXPOSURE_LABEL[c] ?? c}</span>
                     {/* No badge from the class alone — scope decides, and the
                         packet must not imply eligibility it can't verify. */}
-                    <span className="text-xs text-muted"> ({(expoPlaces[c] ?? []).join("; ")})</span>
+                    <span className="text-[13px] text-muted"> ({(expoPlaces[c] ?? []).join("; ")})</span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-xs text-muted">The documented basis for each of these is in Appendix A.</p>
+              <p className="mt-2 text-[13px] text-muted">The documented basis for each of these is in Appendix A.</p>
             </>
           )}
         </section>
@@ -1038,38 +1037,38 @@ export default function ReportView() {
                           route applies. Amber beside a green badge reads as "this one won't
                           work" and talks veterans out of filing. */}
                       {basis && (
-                        <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${basis.presumptive ? "bg-success-soft text-success" : "bg-canvas text-muted"}`}>
+                        <span className={`rounded px-1.5 py-0.5 text-[13px] font-medium ${basis.presumptive ? "bg-success-soft text-success" : "bg-canvas text-muted"}`}>
                           {basis.tag}
                         </span>
                       )}
-                      {c.claim_status !== "none" ? <span className="text-xs text-muted">VA claim {c.claim_status}</span> : null}
+                      {c.claim_status !== "none" ? <span className="text-[13px] text-muted">VA claim {c.claim_status}</span> : null}
                     </div>
                     {/* Element 1 — current diagnosis. The single fact every VA
                         rater, C&P doctor, and VSO named as the packet's
                         biggest gap: a self-picked label with no way to say
                         whether a doctor ever actually diagnosed it. */}
-                    <div className={`mt-0.5 text-xs font-semibold ${diag?.startsWith("NEEDS") ? "text-warn" : "text-ink"}`}>
+                    <div className={`mt-0.5 text-[13px] font-semibold ${diag?.startsWith("NEEDS") ? "text-warn" : "text-ink"}`}>
                       {diag ?? "Diagnosis status not yet answered — see Your conditions."}
                     </div>
                     {vparts.length > 0 && (
-                      <div className="mt-0.5 text-xs text-ink/80">
-                        {vparts.join(" · ")} <span className="text-[11px] text-faint">· Veteran-reported</span>
+                      <div className="mt-0.5 text-[13px] text-ink/80">
+                        {vparts.join(" · ")} <span className="text-[13px] text-faint">· Veteran-reported</span>
                       </div>
                     )}
                     {matches.length > 0 && (
-                      <div className="mt-0.5 text-xs leading-relaxed text-muted">
+                      <div className="mt-0.5 text-[13px] leading-relaxed text-muted">
                         Documented association with {matches.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.
                       </div>
                     )}
                     {incidentMatches.length > 0 && (
-                      <div className="mt-0.5 text-xs leading-relaxed text-muted">
+                      <div className="mt-0.5 text-[13px] leading-relaxed text-muted">
                         Reported event association with {incidentMatches.map((e) => (INCIDENT_LABEL[e] ?? e).toLowerCase()).join(", ")}.
                       </div>
                     )}
                     {matches.length === 0 && incidentMatches.length === 0 && (
-                      <div className="mt-0.5 text-xs text-muted">No logged exposure or event linked yet.</div>
+                      <div className="mt-0.5 text-[13px] text-muted">No logged exposure or event linked yet.</div>
                     )}
-                    {basis && <div className="mt-0.5 text-xs leading-relaxed text-faint">See Appendix A for the documented basis.</div>}
+                    {basis && <div className="mt-0.5 text-[13px] leading-relaxed text-faint">See Appendix A for the documented basis.</div>}
                   </li>
                 );
               })}
@@ -1092,12 +1091,12 @@ export default function ReportView() {
                 return (
                   <li key={m.id} className="text-sm">
                     {line}
-                    {note && <div className="mt-0.5 text-xs leading-relaxed text-muted">{note}</div>}
+                    {note && <div className="mt-0.5 text-[13px] leading-relaxed text-muted">{note}</div>}
                   </li>
                 );
               })}
             </ul>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
               Veteran-reported, as with every other entry in this packet. Listed because a condition caused or
               aggravated by treatment for a service-connected disability may be claimable as secondary under
               38 CFR 3.310 — a question for the reviewing clinician and an accredited VSO, not a claim made here.
@@ -1129,14 +1128,14 @@ export default function ReportView() {
                   {i.notes.length > 0 && (
                     <ul className="mt-1 space-y-0.5">
                       {i.notes.map((n, j) => (
-                        <li key={j} className="text-xs leading-relaxed text-muted">{n}</li>
+                        <li key={j} className="text-[13px] leading-relaxed text-muted">{n}</li>
                       ))}
                     </ul>
                   )}
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
               Veteran-reported, in his or her own words. Dated entries record what the veteran noticed and when —
               relevant to continuity of symptomatology under 38 CFR 3.303(b). For a veteran who engaged in combat,
               lay evidence of an in-service event may be sufficient under 38 U.S.C. 1154(b); whether that applies
@@ -1153,7 +1152,7 @@ export default function ReportView() {
         {shotRows.length > 0 && (
           <section className={sectionWrap}>
             <h3 className={sectionTitle}>Appendix B · Shots and in-service medications</h3>
-            <p className="text-xs leading-relaxed text-muted">
+            <p className="text-[13px] leading-relaxed text-muted">
               Recorded by the veteran, separately from the exposure findings in this packet. A vaccine or a
               medication is not an exposure, and nothing here asserts that any of it caused any condition listed
               above.
@@ -1165,7 +1164,7 @@ export default function ReportView() {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
               Entries the veteran recorded from memory alone are deliberately not listed here; only rows he marked
               as shown in his service record, or backed by a document he holds, are printed. His immunization
               record is the authority — this list is a pointer to it.
@@ -1192,7 +1191,7 @@ export default function ReportView() {
               ))}
             </ul>
           )}
-          <p className="mt-2 text-xs text-muted">Lay statements consistent with VA Form 21-10210. Corroborators are kept anonymous unless they consent to be named.</p>
+          <p className="mt-2 text-[13px] text-muted">Lay statements consistent with VA Form 21-10210. Corroborators are kept anonymous unless they consent to be named.</p>
         </section>
 
         {/* 4b. Statements from people who aren't on this app */}
@@ -1202,37 +1201,37 @@ export default function ReportView() {
             <ul className="space-y-3">
               {witnessRows.map((w, i) => (
                 <li key={i} className="rounded-lg border border-line p-3">
-                  <div className="text-xs font-medium text-muted">Regarding: {w.subject}</div>
+                  <div className="text-[13px] font-medium text-muted">Regarding: {w.subject}</div>
                   <div className="mt-1 text-sm font-semibold text-ink">{w.witnessName} <span className="font-normal text-muted">· {w.relationship}</span></div>
-                  {w.detail && <div className="mt-0.5 text-xs text-muted">{w.detail}</div>}
+                  {w.detail && <div className="mt-0.5 text-[13px] text-muted">{w.detail}</div>}
                   <p className="mt-1 text-sm italic leading-relaxed text-ink/90">&ldquo;{w.statement}&rdquo;</p>
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs text-muted">Collected via a private, no-login link the veteran sent directly. Not the veteran&apos;s own words — attributed to the person named above.</p>
+            <p className="mt-2 text-[13px] text-muted">Collected via a private, no-login link the veteran sent directly. Not the veteran&apos;s own words — attributed to the person named above.</p>
           </section>
         )}
 
         {/* 5. Clinician hand-off sheet */}
         <section className="mt-6 break-before-page break-inside-avoid border-t border-line pt-5">
           <h3 className={sectionTitle}>5 · For the reviewing clinician</h3>
-          <p className="text-xs leading-relaxed text-muted print:hidden">
-            New to DBQs and nexus letters? <Link href="/clinician" className="font-semibold text-brand hover:underline">Print a one-page primer for your clinician →</Link>
+          <p className="text-[13px] leading-relaxed text-muted print:hidden">
+            New to DBQs and nexus letters? <Link href="/clinician" className="font-semibold text-brand hover:underline">Print a one-page primer for your clinician</Link>
           </p>
           {/* Keep these three paragraphs in lockstep with lib/claimPdf.ts §5 — the
               printed page and the downloadable PDF must ask a clinician the same
               questions. The list below mixes exposure-linked and secondary
               contentions, and they need DIFFERENT questions answered. */}
-          <p className="mt-2 text-sm leading-relaxed text-ink">
+          <p className="mt-2 text-[15px] leading-relaxed text-ink">
             The veteran requests your medical opinion on whether the following condition(s) are <strong>at least as
             likely as not</strong> (50% or greater probability) connected to the veteran&apos;s service. A signed nexus statement,
             or a completed Disability Benefits Questionnaire (DBQ), supports this claim.
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-ink">
+          <p className="mt-2 text-[15px] leading-relaxed text-ink">
             <span className="font-semibold">For a condition tied to a documented exposure:</span> is it at least as
             likely as not (50% or greater) related to the veteran&apos;s documented in-service exposure?
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-ink">
+          <p className="mt-2 text-[15px] leading-relaxed text-ink">
             <span className="font-semibold">For a condition listed as secondary to another:</span> is it at least as
             likely as not (50% or greater) proximately due to, <strong>or aggravated by</strong>, the veteran&apos;s
             service-connected condition? <span className="text-muted">(38 CFR 3.310 — aggravation counts, and is
@@ -1247,8 +1246,8 @@ export default function ReportView() {
                   <li key={c.label} className="text-sm">
                     <span className="font-semibold">{c.label}</span>
                     <span className="text-muted"> — {c.line}</span>
-                    <div className="mt-0.5 text-xs text-muted">{c.elementLine}</div>
-                    {c.cite && <div className="mt-0.5 text-xs text-faint">See Appendix A for the documented basis.</div>}
+                    <div className="mt-0.5 text-[13px] text-muted">{c.elementLine}</div>
+                    {c.cite && <div className="mt-0.5 text-[13px] text-faint">See Appendix A for the documented basis.</div>}
                   </li>
                 );
               })}
@@ -1257,11 +1256,11 @@ export default function ReportView() {
           <div className="mt-5 grid grid-cols-2 gap-6 text-sm">
             <div>
               <div className="border-b border-ink pb-6" />
-              <div className="mt-1 text-xs text-muted">Clinician signature</div>
+              <div className="mt-1 text-[13px] text-muted">Clinician signature</div>
             </div>
             <div>
               <div className="border-b border-ink pb-6" />
-              <div className="mt-1 text-xs text-muted">Date · License #</div>
+              <div className="mt-1 text-[13px] text-muted">Date · License #</div>
             </div>
           </div>
         </section>
@@ -1277,7 +1276,7 @@ export default function ReportView() {
           ) : (
             <>
               <p className="text-sm text-muted">The following records accompany this packet:</p>
-              <p className="mt-1 text-xs font-medium text-warn">
+              <p className="mt-1 text-[13px] font-medium text-warn">
                 Before you share this packet, check printed images for your Social Security Number
                 (DD-214 Box 3) — cover it, or re-upload a copy with it covered.
               </p>
@@ -1297,7 +1296,7 @@ export default function ReportView() {
                       <figure key={r.name} className="break-inside-avoid">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={r.url} alt={r.name} className="max-h-[560px] w-auto rounded border border-line" />
-                        <figcaption className="mt-1 text-xs text-faint">{r.name}</figcaption>
+                        <figcaption className="mt-1 text-[13px] text-faint">{r.name}</figcaption>
                       </figure>
                     ))}
                 </div>
@@ -1313,19 +1312,19 @@ export default function ReportView() {
         {(classesPresent.length > 0 || incidentClassesPresent.length > 0 || conditions.some((c) => CONDITION_BASIS[c.label]?.cite)) && (
           <section className="mt-6 break-before-page break-inside-avoid border-t border-line pt-5">
             <h3 className={sectionTitle}>Appendix A · Documented associations (educational reference)</h3>
-            <p className="text-xs leading-relaxed text-faint">
+            <p className="text-[13px] leading-relaxed text-faint">
               The following explains WHY an association is studied — the toxicological and legal source. It is
               background reading, not a sworn statement by the veteran, and it is separate from the factual record
               on the pages above.
             </p>
             {classesPresent.length > 0 && (
               <div className="mt-3">
-                <div className="text-xs font-bold uppercase tracking-wide text-muted">Exposures</div>
+                <div className="text-[13px] font-medium text-muted">Exposures</div>
                 <ul className="mt-1.5 space-y-2">
                   {classesPresent.map((c) => (
                     <li key={c} className="text-sm">
                       <span className="font-semibold">{EXPOSURE_LABEL[c] ?? c}</span>
-                      <div className="mt-0.5 text-xs leading-relaxed text-muted">{EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}</div>
+                      <div className="mt-0.5 text-[13px] leading-relaxed text-muted">{EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}</div>
                     </li>
                   ))}
                 </ul>
@@ -1333,14 +1332,14 @@ export default function ReportView() {
             )}
             {incidentClassesPresent.length > 0 && (
               <div className="mt-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-muted">Reported events</div>
+                <div className="text-[13px] font-medium text-muted">Reported events</div>
                 <ul className="mt-1.5 space-y-2">
                   {incidentClassesPresent.map((c) => {
                     const note = evidentiaryNoteFor(c as IncidentClass);
                     return (
                       <li key={c} className="text-sm">
                         <span className="font-semibold">{INCIDENT_LABEL[c] ?? c}</span>
-                        <div className="mt-0.5 text-xs leading-relaxed text-muted">{note.headline} {note.body}</div>
+                        <div className="mt-0.5 text-[13px] leading-relaxed text-muted">{note.headline} {note.body}</div>
                       </li>
                     );
                   })}
@@ -1349,12 +1348,12 @@ export default function ReportView() {
             )}
             {conditions.some((c) => CONDITION_BASIS[c.label]?.cite) && (
               <div className="mt-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-muted">Conditions</div>
+                <div className="text-[13px] font-medium text-muted">Conditions</div>
                 <ul className="mt-1.5 space-y-2">
                   {conditions.filter((c) => CONDITION_BASIS[c.label]?.cite).map((c) => (
                     <li key={c.label} className="text-sm">
                       <span className="font-semibold">{c.label}</span>
-                      <div className="mt-0.5 text-xs leading-relaxed text-muted">{CONDITION_BASIS[c.label]?.cite}</div>
+                      <div className="mt-0.5 text-[13px] leading-relaxed text-muted">{CONDITION_BASIS[c.label]?.cite}</div>
                     </li>
                   ))}
                 </ul>
@@ -1363,7 +1362,7 @@ export default function ReportView() {
           </section>
         )}
 
-        <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-faint">
+        <p className="mt-6 border-t border-line pt-4 text-[13px] leading-relaxed text-faint">
           This packet assembles veteran-entered facts with documented sources. It states documented{" "}
           <strong>associations</strong>; it does not assert medical causation (which requires a licensed
           clinician&apos;s opinion) and it does not determine eligibility for any presumption. Whether a VA

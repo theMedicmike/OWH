@@ -141,7 +141,7 @@ export default function MedicMike() {
         <MikeAvatar size={44} />
         <div className="min-w-0 flex-1">
           <div className="font-bold leading-tight">Medic Mike</div>
-          <div className="text-xs text-white/70">Your guide — not a doctor, a lawyer, or the VA</div>
+          <div className="text-[13px] text-white/70">Your guide — not a doctor, a lawyer, or the VA</div>
         </div>
         {ttsSupported && (
           <button
@@ -172,7 +172,7 @@ export default function MedicMike() {
         {busy && (
           <div className="flex items-end gap-2.5">
             <MikeAvatar size={30} />
-            <div className="rounded-2xl border border-line bg-white px-4 py-2.5 text-sm text-muted">
+            <div className="card px-4 py-2.5 text-sm text-muted">
               <span className="inline-flex gap-1">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:-0.2s]" />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:-0.1s]" />
@@ -219,10 +219,10 @@ export default function MedicMike() {
         </button>
       </form>
 
-      <p className="mt-2 px-1 text-center text-[11px] leading-relaxed text-faint">
+      <p className="mt-2 px-1 text-center text-[13px] leading-relaxed text-faint">
         Medic Mike is an educational guide — not medical or legal advice, and not the VA. He helps you document and
         points you to an accredited VSO and your clinician. In crisis? Dial 988, then press 1.
-        {!srSupported && " · Voice input works best in Chrome or Edge."}
+        {!srSupported && ", Voice input works best in Chrome or Edge."}
       </p>
     </div>
   );
