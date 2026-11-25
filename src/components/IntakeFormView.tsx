@@ -343,6 +343,11 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         .update({
           ...base,
           mos: mos.trim() || null,
+          // VA rating + VA care moved here from the old "Your health" step
+          // (2026-11-25), since Save now goes straight to Your conditions.
+          // Same columns (0014) as mos, so they ride in the same two tiers.
+          va_rating: vaRating || null,
+          va_healthcare: vaCare,
           still_serving: currentlyServing,
           service_start_precision: startYear ? (startApprox ? "approximate" : startDayClamped ? "day" : hasStartMonth ? "month" : "year") : null,
           service_end_precision: (!currentlyServing && endYear) ? (endApprox ? "approximate" : endDayClamped ? "day" : hasEndMonth ? "month" : "year") : null,
@@ -350,7 +355,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         .eq("id", memberId);
       if (withAll.error) {
         if (!isMissingColumnError(withAll.error)) throw new Error(withAll.error.message);
-        const withMos = await supabase.from("members").update({ ...base, mos: mos.trim() || null }).eq("id", memberId);
+        const withMos = await supabase.from("members").update({ ...base, mos: mos.trim() || null, va_rating: vaRating || null, va_healthcare: vaCare }).eq("id", memberId);
         if (withMos.error) {
           if (!isMissingColumnError(withMos.error)) throw new Error(withMos.error.message);
           const fallback = await supabase.from("members").update(base).eq("id", memberId);
@@ -358,7 +363,12 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         }
       }
       await saveBootCamp();
-      setStep(1);
+      // The SOP order is service, then conditions, then the map, and each of
+      // those now has its own tap-first screen. Save hands him straight to
+      // step 2 instead of this wizard's older location and health steps
+      // (which ran in the other order and duplicated those screens). Those
+      // steps below are no longer reachable; kept until the next cleanup.
+      router.push("/health");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -597,7 +607,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
 
   return (
     <div className="space-y-6">
-      <StepBar step={step} />
+      {step > 0 && <StepBar step={step} />}
 
       {error && (
         <div role="alert" className="rounded-xl border border-scarlet/30 bg-scarlet/5 px-4 py-3 text-[15px] font-medium text-scarlet">{error}</div>
@@ -705,6 +715,21 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
                   </div>
                 );
               })()}
+            </Field>
+
+            <Field label="Do you have a VA disability rating?" hint="Your combined rating today, if you have one. It prints on your claim packet as something you reported.">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {VA_RATINGS.map((r) => (
+                  <Tile key={r} on={vaRating === r} onClick={() => setVaRating(r)}>{r === "Not rated yet" ? "Not yet" : r}</Tile>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Do you get health care from VA?">
+              <div className="grid grid-cols-2 gap-2 sm:max-w-sm">
+                <Tile on={vaCare === true} onClick={() => setVaCare(true)}>Yes</Tile>
+                <Tile on={vaCare === false} onClick={() => setVaCare(false)}>No</Tile>
+              </div>
             </Field>
 
             <Field label="Your name (optional)" hint="How should we address you in your record?">
