@@ -13,15 +13,15 @@ import {
 export default function ShotsPage() {
   return (
     <AppShell title="Your shot record">
-      <p className="mb-4 text-sm text-muted">The dates nobody wrote down. Build your own.</p>
+      <p className="mb-4 text-[0.9375rem] text-muted">The dates nobody wrote down. Build your own.</p>
 
       <div className="space-y-4">
         <Link
           href="/shots/record"
           className="block rounded-xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50"
         >
-          <div className="text-sm font-semibold text-ink">Where your record actually is</div>
-          <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Where your record actually is</h2>
+          <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
             milConnect won&apos;t get you your shot record. Two questions tell you which office holds it.
           </p>
         </Link>
@@ -45,20 +45,20 @@ export default function ShotsPage() {
             in that slot instead: the warning that's been public since 2007 and
             nobody read to them, and four free doors they're already owed. */}
         <div className="card p-5">
-          <div className="text-sm font-semibold text-ink">What would warrant getting looked at</div>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">What would warrant getting looked at</h2>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink">{INTERRUPT_SPINE}</p>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink">{INTERRUPT_SYMPTOM_LINE}</p>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">{INTERRUPT_SAFETY_VALVE}</p>
           <div className="mt-4 space-y-2 border-t border-line pt-4">
             {INTERRUPT_FREE_DOORS.map((d) => (
-              <div key={d.name} className="text-sm">
+              <div key={d.name} className="text-[0.9375rem]">
                 <span className="font-medium text-ink">{d.name}.</span> <span className="text-muted">{d.detail}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
+        <p className="px-1 text-sm leading-relaxed text-muted">
           This section documents. It does not diagnose, does not advise you, does not file for you, and is not
           your representative (38 CFR 14.629). If you or someone you know is struggling, the Veterans Crisis Line
           is here 24/7 — dial 988, then press 1. Text 838255.

@@ -531,34 +531,41 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setCheckins(await fetchCheckins(supabase));
   }
 
-  const chipBase = "rounded-full border px-2.5 py-1 text-[0.8125rem]";
+  // Tap chips: 44px tall, 15px text, and a chosen chip is filled, not tinted,
+  // so "on" reads at a glance on a phone in daylight.
+  const chipBase = "inline-flex min-h-11 items-center rounded-full border px-4 text-[0.9375rem] leading-tight transition-colors";
+  const chipOff = "border-line bg-surface text-ink hover:bg-canvas";
+  const chipOn = "border-brand bg-brand font-semibold text-brand-foreground";
 
   return (
     <div>
       <div className="mb-3 overflow-hidden card">
         <button
           type="button"
+          aria-expanded={showFilters}
           onClick={() => setShowFilters((v) => !v)}
-          className="flex w-full items-center justify-between gap-2 px-4 py-3"
+          className="flex min-h-14 w-full items-center justify-between gap-2 px-4 py-3"
         >
-          <span className="flex items-center gap-2 text-sm font-semibold text-ink">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-muted">
+          <span className="flex items-center gap-2 text-[0.9375rem] font-semibold text-ink">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-muted" aria-hidden="true">
               <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
             </svg>
             Filter the map
             {activeCount > 0 && (
-              <span className="rounded-full bg-brand px-1.5 py-0.5 text-[0.8125rem] font-bold text-brand-foreground">{activeCount}</span>
+              <span className="tnum rounded-full bg-brand px-2 py-0.5 text-sm font-bold text-brand-foreground">
+                {activeCount}<span className="sr-only"> filters on</span>
+              </span>
             )}
           </span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${showFilters ? "rotate-180" : ""}`}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`h-5 w-5 text-muted transition-transform ${showFilters ? "rotate-180" : ""}`}>
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
 
         {showFilters && (
-          <div className="border-t border-line px-4 py-3">
-            <div className="text-[0.8125rem] font-medium text-muted">By recognition</div>
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <div className="border-t border-line px-4 py-4">
+            <div className="field-label">By recognition</div>
+            <div className="flex flex-wrap gap-2">
               {STATUSES.map((s) => {
                 const on = activeStatuses.has(s.value);
                 return (
@@ -567,18 +574,17 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                     type="button"
                     aria-pressed={on}
                     onClick={() => toggleStatus(s.value)}
-                    className={`${chipBase} inline-flex items-center gap-1.5 ${on ? "border-transparent text-white" : "border-line text-muted hover:bg-canvas"}`}
-                    style={on ? { background: s.color } : undefined}
+                    className={`${chipBase} gap-2 ${on ? chipOn : chipOff}`}
                   >
-                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: on ? "#fff" : s.color }} />
+                    <span className="inline-block h-3 w-3 flex-none rounded-full ring-2 ring-white" style={{ background: s.color }} aria-hidden="true" />
                     {s.label}
                   </button>
                 );
               })}
             </div>
 
-            <div className="mt-3 text-[0.8125rem] font-medium text-muted">By exposure</div>
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <div className="field-label mt-4">By exposure</div>
+            <div className="flex flex-wrap gap-2">
               {EXPOSURES.map((x) => {
                 const on = activeClasses.has(x.value);
                 return (
@@ -587,7 +593,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                     type="button"
                     aria-pressed={on}
                     onClick={() => toggleClass(x.value)}
-                    className={on ? `${chipBase} border-brand bg-brand/10 font-medium text-brand` : `${chipBase} border-line text-muted hover:bg-canvas`}
+                    className={`${chipBase} ${on ? chipOn : chipOff}`}
                   >
                     {x.label}
                   </button>
@@ -595,12 +601,12 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               })}
             </div>
 
-            <label className="mt-3 flex items-center gap-1.5 text-[0.8125rem] text-muted">
-              <input type="checkbox" checked={yearOn} onChange={(e) => setYearOn(e.target.checked)} />
-              Filter by year
+            <label className="mt-4 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-1 hover:bg-canvas">
+              <input type="checkbox" checked={yearOn} onChange={(e) => setYearOn(e.target.checked)} className="h-6 w-6 flex-none accent-brand" />
+              <span className="text-[0.9375rem] text-ink">Filter by year</span>
             </label>
             {yearOn && (
-              <div className="mt-2 w-32">
+              <div className="mt-2 w-36">
                 <WheelPicker
                   options={FILTER_YEARS}
                   index={filterYear - 1945}
@@ -611,7 +617,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             )}
 
             {activeCount > 0 && (
-              <button onClick={clearFilters} className="mt-3 text-sm font-semibold text-brand hover:underline">
+              <button type="button" onClick={clearFilters} className="btn btn-secondary mt-4">
                 Clear all filters
               </button>
             )}
@@ -621,19 +627,24 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
       {/* Find your base — local gazetteer, nothing leaves the app */}
       <div className="relative mb-3">
-        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-4 w-4"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /></svg>
+        <label htmlFor="map-search" className="sr-only">Find your base on the map</label>
+        <div className="relative">
+          <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-5 w-5"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /></svg>
+          </div>
+          <input
+            id="map-search"
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+            placeholder="Find your base, e.g. Balad, Lejeune, Bagram"
+            className="field pl-11"
+            autoComplete="off"
+          />
         </div>
-        <input
-          value={searchQ}
-          onChange={(e) => setSearchQ(e.target.value)}
-          placeholder="Find your base — type its name (e.g. Balad, Lejeune, Bagram)"
-          className="w-full card py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
-        />
-        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">
-          Search covers every major installation, stateside and overseas. The dots on the map are only the
-          sites with <span className="font-medium text-muted">documented</span> exposures — if your base
-          isn&apos;t a dot, it still belongs on your record: find it here or drop the pin yourself.
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">
+          Search covers every major installation, stateside and overseas. The dots on the map are only the sites
+          with documented exposures. If your base isn&apos;t a dot, it still belongs on your record: find it here or
+          drop the pin yourself.
         </p>
         {searchResults.length > 0 && (
           <div className="absolute z-30 mt-1 max-h-72 w-full overflow-auto card shadow-lg">
@@ -645,11 +656,11 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 // onClick so Enter/Space and screen readers work.
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => pickSearch(r)}
-                className="flex w-full items-center justify-between gap-2 border-b border-line px-3.5 py-2.5 text-left transition last:border-0 hover:bg-canvas"
+                className="flex min-h-12 w-full items-center justify-between gap-3 border-b border-line px-4 py-2.5 text-left transition last:border-0 hover:bg-canvas"
               >
-                <span className="text-sm font-medium text-ink">{r.name}</span>
-                <span className={`flex-none text-[0.8125rem] ${r.region === "documented site" ? "font-semibold text-success" : "text-muted"}`}>
-                  {r.region === "documented site" ? "● documented" : r.region}
+                <span className="text-[0.9375rem] font-semibold text-ink">{r.name}</span>
+                <span className={`flex-none text-sm ${r.region === "documented site" ? "font-semibold text-success" : "text-muted"}`}>
+                  {r.region === "documented site" ? "Documented site" : r.region}
                 </span>
               </button>
             ))}
@@ -667,17 +678,14 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         {/* Confirm chip for a dropped pin — a stray tap never spawns the panel */}
         {pending && !draft && (
           <div className="absolute left-1/2 top-3 z-[3] flex max-w-[94%] -translate-x-1/2 items-center gap-2 rounded-full bg-white/95 py-1.5 pl-4 pr-1.5 shadow-lg ring-1 ring-line backdrop-blur">
-            <span className="truncate text-[0.8125rem] font-medium text-ink">
+            <span className="truncate text-[0.9375rem] font-medium text-ink">
               {pendingNear ? pendingNear.name : fmt(pending.lat, pending.lng)}
             </span>
-            <button
-              onClick={beginDraft}
-              className="flex-none rounded-full bg-brand px-3 py-1.5 text-[0.8125rem] font-bold text-white transition hover:bg-brand-600"
-            >
+            <button onClick={beginDraft} className="btn btn-primary btn-sm flex-none rounded-full">
               Check in here
             </button>
-            <button onClick={() => setPending(null)} aria-label="Dismiss pin" className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-muted hover:bg-canvas">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-3.5 w-3.5"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            <button onClick={() => setPending(null)} aria-label="Dismiss pin" className="flex h-10 w-10 flex-none items-center justify-center rounded-full text-muted hover:bg-canvas">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-4 w-4" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
           </div>
         )}
@@ -686,7 +694,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           <button
             type="button"
             onClick={() => setShowLegend((v) => !v)}
-            className="flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1.5 text-[0.8125rem] font-semibold text-ink shadow-sm backdrop-blur transition hover:bg-white"
+            aria-expanded={showLegend}
+            className="flex min-h-11 items-center gap-2 rounded-xl bg-white/95 px-3 text-sm font-semibold text-ink shadow-sm backdrop-blur transition hover:bg-white"
           >
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />
             Known exposure sites
@@ -695,8 +704,8 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             </svg>
           </button>
           {showLegend && (
-            <div className="mt-1.5 rounded-lg bg-white/95 px-3 py-2 text-[0.8125rem] shadow-sm backdrop-blur">
-              <div className="flex flex-col gap-0.5 text-muted">
+            <div className="mt-1.5 rounded-xl bg-white/95 px-3.5 py-2.5 text-sm shadow-sm backdrop-blur">
+              <div className="flex flex-col gap-1 text-ink">
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />recognized</span>
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#BA7517" }} />documented</span>
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#E24B4A" }} />emerging</span>
@@ -711,27 +720,27 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         {draft && (
           <div ref={panelRef} className="mt-3 w-full scroll-mt-16 card p-4 shadow-lg lg:mt-0 lg:max-h-[520px] lg:w-[340px] lg:flex-none lg:overflow-y-auto">
             
-            <div className="text-sm font-semibold text-ink">New check-in</div>
+            <h2 className="text-lg font-semibold tracking-tight text-ink">New check-in</h2>
 
-            <label className="mt-2 block text-[0.8125rem] text-muted">Place</label>
+            <label htmlFor="checkin-place" className="field-label mt-3">Place</label>
             <input
+              id="checkin-place"
               type="text"
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
               placeholder="Name this place"
-              className="mt-1 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
+              className="field"
             />
-            <div className="mt-1 text-[0.8125rem] text-faint">{fmt(draft.lat, draft.lng)}</div>
+            <div className="tnum mt-1 text-sm text-muted">{fmt(draft.lat, draft.lng)}</div>
 
-            <label className="mt-3 block text-[0.8125rem] text-muted">
-              When were you here? The exact day matters if you hit more than one place close together — five ports
-              in two weeks needs more than just the month.
-            </label>
-            <div className="mt-1">
-              <MonthYearWheel month={month} year={year} day={day} onMonthChange={setMonth} onYearChange={setYear} onDayChange={setDay} approximate={approxStart} onApproximateChange={setApproxStart} />
-            </div>
+            <span className="field-label mt-4">When were you here?</span>
+            <p className="mb-2 text-sm leading-relaxed text-muted">
+              The exact day matters if you hit more than one place close together. Five ports in two weeks needs
+              more than just the month.
+            </p>
+            <MonthYearWheel month={month} year={year} day={day} onMonthChange={setMonth} onYearChange={setYear} onDayChange={setDay} approximate={approxStart} onApproximateChange={setApproxStart} />
 
-            <label className="mt-3 flex items-center gap-2 text-[0.8125rem] text-muted">
+            <label className="mt-3 flex min-h-12 cursor-pointer items-start gap-3 rounded-xl px-1 py-2 hover:bg-canvas">
               <input
                 type="checkbox"
                 checked={hasEndDate}
@@ -739,63 +748,68 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                   setHasEndDate(e.target.checked);
                   if (e.target.checked) { setEndYear((y) => Math.max(y, year)); setEndMonth(0); setEndDay(0); }
                 }}
+                className="mt-0.5 h-6 w-6 flex-none accent-brand"
               />
-              I know when I left — makes this a tour instead of a moment
+              <span>
+                <span className="block text-[0.9375rem] font-semibold text-ink">I know when I left</span>
+                <span className="block text-sm text-muted">That makes this a tour instead of a moment.</span>
+              </span>
             </label>
             {hasEndDate && (
               <div className="mt-1">
                 <MonthYearWheel month={endMonth} year={endYear} day={endDay} onMonthChange={setEndMonth} onYearChange={setEndYear} onDayChange={setEndDay} minYear={year} approximate={approxEnd} onApproximateChange={setApproxEnd} />
                 {endYear < year && (
-                  <p role="status" className="mt-1 text-[0.8125rem] font-medium text-red-600">
+                  <p role="status" className="mt-1 text-[0.9375rem] font-medium text-scarlet">
                     The date you left can&apos;t be before {year}.
                   </p>
                 )}
               </div>
             )}
 
-            <label className="mt-3 block text-sm font-semibold text-ink">In your own words — what were you doing here?</label>
-            <p className="mt-0.5 text-[0.8125rem] leading-snug text-faint">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>
+            <label htmlFor="checkin-story" className="field-label mt-5">In your own words: what were you doing here?</label>
+            <p className="mb-2 text-sm leading-relaxed text-muted">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>
             <textarea
+              id="checkin-story"
               value={story}
               onChange={(e) => setStory(e.target.value)}
-              rows={2}
+              rows={3}
               placeholder="e.g. Convoy security out of the north gate; burn pit smoke drifted over our motor pool most nights."
-              className="mt-1.5 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
+              className="field"
             />
 
             {docSites.length > 0 ? (
               <>
-                <div className="mt-3 text-sm font-semibold text-ink">Documented near this spot — confirm yours</div>
-                <div className="mb-2 mt-1 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-2.5 py-1.5 text-[0.8125rem] text-success">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-3.5 w-3.5 flex-none">
+                <h3 className="mt-5 text-[0.9375rem] font-semibold text-ink">Documented near this spot. Confirm yours.</h3>
+                <div className="mb-3 mt-2 flex items-start gap-2 rounded-xl border border-success/30 bg-success-soft px-3 py-2.5 text-sm leading-relaxed text-success">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none" aria-hidden="true">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
                   </svg>
                   <span>
                     Documented at {docSites.slice(0, 2).join(", ")}
-                    {docSites.length > 2 ? ` +${docSites.length - 2} more` : ""} — pre-checked below. Keep what matches your memory; uncheck anything that doesn&apos;t apply to you.
+                    {docSites.length > 2 ? ` and ${docSites.length - 2} more` : ""}. These are already picked below. Keep what matches your memory; tap off anything that doesn&apos;t apply to you.
                   </span>
                 </div>
               </>
             ) : (
               <>
-                <div className="mt-3 text-sm font-semibold text-ink">What were you exposed to here?</div>
-                <div className="mb-2 text-[0.8125rem] text-muted">Tap what applies — everything you pick is tagged to this check-in.</div>
+                <h3 className="mt-5 text-[0.9375rem] font-semibold text-ink">What were you exposed to here?</h3>
+                <p className="mb-3 mt-0.5 text-sm text-muted">Tap what applies. Everything you pick is tagged to this check-in.</p>
               </>
             )}
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {EXPOSURES.map((x) => {
                 const on = selected.includes(x.value);
                 const documented = docClasses.includes(x.value);
                 const cls =
                   documented && on
-                    ? `${chipBase} inline-flex items-center gap-1 border-success/50 bg-success-soft font-semibold text-success`
+                    ? `${chipBase} gap-1.5 border-success bg-success font-semibold text-white`
                     : on
-                    ? `${chipBase} border-brand bg-brand/10 font-medium text-brand`
-                    : `${chipBase} border-line text-muted hover:bg-canvas`;
+                    ? `${chipBase} ${chipOn}`
+                    : `${chipBase} ${chipOff}`;
                 return (
                   <button key={x.label} type="button" aria-pressed={on} onClick={() => toggle(x.value)} className={cls}>
                     {documented && on && (
-                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                         <path d="M20 6L9 17l-5-5" />
                       </svg>
                     )}
@@ -805,27 +819,28 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               })}
             </div>
 
-            <div className="mt-3">
-              <label className="mb-1 block text-[0.8125rem] font-medium text-muted">
+            <div className="mt-4">
+              <label htmlFor="checkin-other" className="field-label">
                 Something else? Add an exposure that isn&apos;t listed.
               </label>
               <input
+                id="checkin-other"
                 type="text"
                 value={otherText}
                 onChange={(e) => setOtherText(e.target.value)}
                 placeholder="e.g. specific chemical, contaminated fuel, paint fumes…"
-                className="w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
+                className="field"
               />
-              <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">Keep it general. No classified, secret, or NDA-protected details.</p>
             </div>
 
             {/* Most claims — tinnitus, backs, knees, PTSD, TBI — connect to WHAT
                 HAPPENED, not to bad air or bad water. The map had no way to
                 record that at all until now. */}
-            <div className="mt-4 border-t border-line pt-3">
-              <div className="text-sm font-semibold text-ink">Did anything happen to you here? (optional)</div>
-              <p className="mb-2 text-[0.8125rem] text-muted">A blast, a fall, an injury, an assault — tap what applies.</p>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="mt-5 border-t border-line pt-4">
+              <h3 className="text-[0.9375rem] font-semibold text-ink">Did anything happen to you here? (optional)</h3>
+              <p className="mb-3 mt-0.5 text-sm text-muted">A blast, a fall, an injury, an assault. Tap what applies.</p>
+              <div className="flex flex-wrap gap-2">
                 {INCIDENTS.map((x) => {
                   const on = selectedIncidents.includes(x.value);
                   return (
@@ -834,7 +849,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                       type="button"
                       aria-pressed={on}
                       onClick={() => toggleIncident(x.value)}
-                      className={on ? `${chipBase} border-brand bg-brand/10 font-medium text-brand` : `${chipBase} border-line text-muted hover:bg-canvas`}
+                      className={`${chipBase} ${on ? chipOn : chipOff}`}
                     >
                       {x.label}
                     </button>
@@ -842,7 +857,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 })}
               </div>
               {selectedIncidents.includes("military_sexual_trauma") && (
-                <div className="mt-2 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2.5 text-[0.8125rem] leading-relaxed text-ink">
+                <div className="mt-3 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 text-[0.9375rem] leading-relaxed text-ink">
                   This is logged like any other event — a place and a year, nothing more. If you want to talk to
                   someone, every VA medical center has an MST coordinator, and care for MST-related conditions is
                   free at the VA regardless of disability rating or discharge status. Your VSO can also walk you
@@ -853,12 +868,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               )}
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               {user ? (
                 <button
+                  type="button"
                   onClick={addCheckin}
                   disabled={saving || (selected.length === 0 && selectedIncidents.length === 0 && !otherText.trim() && !story.trim())}
-                  className="flex-1 rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
+                  className="btn btn-primary btn-lg flex-1"
                 >
                   {saving
                     ? "Saving…"
@@ -867,9 +883,9 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                       : "Add your words, an exposure, or an event"}
                 </button>
               ) : (
-                <div className="flex-1 text-[0.8125rem] text-muted">Sign in above to save this pin to your record.</div>
+                <div className="flex-1 self-center text-[0.9375rem] text-muted">Sign in above to save this pin to your record.</div>
               )}
-              <button onClick={closeDraft} className="rounded-md border border-line px-3 py-1.5 text-sm text-muted hover:bg-canvas">
+              <button type="button" onClick={closeDraft} className="btn btn-secondary btn-lg">
                 Cancel
               </button>
             </div>

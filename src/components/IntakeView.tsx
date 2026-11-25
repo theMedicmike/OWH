@@ -142,8 +142,8 @@ export default function IntakeView() {
               <div
                 className={
                   msg.role === "user"
-                    ? "max-w-[80%] rounded-xl bg-brand px-3.5 py-2 text-sm text-brand-foreground"
-                    : "max-w-[85%] card px-3.5 py-2 text-[0.9375rem] leading-relaxed text-ink"
+                    ? "max-w-[80%] rounded-2xl bg-brand px-4 py-2.5 text-[0.9375rem] leading-relaxed text-brand-foreground"
+                    : "max-w-[85%] card px-4 py-2.5 text-[0.9375rem] leading-relaxed text-ink"
                 }
               >
                 {msg.content}
@@ -151,67 +151,71 @@ export default function IntakeView() {
             </div>
 
             {msg.proposals?.map((p, pi) => (
-              <div key={pi} className="ml-9 mt-2 overflow-hidden rounded-xl border border-line bg-canvas">
-                <div className="h-1 bg-accent" />
-                <div className="p-3">
-                  <div className="text-[0.8125rem] font-medium text-muted">Proposed check-in</div>
-                  <div className="mt-0.5 text-sm font-medium text-ink">{p.place}</div>
-                  <div className="text-[0.8125rem] text-muted">Year {p.year}</div>
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {p.exposures.map((e) => (
-                      <span key={e} className="rounded-md bg-brand/5 px-2 py-0.5 text-[0.8125rem] font-medium text-brand">
-                        {EXPOSURE_LABEL[e] ?? e}
+              <div key={pi} className="ml-9 mt-2 rounded-xl border border-line bg-canvas p-4">
+                <div className="text-sm text-muted">Proposed check-in</div>
+                <div className="mt-0.5 text-[0.9375rem] font-semibold text-ink">{p.place}</div>
+                <div className="text-sm text-muted">Year {p.year}</div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {p.exposures.map((e) => (
+                    <span key={e} className="rounded-lg bg-brand/5 px-3 py-1 text-sm font-medium text-brand">
+                      {EXPOSURE_LABEL[e] ?? e}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-3" aria-live="polite">
+                  {!user ? (
+                    <span className="text-[0.9375rem] text-muted">Sign in on the map to save this.</span>
+                  ) : p.status === "saved" || p.status === "saved_approx" ? (
+                    <span className="flex items-start gap-1.5 text-[0.9375rem] font-semibold text-success">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none" aria-hidden="true"><path d="m5 12 4 4L19 7" /></svg>
+                      <span>
+                        Saved to your timeline.
+                        {p.status === "saved_approx" && (
+                          <span className="font-normal"> We couldn&apos;t pinpoint the exact spot, so you can set it on the map when you&apos;re ready.</span>
+                        )}
                       </span>
-                    ))}
-                  </div>
-                  <div className="mt-2">
-                    {!user ? (
-                      <span className="text-[0.8125rem] text-muted">Sign in on the map to save this.</span>
-                    ) : p.status === "saved" ? (
-                      <span className="text-[0.8125rem] font-medium text-success">Saved to your timeline ✓</span>
-                    ) : p.status === "saved_approx" ? (
-                      <span className="text-[0.8125rem] font-medium text-success">
-                        Saved to your timeline ✓ — we couldn&apos;t pinpoint the exact spot, so you can set it on the map when you&apos;re ready.
-                      </span>
-                    ) : p.status === "error" ? (
-                      <span className="text-[0.8125rem] text-red-600">Couldn&apos;t save just now — please try again.</span>
-                    ) : (
-                      <button
-                        onClick={() => saveProposal(mi, pi)}
-                        disabled={p.status === "saving"}
-                        className="rounded-md bg-brand px-3 py-1 text-[0.8125rem] font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-60"
-                      >
-                        {p.status === "saving" ? "Saving…" : "Save to my timeline"}
-                      </button>
-                    )}
-                  </div>
+                    </span>
+                  ) : p.status === "error" ? (
+                    <span role="alert" className="text-[0.9375rem] font-medium text-scarlet">Couldn&apos;t save just now. Please try again.</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => saveProposal(mi, pi)}
+                      disabled={p.status === "saving"}
+                      className="btn btn-primary"
+                    >
+                      {p.status === "saving" ? "Saving…" : "Save to my timeline"}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         ))}
-        {busy && <div className="ml-9 text-sm text-faint">typing…</div>}
+        {busy && <div className="ml-9 text-[0.9375rem] text-muted">typing…</div>}
         <div ref={endRef} />
       </div>
 
-      <div className="mt-4 flex items-center gap-2 card px-3 py-2">
+      <div className="mt-4 flex items-center gap-2 card p-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
+          aria-label="Your answer"
           placeholder="Type your answer…"
-          className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+          className="field min-w-0 flex-1 border-transparent"
         />
         <button
+          type="button"
           onClick={send}
           disabled={busy || !input.trim()}
-          className="rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
+          className="btn btn-primary btn-lg flex-none"
         >
           Send
         </button>
       </div>
 
-      <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">
+      <p className="mt-3 text-sm leading-relaxed text-muted">
         Your guide helps you remember and record; it does not diagnose. If anything feels heavy, the Veterans Crisis
         Line is one tap away: dial 988, then press 1.
       </p>

@@ -4,14 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { listVessels, createVessel, deleteVessel, vesselWhen, vesselTitle, type Vessel } from "@/lib/vessels";
 
-const card = "card p-5";
-const field =
-  "w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none";
-
 const MONTH_OPTS = [
   "", "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
+
+// Years, newest first, for the "aboard from / until" pickers. A long list, so
+// it stays a <select>; nothing is pre-chosen and nothing is guessed.
+const THIS_YEAR = new Date().getFullYear();
+const YEAR_OPTS = Array.from({ length: THIS_YEAR - 1940 + 1 }, (_, i) => String(THIS_YEAR - i));
 
 function num(s: string): number | null {
   const n = parseInt(s, 10);
@@ -83,94 +84,103 @@ export default function VesselsListCard() {
 
   if (notSetUp) {
     return (
-      <div className={card}>
-        <div className="text-sm font-semibold text-ink">Ships you served aboard</div>
-        <p className="mt-2 text-sm text-muted">This feature is on its way — check back soon.</p>
+      <div className="card p-5">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Ships you served aboard</h2>
+        <p className="mt-2 text-[0.9375rem] text-muted">This feature is on its way. Check back soon.</p>
       </div>
     );
   }
 
   return (
-    <div className={card}>
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold text-ink">Ships you served aboard</div>
+    <div className="card p-5">
+      <h2 className="text-lg font-semibold tracking-tight text-ink">Ships you served aboard</h2>
+
+      {!open && (
         <button
           type="button"
-          onClick={() => { setOpen((v) => !v); setErr(null); }}
-          className="rounded-md bg-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-brand-foreground hover:bg-brand-600"
+          onClick={() => { setOpen(true); setErr(null); }}
+          className="btn btn-primary btn-lg mt-4 w-full sm:w-auto"
         >
-          {open ? "Close" : "＋ Add a ship"}
+          Add a ship
         </button>
-      </div>
+      )}
 
       {open && (
-        <div className="mt-4 space-y-3 rounded-lg border border-line p-3">
+        <div className="mt-4 space-y-5 rounded-xl border border-line bg-canvas p-4">
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Ship&apos;s name</label>
+            <label htmlFor="vessel-name" className="field-label">Ship&apos;s name</label>
             {/* The only required field, on purpose. A man who remembers the ship
                 and nothing else still has something worth handing a VSO. */}
-            <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. USS Kitty Hawk" />
+            <input id="vessel-name" className="field" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. USS Kitty Hawk" autoComplete="off" />
+            <p className="mt-1.5 text-sm text-muted">The name is all you need to save it.</p>
           </div>
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Hull number (if you know it)</label>
-            <input className={field} value={hull} onChange={(e) => setHull(e.target.value)} placeholder="e.g. CV-63" />
-            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
-              Leave it blank if you don&apos;t. We will not guess one for you — a hull number an app invented is
-              worse in front of a rater than one you left empty.
+            <label htmlFor="vessel-hull" className="field-label">Hull number (if you know it)</label>
+            <input id="vessel-hull" className="field" value={hull} onChange={(e) => setHull(e.target.value)} placeholder="e.g. CV-63" autoComplete="off" />
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              Leave it blank if you don&apos;t know it. We will not guess one for you. A made-up hull number does
+              more harm in front of a rater than an empty one.
             </p>
           </div>
 
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Aboard from</label>
-            <div className="flex gap-2">
-              <select className={field} value={fromMonth} onChange={(e) => setFromMonth(e.target.value)}>
+          <fieldset>
+            <legend className="field-label">Aboard from</legend>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <select aria-label="Month aboard from" className="field" value={fromMonth} onChange={(e) => setFromMonth(e.target.value)}>
                 {MONTH_OPTS.map((m) => <option key={m || "none"} value={m}>{m || "Month (optional)"}</option>)}
               </select>
-              <input className={field} inputMode="numeric" value={fromYear} onChange={(e) => setFromYear(e.target.value)} placeholder="Year" />
+              <select aria-label="Year aboard from" className="field tnum" value={fromYear} onChange={(e) => setFromYear(e.target.value)}>
+                <option value="">Year (optional)</option>
+                {YEAR_OPTS.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
             </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Until</label>
-            <div className="flex gap-2">
-              <select className={field} value={toMonth} onChange={(e) => setToMonth(e.target.value)}>
+          </fieldset>
+          <fieldset>
+            <legend className="field-label">Until</legend>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <select aria-label="Month aboard until" className="field" value={toMonth} onChange={(e) => setToMonth(e.target.value)}>
                 {MONTH_OPTS.map((m) => <option key={m || "none"} value={m}>{m || "Month (optional)"}</option>)}
               </select>
-              <input className={field} inputMode="numeric" value={toYear} onChange={(e) => setToYear(e.target.value)} placeholder="Year" />
+              <select aria-label="Year aboard until" className="field tnum" value={toYear} onChange={(e) => setToYear(e.target.value)}>
+                <option value="">Year (optional)</option>
+                {YEAR_OPTS.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
             </div>
-            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
-              Rough is fine, the same as everywhere else here. A year on its own is a perfectly good answer.
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              Rough is fine. A year on its own is a good answer.
             </p>
-          </div>
+          </fieldset>
 
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">What you did aboard (optional)</label>
-            <input className={field} value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. BT2, fireroom — or Deck division" />
+            <label htmlFor="vessel-role" className="field-label">What you did aboard (optional)</label>
+            <input id="vessel-role" className="field" value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. BT2, fireroom, or Deck division" />
           </div>
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">In your own words (optional)</label>
+            <label htmlFor="vessel-note" className="field-label">In your own words (optional)</label>
             <textarea
-              className={`${field} min-h-[72px]`}
+              id="vessel-note"
+              className="field min-h-[6rem]"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Where she operated, what you remember — the gunline, the yards, a port, a fire."
+              placeholder="Where she operated, what you remember: the gunline, the yards, a port, a fire."
             />
-            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
-              Nothing you write here is touched by AI. Where the ship operated and when is often the part a VSO
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              Nothing you write here is touched by AI. Where the ship operated, and when, is often the part a VSO
               works from.
             </p>
           </div>
 
-          {err && <p className="text-[0.8125rem] font-medium text-red-600">{err}</p>}
-          <div className="flex gap-2">
+          {err && <p role="alert" className="text-[0.9375rem] font-medium text-scarlet">{err}</p>}
+          <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
               onClick={save}
               disabled={busy || !name.trim()}
-              className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition disabled:cursor-not-allowed disabled:bg-line disabled:text-faint"
+              className="btn btn-primary btn-lg"
             >
               {busy ? "Saving…" : name.trim() ? "Save this ship" : "Add the ship's name"}
             </button>
-            <button type="button" onClick={() => { reset(); setOpen(false); }} className="rounded-md px-3 py-2 text-sm text-muted hover:text-ink">
+            <button type="button" onClick={() => { reset(); setOpen(false); }} className="btn btn-secondary btn-lg">
               Cancel
             </button>
           </div>
@@ -178,32 +188,39 @@ export default function VesselsListCard() {
       )}
 
       {!vessels.length ? (
-        <p className="mt-3 text-sm text-muted">
-          Nothing added yet. Start with the one you were on longest — the name alone is enough to begin.
+        <p className="mt-4 text-[0.9375rem] text-muted">
+          Nothing added yet. Start with the one you were on longest. The name alone is enough to begin.
         </p>
       ) : (
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-4 space-y-2">
           {vessels.map((v) => {
             const when = vesselWhen(v);
             return (
-              <li key={v.id} className="rounded-lg border border-line p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-ink">{vesselTitle(v)}</div>
-                    <div className="text-[0.8125rem] text-muted">
+              <li key={v.id} className="rounded-xl border border-line p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[0.9375rem] font-semibold text-ink">{vesselTitle(v)}</div>
+                    <div className="mt-0.5 text-sm text-muted">
                       {[when || "dates not noted yet", v.role].filter(Boolean).join(", ")}
                     </div>
                   </div>
                   {confirmDel === v.id ? (
-                    <div className="flex flex-none gap-2">
-                      <button onClick={() => setConfirmDel(null)} className="text-[0.8125rem] font-semibold text-brand">Keep it</button>
-                      <button onClick={() => remove(v.id)} className="text-[0.8125rem] font-semibold text-red-600">Delete</button>
+                    <div className="flex flex-none flex-wrap gap-2">
+                      <button type="button" onClick={() => setConfirmDel(null)} className="btn btn-secondary">Keep it</button>
+                      <button type="button" onClick={() => remove(v.id)} className="btn btn-danger">Delete</button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmDel(v.id)} className="flex-none text-[0.8125rem] text-faint hover:text-red-600">remove</button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDel(v.id)}
+                      aria-label={`Remove ${vesselTitle(v)}`}
+                      className="btn btn-ghost flex-none text-muted"
+                    >
+                      Remove
+                    </button>
                   )}
                 </div>
-                {v.note && <p className="mt-2 whitespace-pre-wrap text-[0.8125rem] leading-relaxed text-ink">{v.note}</p>}
+                {v.note && <p className="mt-2 whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-ink">{v.note}</p>}
               </li>
             );
           })}
@@ -211,9 +228,9 @@ export default function VesselsListCard() {
       )}
 
       {vessels.length > 0 && (
-        <p className="mt-3 border-t border-line pt-3 text-[0.8125rem] leading-relaxed text-faint">
+        <p className="mt-4 border-t border-line pt-3 text-sm leading-relaxed text-muted">
           These print in your claim packet, under your service details. Ask your VSO to request the deck logs for
-          the dates above — that is the document that shows where the ship actually was.
+          the dates above. That is the document that shows where the ship actually was.
         </p>
       )}
     </div>

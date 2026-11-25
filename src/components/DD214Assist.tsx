@@ -16,7 +16,7 @@ import { useAuth } from "./AuthProvider";
 
 const BLOCKS = [
   { field: "Branch", block: "Block 2", hint: "Department, Component and Branch" },
-  { field: "MOS / job code", block: "Block 11", hint: "Primary Specialty — the code at the start, e.g. 11B" },
+  { field: "MOS / job code", block: "Block 11", hint: "Primary Specialty. The code at the start, e.g. 11B" },
   { field: "Service start", block: "Block 12a", hint: "Date Entered AD This Period" },
   { field: "Service end", block: "Block 12b", hint: "Separation Date This Period" },
   { field: "Unit", block: "Block 8a", hint: "Last Duty Assignment and Major Command" },
@@ -48,16 +48,21 @@ export default function DD214Assist() {
   }, [user, open, url, supabase]);
 
   return (
-    <div className="card p-5">
-      <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 text-left">
+    <section className="card p-5 sm:p-6">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="-m-2 flex min-h-12 w-[calc(100%+1rem)] items-center justify-between gap-3 rounded-xl p-2 text-left hover:bg-canvas"
+      >
         <span>
-          <span className="text-sm font-semibold text-ink">Read it off your DD-214</span>
-          <span className="mt-0.5 block text-[0.8125rem] text-muted">
-            Your DD-214 never leaves this app — no AI reads it, nothing is sent anywhere. We point to the
+          <span className="block text-lg font-semibold tracking-tight text-ink">Read it off your DD-214</span>
+          <span className="mt-1 block text-[0.9375rem] leading-relaxed text-muted">
+            Your DD-214 never leaves this app. No AI reads it and nothing is sent anywhere. We point to the
             block that has each answer; you read it, you type it, you own it.
           </span>
         </span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className={`h-4 w-4 flex-none text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="M6 9l6 6 6-6" /></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className={`h-5 w-5 flex-none text-muted transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
       </button>
 
       {open && (
@@ -69,46 +74,48 @@ export default function DD214Assist() {
                 <img src={url} alt="Your uploaded DD-214" className="max-h-[480px] w-full rounded-lg border border-line object-contain" />
               ) : (
                 <object data={url} type="application/pdf" className="h-[480px] w-full rounded-lg border border-line">
-                  <p className="p-4 text-sm text-muted">
-                    Your browser can&apos;t show the PDF here —{" "}
+                  <p className="p-4 text-[0.9375rem] text-muted">
+                    Your browser can&apos;t show the PDF here.{" "}
                     <a href={url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">open it in a new tab</a>{" "}
                     and keep this window beside it.
                   </p>
                 </object>
               )
             ) : (
-              <p className="rounded-lg border border-line bg-canvas p-4 text-sm text-muted">
+              <p className="rounded-xl border border-line bg-canvas p-4 text-[0.9375rem] text-muted">
                 {checked
-                  ? "No document found — upload your DD-214 below first, then come back here."
+                  ? "No document found. Upload your DD-214 in Your records first, then come back here."
                   : "Loading your newest uploaded document…"}
               </p>
             )}
             {url && (
-              <a href={url} target="_blank" rel="noreferrer" className="mt-1.5 inline-block text-[0.8125rem] font-semibold text-brand hover:underline">
+              <a href={url} target="_blank" rel="noreferrer" className="btn btn-secondary mt-2">
                 Open full size in a new tab (easier to zoom)
               </a>
             )}
           </div>
 
           <div className="mt-4 lg:mt-0 lg:w-[300px] lg:flex-none">
-            <div className="text-[0.8125rem] font-medium text-muted">Where each answer lives</div>
+            <h3 className="text-[0.9375rem] font-semibold text-ink">Where each answer lives</h3>
             <ul className="mt-2 space-y-2">
               {BLOCKS.map((b) => (
-                <li key={b.field} className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm">
-                  <span className="font-semibold text-ink">{b.field}</span>
-                  <span className="text-muted"> — {b.block}</span>
-                  <span className="block text-[0.8125rem] leading-snug text-faint">{b.hint}</span>
+                <li key={b.field} className="rounded-xl border border-line bg-canvas px-3.5 py-2.5">
+                  <span className="flex items-baseline justify-between gap-2 text-[0.9375rem]">
+                    <span className="font-semibold text-ink">{b.field}</span>
+                    <span className="flex-none font-medium text-muted">{b.block}</span>
+                  </span>
+                  <span className="mt-0.5 block text-sm leading-snug text-muted">{b.hint}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
-              Older DD-214s number these blocks differently — look for the block title. Breaks in service?
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              Older DD-214s number these blocks differently, so look for the block title. Breaks in service?
               Use your most recent DD-214 and tell your VSO about earlier periods. Type what you read into
-              the profile fields above — they save to your record.
+              the profile fields above. They save to your record.
             </p>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -76,9 +76,9 @@ export default function CardStudio({ passage, chapterNumber, chapterTitle, heavy
     else setShowFallback(true);
   }
 
-  const chip = (on: boolean) =>
-    `rounded-full border px-3 py-1 text-[0.8125rem] font-medium transition ${on ? "border-brand bg-brand/10 text-brand" : "border-line text-muted hover:bg-canvas"}`;
-  const fbtn = "flex items-center justify-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[0.8125rem] font-semibold text-ink transition hover:border-brand/40 hover:bg-canvas";
+  // One tap target per choice: chosen is filled navy, the rest are outlined.
+  const chip = (on: boolean) => `btn w-full min-h-11 ${on ? "btn-primary" : "btn-secondary"}`;
+  const fbtn = "btn btn-secondary w-full";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 p-0 sm:items-center sm:p-4" onClick={onClose}>
@@ -87,9 +87,9 @@ export default function CardStudio({ passage, chapterNumber, chapterTitle, heavy
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
-          <div className="text-sm font-bold text-ink">Make a card</div>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-muted hover:bg-canvas" aria-label="Close">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className="h-5 w-5"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Make a card</h2>
+          <button onClick={onClose} className="-mr-2 flex h-11 w-11 items-center justify-center rounded-xl text-muted hover:bg-canvas" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className="h-6 w-6" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>
 
@@ -100,32 +100,39 @@ export default function CardStudio({ passage, chapterNumber, chapterTitle, heavy
 
         {/* Look controls */}
         {!memoriamOnly && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {STYLE_OPTS.map((s) => (
-              <button key={s.v} onClick={() => setStyle(s.v)} className={chip(style === s.v)}>{s.label}</button>
-            ))}
+          <div className="mt-4">
+            <div id="card-style-label" className="field-label">Style</div>
+            <div role="group" aria-labelledby="card-style-label" className="grid grid-cols-3 gap-2">
+              {STYLE_OPTS.map((s) => (
+                <button key={s.v} type="button" aria-pressed={style === s.v} onClick={() => setStyle(s.v)} className={chip(style === s.v)}>{s.label}</button>
+              ))}
+            </div>
           </div>
         )}
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {SIZE_OPTS.map((s) => (
-            <button key={s.v} onClick={() => setSize(s.v)} className={chip(size === s.v)}>{s.label}</button>
-          ))}
+        <div className="mt-4">
+          <div id="card-size-label" className="field-label">Size</div>
+          <div role="group" aria-labelledby="card-size-label" className="grid grid-cols-2 gap-2">
+            {SIZE_OPTS.map((s) => (
+              <button key={s.v} type="button" aria-pressed={size === s.v} onClick={() => setSize(s.v)} className={chip(size === s.v)}>{s.label}</button>
+            ))}
+          </div>
         </div>
 
         {/* Caption */}
-        <label className="mt-3 block text-[0.8125rem] font-medium text-muted">Caption</label>
+        <label htmlFor="card-caption" className="field-label mt-4">Caption</label>
         <textarea
+          id="card-caption"
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           rows={4}
-          className="mt-1 w-full rounded-lg border border-line bg-canvas px-3 py-2 text-[0.8125rem] leading-relaxed text-ink focus:border-brand focus:bg-white focus:outline-none"
+          className="field leading-relaxed"
         />
 
-        <p className="mt-2 text-[0.8125rem] text-faint">Share what moved you. This is your call.</p>
+        <p className="mt-2 text-sm text-muted">Share what moved you. This is your call.</p>
 
         {/* Primary + fallbacks */}
         {status ? (
-          <div className="mt-3 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-[0.8125rem] font-medium text-success">{status}</div>
+          <div role="status" className="mt-3 rounded-xl border border-line bg-canvas px-4 py-3 text-[0.9375rem] font-medium text-ink">{status}</div>
         ) : (
           <>
             <button
@@ -144,7 +151,7 @@ export default function CardStudio({ passage, chapterNumber, chapterTitle, heavy
                 <a className={fbtn} href={smsHref(caption)}>Text it</a>
                 <a className={fbtn} href={tweetHref(caption)} target="_blank" rel="noreferrer">Post on X</a>
                 <a className={fbtn} href={facebookHref()} target="_blank" rel="noreferrer">Facebook</a>
-                <p className="col-span-2 text-[0.8125rem] leading-relaxed text-faint">Instagram has no web share — save the image, then post it there.</p>
+                <p className="col-span-2 text-sm leading-relaxed text-muted">Instagram has no web share. Save the image, then post it there.</p>
               </div>
             )}
           </>

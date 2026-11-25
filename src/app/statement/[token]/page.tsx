@@ -13,16 +13,16 @@ export default async function StatementPage({ params }: { params: Promise<{ toke
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4 py-12">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-md">
         <Link href="/" className="mb-6 block text-center">
-          <span className="text-lg font-bold tracking-tight text-ink">Connecting the Dots</span>
-          <span className="block text-[0.8125rem] font-medium text-muted">of Service</span>
+          <span className="text-lg font-semibold tracking-tight text-ink">Connecting the Dots</span>
+          <span className="block text-sm font-medium text-muted">of Service</span>
         </Link>
 
         <WitnessStatementCard token={token} />
 
-        <p className="mt-6 text-center text-[0.8125rem] leading-relaxed text-faint">
-          If you or someone you know is struggling, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
+        <p className="mt-6 text-center text-sm leading-relaxed text-muted">
+          If you or someone you know is struggling, the Veterans Crisis Line is here 24/7. Dial 988, then press 1.
         </p>
       </div>
     </main>

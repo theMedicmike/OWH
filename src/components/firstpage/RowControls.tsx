@@ -6,13 +6,16 @@ import { defaultShowFor, listRowMeta, listSources, upsertRowMeta, TIER_LABEL, ty
 import { listMedications } from "@/lib/medications";
 import { listServiceEvents } from "@/lib/serviceEvents";
 import { EXPOSURE_LABEL, INCIDENT_LABEL } from "@/lib/education";
-import { BackToHub, Input, Notice, PrimaryButton, SourceSelect, Stance, TextField, TierSelect, Toggle } from "./Controls";
+import { BackToHub, CardTitle, Input, Notice, PrimaryButton, SourceSelect, Stance, TextField, TierSelect, Toggle } from "./Controls";
 
 // The rows that already live in the record: problems, medicines, postings,
 // exposures and events, shots. Here the veteran decides what prints, attaches
 // a source to each row, and adds the few fields the page needs that the record
 // does not hold: a plain status for a problem, the medication directions copied
 // word for word, the unit for a posting. Nothing here changes the record itself.
+//
+// "Print this row" saves on the tap: choosing what prints is one tap. The
+// source, tier and extra fields still save with the row's own button.
 
 type Item = { key: RowTableKey; id: string; title: string; sub: string; defaultShow: boolean; defaultTier: Tier };
 
@@ -40,44 +43,51 @@ function RowCard({ item, meta, sources, onSave }: { item: Item; meta: FpRowMeta 
     setBusy(false);
     setSaved(true);
   }
+  async function setPrint(v: boolean) {
+    setShow(v);
+    await onSave({ show: v });
+  }
   const touch = () => setSaved(false);
 
   return (
-    <li className="space-y-2 py-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <div className="text-sm font-medium text-ink">{item.title}</div>
-          {item.sub && <div className="text-[0.8125rem] text-muted">{item.sub}</div>}
-          {!item.defaultShow && <div className="mt-0.5 text-[0.8125rem] text-warn">Starts off the page. It prints only if you turn it on.</div>}
-        </div>
-        <Toggle checked={show} onChange={(v) => { setShow(v); touch(); }} label="Print this row" />
+    <li className="space-y-4 py-5">
+      <div>
+        <p className="text-[0.9375rem] font-semibold leading-snug text-ink">{item.title}</p>
+        {item.sub && <p className="mt-0.5 text-sm text-muted">{item.sub}</p>}
+        {!item.defaultShow && <p className="mt-1 text-sm font-medium text-ink">Starts off the page. It prints only if you turn it on.</p>}
       </div>
+      <Toggle
+        checked={show}
+        onChange={setPrint}
+        label="Print this row"
+        detail={show ? "On the page. Saved when you tap." : "Off the page. Saved when you tap."}
+      />
       {show && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-5 rounded-xl border border-line bg-canvas/60 p-4">
           <SourceSelect sources={sources} value={sourceId} onChange={(id) => { setSourceId(id); if (id) setTier("record"); touch(); }} />
           <TierSelect value={tier} onChange={(t) => { setTier(t); touch(); }} />
           {item.key === "conditions" && (
-            <div className="sm:col-span-2"><Input label="Status, in plain words" value={status} onChange={(v) => { setStatus(v); touch(); }} placeholder="e.g. Active, more often since spring. Treated. Chronic. Stable, not today's visit." /></div>
+            <Input label="Status, in plain words" value={status} onChange={(v) => { setStatus(v); touch(); }} placeholder="e.g. Active, more often since spring. Treated. Chronic. Stable, not today's visit." />
           )}
           {item.key === "medications" && (
             <>
-              <div className="sm:col-span-2"><TextField label="Directions, copied word for word from the pharmacy printout" voice={false} value={directions} onChange={(v) => { setDirections(v); touch(); }} rows={2} placeholder="e.g. 50 mg tablet. Take 1 tablet by mouth twice daily." /></div>
-              <Input label="Since (year, as printed)" value={since} onChange={(v) => { setSince(v); touch(); }} placeholder="e.g. 2023" />
+              <TextField label="Directions, copied word for word from the pharmacy printout" voice={false} value={directions} onChange={(v) => { setDirections(v); touch(); }} rows={2} placeholder="e.g. 50 mg tablet. Take 1 tablet by mouth twice daily." />
+              <Input label="Since (year, as printed)" inputMode="numeric" value={since} onChange={(v) => { setSince(v); touch(); }} placeholder="e.g. 2023" />
             </>
           )}
           {item.key === "check_ins" && (
             <>
               <Input label="Unit for this posting" value={unit} onChange={(v) => { setUnit(v); touch(); }} placeholder="e.g. 2nd Battalion, 14th Infantry" />
-              <div className="self-end"><Toggle checked={withheld} onChange={(v) => { setStatus(v ? "withheld" : ""); touch(); }} label="Print 'Location withheld' instead of the place" /></div>
+              <Toggle checked={withheld} onChange={(v) => { setStatus(v ? "withheld" : ""); touch(); }} label="Print 'Location withheld' instead of the place" />
             </>
           )}
+          <div className="flex flex-wrap items-center gap-3">
+            <PrimaryButton onClick={save} disabled={busy}>{busy ? "Saving…" : "Save this row"}</PrimaryButton>
+            {saved && <span role="status" className="text-[0.9375rem] font-semibold text-success">Saved.</span>}
+          </div>
         </div>
       )}
-      <div className="flex items-center gap-3">
-        <PrimaryButton onClick={save} disabled={busy}>{busy ? "Saving…" : "Save this row"}</PrimaryButton>
-        {saved && <span className="text-[0.8125rem] text-success">Saved.</span>}
-        {meta?.tier && <span className="text-[0.8125rem] text-faint">Now: {TIER_LABEL[meta.tier]}{meta.source_id ? ", source attached" : ""}</span>}
-      </div>
+      {meta?.tier && <p className="text-sm text-muted">Now: {TIER_LABEL[meta.tier]}{meta.source_id ? ", source attached" : ""}</p>}
     </li>
   );
 }
@@ -147,11 +157,10 @@ export default function RowControls() {
       <BackToHub />
       <Stance />
       <Notice error={error} />
-      {loading ? <p className="text-sm text-muted">Loading your record…</p> : groups.map((g) => (
-        <section key={g.title} className="card p-5">
-          <div className="text-sm font-semibold text-ink">{g.title}</div>
-          <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">{g.note}</p>
-          {g.items.length === 0 ? <p className="mt-2 text-[0.8125rem] text-faint">Nothing in the record yet.</p> : (
+      {loading ? <p className="text-[0.9375rem] text-muted">Loading your record…</p> : groups.map((g) => (
+        <section key={g.title} className="card p-5 sm:p-6">
+          <CardTitle lede={g.note}>{g.title}</CardTitle>
+          {g.items.length === 0 ? <p className="mt-3 text-[0.9375rem] text-muted">Nothing in the record yet.</p> : (
             <ul className="mt-2 divide-y divide-line">
               {g.items.map((it) => (
                 <RowCard

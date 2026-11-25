@@ -162,35 +162,35 @@ export default function LocationsView() {
     setEditId(null);
   }
 
-  if (!loaded) return <p className="text-sm text-muted">Loading…</p>;
+  if (!loaded) return <p className="text-[0.9375rem] text-muted">Loading…</p>;
   if (!user) {
     return (
       <div className="card p-6">
-        <p className="text-sm text-muted">Sign in to see your locations.</p>
-        <Link href="/" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">Go to sign in</Link>
+        <p className="text-[0.9375rem] text-muted">Sign in to see your locations.</p>
+        <Link href="/" className="btn btn-primary mt-4">Go to sign in</Link>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted">
+      <p className="text-[0.9375rem] leading-relaxed text-muted">
         Every place you&apos;ve logged. Tap a location to learn its background, review the documented
         exposures tied to it, or remove it from your record.
       </p>
 
       {rows.length > 0 && (
-        <div className="rounded-lg border-l-2 border-accent bg-accent/5 px-3.5 py-2.5 text-[0.8125rem] leading-relaxed text-muted">
+        <div className="rounded-xl border border-line bg-canvas px-4 py-3 text-[0.9375rem] leading-relaxed text-muted">
           <span className="font-semibold text-ink">How long you were somewhere matters.</span> A brief stop is
           weighed differently than a long assignment. Set your arrival and departure years on each location so your
-          record — and your claim — stays accurate and credible.
+          record, and your claim, stays accurate and credible.
         </div>
       )}
 
       {rows.length === 0 ? (
         <div className="card p-6 text-center">
-          <p className="text-sm text-muted">No locations yet.</p>
-          <Link href="/map" className="mt-3 btn btn-primary">
+          <p className="text-[0.9375rem] text-muted">No locations yet.</p>
+          <Link href="/map" className="btn btn-primary mt-4">
             Map where you served
           </Link>
         </div>
@@ -202,138 +202,135 @@ export default function LocationsView() {
           const ye = yearOf(r.date_end);
           const range = ys || ye ? `${ys ?? "?"}${ye && ye !== ys ? `–${ye}` : ""}` : null;
           return (
-            <div key={r.id} className="overflow-hidden card">
-              <div className="h-1 bg-accent" />
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="font-bold text-ink">{r.place_name || "A logged location"}</div>
-                    <div className="text-[0.8125rem] text-muted">
-                      {[range, durationLabel(ys, ye), r.conflict].filter(Boolean).join(", ") || "Year not set"}
+            <div key={r.id} className="card p-5">
+              <h2 className="text-lg font-semibold tracking-tight text-ink">{r.place_name || "A logged location"}</h2>
+              <p className="mt-0.5 text-[0.9375rem] text-muted">
+                {[range, durationLabel(ys, ye), r.conflict].filter(Boolean).join(", ") || "Year not set"}
+              </p>
+
+              {/* How long were you here? — duration nuance */}
+              {editId === r.id ? (
+                <div className="mt-4 rounded-xl border border-line bg-canvas p-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <span className="field-label">Arrived</span>
+                      <MonthYearWheel month={edStartMonth} year={parseInt(edStart) || new Date().getUTCFullYear()} day={edStartDay} onMonthChange={setEdStartMonth} onYearChange={(y) => setEdStart(String(y))} onDayChange={setEdStartDay} approximate={edStartApprox} onApproximateChange={setEdStartApprox} />
                     </div>
+                    <div>
+                      <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-1 hover:bg-surface">
+                        <input type="checkbox" checked={edHasEnd} onChange={(e) => setEdHasEnd(e.target.checked)} className="h-6 w-6 flex-none accent-brand" />
+                        <span className="text-[0.9375rem] font-semibold text-ink">I know when I left</span>
+                      </label>
+                      {edHasEnd && (
+                        <div className="mt-1">
+                          <span className="field-label">Departed</span>
+                          <MonthYearWheel month={edEndMonth} year={parseInt(edEnd) || new Date().getUTCFullYear()} day={edEndDay} onMonthChange={setEdEndMonth} onYearChange={(y) => setEdEnd(String(y))} onDayChange={setEdEndDay} minYear={parseInt(edStart) || 1945} approximate={edEndApprox} onApproximateChange={setEdEndApprox} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button type="button" onClick={() => saveDates(r.id)} className="btn btn-primary btn-lg">Save dates</button>
+                    <button type="button" onClick={() => setEditId(null)} className="btn btn-secondary btn-lg">Cancel</button>
                   </div>
                 </div>
+              ) : (
+                <button type="button" onClick={() => startEdit(r)} className="btn btn-secondary mt-3">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                    <path d="M12 6v6l4 2M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" />
+                  </svg>
+                  {ye && ye !== ys ? "Edit how long you were here" : "Set how long you were here"}
+                </button>
+              )}
 
-                {/* How long were you here? — duration nuance */}
-                {editId === r.id ? (
-                  <div className="mt-3 rounded-lg border border-line bg-canvas p-3">
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <div>
-                        <div className="text-[0.8125rem] font-medium text-ink">Arrived</div>
-                        <div className="mt-1">
-                          <MonthYearWheel month={edStartMonth} year={parseInt(edStart) || new Date().getUTCFullYear()} day={edStartDay} onMonthChange={setEdStartMonth} onYearChange={(y) => setEdStart(String(y))} onDayChange={setEdStartDay} approximate={edStartApprox} onApproximateChange={setEdStartApprox} />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="flex items-center gap-2 text-[0.8125rem] font-medium text-ink">
-                          <input type="checkbox" checked={edHasEnd} onChange={(e) => setEdHasEnd(e.target.checked)} />
-                          Departed
-                        </label>
-                        {edHasEnd && (
-                          <div className="mt-1">
-                            <MonthYearWheel month={edEndMonth} year={parseInt(edEnd) || new Date().getUTCFullYear()} day={edEndDay} onMonthChange={setEdEndMonth} onYearChange={(y) => setEdEnd(String(y))} onDayChange={setEdEndDay} minYear={parseInt(edStart) || 1945} approximate={edEndApprox} onApproximateChange={setEdEndApprox} />
-                          </div>
+              {classes.length > 0 && (
+                <ul className="mt-4 flex flex-wrap gap-2" aria-label="Exposures at this place">
+                  {classes.map((c) => {
+                    const isConfirmed = confirmedSet.has(c);
+                    return (
+                      <li
+                        key={c}
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium ${
+                          isConfirmed ? "bg-success-soft text-success" : "bg-brand/5 text-brand"
+                        }`}
+                      >
+                        {isConfirmed && (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
                         )}
-                      </div>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <button onClick={() => saveDates(r.id)} className="rounded-md bg-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-brand-foreground hover:bg-brand-600">Save</button>
-                      <button onClick={() => setEditId(null)} className="rounded-md border border-line px-3 py-1.5 text-[0.8125rem] font-medium text-muted hover:bg-canvas">Cancel</button>
-                    </div>
-                  </div>
-                ) : (
-                  <button onClick={() => startEdit(r)} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                      <path d="M12 6v6l4 2M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" />
-                    </svg>
-                    {ye && ye !== ys ? "Edit how long you were here" : "Set how long you were here"}
-                  </button>
-                )}
+                        {EXPOSURE_LABEL[c] ?? c}
+                        {isConfirmed && <span className="sr-only">, confirmed</span>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
 
-                {classes.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {classes.map((c) => {
-                      const isConfirmed = confirmedSet.has(c);
-                      return (
-                        <span
-                          key={c}
-                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[0.8125rem] ${
-                            isConfirmed ? "bg-success-soft text-success" : "bg-brand/5 text-brand"
-                          }`}
-                        >
-                          {isConfirmed && (
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
-                              <path d="M20 6 9 17l-5-5" />
-                            </svg>
-                          )}
-                          {EXPOSURE_LABEL[c] ?? c}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
+              {classes.length > 0 && (
+                <div className="mt-3 space-y-1.5 border-l-2 border-line pl-3">
+                  {classes.map((c) => (
+                    <p key={c} className="text-sm leading-relaxed text-muted">
+                      <span className="font-semibold text-ink">{EXPOSURE_LABEL[c] ?? c}:</span>{" "}
+                      {EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}
+                    </p>
+                  ))}
+                </div>
+              )}
 
-                {classes.length > 0 && (
-                  <div className="mt-3 space-y-1 border-l-2 border-line pl-3">
-                    {classes.map((c) => (
-                      <p key={c} className="text-[0.8125rem] leading-relaxed text-muted">
-                        <span className="font-semibold text-ink">{EXPOSURE_LABEL[c] ?? c}:</span>{" "}
-                        {EXPOSURE_BASIS[c] ?? "ATSDR toxicological profile."}
-                      </p>
+              {r.notes && <p className="mt-3 text-[0.9375rem] italic text-muted">{r.notes}</p>}
+
+              {/* Background */}
+              {info[r.id] ? (
+                <div className="mt-4 rounded-xl bg-canvas p-4">
+                  <h3 className="text-[0.9375rem] font-semibold text-ink">The history of this ground</h3>
+                  <div className="mt-1.5 space-y-2">
+                    {info[r.id].split(/\n{2,}/).map((para, k) => (
+                      <p key={k} className="text-[0.9375rem] leading-relaxed text-ink">{para}</p>
                     ))}
                   </div>
-                )}
+                  <p className="mt-2 text-sm text-muted">General history drawn from the historical record. Confirm specific dates and details independently.</p>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => loadInfo(r)}
+                  disabled={infoBusy === r.id}
+                  className="btn btn-secondary mt-3"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
+                  </svg>
+                  {infoBusy === r.id ? "Loading…" : "Learn about this place"}
+                </button>
+              )}
 
-                {r.notes && <p className="mt-3 text-[0.8125rem] italic text-muted">{r.notes}</p>}
-
-                {/* Background */}
-                {info[r.id] ? (
-                  <div className="mt-4 rounded-lg bg-canvas p-4">
-                    <div className="text-[0.8125rem] font-medium text-muted">The history of this ground</div>
-                    <div className="mt-1.5 space-y-2">
-                      {info[r.id].split(/\n{2,}/).map((para, k) => (
-                        <p key={k} className="text-[0.9375rem] leading-relaxed text-ink">{para}</p>
-                      ))}
-                    </div>
-                    <p className="mt-2 text-[0.8125rem] text-faint">General history drawn from the historical record — confirm specific dates and details independently.</p>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => loadInfo(r)}
-                    disabled={infoBusy === r.id}
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-line px-3 py-1.5 text-[0.8125rem] font-semibold text-brand transition hover:border-brand/40 hover:bg-brand/5 disabled:opacity-60"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                      <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
-                    </svg>
-                    {infoBusy === r.id ? "Loading…" : "Learn about this place"}
-                  </button>
-                )}
-
-                {/* Remove */}
-                <div className="mt-4 border-t border-line pt-3">
-                  {confirmDel === r.id ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[0.8125rem] text-muted">Remove this location? This can&apos;t be undone.</span>
-                      <button onClick={() => remove(r.id)} className="rounded-md bg-red-600 px-3 py-1 text-[0.8125rem] font-semibold text-white hover:bg-red-700">
+              {/* Remove */}
+              <div className="mt-4 border-t border-line pt-3">
+                {confirmDel === r.id ? (
+                  <div>
+                    <p className="text-[0.9375rem] text-ink">Remove this location? This can&apos;t be undone.</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => remove(r.id)} className="btn btn-danger">
                         Remove
                       </button>
-                      <button onClick={() => setConfirmDel(null)} className="rounded-md border border-line px-3 py-1 text-[0.8125rem] font-medium text-muted hover:bg-canvas">
+                      <button type="button" onClick={() => setConfirmDel(null)} className="btn btn-secondary">
                         Cancel
                       </button>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDel(r.id)}
-                      className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-red-600 hover:underline"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                      </svg>
-                      Remove from my profile
-                    </button>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDel(r.id)}
+                    className="btn btn-ghost -ml-2 text-scarlet"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    Remove from my profile
+                  </button>
+                )}
               </div>
             </div>
           );

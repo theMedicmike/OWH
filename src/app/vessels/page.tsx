@@ -4,10 +4,10 @@ import VesselsListCard from "@/components/VesselsListCard";
 export default function VesselsPage() {
   return (
     <AppShell title="Ships you served aboard">
-      <p className="mb-1 text-sm text-muted">
+      <p className="mb-1 text-[0.9375rem] text-muted">
         A ship does not sit in one place on a map. It gets its own page.
       </p>
-      <p className="mb-4 text-[0.8125rem] leading-relaxed text-faint">
+      <p className="mb-4 text-sm leading-relaxed text-muted">
         Nothing here is submitted automatically, and nothing you write is touched by AI. This documents where you
         served; it never tells you what you qualify for.
       </p>
@@ -16,7 +16,7 @@ export default function VesselsPage() {
         <VesselsListCard />
 
         <div className="card p-5">
-          <div className="text-sm font-semibold text-ink">Why the name and the dates are the whole thing</div>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Why the name and the dates are the whole thing</h2>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
             For a sailor, the ship <em>is</em> the location, and a records request is written against three facts:
             the vessel, the hull number, and the dates you were aboard. With those, an accredited VSO can request
@@ -40,9 +40,9 @@ export default function VesselsPage() {
             VA's own list, instead of just sending him, is the difference
             between a limit and a brush-off. */}
         <div className="rounded-xl border-2 border-brand bg-brand/5 p-5">
-          <div className="text-sm font-semibold text-brand">
+          <h2 className="text-lg font-semibold tracking-tight text-brand">
             Vietnam-era: the answer comes from the deck logs, not from us
-          </div>
+          </h2>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
             VA publishes a list of Navy and Coast Guard ships associated with service in Vietnam and exposure to
             herbicides. Whether a herbicide presumption reaches a particular sailor depends on where his ship
@@ -70,7 +70,7 @@ export default function VesselsPage() {
         </div>
 
         <div className="card p-5">
-          <div className="text-sm font-semibold text-ink">Still worth pinning on the map</div>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Still worth pinning on the map</h2>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             Your <strong>homeport</strong> and the <strong>shipyard</strong> where your ship was overhauled are real
             places with documented exposures behind them — asbestos, solvents and fuels, and refueling radiological
@@ -79,7 +79,7 @@ export default function VesselsPage() {
           </p>
         </div>
 
-        <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
+        <p className="px-1 text-sm leading-relaxed text-muted">
           This section documents. It does not diagnose, does not advise you, does not file for you, and is not your
           representative (38 CFR 14.629). If you or someone you know is struggling, the Veterans Crisis Line is here
           24/7 — dial 988, then press 1. Text 838255.

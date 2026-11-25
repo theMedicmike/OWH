@@ -15,8 +15,8 @@ export const metadata = {
 export default function VsoPage() {
   return (
     <AppShell title="Find a VSO" publicPage>
-      <p className="mb-4 text-sm text-muted">
-        A Veteran Service Officer reviews your packet and files with you — free, every time, no matter which VSO you pick.
+      <p className="mb-4 text-[0.9375rem] leading-relaxed text-muted">
+        A Veteran Service Officer reviews your packet and files with you. Free, every time, no matter which VSO you pick.
       </p>
       <VsoLocatorCard />
     </AppShell>

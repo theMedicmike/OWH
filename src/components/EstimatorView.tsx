@@ -255,118 +255,111 @@ export default function EstimatorView() {
   const setCount = Object.values(munRates).filter((r) => r > 0).length + logged.length;
   const confidence = setCount >= 4 ? "moderate" : "low";
 
-  if (!ready) return <p className="text-sm text-muted">Loading…</p>;
+  if (!ready) return <p className="text-[0.9375rem] text-muted">Loading…</p>;
 
   if (!user) {
     return (
       <div className="card p-6">
-        <p className="text-sm text-muted">
+        <p className="text-[0.9375rem] text-muted">
           Sign in on the map to build your record, then come back here for your estimate.
         </p>
-        <Link href="/" className="mt-3 inline-block text-sm font-medium text-brand hover:underline">
-          ← Go to the map
+        <Link href="/" className="btn btn-primary mt-4">
+          Go to the map
         </Link>
       </div>
     );
   }
 
   const card = "card p-5";
+  const h2 = "text-lg font-semibold tracking-tight text-ink";
+  const lede = "mt-1 text-[0.9375rem] leading-relaxed text-muted";
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-accent/30 bg-accent/5">
-        
-        <div className="p-5">
-          <div className="text-[0.8125rem] font-medium text-muted">Private — for you and your clinician</div>
-          <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink">
-            A standard blood test mostly shows <strong>recent</strong> exposure — last week, not your career.
-            Many service toxicants <strong>bioaccumulate</strong>: lead settles into bone for decades and can
-            remobilize years later; others lodge in organs. So a &ldquo;normal&rdquo; result doesn&apos;t rule
-            out a lifetime of stored exposure.
-          </p>
-          <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
-            This tool <strong>translates what you were exposed to</strong> into where those toxicants tend to
-            accumulate and the tests that can reveal them. It does <strong>not</strong> measure what is in your
-            body, and it is <strong>not</strong> part of your VA claim — keep it private and don&apos;t submit
-            it as evidence.
-          </p>
-        </div>
+      <div className="card card-raise p-5">
+        <h2 className={h2}>Private, for you and your clinician</h2>
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
+          A standard blood test mostly shows <strong>recent</strong> exposure — last week, not your career.
+          Many service toxicants <strong>bioaccumulate</strong>: lead settles into bone for decades and can
+          remobilize years later; others lodge in organs. So a &ldquo;normal&rdquo; result doesn&apos;t rule
+          out a lifetime of stored exposure.
+        </p>
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
+          This tool <strong>translates what you were exposed to</strong> into where those toxicants tend to
+          accumulate and the tests that can reveal them. It does <strong>not</strong> measure what is in your
+          body, and it is <strong>not</strong> part of your VA claim — keep it private and don&apos;t submit
+          it as evidence.
+        </p>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink">Your service profile</div>
-        <div className="mt-1 text-[0.8125rem] text-muted">
+        <h2 className={h2}>Your service profile</h2>
+        <p className={lede}>
           {logged.length > 0
             ? "Built from the exposures you logged on the map, plus the details below."
             : "Log exposures on the map and they'll feed this automatically. Add the details below too."}
-        </div>
+        </p>
 
         {logged.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
+          <ul className="mt-3 flex flex-wrap gap-2" aria-label="Exposures you logged">
             {logged.map((e) => (
-              <span key={e} className="rounded-full border border-line bg-canvas px-2.5 py-1 text-[0.8125rem] text-muted">
+              <li key={e} className="rounded-full border border-line bg-canvas px-3 py-1.5 text-sm text-ink">
                 {EXPOSURE_LABEL[e] ?? e}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
 
-        <div className="mt-4 grid gap-3">
-          <div className="flex items-center gap-3">
-            <label className="w-28 text-[0.8125rem] text-muted">Primary role</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)} className="flex-1 rounded-md border border-line bg-transparent px-2 py-1.5 text-sm">
-              <option value="">Select your role…</option>
+        <div className="mt-5 grid gap-5 sm:grid-cols-[1fr_9rem]">
+          <div>
+            <label htmlFor="est-role" className="field-label">Primary role</label>
+            <select id="est-role" value={role} onChange={(e) => setRole(e.target.value)} className="field">
+              <option value="">Choose your role</option>
               {Object.keys(ROLES).map((r) => (
                 <option key={r}>{r}</option>
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-3">
-            <label className="w-28 text-[0.8125rem] text-muted">Years of service</label>
-            <div className="w-28">
-              <WheelPicker options={YEARS_OF_SERVICE} index={years} onChange={setYears} ariaLabel="Years of service" />
-            </div>
+          <div>
+            <span className="field-label">Years of service</span>
+            <WheelPicker options={YEARS_OF_SERVICE} index={years} onChange={setYears} ariaLabel="Years of service" />
           </div>
         </div>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink">Weapons &amp; munitions exposure</div>
-        <div className="mt-1 text-[0.8125rem] text-muted">
+        <h2 className={h2}>Weapons and munitions exposure</h2>
+        <p className={lede}>
           Roughly how much were you around each, across your whole service? No exact numbers needed.
-        </div>
+        </p>
 
         {MUNITION_GROUPS.map((g) => (
-          <div key={g.group} className="mt-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[0.8125rem] font-medium text-ink">{g.group}</span>
-              <span className="text-[0.8125rem] text-faint">{g.metals}</span>
-            </div>
+          <div key={g.group} className="mt-5">
+            <div className="text-[0.9375rem] font-semibold text-ink">{g.group}</div>
+            <div className="text-sm text-muted">Mostly {g.metals}</div>
             {g.items.map((it) => {
               const cur = munRates[it.key] ?? 0;
               return (
-                <div key={it.key} className="flex items-center justify-between gap-3 border-t border-line py-2">
-                  <span className="text-sm text-ink">{it.label}</span>
-                  <div className="flex flex-none overflow-hidden rounded-md border border-line text-[0.8125rem]">
+                <fieldset key={it.key} className="mt-3 border-t border-line pt-3">
+                  <legend className="sr-only">{it.label}</legend>
+                  <div aria-hidden="true" className="text-[0.9375rem] text-ink">{it.label}</div>
+                  <div className="mt-2 grid grid-cols-4 gap-1.5">
                     {RATES.map((label, ri) => {
                       const on = cur === ri;
                       return (
                         <button
                           key={ri}
                           type="button"
+                          aria-pressed={on}
                           onClick={() => setMunRates((p) => ({ ...p, [it.key]: ri }))}
-                          className={
-                            (on ? "bg-brand/10 text-brand " : "text-muted hover:bg-canvas ") +
-                            (ri > 0 ? "border-l border-line " : "") +
-                            "px-2.5 py-1"
-                          }
+                          className={`btn min-h-11 px-1 ${on ? "btn-primary" : "btn-secondary"}`}
                         >
                           {label}
                         </button>
                       );
                     })}
                   </div>
-                </div>
+                </fieldset>
               );
             })}
           </div>
@@ -374,13 +367,11 @@ export default function EstimatorView() {
       </div>
 
       <div className={card}>
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-semibold text-ink">Estimated exposure likelihood — metals</div>
-          <span className="text-[0.8125rem] text-muted">{confidence} confidence</span>
-        </div>
-        <p className="mt-1 text-[0.8125rem] text-muted">How likely your service led to meaningful exposure to each metal — not a measurement of what&apos;s in your body now.</p>
-        <div className="mt-3 space-y-2.5">
-          {present.length === 0 && <p className="text-sm text-muted">Set your role, munitions, and exposures to see your estimate.</p>}
+        <h2 className={h2}>Estimated exposure likelihood: metals</h2>
+        <p className="mt-1 text-sm text-muted">Confidence: {confidence}</p>
+        <p className={lede}>How likely your service led to meaningful exposure to each metal. Not a measurement of what&apos;s in your body now.</p>
+        <div className="mt-4 space-y-4">
+          {present.length === 0 && <p className="text-[0.9375rem] text-muted">Set your role, munitions, and exposures to see your estimate.</p>}
           {present.map((m) => {
             const v = idx[m.key];
             const b = band(v);
@@ -389,47 +380,50 @@ export default function EstimatorView() {
             const open = expanded.has(m.key);
             return (
               <div key={m.key}>
-                <div className="flex justify-between text-sm">
+                <div className="flex items-center justify-between gap-3 text-[0.9375rem]">
                   {slug ? (
-                    <Link href={`/learn/${slug}`} className="font-medium text-brand hover:underline">{m.name}</Link>
+                    <Link href={`/learn/${slug}`} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">{m.name}</Link>
                   ) : (
                     <span className="text-ink">{m.name}</span>
                   )}
-                  <span style={{ color: b.text }}>{b.label}</span>
+                  <span className="font-semibold text-ink">{b.label}</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-canvas">
-                  <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
+                <div className="mt-1 h-2.5 rounded-full bg-canvas">
+                  <span className="block h-2.5 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
                 </div>
                 {tox && (
                   <button
-                    onClick={() => setExpanded((prev) => { const n = new Set(prev); n.has(m.key) ? n.delete(m.key) : n.add(m.key); return n; })}
-                    className="mt-1 text-[0.8125rem] font-medium text-muted hover:text-brand"
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => setExpanded((prev) => { const n = new Set(prev); if (n.has(m.key)) n.delete(m.key); else n.add(m.key); return n; })}
+                    className="btn btn-ghost mt-1 -ml-2"
                   >
-                    {open ? "Hide why this is flagged ▲" : "Why is this flagged? ▼"}
+                    {open ? "Hide why this is flagged" : "Why is this flagged?"}
                   </button>
                 )}
                 {tox && open && (
-                  <div className="mt-1.5 rounded-lg bg-canvas p-2.5 text-[0.8125rem] leading-relaxed text-muted">
+                  <div className="mt-1 space-y-2 rounded-xl bg-canvas p-4 text-[0.9375rem] leading-relaxed text-muted">
                     <p><span className="font-semibold text-ink">Why it&apos;s flagged:</span> {tox.where}</p>
-                    <p className="mt-1.5"><span className="font-semibold text-ink">How sure is this:</span> Not sure at the level of an individual — this reflects documented sources for your role, not a measurement of what&apos;s actually in your body. There is no model that turns a service history into a body-burden number.</p>
-                    <p className="mt-1.5"><span className="font-semibold text-ink">What a real test involves:</span> {tox.tests[0]}</p>
+                    <p><span className="font-semibold text-ink">How sure is this:</span> Not sure at the level of an individual — this reflects documented sources for your role, not a measurement of what&apos;s actually in your body. There is no model that turns a service history into a body-burden number.</p>
+                    <p><span className="font-semibold text-ink">What a real test involves:</span> {tox.tests[0]}</p>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
-        <p className="mt-3 text-[0.8125rem] text-faint">Tracking {METALS.length} metals; showing the ones your profile flags. <Link href="/learn" className="font-medium text-brand hover:underline">Open the full exposure library</Link></p>
+        <p className="mt-4 text-sm text-muted">Tracking {METALS.length} metals; showing the ones your profile flags.</p>
+        <Link href="/learn" className="btn btn-secondary mt-3">Open the full exposure library</Link>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink">Chemical &amp; other contaminants</div>
-        <div className="mt-1 text-[0.8125rem] text-muted">
+        <h2 className={h2}>Chemical and other contaminants</h2>
+        <p className={lede}>
           Exposure load from what you logged. Unlike metals, these don&apos;t build up in tissue — they act on organs and the body&apos;s defenses.
-        </div>
-        <div className="mt-3 space-y-2.5">
+        </p>
+        <div className="mt-4 space-y-4">
           {cPresent.length === 0 && (
-            <p className="text-sm text-muted">
+            <p className="text-[0.9375rem] text-muted">
               Log chemical, water, PFAS, radiation, pesticide, or particulate exposures on the map to see these.
             </p>
           )}
@@ -438,37 +432,37 @@ export default function EstimatorView() {
             const b = band(v);
             return (
               <div key={c.key}>
-                <div className="flex justify-between gap-3 text-sm">
+                <div className="flex items-center justify-between gap-3 text-[0.9375rem]">
                   {CONTAMINANT_KEY_TO_SLUG[c.key] ? (
-                    <Link href={`/learn/${CONTAMINANT_KEY_TO_SLUG[c.key]}`} className="font-medium text-brand hover:underline">{c.name}</Link>
+                    <Link href={`/learn/${CONTAMINANT_KEY_TO_SLUG[c.key]}`} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">{c.name}</Link>
                   ) : (
                     <span className="text-ink">{c.name}</span>
                   )}
-                  <span className="shrink-0" style={{ color: b.text }}>{b.label}</span>
+                  <span className="shrink-0 font-semibold text-ink">{b.label}</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-canvas">
-                  <span className="block h-2 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
+                <div className="mt-1 h-2.5 rounded-full bg-canvas">
+                  <span className="block h-2.5 rounded-full" style={{ width: `${v}%`, background: b.bar }} />
                 </div>
               </div>
             );
           })}
         </div>
         {(cSystems.length > 0 || cDepletes.length > 0) && (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div>
-              <div className="text-[0.8125rem] font-medium text-ink">Systems at risk</div>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <h3 className="text-[0.9375rem] font-semibold text-ink">Systems at risk</h3>
+              <div className="mt-2 flex flex-wrap gap-2">
                 {cSystems.map((o) => (
-                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-[0.8125rem] text-muted">{o}</span>
+                  <span key={o} className="rounded-lg bg-canvas px-3 py-1.5 text-sm text-ink">{o}</span>
                 ))}
               </div>
             </div>
             {cDepletes.length > 0 && (
               <div>
-                <div className="text-[0.8125rem] font-medium text-ink">Defenses these can affect</div>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <h3 className="text-[0.9375rem] font-semibold text-ink">Defenses these can affect</h3>
+                <div className="mt-2 flex flex-wrap gap-2">
                   {cDepletes.map((o) => (
-                    <span key={o} className="rounded-md bg-success-soft px-2 py-1 text-[0.8125rem] text-success">{o}</span>
+                    <span key={o} className="rounded-lg bg-success-soft px-3 py-1.5 text-sm text-success">{o}</span>
                   ))}
                 </div>
               </div>
@@ -483,41 +477,38 @@ export default function EstimatorView() {
           calculation that does not exist — and a depletion list one tap from a
           burden estimate is the click path that makes intent irrelevant on a
           surface whose whole job is documentation. */}
-      <div className="grid gap-4">
-        <div className={card}>
-          <div className="text-sm font-semibold text-ink">Where these metals tend to accumulate</div>
-          <p className="mt-1 text-[0.8125rem] text-muted">Documented biology — where each flagged metal is known to settle if exposure occurred.</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {organs.length ? (
-              organs.map((o) => {
-                const s = ORGAN_NAME_TO_SLUG[o];
-                return s ? (
-                  <Link key={o} href={`/learn/organ/${s}`} className="rounded-md bg-brand/5 px-2 py-1 text-[0.8125rem] font-medium text-brand hover:bg-brand/10">{o}</Link>
-                ) : (
-                  <span key={o} className="rounded-md bg-canvas px-2 py-1 text-[0.8125rem] text-muted">{o}</span>
-                );
-              })
-            ) : (
-              <span className="text-sm text-muted">Nothing elevated enough to map yet.</span>
-            )}
-          </div>
+      <div className={card}>
+        <h2 className={h2}>Where these metals tend to accumulate</h2>
+        <p className={lede}>Documented biology: where each flagged metal is known to settle if exposure occurred.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {organs.length ? (
+            organs.map((o) => {
+              const s = ORGAN_NAME_TO_SLUG[o];
+              return s ? (
+                <Link key={o} href={`/learn/organ/${s}`} className="btn btn-secondary min-h-11 rounded-full px-4">{o}</Link>
+              ) : (
+                <span key={o} className="inline-flex min-h-11 items-center rounded-full bg-canvas px-4 text-[0.9375rem] text-ink">{o}</span>
+              );
+            })
+          ) : (
+            <span className="text-[0.9375rem] text-muted">Nothing elevated enough to map yet.</span>
+          )}
         </div>
-
       </div>
 
       <div className={card}>
-        <div className="text-sm font-medium text-ink">What to investigate next</div>
-        <div className="mt-2">
+        <h2 className={h2}>What to investigate next</h2>
+        <ul className="mt-2">
           {tests.map((t) => (
-            <div key={t} className="border-t border-line py-2 text-sm text-ink first:border-t-0">
+            <li key={t} className="border-t border-line py-3 text-[0.9375rem] text-ink first:border-t-0">
               {t}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
-      <div className="rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
-        <div className="font-semibold text-brand">A note on testing — stay safe</div>
+      <div className="rounded-2xl border-2 border-brand bg-brand/5 px-5 py-4">
+        <h2 className={h2}>A note on testing: stay safe</h2>
         <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">
           Ask your clinician for <strong>standard, unprovoked</strong> tests (for example, a 24-hour urine
           collected <em>without</em> a chelating agent). <strong>Avoid &ldquo;provoked&rdquo; or
@@ -527,7 +518,7 @@ export default function EstimatorView() {
         </p>
       </div>
 
-      <p className="border-t border-line px-1 pt-4 text-[0.8125rem] leading-relaxed text-faint">
+      <p className="border-t border-line px-1 pt-4 text-sm leading-relaxed text-muted">
         This is an exposure-history estimate — the lowest tier of evidence — meant to guide testing and a
         conversation with your clinician. It does not measure what is in your body, is not a diagnosis, never
         replaces medical care, and is not part of your VA claim. The exposure-to-toxicant mapping and weighting
@@ -535,7 +526,7 @@ export default function EstimatorView() {
         dial 988, then press 1.
       </p>
 
-      <p className="rounded-lg border border-line bg-canvas px-4 py-3 text-[0.8125rem] leading-relaxed text-muted">
+      <p className="rounded-xl border border-line bg-canvas px-4 py-3 text-sm leading-relaxed text-muted">
         <span className="font-semibold text-ink">Corrected 6 August 2026.</span> An earlier version of this page
         said the mapping and weightings &ldquo;will be reviewed and calibrated by the scientific advisory
         board.&rdquo; No such board exists, and that validation cannot currently be performed by anyone — there

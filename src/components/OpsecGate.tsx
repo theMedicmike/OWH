@@ -60,23 +60,22 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
     setStatus("ok");
   }
 
-  if (status === "loading") return <div className="py-12 text-center text-sm text-muted">Loading…</div>;
+  if (status === "loading") return <div className="py-12 text-center text-[0.9375rem] text-muted">Loading…</div>;
   if (status === "ok") return <>{children}</>;
 
   return (
     <div className="mx-auto max-w-xl">
-      <div className="overflow-hidden card">
-        
-        <div className="p-6">
+      <section className="card">
+        <div className="p-5 sm:p-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand/10 text-brand">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-canvas text-brand">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6" aria-hidden="true">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </span>
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-ink">Before you begin — keep it unclassified</h2>
-              <p className="text-[0.8125rem] text-muted">A one-time agreement. It protects you as much as us.</p>
+              <h2 className="text-lg font-semibold tracking-tight text-ink">Before you begin: keep it unclassified</h2>
+              <p className="text-sm text-muted">A one-time agreement. It protects you as much as us.</p>
             </div>
           </div>
 
@@ -86,7 +85,7 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
               rough year, and the exposure types. That&apos;s all the VA&apos;s presumptive links are built
               on — and it&apos;s all this app ever needs.
             </p>
-            <div className="rounded-lg border-l-2 border-accent bg-accent/5 px-3.5 py-3">
+            <div className="rounded-xl border border-line bg-canvas px-4 py-3">
               <p>
                 Please do <strong>not</strong> enter anything classified, secret, or otherwise controlled —
                 no unit movements or operations, no mission details, no capabilities, and nothing covered by
@@ -100,9 +99,9 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
             </p>
           </div>
 
-          <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-lg border border-line bg-canvas px-3.5 py-3">
-            <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5 accent-brand" />
-            <span className="text-sm text-ink">
+          <label className="mt-5 flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border border-line bg-white px-3.5 py-3 hover:bg-canvas">
+            <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5 h-6 w-6 flex-none accent-brand" />
+            <span className="text-[0.9375rem] font-medium leading-relaxed text-ink">
               I understand. I will not enter classified, secret, or NDA-protected information, and I take
               responsibility for what I share.
             </span>
@@ -113,10 +112,10 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
             disabled={!checked || busy}
             className="mt-4 w-full btn btn-primary btn-lg"
           >
-            {busy ? "One moment…" : "I agree — start my record"}
+            {busy ? "One moment…" : "I agree. Start my record"}
           </button>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

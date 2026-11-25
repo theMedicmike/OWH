@@ -17,7 +17,8 @@ import {
 import WheelPicker from "./WheelPicker";
 import MonthYearWheel from "./MonthYearWheel";
 
-const BRANCHES = ["", "Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
+const BRANCHES = ["Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
+const VA_RATINGS = ["Not rated yet", "0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"];
 const YEAR_WHEEL_OPTIONS = [...serviceYears()].reverse().map(String); // oldest first — scrolls forward through a career
 const MONTH_WHEEL_OPTIONS = ["Not set", ...MONTHS];
 
@@ -27,6 +28,33 @@ const LAYERS = [
   { v: "family", label: "A family member or caregiver, helping a veteran" },
   { v: "civilian", label: "Someone supporting a veteran" },
 ];
+
+// One large tap target per choice: the same tile the intake wizard uses, so a
+// veteran meets the same control on every screen. Chosen = filled navy.
+function Tile({ on, onClick, children, sub }: { on: boolean; onClick: () => void; children: React.ReactNode; sub?: string }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={`btn w-full flex-col items-start justify-center text-left ${on ? "btn-primary" : "btn-secondary"} min-h-14`}
+    >
+      <span className="block leading-snug">{children}</span>
+      {sub && <span className={`block text-sm font-normal leading-snug ${on ? "text-white/80" : "text-muted"}`}>{sub}</span>}
+    </button>
+  );
+}
+
+// A checkbox as a full-width row: a big box, the words beside it, the whole
+// row tappable.
+function CheckRow({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
+  return (
+    <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-line bg-white px-3.5 py-2 text-[0.9375rem] font-medium text-ink hover:bg-canvas">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-6 w-6 flex-none accent-brand" />
+      <span>{children}</span>
+    </label>
+  );
+}
 
 // Three wheels: year (required), month and day (optional, in that order of
 // usefulness) — same "spin to select" control as the map and the wizard, so a
@@ -53,7 +81,7 @@ function DatePickers({
     <div>
       <div className={`grid grid-cols-3 gap-2 ${approximate ? "opacity-40" : ""}`}>
         <div className={approximate ? "pointer-events-none" : ""}>
-          <div className="mb-1 text-center text-[0.8125rem] font-medium text-muted">Year</div>
+          <div className="mb-1 text-center text-sm font-medium text-muted">Year</div>
           <WheelPicker
             options={YEAR_WHEEL_OPTIONS}
             index={yearIndex}
@@ -62,7 +90,7 @@ function DatePickers({
           />
         </div>
         <div className={approximate ? "pointer-events-none" : ""}>
-          <div className="mb-1 text-center text-[0.8125rem] font-medium text-muted">Month</div>
+          <div className="mb-1 text-center text-sm font-medium text-muted">Month</div>
           <WheelPicker
             options={MONTH_WHEEL_OPTIONS}
             index={monthIndex}
@@ -71,7 +99,7 @@ function DatePickers({
           />
         </div>
         <div className={approximate ? "pointer-events-none" : ""}>
-          <div className="mb-1 text-center text-[0.8125rem] font-medium text-muted">Day</div>
+          <div className="mb-1 text-center text-sm font-medium text-muted">Day</div>
           <WheelPicker
             options={dayOptions}
             index={dayIndex}
@@ -81,10 +109,11 @@ function DatePickers({
         </div>
       </div>
       {onApproximateChange && (
-        <label className="mt-1.5 flex items-center gap-2 text-[0.8125rem] text-muted">
-          <input type="checkbox" checked={!!approximate} onChange={(e) => onApproximateChange(e.target.checked)} />
-          I&apos;m not sure of the exact date — this is my best guess
-        </label>
+        <div className="mt-2">
+          <CheckRow checked={!!approximate} onChange={onApproximateChange}>
+            I&apos;m not sure of the exact date. This is my best guess.
+          </CheckRow>
+        </div>
       )}
     </div>
   );
@@ -328,104 +357,108 @@ export default function AccountView() {
   if (loadErr) {
     return (
       <div className="rounded-xl border border-warn/40 bg-warn-soft p-5">
-        <div className="text-sm font-semibold text-warn">Your profile didn&apos;t load</div>
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Your profile didn&apos;t load</h2>
         <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink">{loadErr}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 btn btn-primary"
+          className="mt-4 btn btn-primary btn-lg"
         >
           Refresh
         </button>
       </div>
     );
   }
-  if (!loaded) return <p className="text-sm text-muted">Loading…</p>;
+  if (!loaded) return <p className="text-[0.9375rem] text-muted">Loading…</p>;
 
   return (
     <div className="space-y-5">
       <VerifyCard />
 
-      <div className="card p-5">
-        <div className="text-sm font-semibold text-ink">Your profile</div>
-        <p className="mt-1 text-sm text-muted">Used to personalize your timeline and your report.</p>
+      <section className="card p-5 sm:p-6">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Your profile</h2>
+        <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">Used to personalize your timeline and your report.</p>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Name</label>
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className={field} />
+        <div className="mt-5 space-y-6">
+          <div>
+            <label htmlFor="acct-name" className="field-label">Name</label>
+            <input id="acct-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className={field} autoComplete="name" />
           </div>
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Who is this account for?</label>
-            <select value={layer} onChange={(e) => setLayer(e.target.value)} className={field}>
+
+          <div>
+            <div id="acct-layer-label" className="field-label">Who is this account for?</div>
+            <div role="group" aria-labelledby="acct-layer-label" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {LAYERS.map((l) => (
-                <option key={l.v} value={l.v}>{l.label}</option>
+                <Tile key={l.v} on={layer === l.v} onClick={() => setLayer(l.v)}>{l.label}</Tile>
               ))}
-            </select>
+            </div>
             {(layer === "family" || layer === "civilian") && (
-              <div className="mt-1.5">
-                <p className="text-[0.8125rem] leading-relaxed text-muted">
+              <div className="mt-3 rounded-xl bg-canvas p-4">
+                <p className="text-[0.9375rem] leading-relaxed text-ink">
                   Thank you for standing in the gap. You can build this record on behalf of the veteran
-                  you&apos;re helping — fill in their service, locations, and health as you would your own.
+                  you&apos;re helping. Fill in their service, locations, and health as you would your own.
                 </p>
-                <label className="mb-1 mt-2 block text-[0.8125rem] font-medium text-muted">Your relationship to them</label>
+                <label htmlFor="acct-proxy" className="field-label mt-3">Your relationship to them</label>
                 <input
+                  id="acct-proxy"
                   value={proxyRelationship}
                   onChange={(e) => setProxyRelationship(e.target.value)}
                   placeholder="Spouse, mother, caregiver…"
                   className={field}
                 />
-                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">
-                  This is how their statement and claim packet will identify you — so anything you write is
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                  This is how their statement and claim packet will identify you, so anything you write is
                   never mistaken for the veteran&apos;s own words.
                 </p>
               </div>
             )}
           </div>
+
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Branch</label>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)} className={field}>
+            <div id="acct-branch-label" className="field-label">Branch</div>
+            <div role="group" aria-labelledby="acct-branch-label" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {BRANCHES.map((b) => (
-                <option key={b} value={b}>{b || "Select…"}</option>
+                // A boot camp picked for one branch is not on the next branch's
+                // list, so switching branch clears the unsaved pick rather than
+                // saving a hidden one.
+                <Tile key={b} on={branch === b} onClick={() => { if (branch !== b) setBootCamp(""); setBranch(b); }}>{b}</Tile>
               ))}
-            </select>
+            </div>
           </div>
+
           {/* Year is the only part that matters to the VA and the only part most
               men remember forty years on, so it is the only part required. Month
               and day are offered because some presumptive windows turn on months
               — and because storing a real answer beats stamping "1 January" on a
               date he never gave. */}
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Service start</label>
-            <DatePickers parts={startParts} onChange={setStartParts} approximate={startApprox} onApproximateChange={setStartApprox} />
-          </div>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <div className="field-label">Service start</div>
+              <DatePickers parts={startParts} onChange={setStartParts} approximate={startApprox} onApproximateChange={setStartApprox} />
+            </div>
 
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Service end</label>
-            {stillServing ? (
-              <div className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-muted">
-                Still serving — no end date.
+            <div>
+              <div className="field-label">Service end</div>
+              <div className="mb-3">
+                {/* Deliberately does NOT clear the end date. save() already writes
+                    null when this is ticked, so clearing bought nothing; it only
+                    meant a man who ticked the box to see what it did lost his
+                    separation date on the spot, with no way to get it back. */}
+                <CheckRow checked={stillServing} onChange={setStillServing}>I am still serving</CheckRow>
               </div>
-            ) : (
-              <DatePickers parts={endParts} onChange={setEndParts} approximate={endApprox} onApproximateChange={setEndApprox} />
-            )}
-            <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-ink">
-              <input
-                type="checkbox"
-                checked={stillServing}
-                // Deliberately does NOT clear the end date. save() already writes
-                // null when this is ticked, so clearing bought nothing — it only
-                // meant a man who ticked the box to see what it did lost his
-                // separation date on the spot, with no way to get it back.
-                onChange={(e) => setStillServing(e.target.checked)}
-                className="h-4 w-4 rounded border-line"
-              />
-              I am still serving
-            </label>
-            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
-              Month and day are optional — the year on its own is enough. If you only remember the year, leave
-              the rest blank and we will record it as the year, not guess the rest.
-            </p>
+              {stillServing ? (
+                <div className="rounded-xl border border-line bg-canvas px-3.5 py-3 text-[0.9375rem] text-muted">
+                  Still serving, so there is no end date.
+                </div>
+              ) : (
+                <DatePickers parts={endParts} onChange={setEndParts} approximate={endApprox} onApproximateChange={setEndApprox} />
+              )}
+            </div>
           </div>
+          <p className="-mt-3 text-sm leading-relaxed text-muted">
+            Month and day are optional. The year on its own is enough. If you only remember the year, leave
+            the rest blank and we will record it as the year, not guess the rest.
+          </p>
+
           {/* Boot camp. It is asked once in the signup wizard, but the wizard has no
               back-navigation — so a veteran who skipped it there previously had no
               way to add it, ever. It is worth having: everybody remembers where
@@ -433,9 +466,9 @@ export default function AccountView() {
               documented exposures of their own. Saving creates a real check-in pin
               via the shared helper in lib/bootCamp.ts, never a duplicate. */}
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Where you went to boot camp</label>
+            <div id="acct-boot-label" className="field-label">Where you went to boot camp</div>
             {existingBootCamp ? (
-              <div className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-ink">
+              <div className="rounded-xl border border-line bg-canvas px-4 py-3 text-[0.9375rem] text-ink">
                 {existingBootCamp.place}
                 {existingBootCamp.year ? (
                   <span className="text-muted">
@@ -445,21 +478,21 @@ export default function AccountView() {
                       : `${existingBootCamp.day && existingBootCamp.month ? `${existingBootCamp.day} ` : ""}${existingBootCamp.month ? `${MONTHS[existingBootCamp.month - 1]} ` : ""}${existingBootCamp.year}`}
                   </span>
                 ) : null}
-                <span className="mt-0.5 block text-[0.8125rem] text-faint">
+                <span className="mt-0.5 block text-sm text-muted">
                   Already on your map. Edit it there like any other place you served.
                 </span>
               </div>
             ) : branch ? (
               <>
-                <select value={bootCamp} onChange={(e) => setBootCamp(e.target.value)} className={field}>
-                  <option value="">Select…</option>
+                <div role="group" aria-labelledby="acct-boot-label" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {bootCampsFor(branch).map((b) => (
-                    <option key={b.name} value={b.name}>{b.name}, {b.region}</option>
+                    <Tile key={b.name} on={bootCamp === b.name} onClick={() => setBootCamp(b.name)} sub={b.region}>{b.name}</Tile>
                   ))}
-                  <option value="__other">Somewhere else / I&apos;d rather not say</option>
-                </select>
+                  <Tile on={bootCamp === "__other"} onClick={() => setBootCamp("__other")} sub="Or you'd rather not say">Somewhere else</Tile>
+                </div>
                 {bootCamp && bootCamp !== "__other" && (
-                  <div className="mt-2">
+                  <div className="mt-4">
+                    <div className="field-label">When did you get there?</div>
                     <MonthYearWheel
                       month={bootCampMonth}
                       year={parseInt(bootCampYear) || parseInt(startYear) || new Date().getUTCFullYear()}
@@ -472,60 +505,59 @@ export default function AccountView() {
                     />
                   </div>
                 )}
-                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">
-                  Everybody remembers boot camp — and it counts. Some training posts carry documented exposures
+                <p className="mt-2 text-sm leading-relaxed text-muted">
+                  Everybody remembers boot camp, and it counts. Some training posts carry documented exposures
                   of their own. Saving adds it to your map as a place you served.
                 </p>
               </>
             ) : (
-              <p className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-[0.8125rem] text-muted">
+              <p className="rounded-xl border border-line bg-canvas px-4 py-3 text-[0.9375rem] text-muted">
                 Pick your branch above and the training posts for it will appear here.
               </p>
             )}
           </div>
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">MOS / Rate / AFSC</label>
-            <input value={mos} onChange={(e) => setMos(e.target.value)} placeholder="e.g. 11B, HM, 1N0X1" className={field} />
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <label htmlFor="acct-mos" className="field-label">MOS, rate or AFSC</label>
+              <input id="acct-mos" value={mos} onChange={(e) => setMos(e.target.value)} placeholder="e.g. 11B, HM, 1N0X1" className={field} autoComplete="off" />
+            </div>
+            <div>
+              {/* The example used to be Army-only, which is how a sailor decided this
+                  box was not for him. Units print in the packet header, so a ship
+                  and hull number typed here DO reach the VSO — today that is the
+                  only place in this app a vessel can go. */}
+              <label htmlFor="acct-units" className="field-label">Unit(s) or ship(s) you served with</label>
+              <input id="acct-units" value={units} onChange={(e) => setUnits(e.target.value)} placeholder="e.g. 1-502 IN, 101st ABN, USS Kitty Hawk (CV-63)" className={field} autoComplete="off" />
+            </div>
           </div>
+
           <div>
-            {/* The example used to be Army-only, which is how a sailor decided this
-                box was not for him. Units print in the packet header, so a ship
-                and hull number typed here DO reach the VSO — today that is the
-                only place in this app a vessel can go. */}
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Unit(s) or ship(s) you served with</label>
-            <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="e.g. 1-502 IN, 101st ABN, USS Kitty Hawk (CV-63)" className={field} />
-          </div>
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Current VA rating</label>
-            <select value={vaRating} onChange={(e) => setVaRating(e.target.value)} className={field}>
-              <option value="">Select…</option>
-              {["Not rated yet","0%","10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"].map((r) => (
-                <option key={r} value={r}>{r}</option>
+            <div id="acct-rating-label" className="field-label">Current VA rating</div>
+            <div role="group" aria-labelledby="acct-rating-label" className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+              {VA_RATINGS.map((r) => (
+                <Tile key={r} on={vaRating === r} onClick={() => setVaRating(r)}>{r === "Not rated yet" ? "Not yet" : r}</Tile>
               ))}
-            </select>
+            </div>
           </div>
+
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Receiving VA healthcare?</label>
-            <div className="flex gap-2">
-              {(["Yes", "No"] as const).map((v) => (
-                <button key={v} type="button" aria-pressed={vaCare === (v === "Yes")}
-                  onClick={() => setVaCare(v === "Yes")}
-                  className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-semibold transition ${vaCare === (v === "Yes") ? "border-brand bg-brand text-white" : "border-line text-muted hover:border-brand/30"}`}>
-                  {v}
-                </button>
-              ))}
+            <div id="acct-care-label" className="field-label">Do you get health care from VA?</div>
+            <div role="group" aria-labelledby="acct-care-label" className="grid grid-cols-2 gap-2 sm:max-w-sm">
+              <Tile on={vaCare === true} onClick={() => setVaCare(true)}>Yes</Tile>
+              <Tile on={vaCare === false} onClick={() => setVaCare(false)}>No</Tile>
             </div>
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-3">
-          <button onClick={save} disabled={busy} className="btn btn-primary disabled:opacity-60">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <button onClick={save} disabled={busy} className="btn btn-primary btn-lg">
             {busy ? "Saving…" : "Save profile"}
           </button>
-          {saved && <span className="text-[0.8125rem] text-success">Saved.</span>}
-          {saveErr && <span role="status" className="text-[0.8125rem] font-medium text-red-600">{saveErr}</span>}
+          {saved && <span role="status" className="text-[0.9375rem] font-medium text-success">Saved.</span>}
+          {saveErr && <span role="status" className="text-[0.9375rem] font-medium text-scarlet">{saveErr}</span>}
         </div>
-      </div>
+      </section>
 
       <DocumentsCard />
 

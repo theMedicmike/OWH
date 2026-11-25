@@ -46,7 +46,7 @@ const CORE_STEPS: Step[] = [
     ],
     warn: {
       label: "If the button does nothing",
-      text: "On that unclassified screen, the button at the bottom reading “I agree — start my record” looks faded and does nothing until you tick the box above it. Tick the box first and the button goes solid dark blue. Nothing is wrong with your phone.",
+      text: "On that unclassified screen, the button at the bottom reading “I agree. Start my record” looks faded and does nothing until you tick the box above it. Tick the box first and the button goes solid dark blue. Nothing is wrong with your phone.",
     },
   },
   {
@@ -269,7 +269,7 @@ const MORE_STEPS: Step[] = [
     body: [
       "In the menu, below “Injuries & events” — “Ships you served aboard.”",
       "This is the one thing a map genuinely cannot hold. Until now this app told sailors to pin their homeport and their shipyard, which is honest as far as it goes — those are real places with real documented exposures — and it is not what a VSO asks for. What a VSO asks for is the ship, the hull number, and the dates you were aboard. Those three facts are what a records request gets written against.",
-      "Tap “＋ Add a ship.” Only the name is required. If you do not remember the hull number, leave it empty — we will not guess one for you, because a hull number an app invented is worse in front of a rater than one you left blank. Dates are rough, the same as everywhere else here; a year on its own is a perfectly good answer.",
+      "Tap “Add a ship.” Only the name is required. If you do not remember the hull number, leave it empty — we will not guess one for you, because a hull number an app invented is worse in front of a rater than one you left blank. Dates are rough, the same as everywhere else here; a year on its own is a perfectly good answer.",
       "Your ships print in your claim packet, in your service details, with a line telling whoever reads it to request the deck logs for those dates. The deck logs are the ship’s own daily record of where she was, they are held at the National Archives, and they are the document that actually settles where you were standing.",
     ],
     warn: {
@@ -295,6 +295,19 @@ const MORE_STEPS: Step[] = [
       text: "No percentages, no “you may be able to claim up to X,” and no button that adds anything to a claim for you. That is deliberate. A rating is something an examiner decides from your actual medical evidence — an app printing a number next to a drug label would be inventing an answer nobody adjudicated, and it would make your claim look worse, not better, to the person reading it.",
     },
     tip: "Never stop or change a prescription because of something you read here. That conversation belongs with whoever prescribed it. What this page is for is walking into your VSO's office already knowing what you take, what you take it for, and what the label actually says.",
+  },
+  {
+    title: "Your First Page — one sheet for a specialist",
+    body: [
+      "In the menu, under “Also in your record” — “Your First Page.” It is a single two-sided sheet you hand a specialist at check-in, so you do not start from zero every visit. It faces the clinic, not your claim: it reads from your record and never writes anything back into it.",
+      "The page lists nine short parts in order, each marked Done, Next or Not yet. Tap the one marked Next. Most of them are taps: how you know something and where a records request stands are big buttons, and the common answers are buttons too: “No known drug allergies,” study types like MRI or sleep study, the medicines already on your list. A quick pick only starts the line; you still add the date and the source yourself.",
+      "Under “What prints from your record,” tap “Print this row” on anything you want on the sheet and it saves on the tap. Mental-health conditions, sexual trauma and assault start switched off and stay off unless you turn them on.",
+    ],
+    warn: {
+      label: "If it will not print",
+      text: "That is on purpose. The sheet will not print until every row has a source and a year, and nothing on it reads like a conclusion. The page lists exactly what is still missing.",
+    },
+    tip: "Nothing on the First Page is written, rewritten or listened to by AI. The words are yours, copied as you said them.",
   },
   {
     title: "If your claim gets denied",
@@ -337,7 +350,7 @@ const MORE_STEPS: Step[] = [
       "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required. One straight thing about it, printed at the bottom of every page in there: it is drawn from the government's and science's own record and every page cites its sources, but it has not yet been reviewed by a named clinician or toxicologist. Read it as a good first pass to take to your doctor and your VSO, not as the last word.",
       "Your locations and your exposures — on your Dashboard, under “Also in your record,” tap “Your locations” or “Your exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
       "“Whole health” (under Learn & live well) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
-      "“What VA presumes” — two dropdowns, “When did you serve?” and “Where did you serve?”, and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation, and cold injury for former prisoners of war. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
+      "“What VA presumes” — two rows of big buttons, “When did you serve?” and “Where did you serve?” Tap one of each and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation, and cold injury for former prisoners of war. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
       "“Your C&P exam, demystified” — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up. It is in the menu under “When you're ready to file,” and again under “Guides” at the bottom of the Exposure library.",
       "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It is under “Guides” at the bottom of the Exposure library, next to the C&P one. It carries no personal information, so it's safe to print once and keep on hand.",
       "“Women veterans & service” — also under “Guides” in the Exposure library. Deployment roles and how exposure patterns differ, how military sexual trauma is claimed, and the VA women's health resources most women veterans are never told exist.",

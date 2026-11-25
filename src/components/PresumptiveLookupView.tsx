@@ -25,7 +25,8 @@ import {
 // What makes THIS version safe is structural, not tonal:
 //   • There is NO free-text input anywhere in this flow. Not one. The moment a
 //     text box appears here "just to help narrow it down," this becomes the
-//     feature that was refused. Dropdowns are the guardrail.
+//     feature that was refused. Fixed choices are the guardrail. (They are tap
+//     tiles now, 2026-11-25, not <select>s: same closed lists, bigger targets.)
 //   • Nothing about the veteran's BODY is an input. Only where and when they
 //     served — public, documented facts about places and dates.
 //   • The output is the published statutory scope, verbatim from lib/
@@ -75,7 +76,7 @@ const PROGRAMS: Program[] = [
   },
   {
     key: "pact",
-    name: "PACT Act — burn pits and particulate matter",
+    name: "PACT Act: burn pits and particulate matter",
     scope: PACT_SCOPE,
     eras: ["gulf", "post911"],
     locations: ["swa", "afghanistan"],
@@ -90,7 +91,7 @@ const PROGRAMS: Program[] = [
   },
   {
     key: "cold_injury",
-    name: "Cold injury — presumed only for former prisoners of war",
+    name: "Cold injury, presumed only for former prisoners of war",
     scope: COLD_INJURY_SCOPE,
     eras: ["wwii", "korea"],
     locations: ["korea_dmz", "korea_other", "other"],
@@ -111,6 +112,45 @@ const PROGRAMS: Program[] = [
   },
 ];
 
+// One closed list, drawn as tap tiles. The first tile is "any", so a veteran
+// can always step back to no choice without hunting for a clear button.
+function TileGroup({
+  legend,
+  anyLabel,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  anyLabel: string;
+  options: { v: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const all = [{ v: "", label: anyLabel }, ...options];
+  return (
+    <fieldset>
+      <legend className="text-lg font-semibold tracking-tight text-ink">{legend}</legend>
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {all.map((o) => {
+          const on = value === o.v;
+          return (
+            <button
+              key={o.v || "any"}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onChange(o.v)}
+              className={`btn min-h-12 justify-start text-left leading-snug ${on ? "btn-primary" : "btn-secondary"}`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 export default function PresumptiveLookupView() {
   const [era, setEra] = useState("");
   const [location, setLocation] = useState("");
@@ -122,91 +162,74 @@ export default function PresumptiveLookupView() {
     );
   }, [era, location]);
 
-  const field =
-    "w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15";
-
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <p className="text-[0.9375rem] leading-relaxed text-muted">
-        For certain places and time windows, VA <strong>presumes</strong> the exposure — meaning a veteran
-        doesn&apos;t have to prove it happened. Pick where and when you served to see which programs cover
-        that service, in the law&apos;s own words.
+        For certain places and time windows, VA <strong>presumes</strong>{" "}the exposure. That means a veteran
+        doesn&apos;t have to prove it happened. Tap when and where you served to see which programs cover that
+        service, in the law&apos;s own words.
       </p>
 
-      <div className="card p-5">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="era" className="mb-1 block text-[0.8125rem] font-medium text-muted">When did you serve?</label>
-            <select id="era" value={era} onChange={(e) => setEra(e.target.value)} className={field}>
-              <option value="">Any time period</option>
-              {ERAS.map((e) => <option key={e.v} value={e.v}>{e.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="loc" className="mb-1 block text-[0.8125rem] font-medium text-muted">Where did you serve?</label>
-            <select id="loc" value={location} onChange={(e) => setLocation(e.target.value)} className={field}>
-              <option value="">Anywhere</option>
-              {LOCATIONS.map((l) => <option key={l.v} value={l.v}>{l.label}</option>)}
-            </select>
-          </div>
-        </div>
-        <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">
-          Only where and when — this tool never asks about your health, and it can&apos;t tell you whether you
+      <div className="card space-y-6 p-5">
+        <TileGroup legend="When did you serve?" anyLabel="Any time period" options={ERAS} value={era} onChange={setEra} />
+        <TileGroup legend="Where did you serve?" anyLabel="Anywhere" options={LOCATIONS} value={location} onChange={setLocation} />
+        <p className="text-sm leading-relaxed text-muted">
+          Only where and when. This tool never asks about your health, and it can&apos;t tell you whether you
           personally qualify. That is VA&apos;s decision, and an accredited VSO is who confirms it.
         </p>
       </div>
 
       {matches !== null && (
-        matches.length === 0 ? (
-          <div className="card p-5">
-            <div className="text-sm font-semibold text-ink">No presumptive program matches that combination</div>
-            <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
-              That doesn&apos;t rule anything out, and it doesn&apos;t mean an exposure didn&apos;t happen. Most
-              claims are built by documenting the exposure directly rather than relying on a presumption — which
-              is what the rest of this app is for. A VSO can also check your service against the full lists.
-            </p>
-            <Link href="/map" className="mt-2 inline-block text-[0.8125rem] font-semibold text-brand hover:underline">
-              → Map where you served
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="text-[0.8125rem] font-medium text-muted">
-              Programs that cover this service
+        <div aria-live="polite">
+          {matches.length === 0 ? (
+            <div className="card p-5">
+              <h2 className="text-lg font-semibold tracking-tight text-ink">No presumptive program matches that combination</h2>
+              <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
+                That doesn&apos;t rule anything out, and it doesn&apos;t mean an exposure didn&apos;t happen. Most
+                claims are built by documenting the exposure directly rather than relying on a presumption, which
+                is what the rest of this app is for. A VSO can also check your service against the full lists.
+              </p>
+              <Link href="/map" className="btn btn-secondary mt-4">
+                Map where you served
+              </Link>
             </div>
-            {matches.map((p) => (
-              <div key={p.key} className="card p-5">
-                <div className="text-sm font-semibold text-ink">{p.name}</div>
-                <p className="mt-2 text-[0.8125rem] leading-relaxed text-muted">{p.scope}</p>
-                {p.extra && (
-                  <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[0.75rem] leading-relaxed text-ink">
-                    {p.extra}
-                  </p>
-                )}
-              </div>
-            ))}
-            <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
-              These are the covered locations and dates as written in law — not a decision about your service.
-              Meeting a location and date window is one requirement among several, and only VA decides whether a
-              presumption applies to you.
-            </p>
-          </div>
-        )
+          ) : (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold tracking-tight text-ink">Programs that cover this service</h2>
+              {matches.map((p) => (
+                <div key={p.key} className="card p-5">
+                  <h3 className="text-[0.9375rem] font-semibold text-ink">{p.name}</h3>
+                  <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">{p.scope}</p>
+                  {p.extra && (
+                    <p className="mt-3 rounded-xl border border-warn/30 bg-warn-soft px-3 py-2.5 text-sm leading-relaxed text-ink">
+                      {p.extra}
+                    </p>
+                  )}
+                </div>
+              ))}
+              <p className="px-1 text-sm leading-relaxed text-muted">
+                These are the covered locations and dates as written in law, not a decision about your service.
+                Meeting a location and date window is one requirement among several, and only VA decides whether a
+                presumption applies to you.
+              </p>
+            </div>
+          )}
+        </div>
       )}
 
       {(era === "korea" || location === "korea_dmz" || location === "korea_other") && (
-        <Link href="/learn/korea" className="block rounded-xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50">
-          <div className="text-sm font-semibold text-ink">Served in Korea? Read the cold and the DMZ</div>
-          <div className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
+        <Link href="/learn/korea" className="card block p-5 transition hover:border-brand/50">
+          <span className="block text-[0.9375rem] font-semibold text-ink">Served in Korea? Read the cold and the DMZ</span>
+          <span className="mt-1 block text-[0.9375rem] leading-relaxed text-muted">
             The DMZ herbicide window runs September 1, 1967 to August 31, 1971. If that is when you served, choose
             Vietnam era above. This guide covers that, cold injury, records and family benefits.
-          </div>
+          </span>
         </Link>
       )}
 
-      <Link href="/vso" className="block rounded-xl border border-brand/30 bg-brand/5 p-5 text-center transition hover:border-brand/50">
-        <div className="text-sm font-semibold text-ink">Have a VSO confirm what applies to you</div>
-        <div className="mt-1 text-[0.8125rem] text-muted">Free, every time, no matter which VSO you pick.</div>
+      <Link href="/vso" className="card block p-5 text-center transition hover:border-brand/50">
+        <span className="block text-[0.9375rem] font-semibold text-ink">Have a VSO confirm what applies to you</span>
+        <span className="mt-1 block text-sm text-muted">Free, every time, no matter which VSO you pick.</span>
       </Link>
     </div>
   );

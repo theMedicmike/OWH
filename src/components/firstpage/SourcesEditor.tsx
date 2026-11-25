@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import { createSource, deleteSource, listSources, updateSource, SOURCE_STATUS_LABEL, type FpSource, type SourceStatus } from "@/lib/firstPage";
-import { BackToHub, Input, Notice, PrimaryButton, QuietButton, Stance, StatusSelect } from "./Controls";
+import { BackToHub, CardTitle, Input, Notice, PrimaryButton, QuietButton, Stance, StatusSelect } from "./Controls";
 
 // The source registry: one numbered line per document behind the page.
 // A row on the page is only as good as the number it points at.
@@ -30,6 +30,8 @@ export default function SourcesEditor() {
   const [status, setStatus] = useState<SourceStatus>("received");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [changing, setChanging] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     const r = await listSources(supabase);
@@ -56,11 +58,13 @@ export default function SourcesEditor() {
     setBusy(false);
     if (!r.ok) { setError(r.error); return; }
     setLabel(""); setDate(""); setAuthor(""); setStatus("received"); setFile(null);
+    setAdded(true);
     refresh();
   }
 
   async function setRowStatus(s: FpSource, st: SourceStatus) {
     await updateSource(supabase, s.id, { status: st });
+    setChanging(null);
     refresh();
   }
 
@@ -72,61 +76,90 @@ export default function SourcesEditor() {
       <Stance />
       <Notice error={error} />
 
-      <div className="card p-5">
-        <div className="text-sm font-semibold text-ink">Add a document</div>
-        <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
-          Each one gets a number. Rows on the page point at that number. Write the date as it appears on the document,
-          and say where the request stands if it has not arrived.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {SUGGESTIONS.map((s) => (
-            <button key={s.label} type="button" onClick={() => { setLabel(s.label); if (s.author) setAuthor(s.author); }} className="rounded-full border border-line px-2.5 py-1 text-[0.8125rem] text-muted hover:border-brand hover:text-brand">
-              {s.label}
-            </button>
-          ))}
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2"><Input label="What it is" value={label} onChange={setLabel} placeholder="e.g. Pharmacy printout" /></div>
-          <Input label="Date on it, or when it was requested" value={date} onChange={setDate} placeholder="e.g. 2026-11-02 or sent 2026-10-12" />
-          <Input label="Who wrote it" value={author} onChange={setAuthor} placeholder="e.g. VA, the pharmacy, Carol Pruitt, daughter" />
-          <StatusSelect value={status} onChange={setStatus} />
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-semibold text-muted">The file, if you have it (optional)</label>
-            <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="block w-full text-[0.8125rem] text-muted" />
-            <p className="mt-1 text-[0.8125rem] text-faint">Stored privately in your records. Cover any Social Security number before you photograph a page.</p>
+      <section className="card p-5 sm:p-6">
+        <CardTitle lede="Each one gets a number. Rows on the page point at that number. Write the date as it appears on the document, and say where the request stands if it has not arrived.">
+          Add a document
+        </CardTitle>
+
+        <div className="mt-5">
+          <p className="field-label">Tap one to fill it in</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {SUGGESTIONS.map((s) => {
+              const on = label === s.label;
+              return (
+                <button
+                  key={s.label}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => { setLabel(s.label); if (s.author) setAuthor(s.author); setAdded(false); }}
+                  className={`btn h-auto min-h-12 w-full justify-start text-left ${on ? "btn-primary" : "btn-secondary"}`}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
           </div>
         </div>
-        <div className="mt-3"><PrimaryButton onClick={add} disabled={busy || !label.trim()}>{busy ? "Saving…" : "Add to the list"}</PrimaryButton></div>
-      </div>
 
-      <div className="card p-5">
-        <div className="text-sm font-semibold text-ink">Your sources</div>
+        <div className="mt-5 space-y-5">
+          <Input label="What it is" value={label} onChange={(v) => { setLabel(v); setAdded(false); }} placeholder="e.g. Pharmacy printout" />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Input label="Date on it, or when it was requested" value={date} onChange={setDate} placeholder="e.g. 2026-11-02 or sent 2026-10-12" />
+            <Input label="Who wrote it" value={author} onChange={setAuthor} placeholder="e.g. VA, the pharmacy, Carol Pruitt, daughter" />
+          </div>
+          <StatusSelect value={status} onChange={setStatus} />
+          <div>
+            <label htmlFor="source-file" className="field-label">The file, if you have it (optional)</label>
+            <input
+              id="source-file"
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="block w-full text-[0.9375rem] text-muted file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-xl file:border file:border-solid file:border-line file:bg-surface file:px-4 file:text-[0.9375rem] file:font-semibold file:text-ink hover:file:bg-canvas"
+            />
+            <p className="mt-1.5 text-sm text-muted">Stored privately in your records. Cover any Social Security number before you photograph a page.</p>
+          </div>
+        </div>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <PrimaryButton large onClick={add} disabled={busy || !label.trim()}>{busy ? "Saving…" : "Add to the list"}</PrimaryButton>
+          {added && <span role="status" className="text-[0.9375rem] font-semibold text-success">Added.</span>}
+        </div>
+      </section>
+
+      <section className="card p-5 sm:p-6">
+        <CardTitle>Your sources</CardTitle>
         {rows.length === 0 ? (
-          <p className="mt-1 text-[0.8125rem] text-faint">Nothing yet. The DD-214, the VA download and the pharmacy printout are the usual first three.</p>
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">Nothing yet. The DD-214, the VA download and the pharmacy printout are the usual first three.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-line">
+          <ul className="mt-3 divide-y divide-line">
             {rows.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-start justify-between gap-2 py-2">
-                <div className="text-sm text-ink">
-                  <span className="font-semibold">{s.number}.</span> {s.label}{s.source_date ? `, ${s.source_date}` : ""}{s.author ? `. ${s.author}.` : ""}
-                  <span className="ml-2 rounded-full border border-line px-2 py-0.5 text-[0.8125rem] text-muted">{SOURCE_STATUS_LABEL[s.status]}</span>
-                  {s.document_path && <span className="ml-2 text-[0.8125rem] text-success">file attached</span>}
-                </div>
-                <div className="flex items-center gap-2">
-                  <select value={s.status} onChange={(e) => setRowStatus(s, e.target.value as SourceStatus)} className="rounded-md border border-line bg-white px-2 py-1 text-[0.8125rem] text-ink">
-                    {(Object.keys(SOURCE_STATUS_LABEL) as SourceStatus[]).map((st) => <option key={st} value={st}>{SOURCE_STATUS_LABEL[st]}</option>)}
-                  </select>
-                  <QuietButton danger onClick={async () => { await deleteSource(supabase, s.id); refresh(); }}>remove</QuietButton>
-                </div>
+              <li key={s.id} className="space-y-3 py-4">
+                <p className="text-[0.9375rem] leading-relaxed text-ink">
+                  <span className="tnum font-semibold">{s.number}.</span> {s.label}{s.source_date ? `, ${s.source_date}` : ""}{s.author ? `. ${s.author}.` : ""}
+                </p>
+                <p className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="rounded-full border border-line px-2.5 py-0.5 text-muted">{SOURCE_STATUS_LABEL[s.status]}</span>
+                  {s.document_path && <span className="font-semibold text-success">File attached</span>}
+                </p>
+                {changing === s.id ? (
+                  <div className="space-y-2">
+                    <StatusSelect label="Tap where it stands now" value={s.status} onChange={(st) => setRowStatus(s, st)} />
+                    <QuietButton onClick={() => setChanging(null)}>Cancel</QuietButton>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <QuietButton onClick={() => setChanging(s.id)}>Change where it stands</QuietButton>
+                    <QuietButton danger onClick={async () => { await deleteSource(supabase, s.id); refresh(); }}>Remove</QuietButton>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
         )}
-        <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">
+        <p className="mt-4 text-sm leading-relaxed text-muted">
           A request that has not come back still belongs on the list. The page prints it under &quot;No record found for&quot;
           so the doctor sees the gap instead of guessing.
         </p>
-      </div>
+      </section>
     </div>
   );
 }

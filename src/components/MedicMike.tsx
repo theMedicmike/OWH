@@ -141,13 +141,14 @@ export default function MedicMike() {
         <MikeAvatar size={44} />
         <div className="min-w-0 flex-1">
           <div className="font-bold leading-tight">Medic Mike</div>
-          <div className="text-[0.8125rem] text-white/70">Your guide — not a doctor, a lawyer, or the VA</div>
+          <div className="text-sm text-white/80">Your guide. Not a doctor, a lawyer, or the VA.</div>
         </div>
         {ttsSupported && (
           <button
             type="button"
             onClick={() => setSpeakOn((v) => { if (v) window.speechSynthesis.cancel(); return !v; })}
-            className="rounded-lg p-2 text-white/80 transition hover:bg-white/10"
+            className="flex h-11 w-11 flex-none items-center justify-center rounded-xl text-white/90 transition hover:bg-white/10"
+            aria-pressed={speakOn}
             aria-label={speakOn ? "Turn Mike's voice off" : "Turn Mike's voice on"}
             title={speakOn ? "Voice on" : "Voice off"}
           >
@@ -164,7 +165,7 @@ export default function MedicMike() {
         {messages.map((m, i) => (
           <div key={i} className={`flex items-end gap-2.5 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
             {m.role === "assistant" && <MikeAvatar size={30} />}
-            <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${m.role === "user" ? "bg-brand text-white" : "border border-line bg-white text-ink"}`}>
+            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-[0.9375rem] leading-relaxed ${m.role === "user" ? "bg-brand text-white" : "border border-line bg-white text-ink"}`}>
               {m.content}
             </div>
           </div>
@@ -188,13 +189,15 @@ export default function MedicMike() {
       <form
         onSubmit={(e) => { e.preventDefault(); send(input); }}
         className="flex items-center gap-2 rounded-b-2xl border border-line bg-white p-3"
+        aria-label="Message Medic Mike"
       >
         {srSupported && (
           <button
             type="button"
             onClick={toggleMic}
             aria-label={listening ? "Stop listening" : "Talk to Medic Mike"}
-            className={`flex h-10 w-10 flex-none items-center justify-center rounded-full transition ${listening ? "animate-pulse bg-red-600 text-white" : "bg-brand/10 text-brand hover:bg-brand/20"}`}
+            aria-pressed={listening}
+            className={`flex h-12 w-12 flex-none items-center justify-center rounded-full transition ${listening ? "animate-pulse bg-scarlet text-white" : "bg-brand/10 text-brand hover:bg-brand/20"}`}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
@@ -204,14 +207,15 @@ export default function MedicMike() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          aria-label="Your message to Medic Mike"
           placeholder={listening ? "Listening…" : "Talk to Medic Mike, or type…"}
-          className="flex-1 rounded-full border border-line bg-canvas px-4 py-2.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/15"
+          className="field min-w-0 flex-1 rounded-full px-4"
         />
         <button
           type="submit"
           disabled={busy || !input.trim()}
           aria-label="Send"
-          className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-brand text-white transition hover:bg-brand-600 disabled:opacity-40"
+          className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand text-white transition hover:bg-brand-600 disabled:opacity-40"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
             <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
@@ -219,10 +223,10 @@ export default function MedicMike() {
         </button>
       </form>
 
-      <p className="mt-2 px-1 text-center text-[0.8125rem] leading-relaxed text-faint">
-        Medic Mike is an educational guide — not medical or legal advice, and not the VA. He helps you document and
+      <p className="mt-2 px-1 text-center text-sm leading-relaxed text-muted">
+        Medic Mike is an educational guide. Not medical or legal advice, and not the VA. He helps you document and
         points you to an accredited VSO and your clinician. In crisis? Dial 988, then press 1.
-        {!srSupported && ", Voice input works best in Chrome or Edge."}
+        {!srSupported && " Voice input works best in Chrome or Edge."}
       </p>
     </div>
   );

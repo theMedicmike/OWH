@@ -52,43 +52,50 @@ export default function MedicationCaptureFlow() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-5">
-      <div className="rounded-xl border border-line bg-canvas p-4 text-[0.8125rem] leading-relaxed text-muted">
+    <div className="mx-auto max-w-lg space-y-6">
+      <div className="rounded-xl border border-line bg-canvas p-4 text-[0.9375rem] leading-relaxed text-muted">
         Nothing here is submitted anywhere. This is your own list of what you take, kept in your record until
         you choose to bring it to a VSO or your clinician. Nothing you write is touched by AI.
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-semibold text-ink">Which medication?</label>
-        <p className="mb-2 text-[0.8125rem] leading-relaxed text-faint">
-          Type the name — generic or brand, whichever you know it by. If it isn&apos;t in the list, type it anyway;
-          the FDA&apos;s own database covers far more than we can list here.
+        <label htmlFor="med-name" className="field-label">Which medication?</label>
+        <p className="mb-2 text-sm leading-relaxed text-muted">
+          Type the name, generic or brand, whichever you know it by. If it isn&apos;t in the list, type it anyway.
+          The FDA&apos;s own database covers far more than we can list here.
         </p>
         <input
+          id="med-name"
           value={picked ? picked.generic : query}
           onChange={(e) => { setPicked(null); setQuery(e.target.value); }}
-          placeholder="e.g. ibuprofen, Motrin, sertraline…"
+          placeholder="e.g. ibuprofen, Motrin, sertraline"
           className="field"
+          autoComplete="off"
         />
         {!picked && suggestions.length > 0 && (
-          <ul className="mt-2 space-y-1">
+          <ul className="card mt-2 overflow-hidden">
             {suggestions.map((s) => (
-              <li key={s.generic}>
+              <li key={s.generic} className="border-t border-line first:border-t-0">
                 <button
                   type="button"
                   onClick={() => { setPicked(s); setQuery(s.generic); }}
-                  className="w-full rounded-lg border border-line bg-white px-3 py-2 text-left text-sm hover:border-brand hover:bg-canvas"
+                  className="row w-full text-left"
                 >
-                  <span className="font-medium text-ink">{s.generic}</span>
-                  {s.brands.length > 0 && <span className="text-muted">, {s.brands.join(", ")}</span>}
-                  <span className="block text-[0.8125rem] text-faint">{s.klass}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[0.9375rem] font-semibold leading-snug text-ink">
+                      {s.generic}
+                      {s.brands.length > 0 && <span className="font-normal text-muted"> ({s.brands.join(", ")})</span>}
+                    </span>
+                    <span className="mt-0.5 block text-sm leading-snug text-muted">{s.klass}</span>
+                  </span>
+                  <span className="flex-none text-[0.9375rem] font-semibold text-brand">Choose</span>
                 </button>
               </li>
             ))}
           </ul>
         )}
         {picked?.historicalNote && (
-          <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[0.8125rem] leading-relaxed text-muted">
+          <p className="mt-2 rounded-xl border border-line bg-canvas p-3 text-sm leading-relaxed text-muted">
             {picked.historicalNote}
           </p>
         )}
@@ -99,12 +106,13 @@ export default function MedicationCaptureFlow() {
           {/* The 38 CFR 3.310 hinge. Free text, always — the app never decides
               that a drug was treating a service-connected condition. */}
           <div>
-            <label className="mb-1 block text-sm font-semibold text-ink">What were you taking it for?</label>
-            <p className="mb-2 text-[0.8125rem] leading-relaxed text-faint">
+            <label htmlFor="med-for" className="field-label">What were you taking it for?</label>
+            <p className="mb-2 text-sm leading-relaxed text-muted">
               This is the part that matters most. If a medication was treating something already connected to your
               service, that changes which routes your VSO can look at.
             </p>
             <input
+              id="med-for"
               value={takenFor}
               onChange={(e) => setTakenFor(e.target.value)}
               placeholder="e.g. my back, sleep, PTSD, blood pressure"
@@ -112,9 +120,9 @@ export default function MedicationCaptureFlow() {
             />
           </div>
 
-          <div>
-            <div className="mb-1 text-sm font-semibold text-ink">Are you still taking it?</div>
-            <div className="flex flex-wrap gap-2">
+          <fieldset>
+            <legend className="field-label">Are you still taking it?</legend>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {[
                 { v: true, label: "Still taking it" },
                 { v: false, label: "Stopped" },
@@ -124,21 +132,21 @@ export default function MedicationCaptureFlow() {
                   type="button"
                   aria-pressed={stillTaking === o.v}
                   onClick={() => setStillTaking(stillTaking === o.v ? null : o.v)}
-                  className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${stillTaking === o.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-canvas"}`}
+                  className={`btn min-h-12 ${stillTaking === o.v ? "btn-primary" : "btn-secondary"}`}
                 >
                   {o.label}
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Started around</label>
+              <div className="field-label">Started around</div>
               <WheelPicker options={YEAR_OPTIONS} index={startedIdx} onChange={setStartedIdx} ariaLabel="Year you started" />
             </div>
             <div>
-              <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Stopped around</label>
+              <div className="field-label">Stopped around</div>
               <WheelPicker
                 options={YEAR_OPTIONS}
                 index={stoppedIdx}
@@ -150,8 +158,9 @@ export default function MedicationCaptureFlow() {
           </div>
 
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Anything else worth noting (optional)</label>
+            <label htmlFor="med-note" className="field-label">Anything else worth noting (optional)</label>
             <textarea
+              id="med-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
@@ -160,17 +169,18 @@ export default function MedicationCaptureFlow() {
             />
           </div>
 
-          {err && <p className="text-[0.8125rem] text-scarlet">{err}</p>}
+          {err && <p role="alert" className="text-[0.9375rem] text-scarlet">{err}</p>}
 
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <button
+              type="button"
               onClick={save}
               disabled={busy || !canSave}
-              className="flex-1 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
+              className="btn btn-primary btn-lg flex-1"
             >
               {busy ? "Saving…" : "Save"}
             </button>
-            <Link href="/medications" className="rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-muted hover:bg-canvas">
+            <Link href="/medications" className="btn btn-secondary btn-lg">
               Not now
             </Link>
           </div>

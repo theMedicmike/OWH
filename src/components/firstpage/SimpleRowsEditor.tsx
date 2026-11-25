@@ -1,21 +1,33 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import {
   deleteSimple, insertSimple, listSimple, listSources, updateSimple, TIER_LABEL,
   type FpSource, type SimpleTable, type Tier,
 } from "@/lib/firstPage";
-import { BackToHub, Input, Notice, PrimaryButton, QuietButton, SourceSelect, Stance, TextField, TierSelect, Toggle } from "./Controls";
+import { listMedications } from "@/lib/medications";
+import { BackToHub, CardTitle, Input, Notice, PrimaryButton, QuickPicks, QuietButton, SourceSelect, Stance, TextField, TierSelect, Toggle } from "./Controls";
 
 // One editor for the three single-line tables: allergies, key studies, what
 // has been tried. Each row is a sentence copied from a document (or the
 // veteran's own memory, marked so), with a source and a tier.
+//
+// Quick picks only start the sentence: a drug name, a kind of study, a
+// medicine already on Your medications. They never fill in a date, a reaction,
+// a result or a source; the veteran writes those. The one exception is the
+// one-tap "No known drug allergies.", which is a whole answer on its own and
+// is offered only while the list is empty.
 
 type Kind = "allergies" | "studies" | "tried";
 type Row = { id: string; text: string; study_date?: string; tier: Tier; source_id: string | null; show: boolean };
 
-const CONFIG: Record<Kind, { table: SimpleTable; title: string; help: string; placeholder: string; dateField: boolean; defaultTier: Tier; examples: string[] }> = {
+const NKDA = "No known drug allergies.";
+
+const CONFIG: Record<Kind, {
+  table: SimpleTable; title: string; help: string; placeholder: string; dateField: boolean; defaultTier: Tier;
+  picksLabel: string; picks: string[]; joiner: string;
+}> = {
   allergies: {
     table: "fp_allergies",
     title: "Allergies",
@@ -23,7 +35,9 @@ const CONFIG: Record<Kind, { table: SimpleTable; title: string; help: string; pl
     placeholder: "e.g. Penicillin: rash, 1970.",
     dateField: false,
     defaultTier: "recalled",
-    examples: ["No known drug allergies.", "Sulfa drugs: hives, 2007."],
+    picksLabel: "Start with the drug",
+    picks: ["Penicillin", "Sulfa drugs", "Codeine", "Aspirin", "Ibuprofen", "Contrast dye"],
+    joiner: ": ",
   },
   studies: {
     table: "fp_studies",
@@ -32,7 +46,9 @@ const CONFIG: Record<Kind, { table: SimpleTable; title: string; help: string; pl
     placeholder: "e.g. MRI brain without contrast, community imaging center. Report and disc in hand.",
     dateField: true,
     defaultTier: "record",
-    examples: [],
+    picksLabel: "What kind of study?",
+    picks: ["MRI", "CT scan", "X-ray", "Ultrasound", "Sleep study", "Hearing test (audiogram)", "Nerve study (EMG)", "EEG"],
+    joiner: " ",
   },
   tried: {
     table: "fp_tried",
@@ -41,7 +57,9 @@ const CONFIG: Record<Kind, { table: SimpleTable; title: string; help: string; pl
     placeholder: "e.g. Amitriptyline 2019 to 2021, stopped for morning grogginess.",
     dateField: false,
     defaultTier: "record",
-    examples: [],
+    picksLabel: "Start with a therapy",
+    picks: ["Physical therapy", "Talk therapy", "Acupuncture", "Chiropractic care"],
+    joiner: " ",
   },
 };
 
@@ -50,12 +68,15 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
   const { supabase, user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [sources, setSources] = useState<FpSource[]>([]);
+  const [medNames, setMedNames] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [text, setText] = useState("");
   const [date, setDate] = useState("");
   const [tier, setTier] = useState<Tier>(cfg.defaultTier);
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [added, setAdded] = useState(false);
+  const textRef = useRef<HTMLTextAreaElement>(null);
 
   const refresh = useCallback(async () => {
     const [r, s] = await Promise.all([listSimple<Row>(supabase, cfg.table), listSources(supabase)]);
@@ -68,16 +89,45 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
     (async () => { await refresh(); })();
   }, [user, refresh]);
 
-  async function add() {
+  // "What has been tried" can start from a medicine already on Your
+  // medications: the name only, never its years.
+  useEffect(() => {
+    if (!user || kind !== "tried") return;
+    let alive = true;
+    listMedications(supabase).then((res) => {
+      if (!alive || !("medications" in res)) return;
+      setMedNames(Array.from(new Set(res.medications.map((m) => m.name.trim()).filter(Boolean))));
+    });
+    return () => { alive = false; };
+  }, [user, supabase, kind]);
+
+  function pick(p: string) {
+    setText((t) => (t.trim() ? t : `${p}${cfg.joiner}`));
+    setAdded(false);
+    requestAnimationFrame(() => {
+      const el = textRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
+  }
+
+  async function insert(lineText: string, lineTier: Tier, lineSource: string | null, lineDate: string) {
     setBusy(true);
     setError("");
-    const row: Record<string, unknown> = { text: text.trim(), tier, source_id: sourceId, show: true, sort: rows.length };
-    if (cfg.dateField) row.study_date = date.trim();
+    const row: Record<string, unknown> = { text: lineText, tier: lineTier, source_id: lineSource, show: true, sort: rows.length };
+    if (cfg.dateField) row.study_date = lineDate;
     const r = await insertSimple<Row>(supabase, cfg.table, row);
     setBusy(false);
-    if (!r.ok) { setError(r.error); return; }
-    setText(""); setDate("");
+    if (!r.ok) { setError(r.error); return false; }
+    setAdded(true);
     refresh();
+    return true;
+  }
+
+  async function add() {
+    const ok = await insert(text.trim(), tier, sourceId, date.trim());
+    if (ok) { setText(""); setDate(""); }
   }
 
   async function patch(id: string, p: Record<string, unknown>) {
@@ -88,6 +138,7 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
 
   if (!user) return <Notice>Sign in to build your First Page.</Notice>;
   const canAdd = text.trim().length > 1 && (!cfg.dateField || date.trim().length >= 4);
+  const picks = kind === "tried" ? [...medNames, ...cfg.picks] : cfg.picks;
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -95,47 +146,74 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
       <Stance />
       <Notice error={error} />
 
-      <div className="card p-5">
-        <div className="text-sm font-semibold text-ink">Add a line</div>
-        <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">{cfg.help}</p>
-        {cfg.examples.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {cfg.examples.map((e) => <button key={e} type="button" onClick={() => setText(e)} className="rounded-full border border-line px-2.5 py-1 text-[0.8125rem] text-muted hover:border-brand hover:text-brand">{e}</button>)}
-          </div>
-        )}
-        <div className="mt-3 space-y-3">
-          <TextField label="The line, as the document says it" value={text} onChange={setText} rows={2} placeholder={cfg.placeholder} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {cfg.dateField && <Input label="Date on the report" value={date} onChange={setDate} placeholder="e.g. 2019-06-03" />}
-            <TierSelect value={tier} onChange={setTier} />
-            <SourceSelect sources={sources} value={sourceId} onChange={setSourceId} />
-          </div>
-        </div>
-        <div className="mt-3"><PrimaryButton onClick={add} disabled={busy || !canAdd}>{busy ? "Saving…" : "Add"}</PrimaryButton></div>
-      </div>
+      {kind === "allergies" && rows.length === 0 && (
+        <section className="card card-raise p-5 sm:p-6">
+          <CardTitle lede="If no drug has ever given you a reaction, one tap fills the box on the front of the page.">
+            No drug allergies?
+          </CardTitle>
+          <button
+            type="button"
+            onClick={() => insert(NKDA, "recalled", null, "")}
+            disabled={busy}
+            className="btn btn-primary btn-lg mt-4 w-full sm:w-auto"
+          >
+            No known drug allergies
+          </button>
+          <p className="mt-2 text-sm text-muted">Saved as something you know yourself. You can add a source to it afterward.</p>
+        </section>
+      )}
 
-      <div className="card p-5">
-        <div className="text-sm font-semibold text-ink">{cfg.title} on the page</div>
+      <section className="card p-5 sm:p-6">
+        <CardTitle lede={cfg.help}>{kind === "allergies" ? "Add an allergy" : "Add a line"}</CardTitle>
+        <div className="mt-5 space-y-5">
+          <QuickPicks
+            label={kind === "tried" && medNames.length > 0 ? "Start with a medicine from your list, or a therapy" : cfg.picksLabel}
+            picks={picks}
+            onPick={pick}
+          />
+          <TextField
+            label="The line, as the document says it"
+            inputRef={textRef}
+            value={text}
+            onChange={(v) => { setText(v); setAdded(false); }}
+            rows={2}
+            placeholder={cfg.placeholder}
+          />
+          {cfg.dateField && <Input label="Date on the report" value={date} onChange={setDate} placeholder="e.g. 2019-06-03" />}
+          <TierSelect value={tier} onChange={setTier} />
+          <SourceSelect sources={sources} value={sourceId} onChange={setSourceId} />
+        </div>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <PrimaryButton large onClick={add} disabled={busy || !canAdd}>{busy ? "Saving…" : "Add to the page"}</PrimaryButton>
+          {added && <span role="status" className="text-[0.9375rem] font-semibold text-success">Added.</span>}
+        </div>
+        {cfg.dateField && text.trim().length > 1 && date.trim().length < 4 && (
+          <p className="mt-2 text-sm text-muted">Add the date on the report to save it.</p>
+        )}
+      </section>
+
+      <section className="card p-5 sm:p-6">
+        <CardTitle>{cfg.title} on the page</CardTitle>
         {rows.length === 0 ? (
-          <p className="mt-1 text-[0.8125rem] text-faint">Nothing yet.</p>
+          <p className="mt-2 text-[0.9375rem] text-muted">Nothing yet.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-line">
+          <ul className="mt-3 divide-y divide-line">
             {rows.map((r) => (
-              <li key={r.id} className="space-y-2 py-3">
-                <div className="text-sm text-ink">
+              <li key={r.id} className="space-y-3 py-4">
+                <p className="text-[0.9375rem] leading-relaxed text-ink">
                   {r.text}{r.study_date ? ` (${r.study_date})` : ""}
-                  <span className="ml-2 rounded border border-line px-1.5 py-0.5 text-[0.8125rem] text-muted">{TIER_LABEL[r.tier]}</span>
-                </div>
-                <div className="flex flex-wrap items-end gap-3">
-                  <div className="min-w-[220px] flex-1"><SourceSelect sources={sources} value={r.source_id} onChange={(id) => patch(r.id, { source_id: id, tier: id ? "record" : r.tier })} /></div>
+                  <span className="ml-2 inline-block rounded-md border border-line px-2 py-0.5 text-sm text-muted">{TIER_LABEL[r.tier]}</span>
+                </p>
+                <SourceSelect sources={sources} value={r.source_id} onChange={(id) => patch(r.id, { source_id: id, tier: id ? "record" : r.tier })} />
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <Toggle checked={r.show} onChange={(v) => patch(r.id, { show: v })} label="Print this line" />
-                  <QuietButton danger onClick={async () => { await deleteSimple(supabase, cfg.table, r.id); refresh(); }}>remove</QuietButton>
+                  <QuietButton danger onClick={async () => { await deleteSimple(supabase, cfg.table, r.id); refresh(); }}>Remove</QuietButton>
                 </div>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </section>
     </div>
   );
 }

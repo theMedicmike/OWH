@@ -100,85 +100,90 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
   if (notSetUp) {
     return (
       <div className="card p-5">
-        <div className="text-sm font-semibold text-ink">Something going on?</div>
-        <p className="mt-2 text-sm text-muted">This isn&apos;t switched on yet — check back soon.</p>
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Something going on?</h2>
+        <p className="mt-2 text-[0.9375rem] text-muted">This isn&apos;t switched on yet. Check back soon.</p>
       </div>
     );
   }
 
   return (
-    <div className="surface-rest card p-5">
-      <div className="text-sm font-semibold text-ink">Something going on? Write it down.</div>
-      <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
+    <div className="card p-5">
+      <h2 className="text-lg font-semibold tracking-tight text-ink">Something going on? Write it down.</h2>
+      <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
         You don&apos;t have to know what it is or which condition it belongs to. Get it down while it&apos;s
-        fresh, in your own words — you can file it against a condition later, or ask your VSO to help you
+        fresh, in your own words. You can file it against a condition later, or ask your VSO to help you
         work out where it goes.
       </p>
 
+      <label htmlFor="symptom-note" className="field-label mt-4">What&apos;s going on</label>
       <textarea
+        id="symptom-note"
         value={text}
         onChange={(e) => { setText(e.target.value); setSaved(false); }}
         rows={3}
         placeholder="e.g. Couldn't sleep again, chest tight until about 4am."
-        className="mt-3 field"
+        className="field"
       />
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-[0.8125rem] text-muted">
-          When
+      <div className="mt-3 grid gap-3 sm:grid-cols-[12rem_auto] sm:items-end">
+        <div>
+          <label htmlFor="symptom-when" className="field-label">When</label>
           <input
+            id="symptom-when"
             type="date"
             value={when}
             max={todayISO()}
             onChange={(e) => setWhen(e.target.value)}
-            className="rounded-md border border-line bg-white px-2 py-1.5 text-[0.8125rem] text-ink focus:border-brand focus:outline-none"
+            className="field"
           />
-        </label>
+        </div>
         <button
+          type="button"
           onClick={save}
           disabled={busy || !text.trim()}
-          className="press btn btn-primary disabled:opacity-50"
+          className="btn btn-primary btn-lg"
         >
           {busy ? "Saving…" : "Save it"}
         </button>
-        {saved && <span className="text-[0.8125rem] font-medium text-success">Saved. It&apos;s on your record.</span>}
       </div>
-      {err && <p className="mt-2 text-[0.8125rem] text-scarlet">{err}</p>}
+      {saved && <p className="mt-3 text-[0.9375rem] font-semibold text-success" aria-live="polite">Saved. It&apos;s on your record.</p>}
+      {err && <p role="alert" className="mt-3 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
       {notes.length > 0 && (
-        <div className="mt-5 border-t border-line pt-4">
-          <div className="text-[0.8125rem] font-semibold text-ink">Not filed yet</div>
-          <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-faint">
+        <div className="mt-6 border-t border-line pt-4">
+          <h3 className="text-[0.9375rem] font-semibold text-ink">Not filed yet</h3>
+          <p className="mt-0.5 text-sm leading-relaxed text-muted">
             These are saved and dated. Filing one puts it in that condition&apos;s history, keeping the date you
             wrote it. Nothing here is lost if you leave it unfiled.
           </p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-3 space-y-3">
             {notes.map((n) => (
-              <li key={n.id} className="rounded-lg border border-line bg-canvas p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <span className="text-[0.8125rem] font-semibold text-muted">{pretty(n.noticed_on)}</span>
-                  <button onClick={() => remove(n.id)} className="text-[0.8125rem] text-faint hover:text-red-600">
+              <li key={n.id} className="rounded-xl border border-line bg-canvas p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold text-muted">{pretty(n.noticed_on)}</span>
+                  <button type="button" onClick={() => remove(n.id)} className="btn btn-ghost text-muted">
                     Remove
                   </button>
                 </div>
-                <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink">{n.note}</p>
+                <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">{n.note}</p>
 
                 {conditions.length > 0 ? (
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <label className="text-[0.8125rem] text-muted">File under</label>
+                  <div className="mt-3">
+                    <label htmlFor={`file-${n.id}`} className="field-label">File under</label>
                     <select
+                      id={`file-${n.id}`}
                       defaultValue=""
                       disabled={filing === n.id}
                       onChange={(e) => { if (e.target.value) file(n, e.target.value); }}
-                      className="rounded-md border border-line bg-white px-2 py-1 text-[0.8125rem] text-ink focus:border-brand focus:outline-none"
+                      className="field"
                     >
-                      <option value="">{filing === n.id ? "Filing…" : "Choose a condition…"}</option>
+                      <option value="">{filing === n.id ? "Filing…" : "Choose a condition"}</option>
                       {conditions.map((c) => (
                         <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
                     </select>
                   </div>
                 ) : (
-                  <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
+                  <p className="mt-2 text-sm leading-relaxed text-muted">
                     Once you&apos;ve added a condition above, you&apos;ll be able to file this under it.
                   </p>
                 )}

@@ -5,13 +5,12 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { listServiceEvents, deleteServiceEvent, PROVENANCE_LABEL, INFORMED_CONSENT_LABEL, type ServiceEvent } from "@/lib/serviceEvents";
 
-const card = "card p-5";
-
 export default function ShotsListCard() {
   const { user, supabase } = useAuth();
   const [ready, setReady] = useState(false);
   const [notSetUp, setNotSetUp] = useState(false);
   const [events, setEvents] = useState<ServiceEvent[]>([]);
+  const [confirmDel, setConfirmDel] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await listServiceEvents(supabase);
@@ -26,6 +25,7 @@ export default function ShotsListCard() {
 
   async function remove(id: string) {
     await deleteServiceEvent(supabase, id);
+    setConfirmDel(null);
     await load();
   }
 
@@ -33,40 +33,52 @@ export default function ShotsListCard() {
 
   if (notSetUp) {
     return (
-      <div className={card}>
-        <div className="text-sm font-semibold text-ink">Your entries</div>
-        <p className="mt-2 text-sm text-muted">This feature is on its way — check back soon.</p>
+      <div className="card p-5">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Your entries</h2>
+        <p className="mt-2 text-[0.9375rem] text-muted">This feature is on its way. Check back soon.</p>
       </div>
     );
   }
 
   return (
-    <div className={card}>
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold text-ink">Your entries</div>
-        <Link href="/shots/add" className="rounded-md bg-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-brand-foreground hover:bg-brand-600">＋ Add a shot</Link>
-      </div>
+    <div className="card p-5">
+      <h2 className="text-lg font-semibold tracking-tight text-ink">Your entries</h2>
+      <Link href="/shots/add" className="btn btn-primary btn-lg mt-4 w-full sm:w-auto">Add a shot</Link>
       {!events.length ? (
-        <p className="mt-3 text-sm text-muted">Nothing logged yet. Start with whatever you remember — the year alone is worth writing down.</p>
+        <p className="mt-4 text-[0.9375rem] text-muted">Nothing logged yet. Start with whatever you remember. The year alone is worth writing down.</p>
       ) : (
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-4 space-y-2">
           {events.map((e) => (
-            <li key={e.id} className="flex items-center justify-between gap-2 rounded-lg border border-line p-3">
-              <div>
-                <div className="text-sm font-medium text-ink">{e.label}</div>
-                <div className="text-[0.8125rem] text-muted">
-                  {e.date_precision === "unsure" ? "Year not sure" : e.event_year ?? "—"}
+            <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-4">
+              <div className="min-w-0 flex-1">
+                <div className="text-[0.9375rem] font-semibold text-ink">{e.label}</div>
+                <div className="mt-0.5 text-sm text-muted">
+                  {e.date_precision === "unsure" ? "Year not sure" : e.event_year ?? "Year not noted"}
                   {", "}
-                  <span className="text-faint">{PROVENANCE_LABEL[e.provenance]}</span>
+                  {PROVENANCE_LABEL[e.provenance]}
                   {e.informed_consent && (
                     <>
                       {", "}
-                      <span className="text-faint">{INFORMED_CONSENT_LABEL[e.informed_consent]}</span>
+                      {INFORMED_CONSENT_LABEL[e.informed_consent]}
                     </>
                   )}
                 </div>
               </div>
-              <button onClick={() => remove(e.id)} className="rounded-md border border-line px-2 py-1 text-[0.8125rem] text-muted hover:bg-canvas">Remove</button>
+              {confirmDel === e.id ? (
+                <div className="flex flex-none flex-wrap gap-2">
+                  <button type="button" onClick={() => setConfirmDel(null)} className="btn btn-secondary">Keep it</button>
+                  <button type="button" onClick={() => remove(e.id)} className="btn btn-danger">Remove</button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDel(e.id)}
+                  aria-label={`Remove ${e.label}`}
+                  className="btn btn-ghost flex-none text-muted"
+                >
+                  Remove
+                </button>
+              )}
             </li>
           ))}
         </ul>

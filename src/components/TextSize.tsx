@@ -51,15 +51,17 @@ export function TextSizeControl() {
   const opts = ["sm", "lg", "xl"];
   return (
     <div className="border-b border-line px-4 py-3">
-      <div className="text-[0.8125rem] text-faint">Text size</div>
-      <div className="mt-1.5 flex gap-1.5">
+      <div id="text-size-label" className="text-sm font-semibold text-ink">Text size</div>
+      <div role="group" aria-labelledby="text-size-label" className="mt-2 flex gap-2">
         {opts.map((s, i) => (
           <button
             key={s}
+            type="button"
             onClick={() => choose(s)}
             aria-label={`Text size ${i + 1} of 3`}
-            className={`flex flex-1 items-center justify-center rounded-lg border py-1.5 font-bold transition ${
-              size === s ? "border-brand bg-brand/10 text-brand" : "border-line text-muted hover:bg-canvas"
+            aria-pressed={size === s}
+            className={`flex min-h-11 flex-1 items-center justify-center rounded-xl border font-bold transition ${
+              size === s ? "border-brand bg-brand text-white" : "border-line bg-white text-ink hover:bg-canvas"
             }`}
             style={{ fontSize: `${0.85 + i * 0.2}rem` }}
           >

@@ -38,43 +38,50 @@ export default function LocatorCard() {
   return (
     <div className="space-y-4">
       <div className={card}>
-        <div className="text-sm font-semibold text-ink">Two questions, one answer</div>
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Branch</label>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)} className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15">
-              <option value="">Choose…</option>
-              {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
-            </select>
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Two questions, one answer</h2>
+        <fieldset className="mt-4">
+          <legend className="field-label">Which branch?</legend>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {BRANCHES.map((b) => (
+              <button
+                key={b}
+                type="button"
+                aria-pressed={branch === b}
+                onClick={() => setBranch(b)}
+                className={`btn min-h-12 ${branch === b ? "btn-primary" : "btn-secondary"}`}
+              >
+                {b}
+              </button>
+            ))}
           </div>
-          <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">{stillServing ? "Still serving" : "Year you separated"}</label>
-            {stillServing ? (
-              <div className="rounded-lg border border-line bg-white px-3 py-2.5 text-center text-sm text-faint opacity-50">Still serving</div>
-            ) : (
-              <WheelPicker
-                options={SEPARATION_YEARS}
-                index={year ? parseInt(year, 10) - 1945 : SEPARATION_YEARS.length - 1}
-                onChange={(i) => setYear(SEPARATION_YEARS[i])}
-                ariaLabel="Year you separated"
-              />
-            )}
-          </div>
+        </fieldset>
+        <div className="mt-5">
+          <span className="field-label" id="sep-year-label">{stillServing ? "Still serving" : "Year you separated"}</span>
+          {stillServing ? (
+            <div className="field flex items-center justify-center text-muted">Still serving</div>
+          ) : (
+            <WheelPicker
+              options={SEPARATION_YEARS}
+              index={year ? parseInt(year, 10) - 1945 : SEPARATION_YEARS.length - 1}
+              onChange={(i) => setYear(SEPARATION_YEARS[i])}
+              ariaLabel="Year you separated"
+            />
+          )}
         </div>
-        <label className="mt-3 flex items-center gap-2 text-[0.8125rem] text-muted">
-          <input type="checkbox" checked={stillServing} onChange={(e) => setStillServing(e.target.checked)} />
-          I&apos;m still serving
+        <label className="mt-3 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-1 hover:bg-canvas">
+          <input type="checkbox" checked={stillServing} onChange={(e) => setStillServing(e.target.checked)} className="h-6 w-6 flex-none accent-brand" />
+          <span className="text-[0.9375rem] text-ink">I&apos;m still serving</span>
         </label>
 
         {office && (
-          <div className="mt-4 rounded-lg border border-brand/30 bg-brand/5 p-4">
-            <div className="text-[0.8125rem] font-medium text-muted">Your {branch} shot record ({stillServing ? "current" : year}) is most likely held by:</div>
-            <div className="mt-1 text-base font-semibold text-ink">{office.office}</div>
-            <div className="mt-3 text-[0.8125rem] leading-relaxed text-faint">{LOCATOR_SOURCE_STAMP}</div>
+          <div className="mt-4 rounded-xl border border-brand/30 bg-brand/5 p-4" aria-live="polite">
+            <div className="text-[0.9375rem] text-muted">Your {branch} shot record ({stillServing ? "current" : year}) is most likely held by:</div>
+            <div className="mt-1 text-lg font-semibold tracking-tight text-ink">{office.office}</div>
+            <div className="mt-3 text-sm leading-relaxed text-muted">{LOCATOR_SOURCE_STAMP}</div>
           </div>
         )}
         {branch && effectiveYear && !office && (
-          <p className="mt-4 text-sm text-muted">
+          <p className="mt-4 text-[0.9375rem] text-muted">
             We don&apos;t have a published routing rule for that combination yet. Your VSO or your branch&apos;s
             records office can point you the right way.
           </p>
@@ -82,14 +89,14 @@ export default function LocatorCard() {
       </div>
 
       <div className={card}>
-        <p className="text-sm font-medium text-ink">{LOCATOR_MILCONNECT_LINE}</p>
+        <p className="text-[0.9375rem] font-medium text-ink">{LOCATOR_MILCONNECT_LINE}</p>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">{LOCATOR_EXPECTATION_LINE}</p>
-        <p className="mt-2 text-[0.8125rem] text-faint">{LOCATOR_NO_FEE_LINE}</p>
+        <p className="mt-2 text-sm text-muted">{LOCATOR_NO_FEE_LINE}</p>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-semibold text-ink">Other doors, depending on your situation</div>
-        <ul className="mt-3 space-y-2 text-sm text-muted">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Other doors, depending on your situation</h2>
+        <ul className="mt-3 space-y-2 text-[0.9375rem] leading-relaxed text-muted">
           {effectiveYear >= 2014 && <li>{LOCATOR_MHS_GENESIS_NOTE}</li>}
           <li>{LOCATOR_STATE_REGISTRY_NOTE}</li>
           <li>{LOCATOR_VA_FORM_NOTE}</li>
@@ -97,7 +104,9 @@ export default function LocatorCard() {
         </ul>
       </div>
 
-      <Link href="/shots" className="block text-center text-sm font-semibold text-brand hover:underline">Back to your shot record</Link>
+      <div className="text-center">
+        <Link href="/shots" className="btn btn-ghost">Back to your shot record</Link>
+      </div>
     </div>
   );
 }

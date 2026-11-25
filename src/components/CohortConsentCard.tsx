@@ -16,21 +16,43 @@ const CONSENT_VERSION = "2026-07-01";
 
 type Cohort = { contribute: boolean; public_map: boolean; research: boolean; version?: string; at?: string };
 
-function Toggle({ on, disabled, onClick, label }: { on: boolean; disabled?: boolean; onClick: () => void; label: string }) {
+// A consent choice as one large tap row: a big checkbox, the choice in plain
+// words, and what it means underneath. The whole row is the target.
+function ConsentRow({
+  id,
+  on,
+  disabled,
+  onToggle,
+  title,
+  children,
+}: {
+  id: string;
+  on: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className={`relative inline-flex h-6 w-11 flex-none items-center rounded-full transition ${
-        on ? "bg-brand" : "bg-line"
-      } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
+    <label
+      htmlFor={id}
+      className={`flex min-h-12 items-start gap-3 rounded-xl border border-line bg-white px-3.5 py-3 ${
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-canvas"
+      }`}
     >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${on ? "translate-x-6" : "translate-x-1"}`} />
-    </button>
+      <input
+        id={id}
+        type="checkbox"
+        checked={on}
+        disabled={disabled}
+        onChange={onToggle}
+        className="mt-0.5 h-6 w-6 flex-none accent-brand"
+      />
+      <span>
+        <span className="block text-[0.9375rem] font-semibold text-ink">{title}</span>
+        <span className="mt-0.5 block text-sm leading-relaxed text-muted">{children}</span>
+      </span>
+    </label>
   );
 }
 
@@ -103,69 +125,50 @@ export default function CohortConsentCard() {
   if (!loaded) return null;
 
   return (
-    <div className="overflow-hidden card">
-      <div className="h-1 bg-accent" />
-      <div className="p-5">
-        <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-brand/10 text-brand">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          </span>
-          <div>
-            <div className="text-sm font-semibold text-ink">Help prove what happened to all of us</div>
-            <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
-              On its own, your record helps your claim. Combined — anonymously, and only if you choose — records
-              like yours become the largest veteran-built map of toxic exposure outside the VA: the kind of
-              evidence that moves legislation and research. This is <strong>off unless you turn it on</strong>, and
-              you can turn it back off anytime.
-            </p>
-          </div>
-        </div>
-
-        {/* Master opt-in */}
-        <div className="mt-4 flex items-start justify-between gap-4 rounded-lg border border-line bg-canvas px-4 py-3">
-          <div>
-            <div className="text-sm font-semibold text-ink">Contribute my anonymized record</div>
-            <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
-              Your name, email, exact locations, exact dates, notes, and uploaded documents are <strong>never</strong>{" "}
-              included — only coarse patterns (exposure type, general place, year, condition). Never sold.
-            </p>
-          </div>
-          <Toggle on={contribute} onClick={toggleContribute} label="Contribute my anonymized record" />
-        </div>
-
-        {/* Sub-options */}
-        <div className={`mt-2 space-y-2 transition ${contribute ? "" : "pointer-events-none opacity-50"}`}>
-          <div className="flex items-start justify-between gap-4 rounded-lg border border-line px-4 py-3">
-            <div>
-              <div className="text-sm font-medium text-ink">Show my data in the public exposure map</div>
-              <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
-                Adds to public counts like &quot;1,240 veterans documented burn pits at this base.&quot; Only shown once
-                enough people are included that no one can be identified.
-              </p>
-            </div>
-            <Toggle on={publicMap} disabled={!contribute} onClick={togglePublic} label="Show my data in the public exposure map" />
-          </div>
-          <div className="flex items-start justify-between gap-4 rounded-lg border border-line px-4 py-3">
-            <div>
-              <div className="text-sm font-medium text-ink">Include me in de-identified research</div>
-              <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
-                Lets vetted researchers and advocates use the anonymized pattern data — under a signed data-use
-                agreement — for studies and legislation like the Breaking the Cascade Act.
-              </p>
-            </div>
-            <Toggle on={research} disabled={!contribute} onClick={toggleResearch} label="Include me in de-identified research" />
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center gap-3">
-          <span className="text-[0.8125rem] text-muted">
-            {busy ? "Saving…" : saved ? "Saved. Thank you." : contribute ? "You're contributing anonymously." : "Not contributing."}
-          </span>
-          <Link href="/privacy" className="text-sm font-semibold text-brand hover:underline">How your data is protected</Link>
+    <section className="card p-5 sm:p-6">
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-canvas text-brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </span>
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Help prove what happened to all of us</h2>
+          <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
+            On its own, your record helps your claim. Combined, anonymously, and only if you choose, records
+            like yours become the largest veteran-built map of toxic exposure outside the VA: the kind of
+            evidence that moves legislation and research. This is <strong>off unless you turn it on</strong>, and
+            you can turn it back off anytime.
+          </p>
         </div>
       </div>
-    </div>
+
+      <div className="mt-4 space-y-2">
+        {/* Master opt-in */}
+        <ConsentRow id="cohort-contribute" on={contribute} onToggle={toggleContribute} title="Contribute my anonymized record">
+          Your name, email, exact locations, exact dates, notes, and uploaded documents are <strong>never</strong>{" "}
+          included. Only coarse patterns (exposure type, general place, year, condition). Never sold.
+        </ConsentRow>
+
+        {/* Sub-options: only open once the master opt-in is on */}
+        <div className="space-y-2 sm:pl-6">
+          <ConsentRow id="cohort-public" on={publicMap} disabled={!contribute} onToggle={togglePublic} title="Show my data in the public exposure map">
+            Adds to public counts like &quot;1,240 veterans documented burn pits at this base.&quot; Only shown once
+            enough people are included that no one can be identified.
+          </ConsentRow>
+          <ConsentRow id="cohort-research" on={research} disabled={!contribute} onToggle={toggleResearch} title="Include me in de-identified research">
+            Lets vetted researchers and advocates use the anonymized pattern data, under a signed data-use
+            agreement, for studies and legislation like the Breaking the Cascade Act.
+          </ConsentRow>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span role="status" className="text-[0.9375rem] text-muted">
+          {busy ? "Saving…" : saved ? "Saved. Thank you." : contribute ? "You're contributing anonymously." : "Not contributing."}
+        </span>
+        <Link href="/privacy" className="btn btn-ghost min-h-11">How your data is protected</Link>
+      </div>
+    </section>
   );
 }

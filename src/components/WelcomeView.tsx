@@ -40,24 +40,24 @@ export default function WelcomeView() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <section className="card p-6 sm:p-8">
-        <h2 className="text-xl font-bold tracking-tight text-ink">Before you start — three things worth knowing</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-ink sm:text-xl">Before you start: three things worth knowing</h2>
 
         <div className="mt-5 space-y-4">
           <div className="flex gap-3.5">
-            <span className="mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">1</span>
+            <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-canvas text-[0.9375rem] font-semibold text-brand" aria-hidden="true">1</span>
             <div>
-              <div className="text-sm font-semibold text-ink">A VA disability claim asks one thing</div>
+              <h3 className="text-[0.9375rem] font-semibold text-ink">A VA disability claim asks one thing</h3>
               <p className="mt-0.5 text-[0.9375rem] leading-relaxed text-muted">
                 Did something about your service cause or worsen a health condition. This app helps you build the
-                record that answers that — where you served, what happened to you, and what you live with now —
-                so it&apos;s not just your memory against a form.
+                record that answers that: where you served, what happened to you, and what you live with now.
+                So it&apos;s not just your memory against a form.
               </p>
             </div>
           </div>
           <div className="flex gap-3.5">
-            <span className="mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">2</span>
+            <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-canvas text-[0.9375rem] font-semibold text-brand" aria-hidden="true">2</span>
             <div>
-              <div className="text-sm font-semibold text-ink">It&apos;s free — same as filing the claim itself</div>
+              <h3 className="text-[0.9375rem] font-semibold text-ink">It&apos;s free, same as filing the claim itself</h3>
               <p className="mt-0.5 text-[0.9375rem] leading-relaxed text-muted">
                 Nothing here is sold, and nothing is upsold. An accredited VSO&apos;s help to file is also always
                 free. If anyone ever asks you to pay to file a VA claim, that&apos;s a red flag.
@@ -65,12 +65,12 @@ export default function WelcomeView() {
             </div>
           </div>
           <div className="flex gap-3.5">
-            <span className="mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">3</span>
+            <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-canvas text-[0.9375rem] font-semibold text-brand" aria-hidden="true">3</span>
             <div>
-              <div className="text-sm font-semibold text-ink">Plan on about three sittings, not one</div>
+              <h3 className="text-[0.9375rem] font-semibold text-ink">Plan on about three sittings, not one</h3>
               <p className="mt-0.5 text-[0.9375rem] leading-relaxed text-muted">
                 Your service, where you served, and what you&apos;re dealing with are three separate steps. Do one,
-                close the tab, come back later — everything saves as you go.
+                close the tab, come back later. Everything saves as you go.
               </p>
             </div>
           </div>
@@ -78,23 +78,23 @@ export default function WelcomeView() {
 
         <div className="mt-6 card p-4">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-[0.8125rem] font-medium text-muted">Sample record</span>
-            <span className="text-[0.8125rem] text-faint">This is what you&apos;ll build</span>
+            <span className="text-[0.9375rem] font-semibold text-ink">Sample record</span>
+            <span className="text-sm text-muted">This is what you&apos;ll build</span>
           </div>
           <div className="mt-2">
             <ServiceTimeline data={SAMPLE} compact />
           </div>
         </div>
 
-        <div className="mt-5 flex items-start gap-2 rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-[0.8125rem] leading-relaxed text-muted">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-4 w-4 flex-none text-success">
+        <div className="mt-5 flex items-start gap-3 rounded-xl border border-line bg-canvas px-4 py-3 text-sm leading-relaxed text-muted">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-5 w-5 flex-none text-success" aria-hidden="true">
             <rect x="3" y="11" width="18" height="11" rx="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           <span>
             Free and private, built for veterans by Operation Whole Health, a 501(c)(3) nonprofit founded by Michael
-            Jones. Your record is yours — never sold.{" "}
-            <Link href="/about" className="font-semibold text-brand hover:underline">Why I built this</Link>
+            Jones. Your record is yours, never sold.{" "}
+            <Link href="/about" className="inline-flex min-h-11 items-center font-semibold text-brand underline-offset-2 hover:underline">Why I built this</Link>
           </span>
         </div>
 
@@ -107,7 +107,7 @@ export default function WelcomeView() {
         </button>
       </section>
 
-      <p className="text-center text-[0.8125rem] leading-relaxed text-faint">
+      <p className="text-center text-sm leading-relaxed text-muted">
         If you&apos;re struggling right now, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
       </p>
     </div>

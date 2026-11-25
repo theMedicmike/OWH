@@ -20,7 +20,7 @@ export default function ResetPage() {
 
         <ResetPasswordCard />
 
-        <p className="mt-6 text-center text-[0.8125rem] leading-relaxed text-faint">
+        <p className="mt-6 text-center text-sm leading-relaxed text-muted">
           If you&apos;re struggling, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
         </p>
       </div>

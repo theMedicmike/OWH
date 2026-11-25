@@ -12,6 +12,8 @@ export default function DocumentsCard() {
   const [files, setFiles] = useState<FileObj[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  // Removing a file is permanent, so it takes a second tap to confirm.
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   async function refresh(uid: string) {
     const { data } = await supabase.storage.from("records").list(uid, {
@@ -59,34 +61,67 @@ export default function DocumentsCard() {
   if (!user) return null;
 
   return (
-    <div className="rounded-xl border border-zinc-200 p-5">
-      <div className="text-sm font-medium text-zinc-900">Your records</div>
-      <div className="mt-1 text-[0.8125rem] text-zinc-500">
+    <section className="card p-5 sm:p-6">
+      <h2 className="text-lg font-semibold tracking-tight text-ink">Your records</h2>
+      <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
         Upload your DD-214, medical records, lab results, or claim letters. Private to you.
-        {" "}<span className="font-medium">Tip: your SSN is printed in Box 3 of a DD-214, and image
-        scans print with your claim packet — cover the SSN before you photograph the page. The app
-        never needs it.</span>
-      </div>
+      </p>
+      <p className="mt-3 rounded-xl border border-warn/40 bg-warn-soft px-4 py-3 text-[0.9375rem] leading-relaxed text-ink">
+        <span className="font-semibold">Cover your Social Security number first.</span> Your SSN is printed in Box 3
+        of a DD-214, and image scans print with your claim packet. Cover the SSN before you photograph the page.
+        The app never needs it.
+      </p>
 
-      <label className="mt-3 inline-block cursor-pointer rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-100">
+      <label
+        aria-disabled={busy}
+        className={`btn btn-primary btn-lg mt-4 cursor-pointer focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand-600 ${busy ? "cursor-not-allowed opacity-60" : ""}`}
+      >
         {busy ? "Uploading…" : "Upload a file"}
-        <input type="file" className="hidden" onChange={onUpload} disabled={busy} />
+        <input type="file" className="sr-only" onChange={onUpload} disabled={busy} />
       </label>
 
-      {err && <p className="mt-2 text-[0.8125rem] text-rose-500">{err}</p>}
+      {err && <p role="status" className="mt-2 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
       {files.length > 0 && (
-        <ul className="mt-3 divide-y divide-zinc-100">
-          {files.map((f) => (
-            <li key={f.name} className="flex items-center justify-between gap-3 py-2 text-sm">
-              <button onClick={() => view(f.name)} className="truncate text-left text-blue-600 hover:underline">
-                {f.name.replace(/^\d+-/, "")}
-              </button>
-              <button onClick={() => remove(f.name)} className="flex-none text-[0.8125rem] text-zinc-400 hover:text-rose-500">
-                remove
-              </button>
-            </li>
-          ))}
+        <ul className="mt-4 divide-y divide-line rounded-xl border border-line">
+          {files.map((f) => {
+            const shown = f.name.replace(/^\d+-/, "");
+            return (
+              <li key={f.name} className="px-3 py-2">
+                {confirming === f.name ? (
+                  <div className="flex min-h-12 flex-wrap items-center gap-2">
+                    <span className="min-w-0 flex-1 text-[0.9375rem] text-ink">
+                      Remove <span className="font-semibold">{shown}</span>? This cannot be undone.
+                    </span>
+                    <button type="button" onClick={() => setConfirming(null)} className="btn btn-secondary min-h-11">
+                      Keep it
+                    </button>
+                    <button type="button" onClick={() => { setConfirming(null); remove(f.name); }} className="btn btn-danger min-h-11">
+                      Yes, remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex min-h-12 items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => view(f.name)}
+                      className="min-h-11 min-w-0 flex-1 truncate text-left text-[0.9375rem] font-semibold text-brand hover:underline"
+                    >
+                      {shown}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirming(f.name)}
+                      aria-label={`Remove ${shown}`}
+                      className="btn btn-secondary min-h-11 flex-none"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -96,11 +131,11 @@ export default function DocumentsCard() {
           the estimator on 2026-08-06 and this second instance survived that pass
           because it says "science board" rather than "advisory board". Do not
           reinstate any promise that a person or panel checks these documents. */}
-      <p className="mt-3 text-[0.8125rem] text-zinc-400">
-        Stored privately, visible only to you — nobody here reads them. Uploading records is how you move a
+      <p className="mt-4 text-sm leading-relaxed text-muted">
+        Stored privately, visible only to you. Nobody here reads them. Uploading records is how you move a
         claim beyond self-reported: the paper is what a VA rater weighs most heavily, and having it in one
         place means you can hand it to your VSO in one go.
       </p>
-    </div>
+    </section>
   );
 }

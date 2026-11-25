@@ -5,16 +5,13 @@ import Link from "next/link";
 export default function AiIntakePage() {
   return (
     <AppShell title="Voice guided intake">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-muted">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <p className="text-[0.9375rem] leading-relaxed text-muted">
           Talk it through instead of clicking. Your guide asks the questions and turns your answers
           into check-ins you can save.
         </p>
-        <Link
-          href="/intake"
-          className="shrink-0 rounded-xl border border-line px-4 py-2 text-[0.8125rem] font-semibold text-muted transition hover:border-brand hover:text-brand"
-        >
-          ← Use the written form instead
+        <Link href="/intake" className="btn btn-secondary shrink-0">
+          Use the written form instead
         </Link>
       </div>
       <IntakeView />

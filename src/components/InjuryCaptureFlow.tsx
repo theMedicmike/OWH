@@ -110,20 +110,20 @@ export default function InjuryCaptureFlow({ initialClass }: { initialClass?: str
 
   if (saved) {
     return (
-      <div className="mx-auto max-w-lg card p-6 text-center shadow-sm">
+      <div className="card mx-auto max-w-lg p-6 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 text-success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 text-success" aria-hidden="true">
             <path d="m5 13 4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-base font-semibold text-ink">Saved.</h3>
+        <h3 className="text-lg font-semibold tracking-tight text-ink">Saved.</h3>
         <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           It&apos;s on your record now, and connected to any matching conditions on Your conditions.
         </p>
-        <Link href="/injuries" className="mt-5 block w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600">
+        <Link href="/injuries" className="btn btn-primary btn-lg mt-5 w-full">
           See your entries
         </Link>
-        <button onClick={resetForm} className="mt-2.5 w-full rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-ink hover:bg-canvas">
+        <button type="button" onClick={resetForm} className="btn btn-secondary btn-lg mt-2.5 w-full">
           Log another
         </button>
       </div>
@@ -131,145 +131,154 @@ export default function InjuryCaptureFlow({ initialClass }: { initialClass?: str
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-5">
+    <div className="mx-auto max-w-lg space-y-6">
       {/* Consent line, stated before anything is asked — trauma-informed UX,
           not boilerplate. */}
-      <div className="rounded-xl border border-line bg-canvas p-4 text-[0.8125rem] leading-relaxed text-muted">
-        Nothing here is submitted automatically — it stays in your own record until you choose to bring it to a
+      <div className="rounded-xl border border-line bg-canvas p-4 text-[0.9375rem] leading-relaxed text-muted">
+        Nothing here is submitted automatically. It stays in your own record until you choose to bring it to a
         VSO. Nothing you type is saved until you tap Save, so if you need to step away, it&apos;s safe to close
         this and come back whenever you&apos;re ready. Nothing you write is touched by AI.
       </div>
 
-      <div>
-        <div className="text-sm font-semibold text-ink">What happened?</div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
+      <fieldset>
+        <legend className="text-lg font-semibold tracking-tight text-ink">What happened?</legend>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {INCIDENTS.map((x) => (
             <button
               key={x.value}
               type="button"
               aria-pressed={incidentClass === x.value}
               onClick={() => setIncidentClass(x.value)}
-              className={`rounded-full border px-2.5 py-1 text-[0.8125rem] ${incidentClass === x.value ? "border-brand bg-brand/10 font-medium text-brand" : "border-line text-muted hover:bg-canvas"}`}
+              className={`btn min-h-12 ${incidentClass === x.value ? "btn-primary" : "btn-secondary"}`}
             >
               {x.label}
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {isMst && (
-        <div className="rounded-lg border border-brand/30 bg-brand/5 px-3 py-2.5 text-[0.8125rem] leading-relaxed text-ink">
-          This is logged like any other event — nothing more. Every VA medical center has an MST coordinator, and
+        <div className="rounded-xl border border-brand/30 bg-brand/5 p-4 text-[0.9375rem] leading-relaxed text-ink">
+          This is logged like any other event, nothing more. Every VA medical center has an MST coordinator, and
           care for MST-related conditions is free regardless of your disability rating or discharge status.{" "}
-          <a href="tel:988" className="font-semibold text-brand hover:underline">988, then press 1</a> is there
+          <a href="tel:988" className="font-semibold text-brand underline">988, then press 1</a> is there
           any hour, for you or anyone you served with.
         </div>
       )}
 
       {incidentClass && (
         <>
-          <label className="flex items-center gap-2 text-[0.8125rem] text-muted">
-            <input type="checkbox" checked={repeated} onChange={(e) => setRepeated(e.target.checked)} />
-            This happened repeatedly, not on one day — not a single event, but a pattern over time
+          <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 text-[0.9375rem] text-ink">
+            <input type="checkbox" className="h-6 w-6 flex-none accent-brand" checked={repeated} onChange={(e) => setRepeated(e.target.checked)} />
+            This happened repeatedly, not on one day. A pattern over time, not a single event.
           </label>
 
           {repeated ? (
-            <div className="space-y-3 rounded-lg border border-line bg-canvas p-3">
+            <div className="space-y-4 rounded-xl border border-line bg-canvas p-4">
               <div>
-                <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Your role or unit at the time</label>
+                <label htmlFor="injury-role" className="field-label">Your role or unit at the time</label>
                 <input
+                  id="injury-role"
                   value={roleOrUnit}
                   onChange={(e) => setRoleOrUnit(e.target.value)}
-                  placeholder="e.g. breacher, 2nd squad — or just your job"
-                  className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+                  placeholder="e.g. breacher, 2nd squad, or just your job"
+                  className="field"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-[0.8125rem] font-medium text-muted">From</label>
+                  <div className="field-label">From</div>
                   <WheelPicker options={YEARS} index={YEARS.indexOf(String(rangeStart))} onChange={(i) => setRangeStart(parseInt(YEARS[i], 10))} ariaLabel="Start year" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[0.8125rem] font-medium text-muted">To</label>
+                  <div className="field-label">To</div>
                   <WheelPicker options={YEARS} index={YEARS.indexOf(String(rangeEnd))} onChange={(i) => setRangeEnd(parseInt(YEARS[i], 10))} ariaLabel="End year" />
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Roughly how often, in your own words</label>
+                <label htmlFor="injury-frequency" className="field-label">Roughly how often, in your own words</label>
                 <input
+                  id="injury-frequency"
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value)}
                   placeholder="e.g. near-daily, a handful of times a month"
-                  className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+                  className="field"
                 />
               </div>
             </div>
           ) : (
-            <div className="space-y-3 rounded-lg border border-line bg-canvas p-3">
+            <div className="space-y-4 rounded-xl border border-line bg-canvas p-4">
               <div>
-                <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Where (optional)</label>
+                <label htmlFor="injury-place" className="field-label">Where (optional)</label>
                 <input
+                  id="injury-place"
                   value={placeName}
                   onChange={(e) => setPlaceName(e.target.value)}
                   placeholder="A base, a city, or leave it blank"
-                  className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+                  className="field"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[0.8125rem] font-medium text-muted">When</label>
+                <div className="field-label">When</div>
                 <MonthYearWheel month={month} year={year} day={day} onMonthChange={setMonth} onYearChange={setYear} onDayChange={setDay} approximate={approximate} onApproximateChange={setApproximate} minYear={1940} />
               </div>
             </div>
           )}
 
-          <div>
-            <div className="text-sm font-semibold text-ink">How do you know?</div>
-            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <fieldset>
+            <legend className="text-lg font-semibold tracking-tight text-ink">How do you know?</legend>
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
               {PROVENANCE_OPTIONS.map((o) => (
                 <button
                   key={o.value}
                   type="button"
                   aria-pressed={provenance === o.value}
                   onClick={() => setProvenance(o.value)}
-                  className={`rounded-lg border px-3 py-2.5 text-left text-[0.8125rem] ${provenance === o.value ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line bg-white text-ink hover:bg-canvas"}`}
+                  className={`btn min-h-12 ${provenance === o.value ? "btn-primary" : "btn-secondary"}`}
                 >
                   {o.label}
                 </button>
               ))}
             </div>
             {note && (
-              <div className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2.5 text-[0.8125rem] leading-relaxed text-ink">
-                <div className="font-semibold text-brand">{note.headline}</div>
+              <div className="mt-3 rounded-xl border border-line bg-canvas p-4 text-[0.9375rem] leading-relaxed text-ink">
+                <div className="font-semibold text-ink">{note.headline}</div>
                 <p className="mt-1 text-muted">{note.body}</p>
               </div>
             )}
-          </div>
+          </fieldset>
 
           <div>
-            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">In your own words (optional)</label>
+            <label htmlFor="injury-detail" className="field-label">In your own words (optional)</label>
             <textarea
+              id="injury-detail"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
               rows={4}
               placeholder="Whatever you remember. Nothing classified."
-              className="w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
+              className="field"
             />
-            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
-              Your own specific memory — details only you would know — is stronger evidence than polished
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              Your own specific memory, details only you would know, is stronger evidence than polished
               wording. This app never writes it for you.
             </p>
           </div>
 
-          {err && <p className="text-[0.8125rem] text-scarlet">{err}</p>}
+          {err && <p role="alert" className="text-[0.9375rem] text-scarlet">{err}</p>}
 
-          <div className="flex gap-2">
-            <button onClick={save} disabled={busy || !canSave} className="flex-1 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button type="button" onClick={save} disabled={busy || !canSave} className="btn btn-primary btn-lg flex-1">
               {busy ? "Saving…" : "Save"}
             </button>
-            <Link href="/injuries" className="rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-muted hover:bg-canvas">
+            <Link href="/injuries" className="btn btn-secondary btn-lg">
               Not now
             </Link>
           </div>
+          {!canSave && (
+            <p className="text-sm text-muted">
+              {!provenance ? "Choose how you know to save." : "Add your role or unit to save."}
+            </p>
+          )}
         </>
       )}
     </div>

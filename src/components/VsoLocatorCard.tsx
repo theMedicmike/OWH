@@ -24,9 +24,9 @@ const card = "card p-5";
 // that it has no relationship with any organization listed.
 
 const KIND_LABEL: Record<VsoResult["kind"], string> = {
-  vso: "Veterans Service Organization — free",
-  agent: "Accredited claims agent — may charge a fee",
-  attorney: "Accredited attorney — may charge a fee",
+  vso: "Veterans Service Organization. Free.",
+  agent: "Accredited claims agent. May charge a fee.",
+  attorney: "Accredited attorney. May charge a fee.",
 };
 
 function prettyPhone(p: string): string {
@@ -63,8 +63,8 @@ export default function VsoLocatorCard() {
 
   return (
     <div className="space-y-4">
-      <div className={`${card} surface-raise border-brand/30 bg-brand/5`}>
-        <div className="text-sm font-semibold text-ink">Find accredited help near you</div>
+      <div className={`${card} card-raise`}>
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Find accredited help near you</h2>
         <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
           {/* Corrected 2026-09-08. This said free help "is what accreditation
               means", conflating two different rules. Accreditation (38 CFR
@@ -76,42 +76,40 @@ export default function VsoLocatorCard() {
               been misled by us, on the page whose whole job is steering him away
               from exactly that. */}
           Enter your ZIP code. The Veterans Service Organizations listed help you for{" "}
-          <strong className="text-ink">free</strong> — their representatives are not allowed to charge you.
+          <strong className="text-ink">free</strong>. Their representatives are not allowed to charge you.
           Accredited agents and attorneys may charge a fee, and are labelled as such below.
         </p>
 
-        <form onSubmit={search} className="mt-4 flex flex-wrap items-center gap-2">
-          <label htmlFor="vso-zip" className="sr-only">ZIP code</label>
-          <input
-            id="vso-zip"
-            inputMode="numeric"
-            autoComplete="postal-code"
-            maxLength={5}
-            value={zip}
-            onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
-            placeholder="ZIP code"
-            className="w-36 rounded-lg border border-line bg-white px-3 py-2.5 text-base text-ink placeholder:text-faint focus:border-brand focus:outline-none"
-          />
-          <button
-            type="submit"
-            disabled={busy}
-            className="press rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50"
-          >
+        <form onSubmit={search} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="sm:w-48">
+            <label htmlFor="vso-zip" className="field-label">ZIP code</label>
+            <input
+              id="vso-zip"
+              inputMode="numeric"
+              autoComplete="postal-code"
+              maxLength={5}
+              value={zip}
+              onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
+              placeholder="5 digits"
+              className="field tnum"
+            />
+          </div>
+          <button type="submit" disabled={busy} className="btn btn-primary btn-lg">
             {busy ? "Searching…" : "Search"}
           </button>
         </form>
-        {err && <p className="mt-2 text-[0.8125rem] text-scarlet">{err}</p>}
+        {err && <p role="alert" className="mt-2 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
       </div>
 
       {res?.status === "invalid" && (
-        <p className="px-1 text-sm text-muted">That doesn&apos;t look like a ZIP code — try five digits.</p>
+        <p className="px-1 text-[0.9375rem] text-muted">That doesn&apos;t look like a ZIP code. Try five digits.</p>
       )}
 
       {res?.status === "none" && (
         <div className={card}>
-          <div className="text-sm font-semibold text-ink">Nothing listed around {res.zip}</div>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Nothing listed around {res.zip}</h2>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
-            That doesn&apos;t mean there&apos;s no help near you — this list is organized by where a
+            That doesn&apos;t mean there&apos;s no help near you. This list is organized by where a
             representative is registered, which isn&apos;t always where they work. Use VA&apos;s live search
             below, or call your county veterans office.
           </p>
@@ -120,45 +118,39 @@ export default function VsoLocatorCard() {
 
       {res?.status === "ok" && (
         <div className={card}>
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <div className="text-sm font-semibold text-ink">
-              {res.scope === "exact"
-                ? `Accredited in ${res.zip}`
-                : `Accredited near ${res.zip}`}
-            </div>
-            <span className="text-[0.8125rem] text-muted">
-              {freeCount > 0 && <>{freeCount} free {freeCount === 1 ? "option" : "options"}, </>}
-              VA list of {res.generated}
-            </span>
-          </div>
+          <h2 className="text-lg font-semibold tracking-tight text-ink">
+            {res.scope === "exact" ? `Accredited in ${res.zip}` : `Accredited near ${res.zip}`}
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            {freeCount > 0 && <>{freeCount} free {freeCount === 1 ? "option" : "options"}. </>}
+            VA list of {res.generated}.
+          </p>
           {res.scope === "nearby" && (
-            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
+            <p className="mt-1 text-sm leading-relaxed text-muted">
               Nothing was registered in {res.zip} exactly, so this is the wider area around it.
             </p>
           )}
 
           <ul className="mt-3 space-y-2">
             {res.results.map((r, i) => (
-              <li key={`${r.name}-${r.zip}-${i}`} className="rounded-lg border border-line bg-canvas p-3">
-                <div className="text-sm font-semibold text-ink">{r.name}</div>
-                <div className="mt-0.5 text-[0.8125rem] text-muted">
+              <li key={`${r.name}-${r.zip}-${i}`} className="rounded-xl border border-line bg-canvas p-4">
+                <div className="text-[0.9375rem] font-semibold text-ink">{r.name}</div>
+                <div className="mt-0.5 text-sm text-muted">
                   {KIND_LABEL[r.kind]}
-                  {r.reps > 1 && <>, {r.reps} representatives here</>}
+                  {r.reps > 1 && <> {r.reps} representatives here.</>}
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-muted">
-                  <span>{[r.city, r.state].filter(Boolean).join(", ")} {r.zip}</span>
-                  {r.phone && (
-                    <a href={`tel:${r.phone.replace(/\D/g, "")}`} className="font-semibold text-brand hover:underline">
-                      {prettyPhone(r.phone)}
-                    </a>
-                  )}
-                </div>
+                <div className="mt-1 text-sm text-muted">{[r.city, r.state].filter(Boolean).join(", ")} {r.zip}</div>
+                {r.phone && (
+                  <a href={`tel:${r.phone.replace(/\D/g, "")}`} className="btn btn-secondary mt-3 tnum">
+                    Call {prettyPhone(r.phone)}
+                  </a>
+                )}
               </li>
             ))}
           </ul>
 
-          <p className="mt-3 border-t border-line pt-3 text-[0.8125rem] leading-relaxed text-faint">
-            From VA&apos;s published accreditation lists, taken {res.generated}. Accreditation can change — confirm
+          <p className="mt-3 border-t border-line pt-3 text-sm leading-relaxed text-muted">
+            From VA&apos;s published accreditation lists, taken {res.generated}. Accreditation can change, so confirm
             on VA&apos;s live search before you rely on it. Operation Whole Health has no relationship with any
             organization here and receives nothing from any of them. Which representative you choose is your
             decision.
@@ -167,37 +159,32 @@ export default function VsoLocatorCard() {
       )}
 
       <div className={card}>
-        <div className="text-sm font-semibold text-ink">VA&apos;s own live search</div>
+        <h2 className="text-lg font-semibold tracking-tight text-ink">VA&apos;s own live search</h2>
         <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
           The authoritative copy, updated continuously. Always worth checking before you call.
         </p>
-        <a
-          href={VSO_LOCATOR_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="press mt-3 inline-block btn btn-secondary"
-        >
+        <a href={VSO_LOCATOR_URL} target="_blank" rel="noreferrer" className="btn btn-secondary mt-3">
           Open VA&apos;s search
         </a>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-semibold text-ink">Why bring your packet to a VSO</div>
-        <ul className="mt-3 space-y-2.5 text-sm text-ink">
-          <li><span className="font-semibold">Free from a VSO.</span> DAV, VFW, American Legion, your county veterans office, and hundreds of others help you at no cost — that is why they are listed first.</li>
-          <li><span className="font-semibold">Accredited by VA to represent you.</span> They know what evidence a rater actually needs to see. Accreditation is permission to represent — it is not a promise of a free service, so check before you sign anything with an agent or an attorney.</li>
-          <li><span className="font-semibold">They file it.</span> This app documents your record — a VSO is who actually submits the claim with you.</li>
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Why bring your packet to a VSO</h2>
+        <ul className="mt-3 space-y-2.5 text-[0.9375rem] leading-relaxed text-ink">
+          <li><span className="font-semibold">Free from a VSO.</span> DAV, VFW, American Legion, your county veterans office, and hundreds of others help you at no cost. That is why they are listed first.</li>
+          <li><span className="font-semibold">Accredited by VA to represent you.</span> They know what evidence a rater actually needs to see. Accreditation is permission to represent. It is not a promise of a free service, so check before you sign anything with an agent or an attorney.</li>
+          <li><span className="font-semibold">They file it.</span> This app documents your record. A VSO is who actually submits the claim with you.</li>
         </ul>
       </div>
 
       <div className={card}>
-        <div className="text-sm font-semibold text-ink">What to bring</div>
-        <ul className="mt-3 space-y-1.5 text-sm text-muted">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">What to bring</h2>
+        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-muted">
           <li>Your claim packet from this app (the PDF or the printed page)</li>
           <li>Your DD-214 (discharge papers)</li>
           <li>Any medical records or diagnoses you already have</li>
         </ul>
-        <Link href="/report" className="mt-3 inline-block text-[0.8125rem] font-semibold text-brand hover:underline">Build your packet</Link>
+        <Link href="/report" className="btn btn-primary mt-4">Build your packet</Link>
       </div>
     </div>
   );
