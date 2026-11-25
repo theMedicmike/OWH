@@ -172,6 +172,7 @@ export default function ReportView() {
   const [vesselRows, setVesselRows] = useState<{ title: string; when: string; role?: string; note?: string }[]>([]);
   const [condNotes, setCondNotes] = useState<Record<string, string[]>>({});
   const [downloaded, setDownloaded] = useState(false);
+  const [pdfMode, setPdfMode] = useState<"save" | "share">("save");
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -583,10 +584,13 @@ export default function ReportView() {
     ? `Intent to File (VA Form 21-0966): veteran reports filing on ${itfPretty} — veteran-reported; confirm on VA.gov.`
     : "Intent to File (VA Form 21-0966): none reported. Filing one sets the effective date for any later award — worth asking an accredited VSO about before anything else.";
 
-  async function handleDownload() {
+  // "save" downloads the file; "share" opens the phone's share sheet with the
+  // PDF attached (falls back to saving where sharing files is not possible).
+  async function handleDownload(mode: "save" | "share" = "save") {
     setPdfBusy(true);
+    setPdfMode(mode);
     try {
-      await downloadClaimPdf({
+      const outcome = await downloadClaimPdf({
         name: member?.display_name || user?.email || "Veteran",
         branch: member?.branch ?? null,
         years,
@@ -678,8 +682,8 @@ export default function ReportView() {
         witnessStatements: witnessRows,
         contentions: allContentions.map((c) => ({ label: c.label, matches: c.line, cite: c.cite, elementLine: c.elementLine })),
         attachments: records.map((r) => ({ name: r.name, isImage: r.isImage, url: r.url })),
-      });
-      setDownloaded(true);
+      }, mode);
+      if (outcome !== "cancelled") setDownloaded(true);
     } finally {
       setPdfBusy(false);
     }
@@ -690,45 +694,98 @@ export default function ReportView() {
 
   return (
     <div>
-      <div className="mb-4 print:hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-[0.8125rem] text-muted">A claim-support packet to bring to your VSO and clinician.</span>
-          <div className="flex items-center gap-2">
-            <button onClick={handleDownload} disabled={pdfBusy} className="flex-none btn btn-primary disabled:opacity-60">
-              {pdfBusy ? "Building PDF…" : "Download PDF"}
-            </button>
-            <button onClick={() => window.print()} className="flex-none rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:bg-canvas">
-              Print
-            </button>
-          </div>
-        </div>
-        <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
-          Download PDF saves the packet as a file you can print or email — it works even inside an
-          in-app browser like Gmail&apos;s. On some phones the PDF opens in a viewer first; use the
-          share icon there to save or print it. Print works best on a computer.
+      {/* The one lit door on this screen: get the packet out of the app. */}
+      <section className="on-navy card-raise mb-6 rounded-2xl bg-brand p-6 text-white sm:p-7 print:hidden">
+        <h2 className="text-[1.375rem] font-semibold leading-tight tracking-tight sm:text-2xl">Your claim packet</h2>
+        <p className="mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-white/80">
+          Everything you logged, assembled and cited. Bring it to an accredited VSO, who files it with you for free.
         </p>
+        <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button onClick={() => handleDownload("save")} disabled={pdfBusy} className="btn btn-light btn-lg w-full">
+            {pdfBusy && pdfMode === "save" ? "Building the PDF…" : "Download the PDF"}
+          </button>
+          <button
+            onClick={() => handleDownload("share")}
+            disabled={pdfBusy}
+            className="btn btn-lg w-full border border-white/35 text-white hover:bg-white/10"
+          >
+            {pdfBusy && pdfMode === "share" ? "Building the PDF…" : "Send it"}
+          </button>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-white/70">
+          &ldquo;Send it&rdquo; opens your phone&apos;s share menu with the PDF attached, so you can email or text it
+          to your VSO. On a computer it downloads the file instead.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/15 pt-4 text-[0.9375rem]">
+          <button onClick={() => window.print()} className="font-semibold text-white underline-offset-4 hover:underline">Print it</button>
+          <Link href="/reviewer" className="font-semibold text-white underline-offset-4 hover:underline">
+            Print a cover sheet for your VSO
+          </Link>
+        </div>
+      </section>
 
-        {/* The afterlife: downloading is the middle of the story, not the end. */}
-        {downloaded && (
-          <div className="mt-3 rounded-xl border border-success/30 bg-success-soft p-4">
-            <div className="text-sm font-bold text-ink">Packet saved. Here&apos;s the road from here:</div>
-            <ol className="mt-2 space-y-1.5 text-sm text-ink">
-              <li>
-                <span className="font-semibold">1.</span> Take it to an accredited VSO —{" "}
-                <Link href="/vso" className="font-semibold text-brand hover:underline">find one near you (free)</Link>.
+      {/* The afterlife: downloading is the middle of the story, not the end. */}
+      {downloaded && (
+        <div className="mb-6 rounded-2xl border border-success/30 bg-success-soft p-4 print:hidden" aria-live="polite">
+          <p className="text-[0.9375rem] font-semibold text-ink">Packet ready. The road from here is below, under What to do next.</p>
+          <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">
+            When you file, come back and mark each condition{" "}
+            <Link href="/journey" className="font-semibold text-brand hover:underline">Filed</Link>. This record
+            will track the claim with you.
+          </p>
+        </div>
+      )}
+
+      {/* How to actually file this: the bridge from packet to filed claim. A
+          real sequence, so the numbers stay. Each whole row is the tap target. */}
+      <section className="mb-6 print:hidden">
+        <h3 className="text-xl font-semibold tracking-tight text-ink">What to do next</h3>
+        <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
+          Filing is <strong className="text-ink">free</strong>, and an accredited VSO will help you for free. You never
+          have to pay anyone to file a VA claim.
+        </p>
+        <ol className="card mt-3 overflow-hidden">
+          {[
+            { n: 1, title: "Lock in your date", detail: `${VA_FORMS.intent.blurb} VA Form ${VA_FORMS.intent.number} (Intent to File), on VA.gov.`, href: VA_FORMS.intent.url, external: true },
+            { n: 2, title: "Get free help from a VSO", detail: "DAV, VFW, or the American Legion review your packet and file with you at no cost. Bring the cover sheet.", href: "/vso", external: false },
+            { n: 3, title: "File the claim", detail: `VA Form ${VA_FORMS.claim.number} online at VA.gov, or on paper with your VSO. Attach this packet and your DD-214.`, href: FILE_ONLINE_URL, external: true },
+            { n: 4, title: "Watch for a C&P exam letter", detail: "VA usually schedules one before deciding. Here is what to expect.", href: "/cp-exam", external: false },
+          ].map((s) => {
+            const inner = (
+              <>
+                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand text-[0.8125rem] font-semibold text-white" aria-hidden="true">{s.n}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[0.9375rem] font-semibold leading-snug">
+                    <span className="sr-only">Step {s.n}: </span>{s.title}
+                  </span>
+                  <span className="mt-0.5 block text-sm leading-snug text-muted">{s.detail}</span>
+                </span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 flex-none text-faint" aria-hidden="true">
+                  <path d="m9 6 6 6-6 6" />
+                </svg>
+              </>
+            );
+            return (
+              <li key={s.n} className="border-t border-line first:border-t-0">
+                {s.external ? (
+                  <a href={s.href} target="_blank" rel="noreferrer" className="row items-start">{inner}</a>
+                ) : (
+                  <Link href={s.href} className="row items-start">{inner}</Link>
+                )}
               </li>
-              <li>
-                <span className="font-semibold">2.</span> When you file, come back and mark each condition{" "}
-                <Link href="/journey" className="font-semibold text-brand hover:underline">Filed</Link> — this record
-                will track the claim with you.
-              </li>
-            </ol>
-          </div>
-        )}
-        <Link href="/reviewer" className="mt-2 inline-block text-sm font-semibold text-brand hover:underline">
-          Bringing this to a VSO or clinician? Print a 5-question cover sheet to clip on top
-        </Link>
-      </div>
+            );
+          })}
+        </ol>
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
+          Denied before, or expecting a denial? It is common, even for strong claims, and it isn&apos;t the end. You
+          can file a{" "}
+          <a href={VA_FORMS.supplemental.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Supplemental Claim (20-0995)</a>,
+          request a{" "}
+          <a href={VA_FORMS.hlr.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Higher-Level Review (20-0996)</a>, or a{" "}
+          <a href={VA_FORMS.board.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Board Appeal (10182)</a>.
+          Your VSO can help you pick the right lane.
+        </p>
+      </section>
 
       {/* The veteran's own words as a standalone deliverable — verbatim, VSO-routed.
           When a spouse or caregiver is filling this out (population_layer), the
@@ -755,75 +812,6 @@ export default function ReportView() {
           secondaryTo: condDetail[c.label]?.secondary_to ?? null,
         }))}
       />
-
-      {/* How to actually file this — the bridge from packet to filed claim */}
-      <div className="mb-4 rounded-xl border border-brand/20 bg-brand/5 p-5 print:hidden">
-        <div className="text-[0.8125rem] font-bold text-brand">How to file this</div>
-        <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
-          Your packet is evidence — here&apos;s how to turn it into a filed claim. Filing is <strong>free</strong>, and
-          an accredited VSO will help you for free. You never have to pay anyone to file a VA claim.
-        </p>
-        <ol className="mt-3 space-y-3">
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[0.8125rem] font-bold text-brand">1</span>
-            <div>
-              <div className="text-sm font-semibold text-ink">Lock in your date</div>
-              <p className="text-[0.8125rem] leading-relaxed text-muted">{VA_FORMS.intent.blurb}</p>
-              <a href={VA_FORMS.intent.url} target="_blank" rel="noreferrer" className="text-[0.8125rem] font-semibold text-brand hover:underline">
-                About VA Form {VA_FORMS.intent.number} (Intent to File)
-              </a>
-            </div>
-          </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[0.8125rem] font-bold text-brand">2</span>
-            <div>
-              <div className="text-sm font-semibold text-ink">Get free help from a VSO</div>
-              <p className="text-[0.8125rem] leading-relaxed text-muted">
-                A Veterans Service Officer (VSO) — through DAV, VFW, or the American Legion — reviews your packet and
-                files with you at no cost. Bring the 5-question cover sheet above.
-              </p>
-              <Link href="/vso" className="text-[0.8125rem] font-semibold text-brand hover:underline">
-                Find an accredited VSO near you
-              </Link>
-            </div>
-          </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[0.8125rem] font-bold text-brand">3</span>
-            <div>
-              <div className="text-sm font-semibold text-ink">File the claim</div>
-              <p className="text-[0.8125rem] leading-relaxed text-muted">
-                Submit VA Form {VA_FORMS.claim.number} online at VA.gov (or on paper with your VSO), and attach this
-                packet and your DD-214.
-              </p>
-              <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-[0.8125rem] font-semibold text-brand hover:underline">
-                File a disability claim online at VA.gov
-              </a>
-            </div>
-          </li>
-          <li className="flex gap-3">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand/10 text-[0.8125rem] font-bold text-brand">4</span>
-            <div>
-              <div className="text-sm font-semibold text-ink">Watch for a C&amp;P exam letter</div>
-              <p className="text-[0.8125rem] leading-relaxed text-muted">
-                VA usually schedules a Compensation &amp; Pension exam before deciding — a different clinician than
-                your own, asking VA&apos;s specific medical questions.
-              </p>
-              <Link href="/cp-exam" className="text-[0.8125rem] font-semibold text-brand hover:underline">
-                What to expect at a C&amp;P exam
-              </Link>
-            </div>
-          </li>
-        </ol>
-        <p className="mt-3 border-t border-brand/15 pt-3 text-[0.8125rem] leading-relaxed text-muted">
-          Denied before, or expecting a denial? It is common, even for strong claims — and it isn&apos;t the end. You
-          can file a{" "}
-          <a href={VA_FORMS.supplemental.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Supplemental Claim (20-0995)</a>,
-          request a{" "}
-          <a href={VA_FORMS.hlr.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Higher-Level Review (20-0996)</a>, or a{" "}
-          <a href={VA_FORMS.board.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">Board Appeal (10182)</a>.
-          Your VSO can help you pick the right lane.
-        </p>
-      </div>
 
       <div className="card p-6 text-ink shadow-sm sm:p-8 print:border-0 print:p-0 print:shadow-none">
         {/* Cover */}

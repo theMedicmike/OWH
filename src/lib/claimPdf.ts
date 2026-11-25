@@ -136,7 +136,15 @@ async function fetchImage(url: string): Promise<{ data: string; w: number; h: nu
 
 import { currencyLine } from "./accuracyOwner";
 
-export async function downloadClaimPdf(data: ClaimPdfData) {
+/** "save" downloads the file (the original behaviour). "share" hands the
+ *  finished PDF to the phone's share sheet so the veteran can email or text
+ *  it to his VSO in one tap, and falls back to saving wherever a browser
+ *  cannot share files or refuses (some need a fresh tap after a slow build).
+ *  Returns what actually happened, so the screen can say so. */
+export async function downloadClaimPdf(
+  data: ClaimPdfData,
+  mode: "save" | "share" = "save",
+): Promise<"saved" | "shared" | "cancelled"> {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "pt", format: "letter" });
 
@@ -610,5 +618,24 @@ export async function downloadClaimPdf(data: ClaimPdfData) {
     doc.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 20, { align: "right" });
   }
 
-  doc.save(`Claim-Support-Packet-${data.today.replace(/[ ,]+/g, "-")}.pdf`);
+  const filename = `Claim-Support-Packet-${data.today.replace(/[ ,]+/g, "-")}.pdf`;
+  if (mode === "share" && typeof navigator !== "undefined") {
+    const nav = navigator as Navigator & {
+      canShare?: (d: { files?: File[] }) => boolean;
+      share?: (d: { files?: File[]; title?: string; text?: string }) => Promise<void>;
+    };
+    const file = new File([doc.output("blob")], filename, { type: "application/pdf" });
+    if (nav.share && nav.canShare?.({ files: [file] })) {
+      try {
+        await nav.share({ files: [file], title: "Claim support packet", text: "My claim support packet." });
+        return "shared";
+      } catch (e) {
+        // He closed the share sheet on purpose: do nothing more.
+        if (e instanceof DOMException && e.name === "AbortError") return "cancelled";
+        // Anything else (no fresh tap, blocked): fall through and save it.
+      }
+    }
+  }
+  doc.save(filename);
+  return "saved";
 }
