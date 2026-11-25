@@ -65,6 +65,11 @@ const SECTIONS: NavSection[] = [
       // numbered step. "Your medications," not "Drug side effects": the page
       // documents what you take, it does not tell you what a drug did to you.
       { href: "/medications", label: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
+      // The First Page (decided 2026-11-24): the one two-sided sheet a veteran
+      // hands a specialist, printed from this record. Not a numbered step, because
+      // it faces the clinic, not the claim: it reads from the record and writes
+      // nothing back into it. Same "discoverable alongside" reasoning as above.
+      { href: "/first-page", label: "Your First Page", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM8 12h8M8 16h5" },
       // Council ruling 2026-08-14. Dropdown-only lookup of the PUBLISHED
       // presumptive lists — where and when only, never a question about the
       // veteran's health. The symptom-driven version veterans asked for was

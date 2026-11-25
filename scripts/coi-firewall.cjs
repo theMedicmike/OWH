@@ -599,6 +599,70 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\
   }
 }
 
+// ── 16. The First Page (Service Health Summary v1) ──────────────────────────
+// Decided 2026-11-24. The one two-sided sheet a veteran hands a specialist,
+// printed from his own record. It faces the clinic, not the claim, and it
+// copies; it never concludes. Each check below is a point that was argued
+// over and settled, written down so a later edit cannot quietly undo it.
+{
+  const FP_FILES = [
+    ...walkAll(path.join(root, "src/app/first-page")),
+    ...walkAll(path.join(root, "src/components/firstpage")),
+    path.join(root, "src/lib/firstPage.ts"),
+  ].map(rel);
+  const fpLib = read("src/lib/firstPage.ts");
+  const fpPrint = read("src/components/firstpage/FirstPagePrint.tsx");
+
+  for (const f of FP_FILES) {
+    const src = stripComments(read(f));
+    // 16a. Isolation from the claim side and from the Exposure Library. The
+    // page links only within itself. A print that points at a claim packet,
+    // a presumptive list or a rating estimate is a claim aid, and the council
+    // ruled it is not one.
+    if (/\/report\b|\/presumptives\b|\/estimator\b|\/learn\/|\/solutions\b/.test(src)) {
+      fail("first-page-isolation", `${f} links toward the claim packet, presumptives, the estimator or the Exposure Library — the First Page faces the clinic, not the claim.`);
+    }
+    // 16b. No AI and no server route. The ten-minute story and the words the
+    // browser hears stay between the veteran's device and his private storage.
+    if (/\/api\/|@anthropic-ai|openai/i.test(src)) {
+      fail("first-page-no-ai", `${f} reaches a server route or a model SDK — nothing on the First Page is written, rewritten or heard by AI.`);
+    }
+  }
+
+  // 16c. The print is gated by the lint, and the lint still bans inference
+  // words. "Copied as written" is the whole design; the lint is what enforces it.
+  if (!/export function lintPage\(/.test(fpLib) || !/const INFER\s*=/.test(fpLib)) {
+    fail("first-page-lint", "src/lib/firstPage.ts lost lintPage() or the INFER regex — the page copies what records say; the lint is what stops it concluding.");
+  }
+  for (const w of ["caused", "likely", "consistent with", "abnormal", "elevated", "secondary to"]) {
+    if (!new RegExp("[(|]" + w + "[|)]").test(fpLib)) fail("first-page-lint", `src/lib/firstPage.ts: "${w}" is no longer in the inference list.`);
+  }
+  if (!/lintPage\(/.test(fpPrint) || !/lint\.length\s*===\s*0/.test(fpPrint)) {
+    fail("first-page-lint", "FirstPagePrint.tsx no longer runs lintPage() and gates the print button on an empty result.");
+  }
+
+  // 16d. Sensitive rows start OFF. Mental-health conditions and sexual-trauma
+  // or assault incidents print only when the veteran turns them on himself.
+  if (!/military_sexual_trauma/.test(fpLib) || !/physical_assault/.test(fpLib) || !/"Mental health"/.test(fpLib)) {
+    fail("first-page-default-off", "src/lib/firstPage.ts: the default-off set (mental-health conditions, MST, assault) has lost a member.");
+  }
+
+  // 16e. Side 1 never carries the steward's name. The clinician reads the
+  // veteran, not the nonprofit. The steward line lives on side 2 only.
+  const side1 = fpPrint.slice(fpPrint.indexOf("function Side1"), fpPrint.indexOf("function Side2"));
+  if (side1.length < 100 || /Operation Whole Health|\bOWH\b/.test(side1)) {
+    fail("first-page-side1", "FirstPagePrint.tsx: side 1 is missing or names Operation Whole Health — the steward appears on side 2 only.");
+  }
+
+  // 16f. No completeness meter, and the Exposure Library never routes here.
+  if (/first[-_ ]?page|\bfp_/i.test(stripComments(read("src/lib/nextaction.ts")))) {
+    fail("first-page-no-count", "src/lib/nextaction.ts knows about the First Page — a veteran's page is never a progress bar.");
+  }
+  for (const f of LEARN_FILES) {
+    if (/\/first-page\b/.test(stripComments(read(f)))) fail("first-page-isolation", `${f} links into /first-page — the Exposure Library must not route into the page.`);
+  }
+}
+
 // ── report ──────────────────────────────────────────────────────────────────
 if (failures.length) {
   console.error("\n  COI FIREWALL FAILED — build stopped\n");
