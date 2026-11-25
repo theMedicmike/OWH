@@ -12,7 +12,7 @@ export default function AiIntakePage() {
         </p>
         <Link
           href="/intake"
-          className="shrink-0 rounded-xl border border-line px-4 py-2 text-[13px] font-semibold text-muted transition hover:border-brand hover:text-brand"
+          className="shrink-0 rounded-xl border border-line px-4 py-2 text-[0.8125rem] font-semibold text-muted transition hover:border-brand hover:text-brand"
         >
           ← Use the written form instead
         </Link>

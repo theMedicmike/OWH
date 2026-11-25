@@ -31,7 +31,7 @@ export function RibbonDivider({ label, className = "" }: { label: string; classN
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       
-      <span className="flex-none text-[13px] font-medium text-muted">{label}</span>
+      <span className="flex-none text-[0.8125rem] font-medium text-muted">{label}</span>
       
     </div>
   );
@@ -52,12 +52,12 @@ export function StarRow({ count = 7, className = "" }: { count?: number; classNa
 export function Anniversary250({ className = "" }: { className?: string }) {
   return (
     <div className={`rounded-lg border border-accent/50 px-3 py-2 text-center ${className}`}>
-      <div className="flex items-center justify-center gap-1.5 text-[13px] font-semibold tracking-wider text-accent">
+      <div className="flex items-center justify-center gap-1.5 text-[0.8125rem] font-semibold tracking-wider text-accent">
         <span>1776</span>
         <Star className="h-2 w-2" />
         <span>2026</span>
       </div>
-      <div className="mt-0.5 text-[12px] uppercase tracking-[0.14em] text-white/45">250 years of service</div>
+      <div className="mt-0.5 text-[0.75rem] uppercase tracking-[0.14em] text-white/45">250 years of service</div>
     </div>
   );
 }
@@ -67,7 +67,7 @@ export function Seal250({ className = "" }: { className?: string }) {
   return (
     <div className={`flex h-16 w-16 flex-none flex-col items-center justify-center rounded-full border-2 border-accent text-center ${className}`}>
       <div className="text-lg font-bold leading-none text-accent">250</div>
-      <div className="mt-0.5 text-[8px] tracking-wide text-white/55">1776–2026</div>
+      <div className="mt-0.5 text-[0.5rem] tracking-wide text-white/55">1776–2026</div>
     </div>
   );
 }

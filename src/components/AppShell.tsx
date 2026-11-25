@@ -105,7 +105,7 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
       href={item.href}
       onClick={onClick}
       aria-current={active ? "page" : undefined}
-      className={`press flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-[15px] leading-snug transition-colors ${
+      className={`press flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-[0.9375rem] leading-snug transition-colors ${
         active ? "bg-white/14 font-semibold text-white" : "text-white/72 hover:bg-white/8 hover:text-white"
       }`}
     >
@@ -173,7 +173,7 @@ export default function AppShell({
   // spinner here would ship "Loading…" as the entire crawlable HTML of every
   // public page. A personal page still waits.
   if (!ready && !publicPage) {
-    return <div className="flex min-h-screen items-center justify-center text-[15px] text-muted">Loading…</div>;
+    return <div className="flex min-h-screen items-center justify-center text-[0.9375rem] text-muted">Loading…</div>;
   }
 
   if (!user && !publicPage) {
@@ -181,7 +181,7 @@ export default function AppShell({
       <div className="flex min-h-screen items-center justify-center px-6">
         <div className="card w-full max-w-sm p-7 text-center">
           <h1 className="text-xl font-semibold tracking-tight text-ink">Please sign in</h1>
-          <p className="mt-1 text-[15px] text-muted">You need an account to view this page.</p>
+          <p className="mt-1 text-[0.9375rem] text-muted">You need an account to view this page.</p>
           <Link href="/" className="btn btn-primary mt-5 w-full">
             Go to sign in
           </Link>
@@ -201,8 +201,8 @@ export default function AppShell({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/owh-round.png" alt="Operation Whole Health" className="h-10 w-10 flex-none object-contain" />
         <div className="min-w-0 leading-tight">
-          <div className="text-[15px] font-semibold tracking-tight text-white">Connecting the Dots</div>
-          <div className="text-[13px] text-white/55">of Service</div>
+          <div className="text-[0.9375rem] font-semibold tracking-tight text-white">Connecting the Dots</div>
+          <div className="text-[0.8125rem] text-white/55">of Service</div>
         </div>
         {open && (
           <button
@@ -224,9 +224,9 @@ export default function AppShell({
             <div key={si}>
               {section.title && (
                 <div className="flex items-center gap-2 px-3 pb-1.5">
-                  <span className="text-[13px] font-medium text-white/50">{section.title}</span>
+                  <span className="text-[0.8125rem] font-medium text-white/50">{section.title}</span>
                   {section.tag && (
-                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[12px] font-medium text-white/55">{section.tag}</span>
+                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[0.75rem] font-medium text-white/55">{section.tag}</span>
                   )}
                 </div>
               )}
@@ -252,7 +252,7 @@ export default function AppShell({
 
         <div>
           <div className="px-3 pb-1.5">
-            <span className="text-[13px] font-medium text-white/50">The mission</span>
+            <span className="text-[0.8125rem] font-medium text-white/50">The mission</span>
           </div>
           <div className="space-y-0.5">
             {BOTTOM_LINKS.map((item) => (
@@ -272,10 +272,10 @@ export default function AppShell({
           </Link>
         ) : (
           <div className="flex items-center gap-2 px-1">
-            <span className="min-w-0 flex-1 truncate text-[13px] text-white/55">{user?.email}</span>
+            <span className="min-w-0 flex-1 truncate text-[0.8125rem] text-white/55">{user?.email}</span>
             <button
               onClick={signOut}
-              className="flex-none rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-white/70 hover:bg-white/10 hover:text-white"
+              className="flex-none rounded-lg px-2.5 py-1.5 text-[0.8125rem] font-medium text-white/70 hover:bg-white/10 hover:text-white"
             >
               Sign out
             </button>
@@ -289,11 +289,11 @@ export default function AppShell({
             <path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" />
           </svg>
           <span className="leading-tight">
-            <span className="block text-[14px] font-semibold">Veterans Crisis Line</span>
-            <span className="block text-[13px] font-medium text-white/85">988, then press 1</span>
+            <span className="block text-[0.875rem] font-semibold">Veterans Crisis Line</span>
+            <span className="block text-[0.8125rem] font-medium text-white/85">988, then press 1</span>
           </span>
         </a>
-        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-1 text-[13px] text-white/45">
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-1 text-[0.8125rem] text-white/45">
           <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-white/80">Send feedback</a>
           <Link href="/trust" className="hover:text-white/80">What this is</Link>
           <Link href="/privacy" className="hover:text-white/80">Privacy</Link>
@@ -340,7 +340,7 @@ export default function AppShell({
               Back
             </button>
           )}
-          <h1 className="min-w-0 flex-1 truncate px-1 text-[17px] font-semibold tracking-tight text-ink">{title}</h1>
+          <h1 className="min-w-0 flex-1 truncate px-1 text-[1.0625rem] font-semibold tracking-tight text-ink">{title}</h1>
 
           {/* On a phone this is the heart alone, 44px square, so the page
               title keeps its room. The label returns at tablet width. */}
@@ -363,7 +363,7 @@ export default function AppShell({
                 aria-label="Account menu"
                 aria-expanded={menu}
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-[13px] font-bold text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-[0.8125rem] font-bold text-white">
                   {(user?.email?.[0] ?? "U").toUpperCase()}
                 </span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${menu ? "rotate-180" : ""}`} aria-hidden="true">
@@ -376,14 +376,14 @@ export default function AppShell({
                   <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
                   <div className="card card-raise absolute right-0 top-full z-20 mt-2 w-64 overflow-hidden">
                     <div className="border-b border-line px-4 py-3">
-                      <div className="text-[13px] text-muted">Signed in as</div>
-                      <div className="truncate text-[15px] font-semibold text-ink">{user?.email}</div>
+                      <div className="text-[0.8125rem] text-muted">Signed in as</div>
+                      <div className="truncate text-[0.9375rem] font-semibold text-ink">{user?.email}</div>
                     </div>
                     <TextSizeControl />
                     <Link
                       href="/account"
                       onClick={() => setMenu(false)}
-                      className="flex min-h-11 items-center gap-2.5 px-4 text-[15px] text-ink transition hover:bg-canvas"
+                      className="flex min-h-11 items-center gap-2.5 px-4 text-[0.9375rem] text-ink transition hover:bg-canvas"
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-muted" aria-hidden="true">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />
@@ -392,7 +392,7 @@ export default function AppShell({
                     </Link>
                     <button
                       onClick={() => { setMenu(false); signOut(); }}
-                      className="flex min-h-11 w-full items-center gap-2.5 border-t border-line px-4 text-left text-[15px] font-medium text-scarlet transition hover:bg-scarlet/5"
+                      className="flex min-h-11 w-full items-center gap-2.5 border-t border-line px-4 text-left text-[0.9375rem] font-medium text-scarlet transition hover:bg-scarlet/5"
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />

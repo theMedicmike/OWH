@@ -47,8 +47,8 @@ function RowCard({ item, meta, sources, onSave }: { item: Item; meta: FpRowMeta 
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <div className="text-sm font-medium text-ink">{item.title}</div>
-          {item.sub && <div className="text-[13px] text-muted">{item.sub}</div>}
-          {!item.defaultShow && <div className="mt-0.5 text-[13px] text-warn">Starts off the page. It prints only if you turn it on.</div>}
+          {item.sub && <div className="text-[0.8125rem] text-muted">{item.sub}</div>}
+          {!item.defaultShow && <div className="mt-0.5 text-[0.8125rem] text-warn">Starts off the page. It prints only if you turn it on.</div>}
         </div>
         <Toggle checked={show} onChange={(v) => { setShow(v); touch(); }} label="Print this row" />
       </div>
@@ -75,8 +75,8 @@ function RowCard({ item, meta, sources, onSave }: { item: Item; meta: FpRowMeta 
       )}
       <div className="flex items-center gap-3">
         <PrimaryButton onClick={save} disabled={busy}>{busy ? "Saving…" : "Save this row"}</PrimaryButton>
-        {saved && <span className="text-[13px] text-success">Saved.</span>}
-        {meta?.tier && <span className="text-[13px] text-faint">Now: {TIER_LABEL[meta.tier]}{meta.source_id ? ", source attached" : ""}</span>}
+        {saved && <span className="text-[0.8125rem] text-success">Saved.</span>}
+        {meta?.tier && <span className="text-[0.8125rem] text-faint">Now: {TIER_LABEL[meta.tier]}{meta.source_id ? ", source attached" : ""}</span>}
       </div>
     </li>
   );
@@ -150,8 +150,8 @@ export default function RowControls() {
       {loading ? <p className="text-sm text-muted">Loading your record…</p> : groups.map((g) => (
         <section key={g.title} className="card p-5">
           <div className="text-sm font-semibold text-ink">{g.title}</div>
-          <p className="mt-1 text-[13px] leading-relaxed text-muted">{g.note}</p>
-          {g.items.length === 0 ? <p className="mt-2 text-[13px] text-faint">Nothing in the record yet.</p> : (
+          <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">{g.note}</p>
+          {g.items.length === 0 ? <p className="mt-2 text-[0.8125rem] text-faint">Nothing in the record yet.</p> : (
             <ul className="mt-2 divide-y divide-line">
               {g.items.map((it) => (
                 <RowCard

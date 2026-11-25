@@ -61,7 +61,7 @@ export default function ResetPasswordCard() {
           </svg>
         </div>
         <h3 className="text-base font-semibold text-ink">You&apos;re back in.</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           Your password is changed and your record is exactly where you left it.
         </p>
         <Link
@@ -79,7 +79,7 @@ export default function ResetPasswordCard() {
       <div className="w-full card p-6 shadow-sm sm:p-7">
         
         <h3 className="text-base font-semibold text-ink">That link has expired</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           Reset links are good for one hour and can only be used once. Nothing has happened to your record —
           ask for a new link and it&apos;ll all be there.
         </p>
@@ -97,13 +97,13 @@ export default function ResetPasswordCard() {
     <div className="w-full card p-6 shadow-sm sm:p-7">
       
       <h3 className="text-base font-semibold text-ink">Set a new password</h3>
-      <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+      <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">
         Pick something you&apos;ll remember. Your record hasn&apos;t changed and nothing has been deleted.
       </p>
 
       <form onSubmit={submit} className="mt-5 space-y-3">
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">New password</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">New password</label>
           <div className="relative">
             <input
               type={show ? "text" : "password"}
@@ -117,14 +117,14 @@ export default function ResetPasswordCard() {
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-1 text-[13px] font-medium text-muted hover:text-ink"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-1 text-[0.8125rem] font-medium text-muted hover:text-ink"
             >
               {show ? "Hide" : "Show"}
             </button>
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">Type it again</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Type it again</label>
           <input
             type={show ? "text" : "password"}
             required
@@ -144,9 +144,9 @@ export default function ResetPasswordCard() {
         </button>
       </form>
 
-      {err && <p className="mt-3 text-[13px] text-scarlet">{err}</p>}
+      {err && <p className="mt-3 text-[0.8125rem] text-scarlet">{err}</p>}
 
-      <p className="mt-5 border-t border-line pt-4 text-[13px] leading-relaxed text-faint">
+      <p className="mt-5 border-t border-line pt-4 text-[0.8125rem] leading-relaxed text-faint">
         A longer phrase you can actually remember beats a short one with symbols in it. If you use a password
         manager, let it pick.
       </p>

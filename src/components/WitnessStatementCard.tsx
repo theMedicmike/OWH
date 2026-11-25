@@ -82,7 +82,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
           </svg>
         </div>
         <h3 className="text-center text-base font-semibold text-ink">Thank you — it&apos;s saved.</h3>
-        <p className="mt-2 text-center text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-center text-[0.9375rem] leading-relaxed text-muted">
           Your statement has been added to their record. You can close this page.
         </p>
       </>,
@@ -93,7 +93,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
     return shell(
       <>
         <h3 className="text-base font-semibold text-ink">This link isn&apos;t valid</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           Double-check the link you were sent, or ask them to send a fresh one.
         </p>
       </>,
@@ -104,7 +104,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
     return shell(
       <>
         <h3 className="text-base font-semibold text-ink">This link has expired</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           These links are good for 90 days. Ask them to send you a new one and you can try again.
         </p>
       </>,
@@ -115,7 +115,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
     return shell(
       <>
         <h3 className="text-base font-semibold text-ink">This link is no longer active</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">They&apos;ve cancelled this request. No need to do anything.</p>
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">They&apos;ve cancelled this request. No need to do anything.</p>
       </>,
     );
   }
@@ -124,7 +124,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
     return shell(
       <>
         <h3 className="text-base font-semibold text-ink">Already taken care of</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">A statement was already submitted for this request. Thank you.</p>
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">A statement was already submitted for this request. Thank you.</p>
       </>,
     );
   }
@@ -134,7 +134,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
       <h3 className="text-base font-semibold text-ink">
         {req.requester_name ? `${req.requester_name} is asking` : "You're being asked"} for your help
       </h3>
-      <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+      <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">
         They want to confirm something about <span className="font-medium text-ink">{req.subject_label}</span> for
         their VA claim record. Only write what you actually remember or witnessed yourself.
       </p>
@@ -144,7 +144,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
 
       <form onSubmit={submit} className="mt-5 space-y-3">
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">How do you know them?</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">How do you know them?</label>
           <div className="space-y-1.5">
             {WITNESS_TYPE_OPTIONS.map((o) => (
               <label key={o.v} className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-sm ${witnessType === o.v ? "border-brand bg-brand/5" : "border-line"}`}>
@@ -155,11 +155,11 @@ export default function WitnessStatementCard({ token }: { token: string }) {
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">Your name</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Your name</label>
           <input value={witnessName} onChange={(e) => setWitnessName(e.target.value)} placeholder="First and last name" className={field} />
         </div>
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">Relationship</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Relationship</label>
           <select value={relationship} onChange={(e) => setRelationship(e.target.value)} className={field}>
             {RELATIONSHIP_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
@@ -171,7 +171,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">
             {witnessType === "same_unit" ? "What years did you serve together?" : "What years have you known them?"} (optional)
           </label>
           <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
               <option value="">From…</option>
               {YEAR_OPTIONS.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
-            <span className="text-[13px] text-muted">to</span>
+            <span className="text-[0.8125rem] text-muted">to</span>
             <select value={knewTo} onChange={(e) => setKnewTo(e.target.value)} className={field}>
               <option value="">To… (or now)</option>
               {YEAR_OPTIONS.map((y) => <option key={y} value={y}>{y}</option>)}
@@ -187,7 +187,7 @@ export default function WitnessStatementCard({ token }: { token: string }) {
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">
             {witnessType === "same_unit"
               ? "What did you see or experience together?"
               : "What have you noticed change in them — and since when?"}
@@ -205,15 +205,15 @@ export default function WitnessStatementCard({ token }: { token: string }) {
             className={field}
           />
         </div>
-        <label className="flex items-start gap-2 text-[13px] leading-relaxed text-muted">
+        <label className="flex items-start gap-2 text-[0.8125rem] leading-relaxed text-muted">
           <input type="checkbox" checked={firsthandConfirmed} onChange={(e) => setFirsthandConfirmed(e.target.checked)} className="mt-0.5" />
           I&apos;m only describing what I personally saw, heard, or was told at the time — not assumptions or hearsay.
         </label>
         <div>
-          <label className="mb-1 block text-[13px] font-medium text-muted">Your contact info (optional, in case they need to reach you)</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Your contact info (optional, in case they need to reach you)</label>
           <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="email or phone" className={field} />
         </div>
-        <label className="flex items-start gap-2 text-[13px] leading-relaxed text-muted">
+        <label className="flex items-start gap-2 text-[0.8125rem] leading-relaxed text-muted">
           <input type="checkbox" checked={attested} onChange={(e) => setAttested(e.target.checked)} className="mt-0.5" />
           I confirm this statement is true to the best of my knowledge.
         </label>
@@ -226,9 +226,9 @@ export default function WitnessStatementCard({ token }: { token: string }) {
         </button>
       </form>
 
-      {err && <p className="mt-3 text-[13px] text-scarlet">{err}</p>}
+      {err && <p className="mt-3 text-[0.8125rem] text-scarlet">{err}</p>}
 
-      <p className="mt-5 border-t border-line pt-4 text-[13px] leading-relaxed text-faint">
+      <p className="mt-5 border-t border-line pt-4 text-[0.8125rem] leading-relaxed text-faint">
         This isn&apos;t a legal document and you&apos;re not signing anything. Say only what&apos;s true and only
         what&apos;s yours to say.
       </p>

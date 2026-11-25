@@ -60,13 +60,13 @@ export default function FirstPageHub() {
     <div className="space-y-7">
       <div>
         <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">One sheet. Two sides. Same layout every time.</h2>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted">
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
           The front is what a specialist needs in the first ninety seconds: allergies, who came with you, three lines in
           your own words, your problems with dates, your medicines copied from the pharmacy printout, what has been
           tried, and your two questions. The back is where you served, what you were around, the numbers that changed,
           what could not be found, and every source. Every row names where it came from and when.
         </p>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           Build it once. Print it before every visit. Hand it over at check-in. The doctor reads it; you do not start
           from zero.
         </p>
@@ -75,7 +75,7 @@ export default function FirstPageHub() {
       <Stance />
 
       {loading ? (
-        <p className="text-[15px] text-muted">Loading your page…</p>
+        <p className="text-[0.9375rem] text-muted">Loading your page…</p>
       ) : (
         <>
           <section>
@@ -92,16 +92,16 @@ export default function FirstPageHub() {
           <section className="card p-5 sm:p-6">
             <h3 className="text-lg font-semibold tracking-tight text-ink">Print</h3>
             {lint.length === 0 ? (
-              <p className="mt-1 text-[15px] leading-relaxed text-success">The page passes every check. It can be printed.</p>
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-success">The page passes every check. It can be printed.</p>
             ) : (
               <>
-                <p className="mt-1 text-[15px] leading-relaxed text-muted">
+                <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
                   The page will not print until every row has a source and a year, and nothing on it reads like a
                   conclusion. Still to fix:
                 </p>
                 <ul className="mt-3 space-y-1.5">
                   {lint.slice(0, 12).map((l, i) => (
-                    <li key={i} className="text-[15px] leading-relaxed text-ink"><span className="font-semibold">{l.where}</span> {l.what}</li>
+                    <li key={i} className="text-[0.9375rem] leading-relaxed text-ink"><span className="font-semibold">{l.where}</span> {l.what}</li>
                   ))}
                   {lint.length > 12 && <li className="text-sm text-muted">and {lint.length - 12} more.</li>}
                 </ul>
@@ -125,7 +125,7 @@ export default function FirstPageHub() {
               <h3 className="text-lg font-semibold tracking-tight text-ink">Pages you have printed</h3>
               <ul className="mt-2 divide-y divide-line">
                 {versions.map((v) => (
-                  <li key={v.id} className="py-2.5 text-[15px] text-muted">
+                  <li key={v.id} className="py-2.5 text-[0.9375rem] text-muted">
                     Version {v.version_date}{v.assembled_by ? `, assembled by ${v.assembled_by}` : ""}{v.signed ? ", signed by the veteran" : ", not signed"}.
                   </li>
                 ))}
@@ -138,7 +138,7 @@ export default function FirstPageHub() {
 
       <section className="card p-5 sm:p-6">
         <h3 className="text-lg font-semibold tracking-tight text-ink">What stays private</h3>
-        <ul className="mt-3 space-y-2 text-[15px] leading-relaxed text-muted">
+        <ul className="mt-3 space-y-2 text-[0.9375rem] leading-relaxed text-muted">
           <li>Your recording and the words your browser heard sit in your own private storage. Only you can open them, and you can delete them at any time.</li>
           <li>Nothing on this page is written, rewritten or listened to by AI. The words are yours, copied as you said them.</li>
           <li>Rows you leave off never print. Mental-health conditions, sexual trauma and assault start off and stay off unless you turn them on.</li>

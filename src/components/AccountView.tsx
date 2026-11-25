@@ -53,7 +53,7 @@ function DatePickers({
     <div>
       <div className={`grid grid-cols-3 gap-2 ${approximate ? "opacity-40" : ""}`}>
         <div className={approximate ? "pointer-events-none" : ""}>
-          <div className="mb-1 text-center text-[13px] font-medium text-muted">Year</div>
+          <div className="mb-1 text-center text-[0.8125rem] font-medium text-muted">Year</div>
           <WheelPicker
             options={YEAR_WHEEL_OPTIONS}
             index={yearIndex}
@@ -62,7 +62,7 @@ function DatePickers({
           />
         </div>
         <div className={approximate ? "pointer-events-none" : ""}>
-          <div className="mb-1 text-center text-[13px] font-medium text-muted">Month</div>
+          <div className="mb-1 text-center text-[0.8125rem] font-medium text-muted">Month</div>
           <WheelPicker
             options={MONTH_WHEEL_OPTIONS}
             index={monthIndex}
@@ -71,7 +71,7 @@ function DatePickers({
           />
         </div>
         <div className={approximate ? "pointer-events-none" : ""}>
-          <div className="mb-1 text-center text-[13px] font-medium text-muted">Day</div>
+          <div className="mb-1 text-center text-[0.8125rem] font-medium text-muted">Day</div>
           <WheelPicker
             options={dayOptions}
             index={dayIndex}
@@ -81,7 +81,7 @@ function DatePickers({
         </div>
       </div>
       {onApproximateChange && (
-        <label className="mt-1.5 flex items-center gap-2 text-[13px] text-muted">
+        <label className="mt-1.5 flex items-center gap-2 text-[0.8125rem] text-muted">
           <input type="checkbox" checked={!!approximate} onChange={(e) => onApproximateChange(e.target.checked)} />
           I&apos;m not sure of the exact date — this is my best guess
         </label>
@@ -329,7 +329,7 @@ export default function AccountView() {
     return (
       <div className="rounded-xl border border-warn/40 bg-warn-soft p-5">
         <div className="text-sm font-semibold text-warn">Your profile didn&apos;t load</div>
-        <p className="mt-1.5 text-[15px] leading-relaxed text-ink">{loadErr}</p>
+        <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-ink">{loadErr}</p>
         <button
           onClick={() => window.location.reload()}
           className="mt-4 btn btn-primary"
@@ -351,11 +351,11 @@ export default function AccountView() {
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-[13px] font-medium text-muted">Name</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Name</label>
             <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className={field} />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-[13px] font-medium text-muted">Who is this account for?</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Who is this account for?</label>
             <select value={layer} onChange={(e) => setLayer(e.target.value)} className={field}>
               {LAYERS.map((l) => (
                 <option key={l.v} value={l.v}>{l.label}</option>
@@ -363,18 +363,18 @@ export default function AccountView() {
             </select>
             {(layer === "family" || layer === "civilian") && (
               <div className="mt-1.5">
-                <p className="text-[13px] leading-relaxed text-muted">
+                <p className="text-[0.8125rem] leading-relaxed text-muted">
                   Thank you for standing in the gap. You can build this record on behalf of the veteran
                   you&apos;re helping — fill in their service, locations, and health as you would your own.
                 </p>
-                <label className="mb-1 mt-2 block text-[13px] font-medium text-muted">Your relationship to them</label>
+                <label className="mb-1 mt-2 block text-[0.8125rem] font-medium text-muted">Your relationship to them</label>
                 <input
                   value={proxyRelationship}
                   onChange={(e) => setProxyRelationship(e.target.value)}
                   placeholder="Spouse, mother, caregiver…"
                   className={field}
                 />
-                <p className="mt-1.5 text-[13px] leading-relaxed text-faint">
+                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">
                   This is how their statement and claim packet will identify you — so anything you write is
                   never mistaken for the veteran&apos;s own words.
                 </p>
@@ -382,7 +382,7 @@ export default function AccountView() {
             )}
           </div>
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Branch</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Branch</label>
             <select value={branch} onChange={(e) => setBranch(e.target.value)} className={field}>
               {BRANCHES.map((b) => (
                 <option key={b} value={b}>{b || "Select…"}</option>
@@ -395,12 +395,12 @@ export default function AccountView() {
               — and because storing a real answer beats stamping "1 January" on a
               date he never gave. */}
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Service start</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Service start</label>
             <DatePickers parts={startParts} onChange={setStartParts} approximate={startApprox} onApproximateChange={setStartApprox} />
           </div>
 
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Service end</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Service end</label>
             {stillServing ? (
               <div className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-muted">
                 Still serving — no end date.
@@ -421,7 +421,7 @@ export default function AccountView() {
               />
               I am still serving
             </label>
-            <p className="mt-1 text-[13px] leading-relaxed text-faint">
+            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
               Month and day are optional — the year on its own is enough. If you only remember the year, leave
               the rest blank and we will record it as the year, not guess the rest.
             </p>
@@ -433,7 +433,7 @@ export default function AccountView() {
               documented exposures of their own. Saving creates a real check-in pin
               via the shared helper in lib/bootCamp.ts, never a duplicate. */}
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Where you went to boot camp</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Where you went to boot camp</label>
             {existingBootCamp ? (
               <div className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-ink">
                 {existingBootCamp.place}
@@ -445,7 +445,7 @@ export default function AccountView() {
                       : `${existingBootCamp.day && existingBootCamp.month ? `${existingBootCamp.day} ` : ""}${existingBootCamp.month ? `${MONTHS[existingBootCamp.month - 1]} ` : ""}${existingBootCamp.year}`}
                   </span>
                 ) : null}
-                <span className="mt-0.5 block text-[13px] text-faint">
+                <span className="mt-0.5 block text-[0.8125rem] text-faint">
                   Already on your map. Edit it there like any other place you served.
                 </span>
               </div>
@@ -472,19 +472,19 @@ export default function AccountView() {
                     />
                   </div>
                 )}
-                <p className="mt-1.5 text-[13px] leading-relaxed text-faint">
+                <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">
                   Everybody remembers boot camp — and it counts. Some training posts carry documented exposures
                   of their own. Saving adds it to your map as a place you served.
                 </p>
               </>
             ) : (
-              <p className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-[13px] text-muted">
+              <p className="rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-[0.8125rem] text-muted">
                 Pick your branch above and the training posts for it will appear here.
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">MOS / Rate / AFSC</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">MOS / Rate / AFSC</label>
             <input value={mos} onChange={(e) => setMos(e.target.value)} placeholder="e.g. 11B, HM, 1N0X1" className={field} />
           </div>
           <div>
@@ -492,11 +492,11 @@ export default function AccountView() {
                 box was not for him. Units print in the packet header, so a ship
                 and hull number typed here DO reach the VSO — today that is the
                 only place in this app a vessel can go. */}
-            <label className="mb-1 block text-[13px] font-medium text-muted">Unit(s) or ship(s) you served with</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Unit(s) or ship(s) you served with</label>
             <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="e.g. 1-502 IN, 101st ABN, USS Kitty Hawk (CV-63)" className={field} />
           </div>
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Current VA rating</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Current VA rating</label>
             <select value={vaRating} onChange={(e) => setVaRating(e.target.value)} className={field}>
               <option value="">Select…</option>
               {["Not rated yet","0%","10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"].map((r) => (
@@ -505,7 +505,7 @@ export default function AccountView() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Receiving VA healthcare?</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Receiving VA healthcare?</label>
             <div className="flex gap-2">
               {(["Yes", "No"] as const).map((v) => (
                 <button key={v} type="button" aria-pressed={vaCare === (v === "Yes")}
@@ -522,8 +522,8 @@ export default function AccountView() {
           <button onClick={save} disabled={busy} className="btn btn-primary disabled:opacity-60">
             {busy ? "Saving…" : "Save profile"}
           </button>
-          {saved && <span className="text-[13px] text-success">Saved.</span>}
-          {saveErr && <span role="status" className="text-[13px] font-medium text-red-600">{saveErr}</span>}
+          {saved && <span className="text-[0.8125rem] text-success">Saved.</span>}
+          {saveErr && <span role="status" className="text-[0.8125rem] font-medium text-red-600">{saveErr}</span>}
         </div>
       </div>
 

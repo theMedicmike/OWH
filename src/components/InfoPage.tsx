@@ -21,7 +21,7 @@ export default function InfoPage({
           <Link href="/" className="flex items-center gap-3 rounded-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/owh-round.png" alt="" className="h-9 w-9 object-contain" />
-            <span className="text-[15px] font-semibold tracking-tight text-ink">Connecting the Dots</span>
+            <span className="text-[0.9375rem] font-semibold tracking-tight text-ink">Connecting the Dots</span>
           </Link>
           <Link href="/" className="btn btn-secondary btn-sm print:hidden">Back to the app</Link>
         </div>
@@ -29,7 +29,7 @@ export default function InfoPage({
       <div className="mx-auto max-w-2xl px-5 py-10 sm:py-14">
         <h1 className="display text-[2rem] text-ink sm:text-[2.375rem]">{title}</h1>
         {updated && <p className="mt-2 text-sm text-muted">Last updated {updated}</p>}
-        {intro && <p className="mt-4 text-[17px] leading-relaxed text-muted">{intro}</p>}
+        {intro && <p className="mt-4 text-[1.0625rem] leading-relaxed text-muted">{intro}</p>}
         <div className="mt-8 space-y-4">{children}</div>
 
         <footer className="mt-12 border-t border-line pt-6 text-sm leading-relaxed text-muted print:hidden">
@@ -55,5 +55,5 @@ export function H({ children }: { children: React.ReactNode }) {
   return <h2 className="pt-5 text-xl font-semibold tracking-tight text-ink">{children}</h2>;
 }
 export function P({ children }: { children: React.ReactNode }) {
-  return <p className="text-[16px] leading-relaxed text-muted">{children}</p>;
+  return <p className="text-[1rem] leading-relaxed text-muted">{children}</p>;
 }

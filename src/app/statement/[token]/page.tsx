@@ -16,12 +16,12 @@ export default async function StatementPage({ params }: { params: Promise<{ toke
       <div className="w-full max-w-sm">
         <Link href="/" className="mb-6 block text-center">
           <span className="text-lg font-bold tracking-tight text-ink">Connecting the Dots</span>
-          <span className="block text-[13px] font-medium text-muted">of Service</span>
+          <span className="block text-[0.8125rem] font-medium text-muted">of Service</span>
         </Link>
 
         <WitnessStatementCard token={token} />
 
-        <p className="mt-6 text-center text-[13px] leading-relaxed text-faint">
+        <p className="mt-6 text-center text-[0.8125rem] leading-relaxed text-faint">
           If you or someone you know is struggling, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
         </p>
       </div>

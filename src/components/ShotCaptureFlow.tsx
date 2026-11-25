@@ -63,10 +63,10 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
           className="row w-full text-left"
         >
           <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold leading-snug">{s.name}</span>
+            <span className="block text-[0.9375rem] font-semibold leading-snug">{s.name}</span>
             <span className="mt-0.5 block text-sm leading-snug text-muted">{s.hook}</span>
           </span>
-          <span className={`flex-none text-[15px] font-semibold ${open ? "text-muted" : "text-brand"}`}>{open ? "Close" : "Add"}</span>
+          <span className={`flex-none text-[0.9375rem] font-semibold ${open ? "text-muted" : "text-brand"}`}>{open ? "Close" : "Add"}</span>
         </button>
         {open && (
           <div className="border-t border-line bg-canvas px-4 pb-4 pt-3">
@@ -86,7 +86,7 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
   return (
     <div className="space-y-4">
       <div>
-        <label className="mb-1 block text-[13px] font-medium text-muted">Search by name or how it was given</label>
+        <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Search by name or how it was given</label>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -96,7 +96,7 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
       </div>
 
       <div className="rounded-xl border border-dashed border-line p-4">
-        <label className="mb-1 block text-[13px] font-medium text-muted">Don&apos;t see it, or don&apos;t know the name?</label>
+        <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Don&apos;t see it, or don&apos;t know the name?</label>
         <div className="flex gap-2">
           <input
             value={freeText}
@@ -128,7 +128,7 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
                 <button
                   onClick={() => setOpenGroup(open ? null : g)}
                   aria-expanded={open}
-                  className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left text-[15px] font-semibold text-ink"
+                  className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left text-[0.9375rem] font-semibold text-ink"
                 >
                   {GROUP_LABEL[g]}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 flex-none text-muted transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true">
@@ -192,7 +192,7 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
             </svg>
           </div>
           <h3 className="text-base font-semibold text-ink">Saved.</h3>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">{picked.label} is on your shot record now.</p>
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">{picked.label} is on your shot record now.</p>
           <Link
             href="/shots"
             className="mt-5 block w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition hover:bg-brand-600"
@@ -214,26 +214,26 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
         <h2 className="text-lg font-bold text-ink">{picked.label}</h2>
 
         <div className="mt-5">
-          <label className="mb-1 block text-[13px] font-medium text-muted">When?</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">When?</label>
           {unsure ? (
             <div className="rounded-lg border border-line bg-white px-3 py-2.5 text-center text-sm text-faint opacity-50">Not sure</div>
           ) : (
             <MonthYearWheel month={month} year={year} day={day} onMonthChange={setMonth} onYearChange={setYear} onDayChange={setDay} minYear={1940} />
           )}
-          <label className="mt-2 flex items-center gap-2 text-[13px] text-muted">
+          <label className="mt-2 flex items-center gap-2 text-[0.8125rem] text-muted">
             <input type="checkbox" checked={unsure} onChange={(e) => { setUnsure(e.target.checked); if (e.target.checked) { setMonth(0); setDay(0); } }} />
             I&apos;m not sure of the year
           </label>
         </div>
 
         <div className="mt-5">
-          <label className="mb-1 block text-[13px] font-medium text-muted">How do you know?</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">How do you know?</label>
           <div className="flex flex-wrap gap-2">
             {PROVENANCE_OPTIONS.map((o) => (
               <button
                 key={o.value}
                 onClick={() => setProvenance(o.value)}
-                className={`rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition ${
+                className={`rounded-full border px-3.5 py-1.5 text-[0.8125rem] font-medium transition ${
                   provenance === o.value ? "border-brand bg-brand text-brand-foreground" : "border-line bg-white text-ink hover:bg-canvas"
                 }`}
               >
@@ -241,19 +241,19 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
               </button>
             ))}
           </div>
-          <p className="mt-2 text-[13px] leading-relaxed text-faint">
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
             Remembered isn&apos;t worse than documented — it&apos;s just different, and whoever reads this later needs to know which is which.
           </p>
         </div>
 
         <div className="mt-5">
-          <label className="mb-1 block text-[13px] font-medium text-muted">Were you told what it was, beforehand?</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Were you told what it was, beforehand?</label>
           <div className="flex flex-wrap gap-2">
             {INFORMED_CONSENT_OPTIONS.map((o) => (
               <button
                 key={o.value}
                 onClick={() => setInformedConsent(o.value)}
-                className={`rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition ${
+                className={`rounded-full border px-3.5 py-1.5 text-[0.8125rem] font-medium transition ${
                   informedConsent === o.value ? "border-brand bg-brand text-brand-foreground" : "border-line bg-white text-ink hover:bg-canvas"
                 }`}
               >
@@ -261,20 +261,20 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
               </button>
             ))}
           </div>
-          <p className="mt-2 text-[13px] leading-relaxed text-faint">
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
             This is about what you were told, not what was actually in it — the label for that is on this shot&apos;s library page. Most of the military is mandatory either way; what varies is whether anyone explained it.
           </p>
         </div>
 
         <div className="mt-5">
-          <label className="mb-1 block text-[13px] font-medium text-muted">Anything you want to note about that time</label>
+          <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Anything you want to note about that time</label>
           <textarea
             value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={500}
             className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
           />
         </div>
 
-        {err && <p className="mt-3 text-[13px] text-scarlet">{err}</p>}
+        {err && <p className="mt-3 text-[0.8125rem] text-scarlet">{err}</p>}
 
         <button
           onClick={save}

@@ -97,7 +97,7 @@ export default function VesselsListCard() {
         <button
           type="button"
           onClick={() => { setOpen((v) => !v); setErr(null); }}
-          className="rounded-md bg-brand px-3 py-1.5 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600"
+          className="rounded-md bg-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-brand-foreground hover:bg-brand-600"
         >
           {open ? "Close" : "＋ Add a ship"}
         </button>
@@ -106,22 +106,22 @@ export default function VesselsListCard() {
       {open && (
         <div className="mt-4 space-y-3 rounded-lg border border-line p-3">
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Ship&apos;s name</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Ship&apos;s name</label>
             {/* The only required field, on purpose. A man who remembers the ship
                 and nothing else still has something worth handing a VSO. */}
             <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. USS Kitty Hawk" />
           </div>
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Hull number (if you know it)</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Hull number (if you know it)</label>
             <input className={field} value={hull} onChange={(e) => setHull(e.target.value)} placeholder="e.g. CV-63" />
-            <p className="mt-1 text-[13px] leading-relaxed text-faint">
+            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
               Leave it blank if you don&apos;t. We will not guess one for you — a hull number an app invented is
               worse in front of a rater than one you left empty.
             </p>
           </div>
 
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Aboard from</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Aboard from</label>
             <div className="flex gap-2">
               <select className={field} value={fromMonth} onChange={(e) => setFromMonth(e.target.value)}>
                 {MONTH_OPTS.map((m) => <option key={m || "none"} value={m}>{m || "Month (optional)"}</option>)}
@@ -130,37 +130,37 @@ export default function VesselsListCard() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">Until</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">Until</label>
             <div className="flex gap-2">
               <select className={field} value={toMonth} onChange={(e) => setToMonth(e.target.value)}>
                 {MONTH_OPTS.map((m) => <option key={m || "none"} value={m}>{m || "Month (optional)"}</option>)}
               </select>
               <input className={field} inputMode="numeric" value={toYear} onChange={(e) => setToYear(e.target.value)} placeholder="Year" />
             </div>
-            <p className="mt-1 text-[13px] leading-relaxed text-faint">
+            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
               Rough is fine, the same as everywhere else here. A year on its own is a perfectly good answer.
             </p>
           </div>
 
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">What you did aboard (optional)</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">What you did aboard (optional)</label>
             <input className={field} value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. BT2, fireroom — or Deck division" />
           </div>
           <div>
-            <label className="mb-1 block text-[13px] font-medium text-muted">In your own words (optional)</label>
+            <label className="mb-1 block text-[0.8125rem] font-medium text-muted">In your own words (optional)</label>
             <textarea
               className={`${field} min-h-[72px]`}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Where she operated, what you remember — the gunline, the yards, a port, a fire."
             />
-            <p className="mt-1 text-[13px] leading-relaxed text-faint">
+            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
               Nothing you write here is touched by AI. Where the ship operated and when is often the part a VSO
               works from.
             </p>
           </div>
 
-          {err && <p className="text-[13px] font-medium text-red-600">{err}</p>}
+          {err && <p className="text-[0.8125rem] font-medium text-red-600">{err}</p>}
           <div className="flex gap-2">
             <button
               type="button"
@@ -190,20 +190,20 @@ export default function VesselsListCard() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-ink">{vesselTitle(v)}</div>
-                    <div className="text-[13px] text-muted">
+                    <div className="text-[0.8125rem] text-muted">
                       {[when || "dates not noted yet", v.role].filter(Boolean).join(", ")}
                     </div>
                   </div>
                   {confirmDel === v.id ? (
                     <div className="flex flex-none gap-2">
-                      <button onClick={() => setConfirmDel(null)} className="text-[13px] font-semibold text-brand">Keep it</button>
-                      <button onClick={() => remove(v.id)} className="text-[13px] font-semibold text-red-600">Delete</button>
+                      <button onClick={() => setConfirmDel(null)} className="text-[0.8125rem] font-semibold text-brand">Keep it</button>
+                      <button onClick={() => remove(v.id)} className="text-[0.8125rem] font-semibold text-red-600">Delete</button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmDel(v.id)} className="flex-none text-[13px] text-faint hover:text-red-600">remove</button>
+                    <button onClick={() => setConfirmDel(v.id)} className="flex-none text-[0.8125rem] text-faint hover:text-red-600">remove</button>
                   )}
                 </div>
-                {v.note && <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-ink">{v.note}</p>}
+                {v.note && <p className="mt-2 whitespace-pre-wrap text-[0.8125rem] leading-relaxed text-ink">{v.note}</p>}
               </li>
             );
           })}
@@ -211,7 +211,7 @@ export default function VesselsListCard() {
       )}
 
       {vessels.length > 0 && (
-        <p className="mt-3 border-t border-line pt-3 text-[13px] leading-relaxed text-faint">
+        <p className="mt-3 border-t border-line pt-3 text-[0.8125rem] leading-relaxed text-faint">
           These print in your claim packet, under your service details. Ask your VSO to request the deck logs for
           the dates above — that is the document that shows where the ship actually was.
         </p>

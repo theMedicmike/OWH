@@ -55,7 +55,7 @@ export default function MedicationsListCard() {
     <div className={card}>
       <div className="flex items-center justify-between">
         <div className="text-sm font-semibold text-ink">What you take</div>
-        <Link href="/medications/add" className="rounded-md bg-brand px-3 py-1.5 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600">
+        <Link href="/medications/add" className="rounded-md bg-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-brand-foreground hover:bg-brand-600">
           ＋ Add one
         </Link>
       </div>
@@ -76,19 +76,19 @@ export default function MedicationsListCard() {
                       <span className="font-normal text-muted">, {m.brand_name}</span>
                     )}
                   </div>
-                  <div className="text-[13px] text-muted">
+                  <div className="text-[0.8125rem] text-muted">
                     {m.taken_for ? `for ${m.taken_for}` : "no reason noted yet"}
                     {when && <span className="text-faint">, {when}</span>}
                   </div>
                 </div>
                 <div className="flex flex-none items-center gap-2">
-                  <Link href={`/medications/${m.id}`} className="text-[13px] font-semibold text-brand hover:underline">
+                  <Link href={`/medications/${m.id}`} className="text-[0.8125rem] font-semibold text-brand hover:underline">
                     Open
                   </Link>
                   {confirmDel === m.id ? (
-                    <button onClick={() => remove(m.id)} className="text-[13px] font-semibold text-scarlet hover:underline">Confirm remove</button>
+                    <button onClick={() => remove(m.id)} className="text-[0.8125rem] font-semibold text-scarlet hover:underline">Confirm remove</button>
                   ) : (
-                    <button onClick={() => setConfirmDel(m.id)} className="text-[13px] text-faint hover:text-red-600">Remove</button>
+                    <button onClick={() => setConfirmDel(m.id)} className="text-[0.8125rem] text-faint hover:text-red-600">Remove</button>
                   )}
                 </div>
               </li>

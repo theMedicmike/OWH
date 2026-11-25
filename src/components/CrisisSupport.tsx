@@ -10,7 +10,7 @@ export default function CrisisSupport() {
       {open ? (
         <div className="card card-raise w-[19rem] p-4">
           <div className="flex items-center justify-between">
-            <span className="text-[15px] font-semibold text-ink">You are not alone</span>
+            <span className="text-[0.9375rem] font-semibold text-ink">You are not alone</span>
             <button
               onClick={() => setOpen(false)}
               aria-label="Close support panel"

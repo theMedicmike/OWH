@@ -82,7 +82,7 @@ export default function ShotAddToRecord({
   const wrap = inline ? "" : "card card-raise p-5 sm:p-6";
 
   if (!user || state === "loading") {
-    return inline ? <p className="px-1 py-2 text-[15px] text-muted">One moment…</p> : null;
+    return inline ? <p className="px-1 py-2 text-[0.9375rem] text-muted">One moment…</p> : null;
   }
 
   if (state === "saved" || state === "already") {
@@ -99,7 +99,7 @@ export default function ShotAddToRecord({
               {state === "saved" ? `${name} is on your shot record` : `${name} is already on your shot record`}
             </h2>
             {state === "saved" && (
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">Saved without a date. It shows as &ldquo;Year not sure&rdquo;.</p>
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">Saved without a date. It shows as &ldquo;Year not sure&rdquo;.</p>
             )}
           </div>
         </div>
@@ -114,7 +114,7 @@ export default function ShotAddToRecord({
   return (
     <section className={wrap}>
       {!inline && <h2 className="text-lg font-semibold tracking-tight text-ink">Add {name} to your shot record</h2>}
-      <p className={`${inline ? "" : "mt-1"} text-[15px] leading-relaxed text-muted`}>Tap how you know, and it is saved.</p>
+      <p className={`${inline ? "" : "mt-1"} text-[0.9375rem] leading-relaxed text-muted`}>Tap how you know, and it is saved.</p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {ANSWERS.map((a) => (
           <button
@@ -128,13 +128,13 @@ export default function ShotAddToRecord({
           </button>
         ))}
       </div>
-      {err && <p role="alert" className="mt-3 text-[15px] font-medium text-scarlet">{err}</p>}
+      {err && <p role="alert" className="mt-3 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
       {onAddWithDate ? (
-        <button type="button" onClick={onAddWithDate} className="mt-3 text-[15px] font-semibold text-brand hover:underline">
+        <button type="button" onClick={onAddWithDate} className="mt-3 text-[0.9375rem] font-semibold text-brand hover:underline">
           Know the year? Add it with the date instead
         </button>
       ) : (
-        <Link href={`/shots/add?shot=${slug}`} className="mt-3 inline-block text-[15px] font-semibold text-brand hover:underline">
+        <Link href={`/shots/add?shot=${slug}`} className="mt-3 inline-block text-[0.9375rem] font-semibold text-brand hover:underline">
           Know the year? Add it with the date instead
         </Link>
       )}

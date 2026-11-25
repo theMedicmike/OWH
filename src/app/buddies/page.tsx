@@ -8,7 +8,7 @@ export default function BuddiesPage() {
       <div className="space-y-10">
         <div>
           <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">The people who were there.</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             Find the veterans who served where you did and confirm each other&apos;s exposures, privately. Or send
             a private link to someone who is not on this app and ask them to confirm your record.
           </p>

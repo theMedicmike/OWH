@@ -531,7 +531,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setCheckins(await fetchCheckins(supabase));
   }
 
-  const chipBase = "rounded-full border px-2.5 py-1 text-[13px]";
+  const chipBase = "rounded-full border px-2.5 py-1 text-[0.8125rem]";
 
   return (
     <div>
@@ -547,7 +547,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             </svg>
             Filter the map
             {activeCount > 0 && (
-              <span className="rounded-full bg-brand px-1.5 py-0.5 text-[13px] font-bold text-brand-foreground">{activeCount}</span>
+              <span className="rounded-full bg-brand px-1.5 py-0.5 text-[0.8125rem] font-bold text-brand-foreground">{activeCount}</span>
             )}
           </span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-4 w-4 text-muted transition-transform ${showFilters ? "rotate-180" : ""}`}>
@@ -557,7 +557,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
 
         {showFilters && (
           <div className="border-t border-line px-4 py-3">
-            <div className="text-[13px] font-medium text-muted">By recognition</div>
+            <div className="text-[0.8125rem] font-medium text-muted">By recognition</div>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {STATUSES.map((s) => {
                 const on = activeStatuses.has(s.value);
@@ -577,7 +577,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               })}
             </div>
 
-            <div className="mt-3 text-[13px] font-medium text-muted">By exposure</div>
+            <div className="mt-3 text-[0.8125rem] font-medium text-muted">By exposure</div>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {EXPOSURES.map((x) => {
                 const on = activeClasses.has(x.value);
@@ -595,7 +595,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               })}
             </div>
 
-            <label className="mt-3 flex items-center gap-1.5 text-[13px] text-muted">
+            <label className="mt-3 flex items-center gap-1.5 text-[0.8125rem] text-muted">
               <input type="checkbox" checked={yearOn} onChange={(e) => setYearOn(e.target.checked)} />
               Filter by year
             </label>
@@ -630,7 +630,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           placeholder="Find your base — type its name (e.g. Balad, Lejeune, Bagram)"
           className="w-full card py-2.5 pl-9 pr-4 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
         />
-        <p className="mt-1.5 text-[13px] leading-relaxed text-faint">
+        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">
           Search covers every major installation, stateside and overseas. The dots on the map are only the
           sites with <span className="font-medium text-muted">documented</span> exposures — if your base
           isn&apos;t a dot, it still belongs on your record: find it here or drop the pin yourself.
@@ -648,7 +648,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 className="flex w-full items-center justify-between gap-2 border-b border-line px-3.5 py-2.5 text-left transition last:border-0 hover:bg-canvas"
               >
                 <span className="text-sm font-medium text-ink">{r.name}</span>
-                <span className={`flex-none text-[13px] ${r.region === "documented site" ? "font-semibold text-success" : "text-muted"}`}>
+                <span className={`flex-none text-[0.8125rem] ${r.region === "documented site" ? "font-semibold text-success" : "text-muted"}`}>
                   {r.region === "documented site" ? "● documented" : r.region}
                 </span>
               </button>
@@ -667,12 +667,12 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         {/* Confirm chip for a dropped pin — a stray tap never spawns the panel */}
         {pending && !draft && (
           <div className="absolute left-1/2 top-3 z-[3] flex max-w-[94%] -translate-x-1/2 items-center gap-2 rounded-full bg-white/95 py-1.5 pl-4 pr-1.5 shadow-lg ring-1 ring-line backdrop-blur">
-            <span className="truncate text-[13px] font-medium text-ink">
+            <span className="truncate text-[0.8125rem] font-medium text-ink">
               {pendingNear ? pendingNear.name : fmt(pending.lat, pending.lng)}
             </span>
             <button
               onClick={beginDraft}
-              className="flex-none rounded-full bg-brand px-3 py-1.5 text-[13px] font-bold text-white transition hover:bg-brand-600"
+              className="flex-none rounded-full bg-brand px-3 py-1.5 text-[0.8125rem] font-bold text-white transition hover:bg-brand-600"
             >
               Check in here
             </button>
@@ -686,7 +686,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           <button
             type="button"
             onClick={() => setShowLegend((v) => !v)}
-            className="flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1.5 text-[13px] font-semibold text-ink shadow-sm backdrop-blur transition hover:bg-white"
+            className="flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1.5 text-[0.8125rem] font-semibold text-ink shadow-sm backdrop-blur transition hover:bg-white"
           >
             <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />
             Known exposure sites
@@ -695,7 +695,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             </svg>
           </button>
           {showLegend && (
-            <div className="mt-1.5 rounded-lg bg-white/95 px-3 py-2 text-[13px] shadow-sm backdrop-blur">
+            <div className="mt-1.5 rounded-lg bg-white/95 px-3 py-2 text-[0.8125rem] shadow-sm backdrop-blur">
               <div className="flex flex-col gap-0.5 text-muted">
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#1D9E75" }} />recognized</span>
                 <span><span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: "#BA7517" }} />documented</span>
@@ -713,7 +713,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             
             <div className="text-sm font-semibold text-ink">New check-in</div>
 
-            <label className="mt-2 block text-[13px] text-muted">Place</label>
+            <label className="mt-2 block text-[0.8125rem] text-muted">Place</label>
             <input
               type="text"
               value={draftName}
@@ -721,9 +721,9 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               placeholder="Name this place"
               className="mt-1 w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
             />
-            <div className="mt-1 text-[13px] text-faint">{fmt(draft.lat, draft.lng)}</div>
+            <div className="mt-1 text-[0.8125rem] text-faint">{fmt(draft.lat, draft.lng)}</div>
 
-            <label className="mt-3 block text-[13px] text-muted">
+            <label className="mt-3 block text-[0.8125rem] text-muted">
               When were you here? The exact day matters if you hit more than one place close together — five ports
               in two weeks needs more than just the month.
             </label>
@@ -731,7 +731,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               <MonthYearWheel month={month} year={year} day={day} onMonthChange={setMonth} onYearChange={setYear} onDayChange={setDay} approximate={approxStart} onApproximateChange={setApproxStart} />
             </div>
 
-            <label className="mt-3 flex items-center gap-2 text-[13px] text-muted">
+            <label className="mt-3 flex items-center gap-2 text-[0.8125rem] text-muted">
               <input
                 type="checkbox"
                 checked={hasEndDate}
@@ -746,7 +746,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               <div className="mt-1">
                 <MonthYearWheel month={endMonth} year={endYear} day={endDay} onMonthChange={setEndMonth} onYearChange={setEndYear} onDayChange={setEndDay} minYear={year} approximate={approxEnd} onApproximateChange={setApproxEnd} />
                 {endYear < year && (
-                  <p role="status" className="mt-1 text-[13px] font-medium text-red-600">
+                  <p role="status" className="mt-1 text-[0.8125rem] font-medium text-red-600">
                     The date you left can&apos;t be before {year}.
                   </p>
                 )}
@@ -754,7 +754,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             )}
 
             <label className="mt-3 block text-sm font-semibold text-ink">In your own words — what were you doing here?</label>
-            <p className="mt-0.5 text-[13px] leading-snug text-faint">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>
+            <p className="mt-0.5 text-[0.8125rem] leading-snug text-faint">Your own memory is the strongest evidence a record can carry. A sentence or two. Nothing classified.</p>
             <textarea
               value={story}
               onChange={(e) => setStory(e.target.value)}
@@ -766,7 +766,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             {docSites.length > 0 ? (
               <>
                 <div className="mt-3 text-sm font-semibold text-ink">Documented near this spot — confirm yours</div>
-                <div className="mb-2 mt-1 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-2.5 py-1.5 text-[13px] text-success">
+                <div className="mb-2 mt-1 flex items-start gap-2 rounded-lg border border-success/30 bg-success-soft px-2.5 py-1.5 text-[0.8125rem] text-success">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 h-3.5 w-3.5 flex-none">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3" />
                   </svg>
@@ -779,7 +779,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             ) : (
               <>
                 <div className="mt-3 text-sm font-semibold text-ink">What were you exposed to here?</div>
-                <div className="mb-2 text-[13px] text-muted">Tap what applies — everything you pick is tagged to this check-in.</div>
+                <div className="mb-2 text-[0.8125rem] text-muted">Tap what applies — everything you pick is tagged to this check-in.</div>
               </>
             )}
             <div className="flex flex-wrap gap-1.5">
@@ -806,7 +806,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             </div>
 
             <div className="mt-3">
-              <label className="mb-1 block text-[13px] font-medium text-muted">
+              <label className="mb-1 block text-[0.8125rem] font-medium text-muted">
                 Something else? Add an exposure that isn&apos;t listed.
               </label>
               <input
@@ -816,7 +816,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 placeholder="e.g. specific chemical, contaminated fuel, paint fumes…"
                 className="w-full rounded-md border border-line bg-canvas px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:bg-white focus:outline-none"
               />
-              <p className="mt-1.5 text-[13px] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
+              <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">Keep it general — no classified, secret, or NDA-protected details.</p>
             </div>
 
             {/* Most claims — tinnitus, backs, knees, PTSD, TBI — connect to WHAT
@@ -824,7 +824,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 record that at all until now. */}
             <div className="mt-4 border-t border-line pt-3">
               <div className="text-sm font-semibold text-ink">Did anything happen to you here? (optional)</div>
-              <p className="mb-2 text-[13px] text-muted">A blast, a fall, an injury, an assault — tap what applies.</p>
+              <p className="mb-2 text-[0.8125rem] text-muted">A blast, a fall, an injury, an assault — tap what applies.</p>
               <div className="flex flex-wrap gap-1.5">
                 {INCIDENTS.map((x) => {
                   const on = selectedIncidents.includes(x.value);
@@ -842,7 +842,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                 })}
               </div>
               {selectedIncidents.includes("military_sexual_trauma") && (
-                <div className="mt-2 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2.5 text-[13px] leading-relaxed text-ink">
+                <div className="mt-2 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2.5 text-[0.8125rem] leading-relaxed text-ink">
                   This is logged like any other event — a place and a year, nothing more. If you want to talk to
                   someone, every VA medical center has an MST coordinator, and care for MST-related conditions is
                   free at the VA regardless of disability rating or discharge status. Your VSO can also walk you
@@ -867,7 +867,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
                       : "Add your words, an exposure, or an event"}
                 </button>
               ) : (
-                <div className="flex-1 text-[13px] text-muted">Sign in above to save this pin to your record.</div>
+                <div className="flex-1 text-[0.8125rem] text-muted">Sign in above to save this pin to your record.</div>
               )}
               <button onClick={closeDraft} className="rounded-md border border-line px-3 py-1.5 text-sm text-muted hover:bg-canvas">
                 Cancel
@@ -888,7 +888,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-[13px] text-success">Saved to your private record.</p>
+          <p className="mt-2 text-[0.8125rem] text-success">Saved to your private record.</p>
         </div>
       )}
     </div>

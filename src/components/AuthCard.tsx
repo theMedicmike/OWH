@@ -92,7 +92,7 @@ export default function AuthCard() {
         <h2 className="text-xl font-semibold tracking-tight text-ink">Check your email</h2>
         {resetSent ? (
           <>
-            <p className="mt-2 text-[15px] leading-relaxed text-muted">
+            <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
               If <strong className="text-ink">{email}</strong> has an account here, we sent a link to set a new
               password. It is good for one hour.
             </p>
@@ -103,7 +103,7 @@ export default function AuthCard() {
           </>
         ) : (
           <>
-            <p className="mt-2 text-[15px] leading-relaxed text-muted">
+            <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
               We sent a confirmation link to <strong className="text-ink">{email}</strong>. Open it to verify your
               account and finish setting up your record.
             </p>
@@ -123,7 +123,7 @@ export default function AuthCard() {
   return (
     <div className="card p-6 sm:p-7">
       <h2 className="text-xl font-semibold tracking-tight text-ink">{TITLE[mode]}</h2>
-      <p className="mt-1 text-[15px] leading-relaxed text-muted">{LEDE[mode]}</p>
+      <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">{LEDE[mode]}</p>
 
       <form onSubmit={submit} className="mt-5 space-y-4">
         <div>
@@ -181,7 +181,7 @@ export default function AuthCard() {
         </button>
       </form>
 
-      <div className="mt-5 flex flex-col items-center gap-1 text-[15px]">
+      <div className="mt-5 flex flex-col items-center gap-1 text-[0.9375rem]">
         {mode === "in" && (
           <>
             <button type="button" onClick={() => go("forgot")} className="btn btn-ghost">

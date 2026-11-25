@@ -20,7 +20,7 @@ export function SectionTitle({ title, lede, aside }: { title: string; lede?: str
     <div className="flex items-end justify-between gap-4">
       <div>
         <h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2>
-        {lede && <p className="mt-1 text-[15px] leading-relaxed text-muted">{lede}</p>}
+        {lede && <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">{lede}</p>}
       </div>
       {aside && <div className="flex-none">{aside}</div>}
     </div>
@@ -67,7 +67,7 @@ export function LinkRow({
     <Link href={href} className="row group">
       {icon && <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-canvas text-brand">{icon}</span>}
       <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-semibold leading-snug">{label}</span>
+        <span className="block text-[0.9375rem] font-semibold leading-snug">{label}</span>
         {detail && <span className="mt-0.5 block text-sm leading-snug text-muted">{detail}</span>}
       </span>
       {status && <span className={`flex-none text-sm font-semibold ${toneClass}`}>{status}</span>}
@@ -103,7 +103,7 @@ export function SpineRow({
           {state === "done" && <Check />}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-semibold leading-snug">
+          <span className="block text-[0.9375rem] font-semibold leading-snug">
             <span className="sr-only">Step {step}: </span>
             {label}
           </span>

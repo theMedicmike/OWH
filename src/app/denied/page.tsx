@@ -14,7 +14,7 @@ export default function DeniedPage() {
   return (
     <AppShell title="A denial isn't the end">
       <div className="mx-auto max-w-2xl space-y-5">
-        <p className="text-[15px] leading-relaxed text-muted">
+        <p className="text-[0.9375rem] leading-relaxed text-muted">
           Most denials come down to evidence, not merit. The next step is understanding what was missing and
           building it — not guessing.
         </p>
@@ -42,13 +42,13 @@ export default function DeniedPage() {
 
         <section className={card}>
           <h2 className="text-sm font-semibold text-ink">How to read your decision letter</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             The letter is longer than most veterans expect, and the part that matters most is easy to skip past.
           </p>
           <div className="mt-3 space-y-3">
             <div className="border-l-2 border-brand/30 pl-3">
               <div className="text-sm font-semibold text-ink">Reasons for Decision</div>
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
                 Read this section first. It explains, condition by condition, exactly why VA decided what it
                 decided and what evidence it weighed — which is the same thing as telling you what evidence was
                 missing or unconvincing. This is the roadmap for a supplemental claim.
@@ -56,21 +56,21 @@ export default function DeniedPage() {
             </div>
             <div className="border-l-2 border-brand/30 pl-3">
               <div className="text-sm font-semibold text-ink">Decision</div>
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
                 The actual outcome for each condition — service connected or not, and at what evaluation. Short,
                 and easy to mistake for the whole story. It isn&apos;t; the reasoning behind it lives further down.
               </p>
             </div>
             <div className="border-l-2 border-brand/30 pl-3">
               <div className="text-sm font-semibold text-ink">Evidence</div>
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
                 A list of everything VA actually looked at — service treatment records, exam reports, anything you
                 submitted. If something you sent isn&apos;t listed here, that&apos;s worth flagging to your VSO.
               </p>
             </div>
             <div className="border-l-2 border-brand/30 pl-3">
               <div className="text-sm font-semibold text-ink">Combined Evaluation</div>
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
                 If you have more than one service-connected condition, VA doesn&apos;t just add the percentages —
                 it uses a table called the Combined Ratings Table (38 CFR §4.25), sometimes called &ldquo;VA
                 math.&rdquo; The combined number is almost always lower than simple addition would suggest. That&apos;s
@@ -79,7 +79,7 @@ export default function DeniedPage() {
             </div>
             <div className="border-l-2 border-brand/30 pl-3">
               <div className="text-sm font-semibold text-ink">Deferred or referred conditions</div>
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
                 Sometimes a condition isn&apos;t decided yet — it&apos;s deferred pending more evidence or an exam,
                 or referred to a different VA office to handle. That&apos;s not a denial; it means a decision is
                 still coming.
@@ -87,13 +87,13 @@ export default function DeniedPage() {
             </div>
             <div className="border-l-2 border-brand/30 pl-3">
               <div className="text-sm font-semibold text-ink">Effective date</div>
-              <p className="mt-1 text-[15px] leading-relaxed text-muted">
+              <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
                 The date VA starts paying from for anything granted — usually tied to when you filed, which is the
                 whole reason an Intent to File matters. Check it against your own records.
               </p>
             </div>
           </div>
-          <p className="mt-4 text-[13px] leading-relaxed text-faint">
+          <p className="mt-4 text-[0.8125rem] leading-relaxed text-faint">
             This app can&apos;t read your actual letter for you — it explains the structure every VA decision
             letter shares. Bring the letter itself to your VSO; they read these for a living.
           </p>
@@ -105,11 +105,11 @@ export default function DeniedPage() {
             {[VA_FORMS.supplemental, VA_FORMS.hlr, VA_FORMS.board].map((f) => (
               <div key={f.number} className="border-l-2 border-brand/30 pl-3">
                 <div className="text-sm font-semibold text-ink">{f.name} <span className="font-normal text-muted">({f.number})</span></div>
-                <p className="mt-1 text-[15px] leading-relaxed text-muted">{f.blurb}</p>
+                <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">{f.blurb}</p>
               </div>
             ))}
           </div>
-          <p className="mt-4 text-[13px] leading-relaxed text-faint">
+          <p className="mt-4 text-[0.8125rem] leading-relaxed text-faint">
             This app documents. It doesn&apos;t tell you which lane to pick — that&apos;s exactly the call an
             accredited VSO is there to help you make.
           </p>
@@ -127,19 +127,19 @@ export default function DeniedPage() {
             hands the question to a VSO. No thresholds, no "you may qualify". */}
         <section className={card}>
           <h2 className="text-sm font-semibold text-ink">If your conditions keep you from working</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             There is a separate path most veterans are never told about:{" "}
             <strong className="text-ink">Individual Unemployability</strong>, usually written TDIU. It exists for
             a veteran whose service-connected conditions prevent him from holding steady work, even when his
             combined rating is below 100 percent.
           </p>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             The form is <strong className="text-ink">VA Form 21-8940</strong>, and there is an employer portion as
             well. Whether it applies to you depends on your ratings and your work history, and there are
             thresholds this app does not calculate — that is a question for an accredited VSO, and worth asking
             out loud at your next appointment even if nobody has raised it with you.
           </p>
-          <p className="mt-3 text-[13px] leading-relaxed text-faint">
+          <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">
             Named here because it is commonly missed, not because we know it fits your record. This app does not
             assess eligibility for anything.
           </p>
@@ -165,7 +165,7 @@ export default function DeniedPage() {
 
         <Link href="/vso" className="block rounded-xl border border-brand/30 bg-brand/5 p-5 text-center transition hover:border-brand/50">
           <div className="text-sm font-semibold text-ink">Find a VSO to review your next filing</div>
-          <div className="mt-1 text-[13px] text-muted">Free, every time, no matter which VSO you pick.</div>
+          <div className="mt-1 text-[0.8125rem] text-muted">Free, every time, no matter which VSO you pick.</div>
         </Link>
 
         <Link href="/dashboard" className="block text-center text-sm font-semibold text-brand hover:underline">Back to your record</Link>

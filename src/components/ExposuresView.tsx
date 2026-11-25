@@ -20,43 +20,43 @@ function ExposureCard({ cls, places }: { cls: string; places: string[] }) {
         <p className="mt-1 text-sm font-medium text-muted">{edu.short}</p>
 
         {places.length > 0 && (
-          <div className="mt-3 rounded-lg bg-success-soft px-3 py-2 text-[13px] text-success">
+          <div className="mt-3 rounded-lg bg-success-soft px-3 py-2 text-[0.8125rem] text-success">
             You logged this at: {places.join(", ")}
           </div>
         )}
 
-        <p className="mt-3 text-[15px] leading-relaxed text-muted">{edu.where}</p>
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">{edu.where}</p>
         {edu.body.map((p, i) => (
-          <p key={i} className="mt-2 text-[15px] leading-relaxed text-muted">{p}</p>
+          <p key={i} className="mt-2 text-[0.9375rem] leading-relaxed text-muted">{p}</p>
         ))}
 
         {EXPOSURE_CASCADE[cls] && (
           <div className="mt-3 rounded-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
-            <div className="text-[13px] font-medium text-muted">How the cascade works</div>
-            <p className="mt-1 text-[15px] leading-relaxed text-ink">{EXPOSURE_CASCADE[cls]}</p>
+            <div className="text-[0.8125rem] font-medium text-muted">How the cascade works</div>
+            <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">{EXPOSURE_CASCADE[cls]}</p>
           </div>
         )}
 
         <div className="mt-3 flex flex-wrap gap-1.5">
           {edu.systems.map((s) => (
-            <span key={s} className="rounded-md bg-brand/5 px-2 py-0.5 text-[13px] font-medium text-brand">{s}</span>
+            <span key={s} className="rounded-md bg-brand/5 px-2 py-0.5 text-[0.8125rem] font-medium text-brand">{s}</span>
           ))}
         </div>
 
         <div className="mt-4 rounded-lg border border-line bg-canvas p-3">
-          <div className="text-[13px] font-medium text-muted">Questions for your clinician</div>
+          <div className="text-[0.8125rem] font-medium text-muted">Questions for your clinician</div>
           <ul className="mt-1.5 space-y-1">
             {edu.ask.map((q, i) => (
-              <li key={i} className="flex gap-2 text-[13px] leading-relaxed text-ink">
+              <li key={i} className="flex gap-2 text-[0.8125rem] leading-relaxed text-ink">
                 <span className="text-accent">•</span>{q}
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="mt-3 text-[13px] leading-relaxed text-faint">{EXPOSURE_BASIS[cls]}</p>
+        <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">{EXPOSURE_BASIS[cls]}</p>
 
-        <Link href="/solutions" className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-brand hover:underline">
+        <Link href="/solutions" className="mt-3 inline-flex items-center gap-1 text-[0.8125rem] font-semibold text-brand hover:underline">
           See ways to support your body
         </Link>
       </div>
@@ -120,7 +120,7 @@ export default function ExposuresView() {
         </div>
       ) : (
         <>
-          <div className="text-[13px] font-medium text-muted">Your exposures</div>
+          <div className="text-[0.8125rem] font-medium text-muted">Your exposures</div>
           {mine.map((c) => <ExposureCard key={c} cls={c} places={places[c]} />)}
         </>
       )}
@@ -140,7 +140,7 @@ export default function ExposuresView() {
         </div>
       )}
 
-      <p className="border-t border-line pt-4 text-[13px] leading-relaxed text-faint">
+      <p className="border-t border-line pt-4 text-[0.8125rem] leading-relaxed text-faint">
         This is general education drawn from documented sources (ATSDR, VA, PACT Act). It is not a
         diagnosis or medical advice. Veterans Crisis Line: dial 988, then press 1.
       </p>

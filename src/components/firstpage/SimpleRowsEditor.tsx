@@ -97,10 +97,10 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
 
       <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Add a line</div>
-        <p className="mt-1 text-[13px] leading-relaxed text-muted">{cfg.help}</p>
+        <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">{cfg.help}</p>
         {cfg.examples.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {cfg.examples.map((e) => <button key={e} type="button" onClick={() => setText(e)} className="rounded-full border border-line px-2.5 py-1 text-[13px] text-muted hover:border-brand hover:text-brand">{e}</button>)}
+            {cfg.examples.map((e) => <button key={e} type="button" onClick={() => setText(e)} className="rounded-full border border-line px-2.5 py-1 text-[0.8125rem] text-muted hover:border-brand hover:text-brand">{e}</button>)}
           </div>
         )}
         <div className="mt-3 space-y-3">
@@ -117,14 +117,14 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
       <div className="card p-5">
         <div className="text-sm font-semibold text-ink">{cfg.title} on the page</div>
         {rows.length === 0 ? (
-          <p className="mt-1 text-[13px] text-faint">Nothing yet.</p>
+          <p className="mt-1 text-[0.8125rem] text-faint">Nothing yet.</p>
         ) : (
           <ul className="mt-2 divide-y divide-line">
             {rows.map((r) => (
               <li key={r.id} className="space-y-2 py-3">
                 <div className="text-sm text-ink">
                   {r.text}{r.study_date ? ` (${r.study_date})` : ""}
-                  <span className="ml-2 rounded border border-line px-1.5 py-0.5 text-[13px] text-muted">{TIER_LABEL[r.tier]}</span>
+                  <span className="ml-2 rounded border border-line px-1.5 py-0.5 text-[0.8125rem] text-muted">{TIER_LABEL[r.tier]}</span>
                 </div>
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="min-w-[220px] flex-1"><SourceSelect sources={sources} value={r.source_id} onChange={(id) => patch(r.id, { source_id: id, tier: id ? "record" : r.tier })} /></div>

@@ -52,7 +52,7 @@ export default function DD214Assist() {
       <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 text-left">
         <span>
           <span className="text-sm font-semibold text-ink">Read it off your DD-214</span>
-          <span className="mt-0.5 block text-[13px] text-muted">
+          <span className="mt-0.5 block text-[0.8125rem] text-muted">
             Your DD-214 never leaves this app — no AI reads it, nothing is sent anywhere. We point to the
             block that has each answer; you read it, you type it, you own it.
           </span>
@@ -84,24 +84,24 @@ export default function DD214Assist() {
               </p>
             )}
             {url && (
-              <a href={url} target="_blank" rel="noreferrer" className="mt-1.5 inline-block text-[13px] font-semibold text-brand hover:underline">
+              <a href={url} target="_blank" rel="noreferrer" className="mt-1.5 inline-block text-[0.8125rem] font-semibold text-brand hover:underline">
                 Open full size in a new tab (easier to zoom)
               </a>
             )}
           </div>
 
           <div className="mt-4 lg:mt-0 lg:w-[300px] lg:flex-none">
-            <div className="text-[13px] font-medium text-muted">Where each answer lives</div>
+            <div className="text-[0.8125rem] font-medium text-muted">Where each answer lives</div>
             <ul className="mt-2 space-y-2">
               {BLOCKS.map((b) => (
                 <li key={b.field} className="rounded-lg border border-line bg-canvas px-3 py-2 text-sm">
                   <span className="font-semibold text-ink">{b.field}</span>
                   <span className="text-muted"> — {b.block}</span>
-                  <span className="block text-[13px] leading-snug text-faint">{b.hint}</span>
+                  <span className="block text-[0.8125rem] leading-snug text-faint">{b.hint}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[13px] leading-relaxed text-faint">
+            <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
               Older DD-214s number these blocks differently — look for the block title. Breaks in service?
               Use your most recent DD-214 and tell your VSO about earlier periods. Type what you read into
               the profile fields above — they save to your record.

@@ -118,7 +118,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
       {/* Year axis */}
       <div className="relative mb-1 h-4">
         {ticks.map((t) => (
-          <span key={t} className="absolute -translate-x-1/2 text-[10px] tabular-nums text-faint" style={{ left: `${pct(t)}%` }}>
+          <span key={t} className="absolute -translate-x-1/2 text-[0.625rem] tabular-nums text-faint" style={{ left: `${pct(t)}%` }}>
             {t}
           </span>
         ))}
@@ -138,7 +138,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
               solid band. Calling that active duty asserts a false fact into a
               document a VA rater reads. Until service periods are captured
               properly, the label must claim only the span, never the status. */}
-          <span className="absolute left-0 top-0 text-[12px] font-semibold text-brand">
+          <span className="absolute left-0 top-0 text-[0.75rem] font-semibold text-brand">
             In service
           </span>
           <div
@@ -160,14 +160,14 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
           return (
             <div key={`${t.place}-${i}`} className="relative h-9">
               <div
-                className="absolute top-0 flex h-5 items-center rounded-md bg-brand px-1.5 text-[10px] font-semibold text-white shadow-sm print:border print:border-ink"
+                className="absolute top-0 flex h-5 items-center rounded-md bg-brand px-1.5 text-[0.625rem] font-semibold text-white shadow-sm print:border print:border-ink"
                 style={{ left: `${left}%`, width: `${width}%`, minWidth: 8 }}
                 title={`${t.place} — ${t.startYear}${t.endYear && t.endYear !== t.startYear ? `–${t.endYear}` : ""}`}
               />
               {/* Past the midpoint, anchor from the right so long labels can't
                   push the page into horizontal scroll (or off the printed edge). */}
               <div
-                className="absolute top-[22px] truncate text-[11px] leading-tight text-ink"
+                className="absolute top-[22px] truncate text-[0.6875rem] leading-tight text-ink"
                 style={left > 50
                   ? { right: `${100 - left}%`, maxWidth: `${Math.max(20, left)}%`, textAlign: "right" }
                   : { left: `${left}%`, maxWidth: `${Math.max(20, 100 - left)}%` }}
@@ -191,7 +191,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
       {/* Conditions — when your health changed */}
       {dated.length > 0 && (
         <>
-          <div className="mt-4 border-t border-dashed border-line pt-2 text-[12px] font-semibold text-muted">
+          <div className="mt-4 border-t border-dashed border-line pt-2 text-[0.75rem] font-semibold text-muted">
             Health changes
           </div>
           <div className="mt-1 space-y-1.5">
@@ -213,7 +213,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
                     title={`${c.label} — ${c.onsetYear}`}
                   />
                   <div
-                    className="absolute top-[22px] truncate text-[11px] leading-tight text-ink"
+                    className="absolute top-[22px] truncate text-[0.6875rem] leading-tight text-ink"
                     style={left > 50
                       ? { right: `${100 - left}%`, maxWidth: `${Math.max(20, left)}%`, textAlign: "right" }
                       : { left: `${left}%`, maxWidth: `${Math.max(20, 100 - left)}%` }}
@@ -239,7 +239,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
       )}
 
       {undated.length > 0 && (
-        <p className="mt-3 border-t border-line pt-2 text-[13px] leading-relaxed text-muted">
+        <p className="mt-3 border-t border-line pt-2 text-[0.8125rem] leading-relaxed text-muted">
           <span className="font-semibold text-muted">No year yet:</span>{" "}
           {undated.map((c) => c.label).join(", ")}. Adding the year each began puts them on this
           timeline — the gap between an exposure and the first symptom is often the most persuasive
@@ -247,7 +247,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
         </p>
       )}
 
-      <p className="mt-3 text-[13px] leading-relaxed text-muted">
+      <p className="mt-3 text-[0.8125rem] leading-relaxed text-muted">
         A timeline of what you logged — dates and gaps as you reported them. It documents sequence,
         not causation; a clinician and an accredited VSO (Veterans Service Officer — free help) weigh
         what it means.

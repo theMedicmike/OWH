@@ -31,32 +31,32 @@ export default async function InjuryDetailPage({ params }: { params: Promise<{ s
 
         <div>
           <h2 className="display text-[1.85rem] text-ink sm:text-[2.125rem]">{i.name}</h2>
-          <p className="mt-1.5 text-[15px] text-muted">{i.hook}</p>
+          <p className="mt-1.5 text-[0.9375rem] text-muted">{i.hook}</p>
         </div>
 
         {/* The one action on this page: log it on your own record. */}
         {classes.length > 0 && <InjuryAddToRecord name={i.name} classes={classes} />}
 
         <section className="card p-5 sm:p-6">
-          <h3 className="text-[15px] font-semibold text-ink">What VA usually asks for</h3>
-          <p className="mt-2 text-[15px] leading-relaxed text-ink">{i.evidence}</p>
+          <h3 className="text-[0.9375rem] font-semibold text-ink">What VA usually asks for</h3>
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">{i.evidence}</p>
         </section>
 
         <section className="card p-5 sm:p-6">
-          <h3 className="text-[15px] font-semibold text-ink">How this gets rated: structure, not a number</h3>
-          <p className="mt-2 text-[15px] leading-relaxed text-ink">{i.ratingStructure}</p>
+          <h3 className="text-[0.9375rem] font-semibold text-ink">How this gets rated: structure, not a number</h3>
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">{i.ratingStructure}</p>
         </section>
 
         <section className="card p-5 sm:p-6">
-          <h3 className="text-[15px] font-semibold text-ink">Commonly documented alongside it</h3>
-          <p className="mt-2 text-[15px] leading-relaxed text-ink">{i.associatedNote}</p>
+          <h3 className="text-[0.9375rem] font-semibold text-ink">Commonly documented alongside it</h3>
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">{i.associatedNote}</p>
         </section>
 
         <section className="card p-5 sm:p-6">
-          <h3 className="text-[15px] font-semibold text-ink">Sources</h3>
+          <h3 className="text-[0.9375rem] font-semibold text-ink">Sources</h3>
           <ul className="mt-2 space-y-2">
             {i.citations.map((c) => (
-              <li key={c.label} className="text-[15px] leading-relaxed">
+              <li key={c.label} className="text-[0.9375rem] leading-relaxed">
                 <span className="font-semibold text-ink">{c.label}.</span> <span className="text-muted">{c.detail}</span>
               </li>
             ))}

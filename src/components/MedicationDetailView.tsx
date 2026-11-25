@@ -30,7 +30,7 @@ function SourceLine({ result }: { result: Extract<DrugLabelResult, { status: "ok
     when ? `label version ${when}` : null,
   ].filter(Boolean);
   return (
-    <p className="mt-3 text-[13px] leading-relaxed text-faint">
+    <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">
       Source: openFDA drug label{bits.length ? ` — ${bits.join(", ")}` : ""}. Quoted word for word from the
       manufacturer&apos;s FDA-approved labeling. We don&apos;t rewrite it, summarize it, or interpret it.{" "}
       <a href="https://open.fda.gov/apis/drug/label/" target="_blank" rel="noreferrer" className="text-brand hover:underline">
@@ -71,7 +71,7 @@ export default function MedicationDetailView({
           {when ? ` ${when.charAt(0).toUpperCase()}${when.slice(1)}.` : ""}
         </p>
         {medication.note && (
-          <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[13px] italic leading-relaxed text-ink/85">
+          <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[0.8125rem] italic leading-relaxed text-ink/85">
             &ldquo;{medication.note}&rdquo;
           </p>
         )}
@@ -81,11 +81,11 @@ export default function MedicationDetailView({
           this page exists at all, and the competitor product never explains it. */}
       <section className="rounded-xl border border-brand/30 bg-brand/5 p-5">
         <h2 className="text-sm font-semibold text-ink">Why this can matter to a claim</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
           Under <strong>38 CFR §3.310</strong>, a condition that was <em>caused or made worse by treatment</em> for
           a disability already connected to your service can sometimes be claimed as secondary.
         </p>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           That route needs three things, and this page can only help with one of them: a{" "}
           <strong>current diagnosis</strong> in your medical records, <strong>documentation</strong> of what you
           took and for how long, and a <strong>medical opinion</strong> connecting the two. Nothing below says you
@@ -97,7 +97,7 @@ export default function MedicationDetailView({
       {result.status === "not-found" && (
         <section className="card p-5">
           <h2 className="text-sm font-semibold text-ink">No FDA label found for this name</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             Your entry is saved either way — this only means the FDA&apos;s label database didn&apos;t match that
             spelling. Try the generic name rather than the brand (or the other way round), or check the spelling on
             the bottle. Combination medications sometimes need both parts, like
@@ -109,7 +109,7 @@ export default function MedicationDetailView({
       {result.status === "unavailable" && (
         <section className="card p-5">
           <h2 className="text-sm font-semibold text-ink">Couldn&apos;t reach the FDA&apos;s label database</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             {result.message} Your entry is saved — nothing is lost. Try again in a little while.
           </p>
         </section>
@@ -122,7 +122,7 @@ export default function MedicationDetailView({
               <h2 className="text-sm font-semibold text-ink">
                 Conditions this label names, and how VA codes them
               </h2>
-              <p className="mt-1 text-[13px] leading-relaxed text-faint">
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
                 These appear in this drug&apos;s own FDA label. Appearing here does <strong>not</strong> mean you
                 have them, that this medication caused them, or that you can claim them — it means that if a
                 clinician has diagnosed one and connects it to your treatment, this is the code VA rates it under.
@@ -131,15 +131,15 @@ export default function MedicationDetailView({
                 {result.effects.map((e) => (
                   <li key={e.key} className="rounded-lg border border-line bg-canvas p-3">
                     <div className="text-sm font-semibold text-ink">{e.label}</div>
-                    <p className="mt-0.5 text-[13px] leading-relaxed text-muted">{e.plain}</p>
-                    <p className="mt-1.5 text-[12px] leading-relaxed text-ink/80">{e.why}</p>
+                    <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">{e.plain}</p>
+                    <p className="mt-1.5 text-[0.75rem] leading-relaxed text-ink/80">{e.why}</p>
                     <div className="mt-2 border-t border-line pt-2">
-                      <div className="text-[13px] font-medium text-muted">
+                      <div className="text-[0.8125rem] font-medium text-muted">
                         How VA codes this
                       </div>
                       <ul className="mt-1 space-y-0.5">
                         {e.diagnosticCodes.map((dc) => (
-                          <li key={dc.code} className="text-[12px] leading-relaxed text-ink">
+                          <li key={dc.code} className="text-[0.75rem] leading-relaxed text-ink">
                             <span className="font-mono font-semibold">DC {dc.code}</span> — {dc.name}{" "}
                             <span className="text-faint">({dc.cfr})</span>
                           </li>
@@ -150,7 +150,7 @@ export default function MedicationDetailView({
                         fits, this says so out loud instead of quietly pointing
                         at a near-miss code and letting a veteran assume. */}
                     {e.limitation && (
-                      <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[12px] leading-relaxed text-ink">
+                      <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[0.75rem] leading-relaxed text-ink">
                         <span className="font-semibold">Worth knowing: </span>
                         {e.limitation}
                       </p>
@@ -158,7 +158,7 @@ export default function MedicationDetailView({
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-[13px] leading-relaxed text-muted">
+              <p className="mt-3 text-[0.8125rem] leading-relaxed text-muted">
                 Ask your VSO or clinician whether any of this applies to your case. That call is theirs, not this
                 app&apos;s.
               </p>
@@ -167,15 +167,15 @@ export default function MedicationDetailView({
 
           <section className="card p-5">
             <h2 className="text-sm font-semibold text-ink">The FDA label, word for word</h2>
-            <p className="mt-1 text-[13px] leading-relaxed text-faint">
+            <p className="mt-1 text-[0.8125rem] leading-relaxed text-faint">
               This is the manufacturer&apos;s FDA-approved labeling as published by the FDA. It describes what has
               been reported for this medication generally — never a statement about you.
             </p>
             <div className="mt-3 space-y-4">
               {result.label.sections.map((s) => (
                 <div key={s.key}>
-                  <div className="text-[13px] font-medium text-muted">{s.title}</div>
-                  <p className="mt-1 whitespace-pre-line text-[13px] leading-relaxed text-ink">{s.text}</p>
+                  <div className="text-[0.8125rem] font-medium text-muted">{s.title}</div>
+                  <p className="mt-1 whitespace-pre-line text-[0.8125rem] leading-relaxed text-ink">{s.text}</p>
                 </div>
               ))}
             </div>
@@ -185,14 +185,14 @@ export default function MedicationDetailView({
       )}
 
       <div className="rounded-xl border border-scarlet/30 bg-scarlet/5 px-4 py-3">
-        <p className="text-[13px] leading-relaxed text-ink">
+        <p className="text-[0.8125rem] leading-relaxed text-ink">
           <strong>Never stop or change a prescription because of anything on this page.</strong> Some of these
           medications are dangerous to stop suddenly. That conversation belongs with the clinician who prescribed
           it.
         </p>
       </div>
 
-      <p className="px-1 text-[13px] leading-relaxed text-faint">
+      <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
         This page documents. It does not diagnose, does not advise you, does not file for you, and is not your
         representative (38 CFR 14.629). If you or someone you know is struggling, the Veterans Crisis Line is here
         24/7 — dial 988, then press 1.

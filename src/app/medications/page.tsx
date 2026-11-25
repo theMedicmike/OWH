@@ -6,7 +6,7 @@ export default function MedicationsPage() {
   return (
     <AppShell title="Your medications">
       <p className="mb-1 text-sm text-muted">What you take — and what the FDA&apos;s own label says about it.</p>
-      <p className="mb-4 text-[13px] leading-relaxed text-faint">
+      <p className="mb-4 text-[0.8125rem] leading-relaxed text-faint">
         Nothing here is submitted automatically, and nothing you write is touched by AI. This documents what you
         take; it never tells you what you have or what to claim.
       </p>
@@ -16,8 +16,8 @@ export default function MedicationsPage() {
           href="/medications/add"
           className="block rounded-2xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50"
         >
-          <div className="text-[17px] font-semibold text-ink">Add a medication</div>
-          <p className="mt-1 text-[15px] leading-relaxed text-muted">
+          <div className="text-[1.0625rem] font-semibold text-ink">Add a medication</div>
+          <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
             Tap any medicine and it is on your list. Open it afterward to read the FDA&apos;s own label.
           </p>
         </Link>
@@ -26,24 +26,24 @@ export default function MedicationsPage() {
 
         <div className="card p-5">
           <div className="text-sm font-semibold text-ink">Why a medication list belongs in your record</div>
-          <p className="mt-2 text-[15px] leading-relaxed text-ink">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
             Under <strong>38 CFR §3.310</strong>, a condition that was <em>caused or made worse by treatment</em> for
             a condition already connected to your service can sometimes be claimed as secondary. Long-term
             anti-inflammatories prescribed for a service-connected back, for example, are a well-recognized route to
             a separate stomach claim.
           </p>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             That route still needs three things this app cannot supply: a current diagnosis in your medical records,
             documentation of what you took and for how long, and a medical opinion connecting the two. What this
             page does is put the first piece of paper on the table.
           </p>
-          <p className="mt-2 text-[13px] leading-relaxed text-faint">
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
             Never stop or change a prescription because of anything you read here. That conversation belongs with
             the clinician who prescribed it.
           </p>
         </div>
 
-        <p className="px-1 text-[13px] leading-relaxed text-faint">
+        <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
           This section documents. It does not diagnose, does not advise you, does not file for you, and is not your
           representative (38 CFR 14.629). If you or someone you know is struggling, the Veterans Crisis Line is
           here 24/7 — dial 988, then press 1. Text 838255.

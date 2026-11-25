@@ -181,7 +181,7 @@ export function StatusSelect({ value, onChange }: { value: SourceStatus; onChang
 
 export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-[15px] text-ink">
+    <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-[0.9375rem] text-ink">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-5 w-5 accent-brand" />
       {label}
     </label>
@@ -191,15 +191,15 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
 export function Notice({ error, children }: { error?: string; children?: React.ReactNode }) {
   if (error === NOT_SET_UP) {
     return (
-      <div className="rounded-xl border border-warn/40 bg-warn-soft p-4 text-[15px] leading-relaxed text-ink">
+      <div className="rounded-xl border border-warn/40 bg-warn-soft p-4 text-[0.9375rem] leading-relaxed text-ink">
         This section isn&apos;t switched on yet. Nothing is wrong with your record; the database update for the First
         Page has not been applied.
       </div>
     );
   }
-  if (error) return <div className="rounded-xl border border-scarlet/40 bg-scarlet/5 p-4 text-[15px] text-scarlet">{error}</div>;
+  if (error) return <div className="rounded-xl border border-scarlet/40 bg-scarlet/5 p-4 text-[0.9375rem] text-scarlet">{error}</div>;
   if (!children) return null;
-  return <div className="rounded-xl border border-line bg-canvas p-4 text-[15px] leading-relaxed text-muted">{children}</div>;
+  return <div className="rounded-xl border border-line bg-canvas p-4 text-[0.9375rem] leading-relaxed text-muted">{children}</div>;
 }
 
 export function Stance() {

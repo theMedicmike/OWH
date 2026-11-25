@@ -38,12 +38,12 @@ function Group({ id, title, blurb, items, base }: { id: string; title: string; b
   return (
     <section id={id} className="scroll-mt-20">
       <h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2>
-      <p className="mt-1 text-[15px] leading-relaxed text-muted">{blurb}</p>
+      <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">{blurb}</p>
       <div className="card mt-3 overflow-hidden">
         {items.map((t) => (
           <Link key={t.slug} href={`${base}/${t.slug}`} className="row group">
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold leading-snug">{t.name}</span>
+              <span className="block text-[0.9375rem] font-semibold leading-snug">{t.name}</span>
               <span className="mt-0.5 block text-sm leading-snug text-muted">{t.short}</span>
             </span>
             <Chevron className="text-faint transition-colors group-hover:text-ink" />
@@ -62,7 +62,7 @@ export default function LearnIndex() {
           <p className="display text-[1.75rem] text-ink sm:text-[2rem]">
             What your service may have exposed you to, in plain language.
           </p>
-          <p className="mt-3 text-[15px] leading-relaxed text-muted">
+          <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
             Built on the government&apos;s own record. Open any exposure or body system to learn where it comes
             from, what it does in the body, the conditions the VA already links to it, and what to ask your
             clinician. This is documentation for your record, not medical advice or a treatment plan.
@@ -83,7 +83,7 @@ export default function LearnIndex() {
             {GUIDES.map((g) => (
               <Link key={g.href} href={g.href} className="row group">
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] font-semibold leading-snug">{g.name}</span>
+                  <span className="block text-[0.9375rem] font-semibold leading-snug">{g.name}</span>
                   <span className="mt-0.5 block text-sm leading-snug text-muted">{g.short}</span>
                 </span>
                 <Chevron className="text-faint transition-colors group-hover:text-ink" />

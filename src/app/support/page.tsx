@@ -14,7 +14,7 @@ export default function SupportPage() {
       intro="If things feel heavy right now, please reach out. Help is free, confidential, and available 24/7 — even if you are not enrolled in VA care."
     >
       <div className="rounded-xl border-2 border-brand bg-brand/5 p-5">
-        <div className="text-[13px] font-medium text-muted">Veterans Crisis Line</div>
+        <div className="text-[0.8125rem] font-medium text-muted">Veterans Crisis Line</div>
         <div className="mt-2 text-lg font-bold text-ink">Dial <a href="tel:988" className="text-brand underline">988</a>, then press 1</div>
         <ul className="mt-2 space-y-1 text-sm text-ink">
           <li>Text <a href="sms:838255" className="text-brand underline">838255</a></li>

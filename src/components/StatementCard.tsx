@@ -152,8 +152,8 @@ export default function StatementCard({ name, branch, years, rows, conditions, p
   if (usable.length === 0) {
     return (
       <div className="mb-4 card p-5 print:hidden">
-        <div className="text-[13px] font-bold text-brand">{heading}</div>
-        <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+        <div className="text-[0.8125rem] font-bold text-brand">{heading}</div>
+        <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">
           {isProxy ? "This statement builds from what you write on the check-ins you add" : "Your statement builds from what you write on your check-ins"} — even two sentences about what
           {isProxy ? " they were" : " you were"} around is a statement.{" "}
           <Link href="/map" className="font-semibold text-brand hover:underline">Add {isProxy ? "their" : "your"} words on the map</Link>
@@ -164,8 +164,8 @@ export default function StatementCard({ name, branch, years, rows, conditions, p
 
   return (
     <div className="mb-4 card p-5 print:hidden">
-      <div className="text-[13px] font-bold text-brand">{heading}</div>
-      <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+      <div className="text-[0.8125rem] font-bold text-brand">{heading}</div>
+      <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">
         {isProxy ? (
           <>Assembled from what you&apos;ve entered here, <strong className="text-ink">exactly as you wrote
           it</strong> — labeled as coming from you, not from {name}. A draft to review with an accredited VSO.</>
@@ -175,7 +175,7 @@ export default function StatementCard({ name, branch, years, rows, conditions, p
         )}
       </p>
 
-      <p className="mt-3 text-[13px] leading-relaxed text-muted">
+      <p className="mt-3 text-[0.8125rem] leading-relaxed text-muted">
         {isProxy
           ? "These are the words you've entered on the check-ins you added. Uncheck anything you don't want in this statement. To change the words themselves, edit the check-in note — the statement always prints them exactly as written."
           : "These are your words from your check-ins. Uncheck anything you don't want in this statement. To change the words themselves, edit the check-in note — the statement always prints them exactly as written."}
@@ -199,14 +199,14 @@ export default function StatementCard({ name, branch, years, rows, conditions, p
             <span className="min-w-0">
               <span className="font-semibold text-ink">{r.place}</span>
               {r.range && <span className="text-muted">, {r.range}</span>}
-              {r.words && <span className="block text-[13px] italic leading-relaxed text-ink/85">&ldquo;{r.words}&rdquo;</span>}
-              {r.other && <span className="block text-[12px] text-muted">Also around: {r.other}</span>}
+              {r.words && <span className="block text-[0.8125rem] italic leading-relaxed text-ink/85">&ldquo;{r.words}&rdquo;</span>}
+              {r.other && <span className="block text-[0.75rem] text-muted">Also around: {r.other}</span>}
             </span>
           </li>
         ))}
       </ul>
 
-      <p className="mt-3 text-[13px] leading-relaxed text-faint">
+      <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">
         Read it once before you share it. Make sure everything here is something you want in your VA file —
         including other people&apos;s names.
       </p>

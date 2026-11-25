@@ -13,11 +13,11 @@ export default function InjuryLibraryPage() {
         {INJURY_LIBRARY.map((i) => (
           <Link key={i.slug} href={`/injuries/library/${i.slug}`} className="flex items-baseline justify-between gap-2 px-4 py-3 text-sm hover:bg-canvas">
             <span className="font-medium text-ink">{i.name}</span>
-            <span className="text-[13px] text-muted">{i.hook}</span>
+            <span className="text-[0.8125rem] text-muted">{i.hook}</span>
           </Link>
         ))}
       </div>
-      <p className="mt-3 px-1 text-[13px] leading-relaxed text-faint">
+      <p className="mt-3 px-1 text-[0.8125rem] leading-relaxed text-faint">
         Four entries so far — more are added as this section grows. Don&apos;t see yours? Log it anyway; the
         library catching up doesn&apos;t change what counts as your record.
       </p>

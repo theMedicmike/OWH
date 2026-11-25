@@ -110,18 +110,18 @@ export default function StoryRecorder() {
 
       <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Your story, in your own words</div>
-        <p className="mt-1 text-[13px] leading-relaxed text-muted">
+        <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
           Ten minutes on a good day. Someone you trust can sit with you. Three prompts, nothing else. The recording stays
           in your own private files, and the words your browser hears appear below so you can fix them. Nothing is
           sent to any AI.
         </p>
         <ol className="mt-3 space-y-1.5">
-          {PROMPTS.map((p, i) => <li key={p} className="flex gap-2 text-sm text-ink"><span className="inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-brand text-[13px] font-bold text-brand-foreground">{i + 1}</span>{p}</li>)}
+          {PROMPTS.map((p, i) => <li key={p} className="flex gap-2 text-sm text-ink"><span className="inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-brand text-[0.8125rem] font-bold text-brand-foreground">{i + 1}</span>{p}</li>)}
         </ol>
         <div className="mt-4 space-y-2">
           <Toggle checked={consent} onChange={setConsent} label='Before I start, I will say out loud: "I am recording myself for my own medical page."' />
           <Toggle checked={keepAudio} onChange={setKeepAudio} label="Keep the audio file too, not only the words" />
-          {!dict.supported && <p className="text-[13px] text-warn">This browser cannot write down what it hears. The audio can still be kept, and you can type the words afterward. Chrome, Edge or Safari on a phone can write them down.</p>}
+          {!dict.supported && <p className="text-[0.8125rem] text-warn">This browser cannot write down what it hears. The audio can still be kept, and you can type the words afterward. Chrome, Edge or Safari on a phone can write them down.</p>}
         </div>
         <div className="mt-4 flex items-center gap-3">
           {!recording ? (
@@ -130,10 +130,10 @@ export default function StoryRecorder() {
             <button type="button" onClick={stop} className="rounded-lg bg-scarlet px-4 py-2 text-sm font-semibold text-white">Stop and save</button>
           )}
           <span className="font-mono text-sm text-muted" aria-live="polite">{mm}:{ss}</span>
-          {busy && <span className="text-[13px] text-muted">Saving…</span>}
+          {busy && <span className="text-[0.8125rem] text-muted">Saving…</span>}
         </div>
         {(recording || finalText) && (
-          <div className="mt-3 rounded-lg border border-line bg-canvas p-3 text-[15px] leading-relaxed text-ink">
+          <div className="mt-3 rounded-lg border border-line bg-canvas p-3 text-[0.9375rem] leading-relaxed text-ink">
             {finalText} <span className="text-faint">{interim}</span>
             {!finalText && !interim && <span className="text-faint">Listening…</span>}
           </div>
@@ -142,12 +142,12 @@ export default function StoryRecorder() {
 
       <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Your recordings</div>
-        {items.length === 0 ? <p className="mt-1 text-[13px] text-faint">None yet.</p> : (
+        {items.length === 0 ? <p className="mt-1 text-[0.8125rem] text-faint">None yet.</p> : (
           <ul className="mt-2 divide-y divide-line">
             {items.map((r) => <RecordingRow key={r.id} r={r} onPlay={() => play(r)} onSave={async (t) => { await updateRecording(supabase, r.id, { transcript: t }); refresh(); }} onDelete={async () => { await deleteRecording(supabase, r); refresh(); }} />)}
           </ul>
         )}
-        <p className="mt-3 text-[13px] leading-relaxed text-faint">Pick your three lines on the Visit page. You can delete a recording at any time; it is gone from our storage when you do.</p>
+        <p className="mt-3 text-[0.8125rem] leading-relaxed text-faint">Pick your three lines on the Visit page. You can delete a recording at any time; it is gone from our storage when you do.</p>
       </div>
     </div>
   );
@@ -158,7 +158,7 @@ function RecordingRow({ r, onPlay, onSave, onDelete }: { r: FpRecording; onPlay:
   const [saved, setSaved] = useState(false);
   return (
     <li className="space-y-2 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-[0.8125rem] text-muted">
         <span>{r.recorded_on}{r.duration_sec ? `, ${Math.floor(r.duration_sec / 60)} min ${r.duration_sec % 60} s` : ""}{r.consent_spoken ? ", consent said aloud" : ""}</span>
         <span className="flex gap-2">
           {r.storage_path && <QuietButton onClick={onPlay}>play</QuietButton>}
@@ -168,7 +168,7 @@ function RecordingRow({ r, onPlay, onSave, onDelete }: { r: FpRecording; onPlay:
       <textarea value={t} onChange={(e) => { setT(e.target.value); setSaved(false); }} rows={5} className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink" placeholder="The words the browser heard. Fix anything it got wrong." />
       <div className="flex items-center gap-3">
         <QuietButton onClick={async () => { await onSave(t); setSaved(true); }}>Save the words</QuietButton>
-        {saved && <span className="text-[13px] text-success">Saved.</span>}
+        {saved && <span className="text-[0.8125rem] text-success">Saved.</span>}
       </div>
     </li>
   );

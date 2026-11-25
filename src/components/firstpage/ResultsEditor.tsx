@@ -54,7 +54,7 @@ export default function ResultsEditor() {
 
       <div className="card p-5">
         <div className="text-sm font-semibold text-ink">Add a result that changed</div>
-        <p className="mt-1 text-[13px] leading-relaxed text-muted">
+        <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
           Copy the value exactly as the lab report writes it, with its unit, and the date on the report. Earlier on the
           left, later on the right. Which source each came from. Nothing on the page will say whether the change matters.
         </p>
@@ -62,13 +62,13 @@ export default function ResultsEditor() {
           <Input label="Measure" value={measure} onChange={setMeasure} placeholder="e.g. Hemoglobin A1c, Blood pressure, Weight" />
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2 rounded-lg border border-line p-3">
-              <div className="text-[13px] font-semibold text-muted">Earlier</div>
+              <div className="text-[0.8125rem] font-semibold text-muted">Earlier</div>
               <Input label="Value, as written" value={ev} onChange={setEv} placeholder="e.g. 5.4 %" />
               <Input label="Date" value={ed} onChange={setEd} placeholder="e.g. 2019-04-02" />
               <SourceSelect sources={sources} value={es} onChange={setEs} />
             </div>
             <div className="space-y-2 rounded-lg border border-line p-3">
-              <div className="text-[13px] font-semibold text-muted">Later</div>
+              <div className="text-[0.8125rem] font-semibold text-muted">Later</div>
               <Input label="Value, as written" value={lv} onChange={setLv} placeholder="e.g. 5.9 %" />
               <Input label="Date" value={ld} onChange={setLd} placeholder="e.g. 2026-08-11" />
               <SourceSelect sources={sources} value={ls} onChange={setLs} />
@@ -81,7 +81,7 @@ export default function ResultsEditor() {
 
       <div className="card p-5">
         <div className="text-sm font-semibold text-ink">On the page</div>
-        {rows.length === 0 ? <p className="mt-1 text-[13px] text-faint">Nothing yet.</p> : (
+        {rows.length === 0 ? <p className="mt-1 text-[0.8125rem] text-faint">Nothing yet.</p> : (
           <ul className="mt-2 divide-y divide-line">
             {rows.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm text-ink">

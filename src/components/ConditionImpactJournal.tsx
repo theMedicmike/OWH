@@ -79,11 +79,11 @@ function JournalTimeline({ notes, onsetYear }: { notes: ConditionNote[]; onsetYe
           </div>
         ))}
       </div>
-      <div className="mt-1.5 flex justify-between text-[13px] tabular-nums text-faint">
+      <div className="mt-1.5 flex justify-between text-[0.8125rem] tabular-nums text-faint">
         <span>{first}</span>
         <span>{nowYear}</span>
       </div>
-      <p className="mt-1 text-[13px] leading-relaxed text-muted">
+      <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
         {/* Deliberately a plain fact, not a prompt. Never "log today to…". */}
         {entryYears.size === 1
           ? `Entries in ${[...entryYears][0]}.`
@@ -136,8 +136,8 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
 
   return (
     <div className="border-t border-line pt-3">
-      <div className="text-[13px] font-semibold text-ink">How this has affected you — dated</div>
-      <p className="mt-0.5 text-[13px] leading-relaxed text-faint">
+      <div className="text-[0.8125rem] font-semibold text-ink">How this has affected you — dated</div>
+      <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-faint">
         A C&amp;P examiner is trained to ask how a condition affects your day-to-day, not just that you have it.
         Dated entries in your own words are what shows this has been consistent over time, not a one-time
         complaint. Add to it any time.
@@ -148,13 +148,13 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
           {notes.map((n) => (
             <li key={n.id} className="rounded-lg border border-line bg-canvas p-2.5">
               <div className="flex items-start justify-between gap-2">
-                <span className="text-[13px] font-semibold text-muted">
+                <span className="text-[0.8125rem] font-semibold text-muted">
                   {n.noticed_year ? `Around ${n.noticed_year}` : "No date given"}
                 </span>
-                <button onClick={() => remove(n.id)} className="text-[13px] text-faint hover:text-red-600">Remove</button>
+                <button onClick={() => remove(n.id)} className="text-[0.8125rem] text-faint hover:text-red-600">Remove</button>
               </div>
-              <p className="mt-1 text-[13px] leading-relaxed text-ink">{n.note}</p>
-              <span className="mt-1 block text-[13px] text-faint">
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink">{n.note}</p>
+              <span className="mt-1 block text-[0.8125rem] text-faint">
                 Logged {new Date(n.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
               </span>
             </li>
@@ -163,7 +163,7 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
       )}
       {adding ? (
         <div className="mt-2 rounded-lg border border-brand/30 bg-brand/5 p-3">
-          <div className="text-[13px] font-medium text-muted">About when?</div>
+          <div className="text-[0.8125rem] font-medium text-muted">About when?</div>
           <div className="mt-1 w-24">
             <JournalYearPicker year={year} minYear={onsetYear ?? 1940} onChange={setYear} />
           </div>
@@ -174,16 +174,16 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
             placeholder="What this has kept you from doing, or made harder — in your own words. No AI help, nobody else's wording."
             className="mt-2 w-full rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink placeholder:text-faint focus:border-brand focus:outline-none"
           />
-          {err && <p className="mt-1 text-[13px] text-scarlet">{err}</p>}
+          {err && <p className="mt-1 text-[0.8125rem] text-scarlet">{err}</p>}
           <div className="mt-2 flex gap-2">
-            <button onClick={save} disabled={busy || !text.trim()} className="rounded-md bg-brand px-3 py-1.5 text-[13px] font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
+            <button onClick={save} disabled={busy || !text.trim()} className="rounded-md bg-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-brand-foreground hover:bg-brand-600 disabled:opacity-50">
               {busy ? "Saving…" : "Save"}
             </button>
-            <button onClick={() => setAdding(false)} className="rounded-md border border-line px-3 py-1.5 text-[13px] text-muted hover:bg-canvas">Cancel</button>
+            <button onClick={() => setAdding(false)} className="rounded-md border border-line px-3 py-1.5 text-[0.8125rem] text-muted hover:bg-canvas">Cancel</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="mt-2 text-[13px] font-semibold text-brand hover:underline">
+        <button onClick={() => setAdding(true)} className="mt-2 text-[0.8125rem] font-semibold text-brand hover:underline">
           + Add how this has affected you
         </button>
       )}

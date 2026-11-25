@@ -55,11 +55,11 @@ function Steps({ onNavy = false }: { onNavy?: boolean }) {
           {i < POINTS.length - 1 && (
             <span aria-hidden="true" className={`absolute bottom-[-1.25rem] left-[9px] top-6 w-0.5 ${line}`} />
           )}
-          <div className={`text-[15px] font-semibold leading-snug ${title}`}>
+          <div className={`text-[0.9375rem] font-semibold leading-snug ${title}`}>
             <span className="sr-only">Step {i + 1}: </span>
             {p.title}
           </div>
-          <div className={`mt-0.5 text-[15px] leading-relaxed ${body}`}>{p.body}</div>
+          <div className={`mt-0.5 text-[0.9375rem] leading-relaxed ${body}`}>{p.body}</div>
         </li>
       ))}
     </ol>
@@ -138,7 +138,7 @@ export default function Landing() {
                 One straight sentence, up front, that this is free and is not
                 the VA. The 75-year-old Navy veteran on the September panel said
                 that is what would get him to file after fifty years. */}
-            <p className="mt-4 text-[17px] font-semibold leading-snug text-ink">
+            <p className="mt-4 text-[1.0625rem] font-semibold leading-snug text-ink">
               Free, and always free. This is not the VA. Nothing here is sold.
             </p>
           </div>

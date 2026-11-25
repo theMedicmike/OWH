@@ -235,28 +235,28 @@ export default function DashboardView() {
       {/* Greeting: the one place the serif speaks on this screen */}
       <div>
         <h2 className="display text-[1.85rem] text-ink sm:text-[2.125rem]">Welcome back, {greeting}.</h2>
-        <p className="mt-1.5 text-[15px] text-muted">{[branch, years].filter(Boolean).join(", ") || "Let's build your record."}</p>
+        <p className="mt-1.5 text-[0.9375rem] text-muted">{[branch, years].filter(Boolean).join(", ") || "Let's build your record."}</p>
       </div>
 
       {/* The one lit door. The only navy surface on the screen, and the only
           raised one: the contrast is what says "this is next" without a
           label that says so. */}
       <section className="on-navy card-raise rounded-2xl bg-brand p-6 text-white sm:p-7" aria-live="polite">
-        <p className="text-[15px] font-medium text-white/65">{doorLabel}</p>
+        <p className="text-[0.9375rem] font-medium text-white/65">{doorLabel}</p>
         <h3 className="mt-1 text-[1.375rem] font-semibold leading-tight tracking-tight sm:text-2xl">{doorTitle}</h3>
-        {doorBlurb && <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-white/80">{doorBlurb}</p>}
+        {doorBlurb && <p className="mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-white/80">{doorBlurb}</p>}
         {loaded && (
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
             <Link href={doorHref} className="btn btn-light btn-lg">
               {doorTitle}
             </Link>
             {!returning && !hasServiceInfo && (
-              <Link href="/intake/ai" className="text-[15px] font-semibold text-white/85 underline-offset-4 hover:underline">
+              <Link href="/intake/ai" className="text-[0.9375rem] font-semibold text-white/85 underline-offset-4 hover:underline">
                 Or answer a few questions instead
               </Link>
             )}
             {returning && prog.claimReady && prog.next && (
-              <Link href="/report" className="text-[15px] font-semibold text-white/85 underline-offset-4 hover:underline">
+              <Link href="/report" className="text-[0.9375rem] font-semibold text-white/85 underline-offset-4 hover:underline">
                 Or open your claim packet
               </Link>
             )}
@@ -271,7 +271,7 @@ export default function DashboardView() {
           {reqErr && <p role="status" className="mt-1 text-sm font-medium text-scarlet">{reqErr}</p>}
           {pendingReqs.map((r) => (
             <div key={r.id} className="mt-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[15px] text-ink">
+              <p className="text-[0.9375rem] text-ink">
                 <strong>{r.other_name || "A veteran"}</strong> who served{r.place ? ` near ${r.place}` : " where you did"}
                 {r.ev_year ? ` around ${r.ev_year}` : ""} asked to connect.
               </p>
@@ -288,7 +288,7 @@ export default function DashboardView() {
       {deniedCount > 0 && (
         <Link href="/denied" className="card row rounded-2xl">
           <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">A denial is not the end</span>
+            <span className="block text-[0.9375rem] font-semibold">A denial is not the end</span>
             <span className="mt-0.5 block text-sm text-muted">
               {deniedCount} condition{deniedCount === 1 ? "" : "s"} denied. See your next steps.
             </span>
@@ -301,7 +301,7 @@ export default function DashboardView() {
       {stillServing && (
         <Link href="/bdd" className="card row rounded-2xl">
           <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold">File before you separate</span>
+            <span className="block text-[0.9375rem] font-semibold">File before you separate</span>
             <span className="mt-0.5 block text-sm text-muted">You are still serving. See the BDD timeline.</span>
           </span>
           <Chevron className="text-faint" />
@@ -360,13 +360,13 @@ export default function DashboardView() {
           </div>
           {checkins === 0 ? (
             <div className="mt-2">
-              <p className="text-[15px] leading-relaxed text-muted">No locations yet. Start by marking one place you served.</p>
+              <p className="text-[0.9375rem] leading-relaxed text-muted">No locations yet. Start by marking one place you served.</p>
               <Link href="/map" className="btn btn-secondary mt-4">Drop your first pin</Link>
             </div>
           ) : (
             <ul className="mt-3 divide-y divide-line">
               {rows.slice(0, 6).map((r) => (
-                <li key={r.id} className="py-2.5 text-[15px] first:pt-0">
+                <li key={r.id} className="py-2.5 text-[0.9375rem] first:pt-0">
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="font-semibold text-ink">{r.place_name || "A logged location"}</span>
                     <span className="tnum flex-none text-sm text-muted">{r.date_start ? new Date(r.date_start).getUTCFullYear() : "No year"}</span>
@@ -390,7 +390,7 @@ export default function DashboardView() {
                     )}
                   </div>
                   {confirmDel === r.id && (
-                    <p className="mt-2 rounded-xl border border-scarlet/30 bg-scarlet/5 px-3 py-2 text-[13px] leading-relaxed text-ink">
+                    <p className="mt-2 rounded-xl border border-scarlet/30 bg-scarlet/5 px-3 py-2 text-[0.8125rem] leading-relaxed text-ink">
                       Deletes this check-in
                       {(r.exposures ?? []).length > 0
                         ? ` and the ${(r.exposures ?? []).length} exposure${(r.exposures ?? []).length === 1 ? "" : "s"} you ticked here`
@@ -416,13 +416,13 @@ export default function DashboardView() {
           </div>
           {buddies.length === 0 ? (
             <div className="mt-2">
-              <p className="text-[15px] leading-relaxed text-muted">No connections yet. Reconnect with the veterans who served where you did, privately, and only if you both agree.</p>
+              <p className="text-[0.9375rem] leading-relaxed text-muted">No connections yet. Reconnect with the veterans who served where you did, privately, and only if you both agree.</p>
               <Link href="/buddies" className="btn btn-secondary mt-4">Find battle buddies</Link>
             </div>
           ) : (
             <ul className="mt-3 divide-y divide-line">
               {buddies.map((b, i) => (
-                <li key={i} className="py-2.5 text-[15px] first:pt-0">
+                <li key={i} className="py-2.5 text-[0.9375rem] first:pt-0">
                   <div className="font-semibold text-ink">{b.other_name || "A fellow veteran"}</div>
                   <div className="text-sm text-muted">Served near {b.place || "the same place"}{b.ev_year ? ` in ${b.ev_year}` : ""}</div>
                 </li>

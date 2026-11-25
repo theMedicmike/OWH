@@ -127,7 +127,7 @@ export default function WitnessRequestsCard() {
     return (
       <div className="card p-5">
         <h3 className="text-lg font-semibold tracking-tight text-ink">Ask someone to confirm your record</h3>
-        <p className="mt-2 text-[15px] text-muted">This is on its way. Check back soon.</p>
+        <p className="mt-2 text-[0.9375rem] text-muted">This is on its way. Check back soon.</p>
       </div>
     );
   }
@@ -138,7 +138,7 @@ export default function WitnessRequestsCard() {
 
   return (
     <div className="space-y-6">
-      <p className="text-[15px] leading-relaxed text-muted">
+      <p className="text-[0.9375rem] leading-relaxed text-muted">
         A spouse, a buddy you lost touch with, a commander. Tap Ask on what you want them to confirm and send them
         the private link. They don&apos;t need an account, and they see only that one thing, nothing else in your
         record.
@@ -157,7 +157,7 @@ export default function WitnessRequestsCard() {
         />
       </div>
 
-      {err && <p role="alert" className="text-[15px] font-medium text-scarlet">{err}</p>}
+      {err && <p role="alert" className="text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
       <section>
         <h3 className="text-lg font-semibold tracking-tight text-ink">What should they confirm?</h3>
@@ -166,7 +166,7 @@ export default function WitnessRequestsCard() {
             <div key={s.key} className="border-t border-line first:border-t-0">
               <div className="row">
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] font-semibold leading-snug">{s.label}</span>
+                  <span className="block text-[0.9375rem] font-semibold leading-snug">{s.label}</span>
                   {s.detail && <span className="mt-0.5 block text-sm leading-snug text-muted">{s.detail}</span>}
                 </span>
                 <button
@@ -181,7 +181,7 @@ export default function WitnessRequestsCard() {
               </div>
               {fresh?.key === s.key && (
                 <div className="border-t border-line bg-canvas px-4 pb-4 pt-3" aria-live="polite">
-                  <p className="text-[15px] font-semibold text-success">Your private link is ready. Send it however you would reach them.</p>
+                  <p className="text-[0.9375rem] font-semibold text-success">Your private link is ready. Send it however you would reach them.</p>
                   <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button onClick={() => shareLink(fresh.link)} className="btn btn-primary btn-lg w-full">Share it</button>
                     <button onClick={() => copyLink(fresh.link)} className="btn btn-secondary btn-lg w-full">{copied === fresh.link ? "Copied" : "Copy the link"}</button>
@@ -201,18 +201,18 @@ export default function WitnessRequestsCard() {
           <div className="mt-3 space-y-3">
             {submitted.map((r) => (
               <div key={r.id} className="card p-4">
-                <div className="text-[15px] font-semibold text-ink">{r.subject_label}</div>
+                <div className="text-[0.9375rem] font-semibold text-ink">{r.subject_label}</div>
                 {statementsFor(r.id).map((s) => (
                   <div key={s.id} className="mt-2 rounded-xl bg-canvas p-3">
-                    <div className="text-[15px] font-semibold text-ink">{s.witness_name} <span className="font-normal text-muted">({s.relationship})</span></div>
-                    <p className="mt-1 text-[15px] leading-relaxed text-ink">&ldquo;{s.statement}&rdquo;</p>
+                    <div className="text-[0.9375rem] font-semibold text-ink">{s.witness_name} <span className="font-normal text-muted">({s.relationship})</span></div>
+                    <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">&ldquo;{s.statement}&rdquo;</p>
                   </div>
                 ))}
               </div>
             ))}
             {pending.map((r) => (
               <div key={r.id} className="card p-4">
-                <div className="text-[15px] font-semibold text-ink">{r.subject_label}</div>
+                <div className="text-[0.9375rem] font-semibold text-ink">{r.subject_label}</div>
                 <div className="text-sm text-muted">Waiting for a reply</div>
                 <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button onClick={() => shareLink(`${origin}/statement/${r.token}`)} className="btn btn-secondary w-full">Send it again</button>

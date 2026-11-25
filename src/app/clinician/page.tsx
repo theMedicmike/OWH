@@ -30,7 +30,7 @@ export default function ClinicianPage() {
 
       <section className={card}>
         <h2 className="text-sm font-semibold text-ink">What&apos;s being asked of you</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
           Your patient is filing a VA disability claim. VA needs a medical opinion on whether a condition is{" "}
           <strong>at least as likely as not</strong> (50% or greater probability) connected to their military
           service — this is called a <strong>nexus opinion</strong>. You don&apos;t need special VA training to
@@ -40,7 +40,7 @@ export default function ClinicianPage() {
 
       <section className={card}>
         <h2 className="text-sm font-semibold text-ink">What a DBQ is</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
           A <strong>Disability Benefits Questionnaire (DBQ)</strong> is VA&apos;s own structured form for a
           specific condition — there&apos;s one for TBI, one for hearing, one for mental health, and dozens more.
           VA publishes them publicly; your patient or their VSO can provide the exact one that applies. Completing
@@ -50,7 +50,7 @@ export default function ClinicianPage() {
 
       <section className={card}>
         <h2 className="text-sm font-semibold text-ink">What your patient&apos;s packet gives you</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
           The claim packet from Connecting the Dots of Service — a free tool built by a nonprofit
           — has a section titled <strong>&ldquo;For the reviewing clinician&rdquo;</strong> that lists the specific
           condition(s), the documented in-service exposure or event behind each one, and the exact question being
@@ -61,7 +61,7 @@ export default function ClinicianPage() {
 
       <section className={card}>
         <h2 className="text-sm font-semibold text-ink">Two different questions, depending on the claim</h2>
-        <ul className="mt-2 space-y-2 text-[15px] leading-relaxed text-ink">
+        <ul className="mt-2 space-y-2 text-[0.9375rem] leading-relaxed text-ink">
           <li>
             <strong>Exposure-linked:</strong> is it at least as likely as not (50% or greater) related to the
             documented in-service exposure or event described in the packet?
@@ -77,14 +77,14 @@ export default function ClinicianPage() {
 
       <section className={card}>
         <h2 className="text-sm font-semibold text-ink">What this app is asking you to sign</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink">
           Nothing, until you&apos;re satisfied it&apos;s accurate. The packet has a signature line for your own
           opinion, in your own words — it&apos;s a hand-off, not a form to rubber-stamp. If the evidence
           doesn&apos;t support a connection, saying so is the right answer.
         </p>
       </section>
 
-      <p className="px-1 text-[13px] leading-relaxed text-faint">
+      <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
         This page is educational only — it carries no patient-specific data. Connecting the Dots of Service is not
         medical or legal advice, is not a diagnosis, and is not a determination of service connection.
       </p>

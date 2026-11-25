@@ -288,9 +288,9 @@ export default function HealthView() {
     if (!mine) return null;
     return (
       <div aria-live="polite">
-        <p className="text-[15px] font-semibold text-success">{label} is on your record.</p>
+        <p className="text-[0.9375rem] font-semibold text-success">{label} is on your record.</p>
         {onsetSaved ? (
-          <p className="mt-1 text-[15px] text-muted">Saved: started {onsetSaved.toLowerCase()}.</p>
+          <p className="mt-1 text-[0.9375rem] text-muted">Saved: started {onsetSaved.toLowerCase()}.</p>
         ) : (
           <>
             <p className="field-label mt-3">When did it start? (optional)</p>
@@ -315,11 +315,11 @@ export default function HealthView() {
       <div key={label} className="border-t border-line first:border-t-0">
         <div className="row">
           <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold leading-snug">{label}</span>
+            <span className="block text-[0.9375rem] font-semibold leading-snug">{label}</span>
             {alt && <span className="mt-0.5 block text-sm leading-snug text-muted">{alt}</span>}
           </span>
           {has ? (
-            <span className="flex min-h-11 flex-none items-center gap-1.5 px-2 text-[15px] font-semibold text-success">
+            <span className="flex min-h-11 flex-none items-center gap-1.5 px-2 text-[0.9375rem] font-semibold text-success">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="m5 12 4 4L19 7" /></svg>
               Added
             </span>
@@ -347,7 +347,7 @@ export default function HealthView() {
         <section className="card p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-sm font-bold text-ink">Your service &amp; your health</h2>
-            <span className="text-[13px] text-muted">The years between are the story</span>
+            <span className="text-[0.8125rem] text-muted">The years between are the story</span>
           </div>
           <div className="mt-3">
             <ServiceTimeline data={railData} compact />
@@ -358,7 +358,7 @@ export default function HealthView() {
       {/* ── Ask ─────────────────────────────────────────────────────────── */}
       <div>
         <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">What are you dealing with?</h2>
-        <p className="mt-1 text-[15px] leading-relaxed text-muted">
+        <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
           Tap Add on everything that applies. You can remove any of it later. Start with what bothers you most;
           you don&apos;t have to know whether it&apos;s &ldquo;service connected.&rdquo; That&apos;s what
           the rest of this is for.
@@ -366,7 +366,7 @@ export default function HealthView() {
       </div>
 
       {err && (
-        <div role="status" className="rounded-xl border border-scarlet/30 bg-scarlet/5 px-4 py-3 text-[15px] font-medium text-scarlet">{err}</div>
+        <div role="status" className="rounded-xl border border-scarlet/30 bg-scarlet/5 px-4 py-3 text-[0.9375rem] font-medium text-scarlet">{err}</div>
       )}
 
       {/* ── Search ──────────────────────────────────────────────────────── */}
@@ -391,7 +391,7 @@ export default function HealthView() {
         results.length > 0 ? (
           <div className="card overflow-hidden">{results.map((c) => conditionRow(c.label, c.alt))}</div>
         ) : (
-          <p className="text-[15px] text-muted">Nothing matches that. Add it in your own words below.</p>
+          <p className="text-[0.9375rem] text-muted">Nothing matches that. Add it in your own words below.</p>
         )
       )}
 
@@ -418,9 +418,9 @@ export default function HealthView() {
                   onClick={() => setOpenSystem(open ? null : g.system)}
                   className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left"
                 >
-                  <span className="flex items-center gap-2 text-[15px] font-semibold text-ink">
+                  <span className="flex items-center gap-2 text-[0.9375rem] font-semibold text-ink">
                     {g.system}
-                    {has && <span className="rounded-full bg-success-soft px-2 py-0.5 text-[13px] font-semibold text-success">On your record</span>}
+                    {has && <span className="rounded-full bg-success-soft px-2 py-0.5 text-[0.8125rem] font-semibold text-success">On your record</span>}
                   </span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className={`h-5 w-5 flex-none text-muted transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
                 </button>
@@ -473,8 +473,8 @@ export default function HealthView() {
               <div key={c.id} className="overflow-hidden card">
                 <div className="flex items-start justify-between gap-3 p-4">
                   <div className="min-w-0">
-                    <div className="text-[15px] font-bold text-ink">{c.label}</div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+                    <div className="text-[0.9375rem] font-bold text-ink">{c.label}</div>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.8125rem] text-muted">
                       {c.onset_year ? <span className="tabular-nums">since {c.onset_year}</span>
                         : c.onset_precision ? <span>{PRECISION.find((p) => p.v === c.onset_precision)?.label}</span>
                         : <span className="text-faint">no start date yet</span>}
@@ -486,7 +486,7 @@ export default function HealthView() {
                     </div>
                   </div>
                   <button onClick={() => remove(c.id)} aria-label={`Remove ${c.label}`}
-                    className="flex-none text-[13px] text-faint transition hover:text-red-600">remove</button>
+                    className="flex-none text-[0.8125rem] text-faint transition hover:text-red-600">remove</button>
                 </div>
 
                 {/* The connection — a sentence, never a badge */}
@@ -494,16 +494,16 @@ export default function HealthView() {
                   {m.kind === "place" && (
                     <div className="rounded-r-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
                       {m.quote && (
-                        <p className="mb-1.5 text-[12px] italic leading-relaxed text-muted">
+                        <p className="mb-1.5 text-[0.75rem] italic leading-relaxed text-muted">
                           You wrote: &ldquo;{m.quote}&rdquo;
                         </p>
                       )}
-                      <p className="text-[13px] leading-relaxed text-ink">{m.sentence}</p>
-                      {m.ask && <p className="mt-2 whitespace-pre-line text-[12px] font-semibold leading-relaxed text-accent">→ {m.ask}</p>}
+                      <p className="text-[0.8125rem] leading-relaxed text-ink">{m.sentence}</p>
+                      {m.ask && <p className="mt-2 whitespace-pre-line text-[0.75rem] font-semibold leading-relaxed text-accent">→ {m.ask}</p>}
                       {/* §1120(b)(1): the presumptive is asthma DIAGNOSED AFTER
                           SERVICE — honor the qualifier we have the data for. */}
                       {c.label === "Asthma" && asthmaPostServiceNote(c.onset_precision) && (
-                        <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[12px] leading-relaxed text-ink">
+                        <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[0.75rem] leading-relaxed text-ink">
                           {asthmaPostServiceNote(c.onset_precision)}
                         </p>
                       )}
@@ -512,11 +512,11 @@ export default function HealthView() {
                   {m.kind === "incident" && (
                     <div className="rounded-r-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
                       {m.quote && (
-                        <p className="mb-1.5 text-[12px] italic leading-relaxed text-muted">
+                        <p className="mb-1.5 text-[0.75rem] italic leading-relaxed text-muted">
                           You wrote: &ldquo;{m.quote}&rdquo;
                         </p>
                       )}
-                      <p className="text-[13px] leading-relaxed text-ink">{m.sentence}</p>
+                      <p className="text-[0.8125rem] leading-relaxed text-ink">{m.sentence}</p>
                     </div>
                   )}
                   {m.kind === "event" && (() => {
@@ -525,7 +525,7 @@ export default function HealthView() {
                     if (!NOISE_CONDITIONS.has(c.label)) {
                       return (
                         <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
-                          <p className="text-[13px] leading-relaxed text-muted">{m.sentence}</p>
+                          <p className="text-[0.8125rem] leading-relaxed text-muted">{m.sentence}</p>
                         </div>
                       );
                     }
@@ -533,7 +533,7 @@ export default function HealthView() {
                     if (hit) {
                       return (
                         <div className="rounded-r-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
-                          <p className="text-[13px] leading-relaxed text-ink">
+                          <p className="text-[0.8125rem] leading-relaxed text-ink">
                             One more dot: your job code — {hit.code}, {hit.title} ({memberBranch}) — appears on the
                             VA&apos;s own Duty MOS Noise Exposure Listing, marked{" "}
                             <strong>&ldquo;{hit.rating}&rdquo;</strong> for hazardous noise. That&apos;s the same
@@ -542,7 +542,7 @@ export default function HealthView() {
                             {(hit.rating === "Low" || hit.rating === "Moderate") &&
                               " A lower rating has never closed the door — a specific event you can describe (ranges, the flight line, a blast) still counts, and your own account is evidence."}
                           </p>
-                          <p className="mt-1.5 text-[13px] leading-relaxed text-faint">
+                          <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-faint">
                             Held more than one job? The listing rates each one — tell your VSO all of them.
                             This listing was {MOS_NOISE_REVIEWED}. Your job code is as you reported it — check it against DD-214 Block 11.
                           </p>
@@ -551,8 +551,8 @@ export default function HealthView() {
                     }
                     return (
                       <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
-                        <p className="text-[13px] leading-relaxed text-muted">{m.sentence}</p>
-                        <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
+                        <p className="text-[0.8125rem] leading-relaxed text-muted">{m.sentence}</p>
+                        <p className="mt-1.5 text-[0.75rem] leading-relaxed text-muted">
                           {memberMos
                             ? "Your job code isn't in the part of the VA's noise listing this app carries — which says nothing about the full listing or your claim. Ask your VSO to look it up by name: the Duty MOS Noise Exposure Listing."
                             : <>Have a job code (MOS / Rate / AFSC)? Add it in <Link href="/account" className="font-semibold text-brand hover:underline">Account</Link> — the VA keeps a noise-exposure listing by job code that matters for hearing claims.</>}
@@ -562,22 +562,22 @@ export default function HealthView() {
                   })()}
                   {m.kind === "none" && (
                     <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
-                      <p className="text-[13px] leading-relaxed text-muted">{m.sentence}</p>
+                      <p className="text-[0.8125rem] leading-relaxed text-muted">{m.sentence}</p>
                     </div>
                   )}
                   {m.kind === "no-locations" && (
                     <div className="rounded-r-lg border-l-2 border-brand bg-brand/5 px-3 py-2.5">
-                      <p className="text-[13px] leading-relaxed text-ink">
+                      <p className="text-[0.8125rem] leading-relaxed text-ink">
                         Where were you when this started? Putting it on the map is what draws the connection.
                       </p>
-                      <Link href="/map" className="mt-2 inline-block text-[12px] font-semibold text-brand hover:underline">
+                      <Link href="/map" className="mt-2 inline-block text-[0.75rem] font-semibold text-brand hover:underline">
                         → Add where you served
                       </Link>
                     </div>
                   )}
 
                   <button onClick={() => setDetailFor(open ? null : c.id)} aria-expanded={open}
-                    className="mt-2.5 text-[13px] font-semibold text-brand hover:underline">
+                    className="mt-2.5 text-[0.8125rem] font-semibold text-brand hover:underline">
                     {open ? "Hide details" : c.onset_year || c.evidence_status ? "Edit details" : "Add details (optional)"}
                   </button>
                 </div>
@@ -586,8 +586,8 @@ export default function HealthView() {
                 {open && (
                   <div className="space-y-4 border-t border-line bg-canvas p-4">
                     <div>
-                      <div className="text-[13px] font-semibold text-ink">Has a doctor diagnosed this?</div>
-                      <p className="mt-0.5 text-[13px] leading-relaxed text-faint">
+                      <div className="text-[0.8125rem] font-semibold text-ink">Has a doctor diagnosed this?</div>
+                      <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-faint">
                         VA calls this element one — a current diagnosis. A condition you named yourself is real, but
                         a rater still needs to see this answered before the claim can move.
                       </p>
@@ -595,7 +595,7 @@ export default function HealthView() {
                         {DIAGNOSIS.map((d) => (
                           <button key={d.v} type="button" aria-pressed={c.diagnosed_by === d.v}
                             onClick={() => patch(c.id, { diagnosed_by: d.v })}
-                            className={`rounded-full border px-3 py-1.5 text-[13px] transition ${c.diagnosed_by === d.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.diagnosed_by === d.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {d.label}
                           </button>
                         ))}
@@ -603,8 +603,8 @@ export default function HealthView() {
                     </div>
 
                     <div>
-                      <div className="text-[13px] font-semibold text-ink">About when did this start?</div>
-                      <p className="mt-0.5 text-[13px] text-faint">Roughly is fine. This is what puts it on your timeline.</p>
+                      <div className="text-[0.8125rem] font-semibold text-ink">About when did this start?</div>
+                      <p className="mt-0.5 text-[0.8125rem] text-faint">Roughly is fine. This is what puts it on your timeline.</p>
                       <div className="mt-2 flex flex-wrap items-start gap-2">
                         <div className="w-20">
                           <WheelPicker
@@ -617,7 +617,7 @@ export default function HealthView() {
                         {PRECISION.map((p) => (
                           <button key={p.v} type="button" aria-pressed={c.onset_precision === p.v}
                             onClick={() => patch(c.id, { onset_precision: p.v, onset_year: null })}
-                            className={`rounded-full border px-3 py-1.5 text-[13px] transition ${c.onset_precision === p.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.onset_precision === p.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {p.label}
                           </button>
                         ))}
@@ -625,13 +625,13 @@ export default function HealthView() {
                     </div>
 
                     <div>
-                      <div className="text-[13px] font-semibold text-ink">VA wants paper. Do you have any yet?</div>
-                      <p className="mt-0.5 text-[13px] text-faint">No wrong answer — this just tells a VSO where to start.</p>
+                      <div className="text-[0.8125rem] font-semibold text-ink">VA wants paper. Do you have any yet?</div>
+                      <p className="mt-0.5 text-[0.8125rem] text-faint">No wrong answer — this just tells a VSO where to start.</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {EVIDENCE.map((e) => (
                           <button key={e.v} type="button" aria-pressed={c.evidence_status === e.v}
                             onClick={() => patch(c.id, { evidence_status: e.v })}
-                            className={`rounded-full border px-3 py-1.5 text-[13px] transition ${c.evidence_status === e.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.evidence_status === e.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {e.label}
                           </button>
                         ))}
@@ -639,12 +639,12 @@ export default function HealthView() {
                     </div>
 
                     <div>
-                      <div className="text-[13px] font-semibold text-ink">Is VA already paying on this?</div>
+                      <div className="text-[0.8125rem] font-semibold text-ink">Is VA already paying on this?</div>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {CLAIMS.map((s) => (
                           <button key={s.v} type="button" aria-pressed={c.claim_status === s.v}
                             onClick={() => patch(c.id, { claim_status: s.v })}
-                            className={`rounded-full border px-3 py-1.5 text-[13px] transition ${c.claim_status === s.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.claim_status === s.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {s.label}
                           </button>
                         ))}
@@ -654,8 +654,8 @@ export default function HealthView() {
                     {/* The cascade — the thing this app is named after */}
                     {others.length > 0 && (
                       <div>
-                        <div className="text-[13px] font-semibold text-ink">Did this come from another one of these?</div>
-                        <p className="mt-0.5 text-[13px] leading-relaxed text-faint">
+                        <div className="text-[0.8125rem] font-semibold text-ink">Did this come from another one of these?</div>
+                        <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-faint">
                           Sleep apnea that came from PTSD. Reflux that came from the lung injury. VA calls this
                           &ldquo;secondary&rdquo; — it&apos;s how a lot of claims are actually won, and it&apos;s
                           the cascade this whole app is named after.
@@ -663,13 +663,13 @@ export default function HealthView() {
                         <div className="mt-2 flex flex-wrap gap-2">
                           <button type="button" aria-pressed={!c.secondary_to}
                             onClick={() => patch(c.id, { secondary_to: null })}
-                            className={`rounded-full border px-3 py-1.5 text-[13px] transition ${!c.secondary_to ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${!c.secondary_to ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             On its own
                           </button>
                           {others.map((o) => (
                             <button key={o.id} type="button" aria-pressed={c.secondary_to === o.id}
                               onClick={() => patch(c.id, { secondary_to: o.id })}
-                              className={`rounded-full border px-3 py-1.5 text-[13px] transition ${c.secondary_to === o.id ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                              className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.secondary_to === o.id ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                               came from {o.label}
                             </button>
                           ))}
@@ -678,7 +678,7 @@ export default function HealthView() {
                     )}
 
                     {m.classes && m.classes.length > 0 && (
-                      <p className="text-[13px] leading-relaxed text-faint">
+                      <p className="text-[0.8125rem] leading-relaxed text-faint">
                         Documented at your locations: {m.classes.map((x) => EXPOSURE_LABEL[x] ?? x).join(", ")}.
                       </p>
                     )}
@@ -699,14 +699,14 @@ export default function HealthView() {
       {/* Quiet, never alarming — only when it's relevant */}
       {showsMentalHealth && (
         <div className="rounded-xl border border-scarlet/30 bg-scarlet/5 px-4 py-3">
-          <p className="text-[13px] leading-relaxed text-ink">
+          <p className="text-[0.8125rem] leading-relaxed text-ink">
             If putting this down stirred something up, you don&apos;t have to sit with it alone.
             The Veterans Crisis Line is <a href="tel:988" className="font-bold text-scarlet hover:underline">988, then press 1</a> — any hour.
           </p>
         </div>
       )}
 
-      <p className="border-t border-line pt-4 text-[13px] leading-relaxed text-faint">
+      <p className="border-t border-line pt-4 text-[0.8125rem] leading-relaxed text-faint">
         Everything here is what you told us — it prints in your packet as <strong>veteran-reported</strong>, which is
         exactly what it is. These connections are associations to investigate, not a diagnosis and not a promise
         about a claim. Dates, locations, and your service details decide presumptive status, and only VA decides it.

@@ -114,7 +114,7 @@ export default function CohortConsentCard() {
           </span>
           <div>
             <div className="text-sm font-semibold text-ink">Help prove what happened to all of us</div>
-            <p className="mt-1 text-[15px] leading-relaxed text-muted">
+            <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
               On its own, your record helps your claim. Combined — anonymously, and only if you choose — records
               like yours become the largest veteran-built map of toxic exposure outside the VA: the kind of
               evidence that moves legislation and research. This is <strong>off unless you turn it on</strong>, and
@@ -127,7 +127,7 @@ export default function CohortConsentCard() {
         <div className="mt-4 flex items-start justify-between gap-4 rounded-lg border border-line bg-canvas px-4 py-3">
           <div>
             <div className="text-sm font-semibold text-ink">Contribute my anonymized record</div>
-            <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
+            <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
               Your name, email, exact locations, exact dates, notes, and uploaded documents are <strong>never</strong>{" "}
               included — only coarse patterns (exposure type, general place, year, condition). Never sold.
             </p>
@@ -140,7 +140,7 @@ export default function CohortConsentCard() {
           <div className="flex items-start justify-between gap-4 rounded-lg border border-line px-4 py-3">
             <div>
               <div className="text-sm font-medium text-ink">Show my data in the public exposure map</div>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
+              <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
                 Adds to public counts like &quot;1,240 veterans documented burn pits at this base.&quot; Only shown once
                 enough people are included that no one can be identified.
               </p>
@@ -150,7 +150,7 @@ export default function CohortConsentCard() {
           <div className="flex items-start justify-between gap-4 rounded-lg border border-line px-4 py-3">
             <div>
               <div className="text-sm font-medium text-ink">Include me in de-identified research</div>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
+              <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
                 Lets vetted researchers and advocates use the anonymized pattern data — under a signed data-use
                 agreement — for studies and legislation like the Breaking the Cascade Act.
               </p>
@@ -160,7 +160,7 @@ export default function CohortConsentCard() {
         </div>
 
         <div className="mt-3 flex items-center gap-3">
-          <span className="text-[13px] text-muted">
+          <span className="text-[0.8125rem] text-muted">
             {busy ? "Saving…" : saved ? "Saved. Thank you." : contribute ? "You're contributing anonymously." : "Not contributing."}
           </span>
           <Link href="/privacy" className="text-sm font-semibold text-brand hover:underline">How your data is protected</Link>

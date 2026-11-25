@@ -11,7 +11,7 @@ export default function ShotLibraryPage() {
       <div className="space-y-7">
         <div>
           <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">Shot library</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
             The FDA-approved label for each one, word for word, plus what the government said about it, and when.
             Open any shot to add it to your record in one tap.
           </p>
@@ -26,7 +26,7 @@ export default function ShotLibraryPage() {
                 {items.map((s) => (
                   <Link key={s.slug} href={`/shots/library/${s.slug}`} className="row group">
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-semibold leading-snug">{s.name}</span>
+                      <span className="block text-[0.9375rem] font-semibold leading-snug">{s.name}</span>
                       <span className="mt-0.5 block text-sm leading-snug text-muted">{s.hook}</span>
                     </span>
                     <Chevron className="text-faint transition-colors group-hover:text-ink" />

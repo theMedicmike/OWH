@@ -38,7 +38,7 @@ export default async function MapPage() {
         {/* The map, for dates, a story, what you were around, or an exact pin. */}
         <section>
           <h2 className="text-lg font-semibold tracking-tight text-ink">Or use the map</h2>
-          <p className="mb-4 mt-1 text-[15px] leading-relaxed text-muted">
+          <p className="mb-4 mt-1 text-[0.9375rem] leading-relaxed text-muted">
             Tap anywhere to drop a pin where you served, then add the dates, what you were around, and your own
             words.
           </p>

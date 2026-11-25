@@ -51,7 +51,7 @@ export function TextSizeControl() {
   const opts = ["sm", "lg", "xl"];
   return (
     <div className="border-b border-line px-4 py-3">
-      <div className="text-[13px] text-faint">Text size</div>
+      <div className="text-[0.8125rem] text-faint">Text size</div>
       <div className="mt-1.5 flex gap-1.5">
         {opts.map((s, i) => (
           <button

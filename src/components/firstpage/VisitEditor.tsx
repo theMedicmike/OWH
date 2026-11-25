@@ -74,16 +74,16 @@ export default function VisitEditor() {
               <div className="text-sm font-semibold text-ink">Your visits</div>
               <PrimaryButton onClick={startNew}>Set up a visit</PrimaryButton>
             </div>
-            {visits.length === 0 ? <p className="mt-2 text-[13px] text-faint">None yet. Each visit gets its own page: what is open that day, your two questions, since last time.</p> : (
+            {visits.length === 0 ? <p className="mt-2 text-[0.8125rem] text-faint">None yet. Each visit gets its own page: what is open that day, your two questions, since last time.</p> : (
               <ul className="mt-2 divide-y divide-line">
                 {visits.map((v) => (
                   <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                     <div className="text-sm text-ink">
                       {v.specialist || "Visit"}{v.visit_date ? `, ${v.visit_date}` : ""}
-                      <span className="ml-2 text-[13px] text-faint">{v.read_first.length === 3 && v.question1 && v.question2 ? "ready" : "not finished"}</span>
+                      <span className="ml-2 text-[0.8125rem] text-faint">{v.read_first.length === 3 && v.question1 && v.question2 ? "ready" : "not finished"}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Link href={`/first-page/print?visit=${v.id}`} className="rounded-lg border border-brand px-3 py-1.5 text-[13px] font-semibold text-brand hover:bg-brand/5">Preview and print</Link>
+                      <Link href={`/first-page/print?visit=${v.id}`} className="rounded-lg border border-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-brand hover:bg-brand/5">Preview and print</Link>
                       <QuietButton onClick={() => startEdit(v)}>edit</QuietButton>
                       <QuietButton danger onClick={async () => { await deleteVisit(supabase, v.id); refresh(); }}>remove</QuietButton>
                     </div>
@@ -103,7 +103,7 @@ export default function VisitEditor() {
 
           <div className="rounded-lg border border-brand/30 bg-brand/5 p-4">
             <div className="text-sm font-semibold text-ink">Read this first: three lines in your own words</div>
-            <p className="mt-1 text-[13px] leading-relaxed text-muted">
+            <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
               The doctor reads these in the first thirty seconds. You choose them. Unpolished is fine, even &quot;I don&apos;t know
               where to start.&quot; Pick from your recording, or say them now with the microphone.
             </p>
@@ -112,13 +112,13 @@ export default function VisitEditor() {
             </div>
             {sentences.length > 0 && (
               <div className="mt-3">
-                <div className="text-[13px] font-semibold text-muted">From your recording, tap a sentence to use it</div>
+                <div className="text-[0.8125rem] font-semibold text-muted">From your recording, tap a sentence to use it</div>
                 <div className="mt-1 flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
-                  {sentences.map((s, i) => <button key={i} type="button" onClick={() => pickLine(s)} className="rounded-lg border border-line bg-white px-2.5 py-1 text-left text-[13px] text-ink hover:border-brand">{s}</button>)}
+                  {sentences.map((s, i) => <button key={i} type="button" onClick={() => pickLine(s)} className="rounded-lg border border-line bg-white px-2.5 py-1 text-left text-[0.8125rem] text-ink hover:border-brand">{s}</button>)}
                 </div>
               </div>
             )}
-            {recordings.length === 0 && <p className="mt-2 text-[13px] text-faint">No recording yet. <Link href="/first-page/record" className="text-brand hover:underline">Record your story</Link> and your sentences appear here.</p>}
+            {recordings.length === 0 && <p className="mt-2 text-[0.8125rem] text-faint">No recording yet. <Link href="/first-page/record" className="text-brand hover:underline">Record your story</Link> and your sentences appear here.</p>}
           </div>
 
           <TextField label="Open today" help="What is going on right now, in plain facts with dates. No causes, no guesses." value={d.open_today} onChange={(v) => setD({ ...d, open_today: v })} rows={3} placeholder="e.g. Headaches up from 2 to 4 a week since March. Sleep broken even on the machine. No new head injury. No new medicine since 2023." />

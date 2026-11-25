@@ -46,7 +46,7 @@ export default function VerifyCard() {
 
   if (verified) {
     return (
-      <div className="flex items-center gap-2.5 rounded-2xl border border-success/30 bg-success-soft px-4 py-3 text-[15px]">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-success/30 bg-success-soft px-4 py-3 text-[0.9375rem]">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-success" aria-hidden="true">
           <path d="m9 12 2 2 4-4M12 3l7 4v5c0 4.4-3 8.3-7 9-4-0.7-7-4.6-7-9V7z" />
         </svg>
@@ -60,11 +60,11 @@ export default function VerifyCard() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold tracking-tight text-ink">Verify your service</h3>
-          <p className="mt-1 text-[15px] leading-relaxed text-muted">
+          <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
             Confirming your service is what makes your record credible to the VA and to researchers.
           </p>
         </div>
-        <span className={`flex-none rounded-full px-2.5 py-1 text-[13px] font-semibold ${attested ? "bg-warn-soft text-warn" : "bg-canvas text-muted"}`}>
+        <span className={`flex-none rounded-full px-2.5 py-1 text-[0.8125rem] font-semibold ${attested ? "bg-warn-soft text-warn" : "bg-canvas text-muted"}`}>
           {attested ? "Self-attested" : "Unverified"}
         </span>
       </div>
@@ -79,9 +79,9 @@ export default function VerifyCard() {
           <span>Upload your DD-214 for verified status</span>
           <Chevron className="text-faint" />
         </Link>
-        <div className="flex min-h-11 items-center justify-between rounded-xl border border-dashed border-line px-4 text-[15px] text-faint" aria-disabled="true">
+        <div className="flex min-h-11 items-center justify-between rounded-xl border border-dashed border-line px-4 text-[0.9375rem] text-faint" aria-disabled="true">
           <span>Verify with ID.me</span>
-          <span className="rounded-full bg-canvas px-2.5 py-0.5 text-[13px] font-medium">Coming soon</span>
+          <span className="rounded-full bg-canvas px-2.5 py-0.5 text-[0.8125rem] font-medium">Coming soon</span>
         </div>
       </div>
     </div>

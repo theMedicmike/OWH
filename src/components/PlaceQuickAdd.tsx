@@ -116,13 +116,13 @@ export default function PlaceQuickAdd({ sites }: { sites: Site[] }) {
       <div key={key} className="border-t border-line first:border-t-0">
         <div className="row">
           <span className="min-w-0 flex-1">
-            <span className="block text-[15px] font-semibold leading-snug">{p.unpinned ? <>&ldquo;{p.name}&rdquo;</> : p.name}</span>
+            <span className="block text-[0.9375rem] font-semibold leading-snug">{p.unpinned ? <>&ldquo;{p.name}&rdquo;</> : p.name}</span>
             <span className="mt-0.5 block text-sm leading-snug text-muted">
               {p.unpinned ? "Add it as you typed it. Pin it on the map later if you like." : p.region}
             </span>
           </span>
           {has && !isOpen ? (
-            <span className="flex min-h-11 flex-none items-center gap-1.5 px-2 text-[15px] font-semibold text-success">
+            <span className="flex min-h-11 flex-none items-center gap-1.5 px-2 text-[0.9375rem] font-semibold text-success">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true"><path d="m5 12 4 4L19 7" /></svg>
               Added
             </span>
@@ -140,7 +140,7 @@ export default function PlaceQuickAdd({ sites }: { sites: Site[] }) {
         {isOpen && (
           <div className="border-t border-line bg-canvas px-4 pb-4 pt-3">
             {p.documented.length > 0 && (
-              <p className="mb-3 text-[15px] leading-relaxed text-ink">
+              <p className="mb-3 text-[0.9375rem] leading-relaxed text-ink">
                 What the government documents here is noted with it:{" "}
                 <span className="font-semibold">{p.documented.map((c) => EXPOSURE_LABEL[c] ?? c).join(", ")}</span>.
                 You can change that on the map.
@@ -168,7 +168,7 @@ export default function PlaceQuickAdd({ sites }: { sites: Site[] }) {
     <section className="space-y-4">
       <div>
         <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">Where did you serve?</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           Search a base, port, or deployment. Tap Add, pick the year, and it is on your record. Add every place you
           can think of.
         </p>
@@ -188,13 +188,13 @@ export default function PlaceQuickAdd({ sites }: { sites: Site[] }) {
 
       {saved && (
         <div className="rounded-2xl border border-success/30 bg-success-soft px-4 py-3" aria-live="polite">
-          <p className="text-[15px] font-semibold text-success">{saved.name} is on your record, around {saved.year}.</p>
-          <p className="mt-1 text-[15px] text-ink">
+          <p className="text-[0.9375rem] font-semibold text-success">{saved.name} is on your record, around {saved.year}.</p>
+          <p className="mt-1 text-[0.9375rem] text-ink">
             Add the next one, or <Link href="/locations" className="font-semibold text-brand hover:underline">see all your places</Link>.
           </p>
         </div>
       )}
-      {err && <p role="alert" className="text-[15px] font-medium text-scarlet">{err}</p>}
+      {err && <p role="alert" className="text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
       {query.length < 2 && rows.length > 0 && (
         <h3 className="text-lg font-semibold tracking-tight text-ink">Where you trained</h3>
@@ -206,7 +206,7 @@ export default function PlaceQuickAdd({ sites }: { sites: Site[] }) {
         </div>
       )}
       {query.length < 2 && rows.length === 0 && (
-        <p className="text-[15px] text-muted">Type at least two letters of a base, city, or country.</p>
+        <p className="text-[0.9375rem] text-muted">Type at least two letters of a base, city, or country.</p>
       )}
     </section>
   );

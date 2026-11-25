@@ -28,13 +28,13 @@ function PillarCard({ p }: { p: SolutionPillar }) {
         <h3 className="text-lg font-semibold tracking-tight text-ink">{p.title}</h3>
       </div>
 
-      <p className="mt-3 text-[15px] leading-relaxed text-muted">{p.why}</p>
+      <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">{p.why}</p>
 
       <div className="mt-4">
-        <div className="text-[15px] font-semibold text-ink">Everyday, low-risk steps</div>
+        <div className="text-[0.9375rem] font-semibold text-ink">Everyday, low-risk steps</div>
         <ul className="mt-2 space-y-1.5">
           {p.everyday.map((e, i) => (
-            <li key={i} className="flex gap-2.5 text-[15px] leading-relaxed text-ink">
+            <li key={i} className="flex gap-2.5 text-[0.9375rem] leading-relaxed text-ink">
               <span className="mt-[9px] h-1.5 w-1.5 flex-none rounded-full bg-accent" aria-hidden="true" />
               <span>{e}</span>
             </li>
@@ -43,10 +43,10 @@ function PillarCard({ p }: { p: SolutionPillar }) {
       </div>
 
       <div className="mt-4 rounded-xl bg-canvas p-4">
-        <div className="text-[15px] font-semibold text-ink">Bring to your practitioner</div>
+        <div className="text-[0.9375rem] font-semibold text-ink">Bring to your practitioner</div>
         <ul className="mt-2 space-y-1.5">
           {p.practitioner.map((q, i) => (
-            <li key={i} className="flex gap-2.5 text-[15px] leading-relaxed text-ink">
+            <li key={i} className="flex gap-2.5 text-[0.9375rem] leading-relaxed text-ink">
               <span className="mt-[9px] h-1.5 w-1.5 flex-none rounded-full bg-brand" aria-hidden="true" />
               <span>{q}</span>
             </li>
@@ -70,13 +70,13 @@ export default function SolutionsView() {
     <div className="space-y-8">
       <div>
         <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">Burden, not broken.</h2>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted">
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
           Most veterans aren&apos;t broken. They are carrying a burden that was never measured or written down.
           Nothing on this page undoes an exposure, and nobody here is selling you anything that claims to. What
           follows is the ordinary, unglamorous ground floor: sleep, movement, blood pressure, blood sugar, smoking.
           It is not exciting, and it is the part that is still movable.
         </p>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           This is general education for every veteran. None of it is matched to your record, and none of it is
           personal advice. It is not treatment, not a prescription, and never part of your VA claim.{" "}
           <span className="font-semibold text-ink">This app is free and sells nothing.</span>
@@ -93,18 +93,18 @@ export default function SolutionsView() {
       {/* Start this week: the free medicine */}
       <section id="this-week" className="card scroll-mt-20 p-5 sm:p-6">
         <h3 className="text-lg font-semibold tracking-tight text-ink">Start this week: the free medicine</h3>
-        <p className="mt-1 text-[15px] leading-relaxed text-muted">
+        <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
           You don&apos;t have to wait for an appointment. Pick one, do it for two weeks, then add the next.
         </p>
         <ol className="mt-4 space-y-2.5">
           {START_THIS_WEEK.map((s, i) => (
-            <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-ink">
-              <span className="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand text-[13px] font-semibold text-white">{i + 1}</span>
+            <li key={i} className="flex gap-3 text-[0.9375rem] leading-relaxed text-ink">
+              <span className="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand text-[0.8125rem] font-semibold text-white">{i + 1}</span>
               <span>{s}</span>
             </li>
           ))}
         </ol>
-        <p className="mt-4 rounded-xl bg-canvas px-4 py-3 text-[15px] leading-relaxed text-muted">
+        <p className="mt-4 rounded-xl bg-canvas px-4 py-3 text-[0.9375rem] leading-relaxed text-muted">
           Sequence it safely: stabilize before you optimize, change one thing at a time so you can tell
           what&apos;s working, and never stop a prescribed medication on your own. Any taper happens with
           your prescriber.
@@ -112,7 +112,7 @@ export default function SolutionsView() {
       </section>
 
       {/* VA runs its own real clinical "Whole Health" program. Say so once, plainly. */}
-      <p className="rounded-xl border border-line bg-canvas px-4 py-3 text-[15px] leading-relaxed text-muted">
+      <p className="rounded-xl border border-line bg-canvas px-4 py-3 text-[0.9375rem] leading-relaxed text-muted">
         {VA_WHOLE_HEALTH_NOTE}
       </p>
 
@@ -129,12 +129,12 @@ export default function SolutionsView() {
             {pillars.map((p) => <PillarCard key={p.key} p={p} />)}
             {resources.length > 0 && (
               <div className="card p-5">
-                <h4 className="text-[15px] font-semibold text-ink">Real, free help</h4>
+                <h4 className="text-[0.9375rem] font-semibold text-ink">Real, free help</h4>
                 <ul className="mt-3 space-y-3">
                   {resources.map((r) => (
-                    <li key={r.name} className="text-[15px] leading-relaxed">
+                    <li key={r.name} className="text-[0.9375rem] leading-relaxed">
                       <a href={r.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">{r.name}</a>
-                      {r.partner && <span className="ml-2 rounded-full bg-canvas px-2 py-0.5 text-[13px] font-medium text-muted">Partner nonprofit, not VA</span>}
+                      {r.partner && <span className="ml-2 rounded-full bg-canvas px-2 py-0.5 text-[0.8125rem] font-medium text-muted">Partner nonprofit, not VA</span>}
                       <div className="text-muted">{r.what}</div>
                     </li>
                   ))}
@@ -147,12 +147,12 @@ export default function SolutionsView() {
 
       <section id="choosing-help" className="card scroll-mt-20 border-brand/30 bg-brand/5 p-5 sm:p-6">
         <h3 className="text-lg font-semibold tracking-tight text-ink">Choosing help wisely</h3>
-        <ul className="mt-3 space-y-2 text-[15px] leading-relaxed text-ink">
+        <ul className="mt-3 space-y-2 text-[0.9375rem] leading-relaxed text-ink">
           <li className="flex gap-2.5"><span className="mt-[9px] h-1.5 w-1.5 flex-none rounded-full bg-brand" aria-hidden="true" /><span>Run from anyone who promises a cure. No honest person will.</span></li>
           <li className="flex gap-2.5"><span className="mt-[9px] h-1.5 w-1.5 flex-none rounded-full bg-brand" aria-hidden="true" /><span>Be cautious of anyone whose entire answer is the products they happen to sell.</span></li>
           <li className="flex gap-2.5"><span className="mt-[9px] h-1.5 w-1.5 flex-none rounded-full bg-brand" aria-hidden="true" /><span>Good help welcomes the questions: &ldquo;Will you test before you treat? Will you coordinate with my VA doctors?&rdquo;</span></li>
         </ul>
-        <p className="mt-3 text-[15px] leading-relaxed text-ink">
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink">
           Supplements, herbs, and protocols can interact with medications and conditions, including
           stressing the kidneys or liver, the very organs many exposures already burden. Always talk with
           a qualified clinician before starting anything. If you&apos;re struggling, the Veterans Crisis

@@ -76,11 +76,11 @@ export default function OpsecGate({ children }: { children: React.ReactNode }) {
             </span>
             <div>
               <h2 className="text-lg font-bold tracking-tight text-ink">Before you begin — keep it unclassified</h2>
-              <p className="text-[13px] text-muted">A one-time agreement. It protects you as much as us.</p>
+              <p className="text-[0.8125rem] text-muted">A one-time agreement. It protects you as much as us.</p>
             </div>
           </div>
 
-          <div className="mt-4 space-y-3 text-[15px] leading-relaxed text-ink">
+          <div className="mt-4 space-y-3 text-[0.9375rem] leading-relaxed text-ink">
             <p>
               Your record only needs the <strong>broad strokes</strong>: the general place you served, the
               rough year, and the exposure types. That&apos;s all the VA&apos;s presumptive links are built

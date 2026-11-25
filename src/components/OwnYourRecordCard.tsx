@@ -160,14 +160,14 @@ ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</
     setTimeout(() => signOut(), 1800);
   }
 
-  const btn = "rounded-lg border border-line px-3.5 py-2 text-[13px] font-semibold text-ink transition hover:border-brand/40 hover:bg-canvas disabled:opacity-50";
+  const btn = "rounded-lg border border-line px-3.5 py-2 text-[0.8125rem] font-semibold text-ink transition hover:border-brand/40 hover:bg-canvas disabled:opacity-50";
 
   return (
     <div className="overflow-hidden card">
       <div className="h-1 bg-accent" />
       <div className="p-5">
         <h3 className="text-base font-bold text-ink">This record is yours</h3>
-        <p className="mt-1 text-[15px] leading-relaxed text-muted">
+        <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
           Not ours. Take it with you, print it, or delete it — any time, without asking anyone.
         </p>
 
@@ -182,8 +182,8 @@ ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</
 
         {/* ILER — the government's own record */}
         <div className="mt-5 rounded-xl border border-brand/20 bg-brand/5 p-4">
-          <div className="text-[13px] font-medium text-muted">Also get the government&apos;s copy</div>
-          <p className="mt-1 text-[15px] leading-relaxed text-ink">
+          <div className="text-[0.8125rem] font-medium text-muted">Also get the government&apos;s copy</div>
+          <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">
             DoD and VA keep an official <strong>Individual Longitudinal Exposure Record (ILER)</strong> on you.
             <strong> You can&apos;t pull it yourself yet</strong> — VA has said veteran read-only access is
             expected around Fall 2026. For now, ask your VA provider or your accredited VSO to look at it and
@@ -191,33 +191,33 @@ ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</
             reviews it automatically. Where it agrees with your record, your claim is stronger. Where it is
             missing something you lived, <em>your</em> record is the one that fills the gap.
           </p>
-          <div className="mt-2 flex flex-wrap gap-3 text-[13px] font-semibold">
+          <div className="mt-2 flex flex-wrap gap-3 text-[0.8125rem] font-semibold">
             <a href={ILER_URL} target="_blank" rel="noreferrer" className="text-brand hover:underline">What ILER is</a>
             <a href={MILCONNECT_URL} target="_blank" rel="noreferrer" className="text-brand hover:underline">Request records on milConnect</a>
           </div>
-          <p className="mt-2 text-[13px] leading-relaxed text-faint">
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-faint">
             An accredited VSO (Veterans Service Officer — free help) can pull your ILER with you.
           </p>
         </div>
 
         {msg && (
-          <div role="status" aria-live="polite" className="mt-4 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-[13px] font-medium text-success">{msg}</div>
+          <div role="status" aria-live="polite" className="mt-4 rounded-lg border border-success/30 bg-success-soft px-3 py-2 text-[0.8125rem] font-medium text-success">{msg}</div>
         )}
 
         {/* Delete — a real off-ramp */}
         <div className="mt-5 border-t border-line pt-4">
           {!showDelete ? (
-            <button onClick={() => setShowDelete(true)} className="text-[13px] font-semibold text-red-600 hover:underline">
+            <button onClick={() => setShowDelete(true)} className="text-[0.8125rem] font-semibold text-red-600 hover:underline">
               Delete my record
             </button>
           ) : (
             <div role="alertdialog" aria-labelledby="del-title" className="rounded-xl border border-red-200 bg-red-50 p-4">
               <div id="del-title" className="text-sm font-bold text-red-700">Delete everything?</div>
-              <p className="mt-1 text-[13px] leading-relaxed text-red-700/90">
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-red-700/90">
                 This removes your locations, exposures, conditions, corroborations, and uploaded documents.
                 It cannot be undone. Download a copy first if you might want it later.
               </p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-red-700/80">
+              <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-red-700/80">
                 Your sign-in email and the record of any consent you gave or withdrew are kept, because we
                 have to be able to show what you agreed to. To remove those too, email{" "}
                 <a className="underline" href="mailto:michael@operationwholehealth.org?subject=Delete%20my%20account">
@@ -236,7 +236,7 @@ ${conds.map((c) => `<tr><td>${esc(c.label)}</td><td>${esc(c.onset_year ?? "")}</
                 <button
                   onClick={deleteEverything}
                   disabled={confirm !== "DELETE" || !!busy}
-                  className="rounded-lg bg-red-600 px-3.5 py-2 text-[13px] font-bold text-white transition hover:bg-red-700 disabled:opacity-40"
+                  className="rounded-lg bg-red-600 px-3.5 py-2 text-[0.8125rem] font-bold text-white transition hover:bg-red-700 disabled:opacity-40"
                 >
                   {busy === "delete" ? "Deleting…" : "Permanently delete"}
                 </button>

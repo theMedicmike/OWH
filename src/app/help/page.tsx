@@ -69,11 +69,11 @@ const CORE_STEPS: Step[] = [
     title: "Add what you live with",
     body: [
       "In the menu, tap 2 “Your conditions” (or you land there after step 1). Every condition has an Add button; one tap puts it on your record. Find it by searching in the box at the top; from the list under “Most veterans start here”; or — the one most people miss — by opening one of the body systems under “Or browse by body system.” Those lists are much longer than the common ones. Right after you tap Add, one optional question asks when it started: tap “While I was in,” “After I got out,” or “Not sure.”",
-      "The fourth way is “＋ Something else — type it yourself,” and it is the last resort, not the shortcut. Look through the body-system lists properly first. A condition you type in yourself is saved exactly as you wrote it, and the app cannot draw a connection line to it, cannot attach the documented link, and cannot cite it in your packet — it will show on your record marked “your words.” The same condition picked off a list gets you all three.",
+      "The fourth way is the box at the bottom, “Not on the list? Type it in your own words,” and it is the last resort, not the shortcut. Look through the body-system lists properly first. A condition you type in yourself is saved exactly as you wrote it, and the app cannot draw a connection line to it, cannot attach the documented link, and cannot cite it in your packet — it will show on your record marked “your words.” The same condition picked off a list gets you all three.",
       "This comes before the map on purpose. Once the app knows what you are carrying, everything you put on the map afterwards has something to connect itself to.",
       "Scroll past the condition picker and there is a box headed “Something going on? Write it down.” It sits just above your saved conditions, not at the very top of the page — keep going past the search box and the lists and you will find it. Use it when something is happening and you do not know what it is or which condition it belongs to — that is the normal case, not a failure. Type a line, set the date if it was not today, tap “Save it,” and it is on your record. No category, no score, nothing to pick first. Later, when you know — or when a VSO helps you work it out — there is a “File under” dropdown on that note to put it with the right condition, and it keeps the date you wrote it.",
-      "These are not checkboxes. You tap a condition and it saves instantly — it turns dark blue with a tick and it is done. There is no Save button and you do not need one. To take one off, there is a small grey “remove” link.",
-      "Under each one, tap “Add details (optional)” — it says “Edit details” once you have answered something. It opens four short questions, and a fifth once you have added more than one condition. It says “optional,” and the first one really is not. Three are worth your attention:",
+      "Tap Add and it saves instantly. The button turns into a green “Added” and that is it. There is no Save button and you do not need one. To take one off, use the small grey “remove” link on it under “What you've told us,” further down the page.",
+      "Under “What you've told us,” each condition has “Add details (optional)” — it says “Edit details” once you have answered something. It opens four short questions, and a fifth once you have added more than one condition. It says “optional,” and the first one really is not. Three are worth your attention:",
     ],
     points: [
       "“Has a doctor diagnosed this?” — answer this one even if you answer nothing else on this page. Your choices are “Yes — VA doctor,” “Yes — civilian doctor,” “Yes — while I was in,” and “Not yet — no doctor has said it.” This is what the VA calls element one, and it is the first thing a rater looks for. Leave it blank and your packet prints “Diagnosis status not yet answered” beside that condition — which reads worse to a VSO than an honest “not yet.” Saying “Not yet” is a perfectly good answer and the app tags the condition “needs diagnosis” so you and your VSO can see at a glance what to go get.",
@@ -86,9 +86,10 @@ const CORE_STEPS: Step[] = [
   {
     title: "Mark where you served — in your own words",
     body: [
-      "In the menu, tap 3 “Where you served.” There are two ways in, and they behave differently — use whichever suits you.",
-      "Easiest: search for it. Type the name into the box at the top — “Find your base — type its name (e.g. Balad, Lejeune, Bagram)” — and tap your base in the list that drops down. The map flies there and the check-in form opens straight away, so skip to point 3 below. On a phone that form opens underneath the map: scroll down.",
-      "Or drop the pin yourself:",
+      "In the menu, tap 3 “Where you served.” The quickest way is at the top, under “Where did you serve?” Type a base, port or deployment into the search box, tap Add beside it, then pick “About what year did you get there?” Picking the year saves it. Your best guess is fine; it is saved as approximate.",
+      "Before you type anything, it shows the boot camps for your branch, so most people can add their first place without typing. A place already on your record shows “Added.” Not in the list? Keep typing and add it exactly as you typed it; you can pin it on the map later.",
+      "If the place is a documented exposure site, the panel tells you what the government documents there before you pick the year, and those go on your record with the place. If any of it was not you, change it on the map.",
+      "For the full detail (the exact dates, what you were doing there in your own words, what you were around) use the map underneath, under “Or use the map.” The map has its own search box that works the same way, or you can drop the pin yourself:",
     ],
     points: [
       "1. Tap the spot on the map. A gold pin drops and a small tag appears at the top of the map with the nearest place name on it.",
@@ -164,12 +165,13 @@ const MORE_STEPS: Step[] = [
   {
     title: "Battle buddies",
     body: [
-      "Menu → 5 “Battle buddies.” There are two switches here and they do different jobs.",
+      "Menu → 5 “Battle buddies.” If another veteran has asked to reconnect, that comes first, at the top of the page, with big “Accept” and “Decline” buttons. Below it is “Veterans who served where you did.” Each overlap has two buttons, “I was there too” and “Reconnect,” one tap each.",
+      "At the bottom, under “Let the people you served with find you,” there are two switches, and they do different jobs.",
     ],
     points: [
-      "“Let others who served where I did corroborate my exposures” — this is the one that strengthens your record. It shares only the place, the time and the type of exposure. Never your name, never your health.",
-      "“I'm open to reconnecting with battle buddies” — this is the social one. Nobody gets your contact details unless you both agree. The next point is where that agreeing actually happens.",
-      "When another veteran asks to connect with you, a card shows up on your Dashboard with their name and roughly where and when you overlapped — “…asked to connect” — and two buttons, “Accept” and “Decline.” That card is the agreeing. Accept and you are connected; Decline turns it down and the card goes for good rather than coming back later, so treat it as no rather than not yet. The same requests also wait for you on this page under “Reconnection requests,” with the same two buttons.",
+      "“Let others who served where I did confirm my exposures” — this is the one that strengthens your record. It shares only the place, the time and the type of exposure. Never your name, never your health.",
+      "“I am open to reconnecting with battle buddies” — this is the social one. Nobody gets your contact details unless you both agree. The next point is where that agreeing actually happens.",
+      "When another veteran asks to connect with you, a card headed “A battle buddy asked to connect” shows up on your Dashboard, with roughly where and when you overlapped and two buttons, “Accept” and “Decline.” That card is the agreeing. Accept and you are connected; Decline turns it down and the card goes for good rather than coming back later, so treat it as no rather than not yet. The same requests also wait for you at the top of this page under “Someone wants to reconnect,” with the same two buttons.",
     ],
     warn: {
       label: "If the list is empty",
@@ -181,7 +183,8 @@ const MORE_STEPS: Step[] = [
     title: "Not everyone who can vouch for you is on this app",
     body: [
       "Further down that same “Battle buddies” page is a second section: “Not on this app? Ask them directly.” This is for a spouse, a battle buddy who never signed up, or a commander — nobody needs an account to help you here.",
-      "Pick what it's about — a specific exposure you logged, a specific condition, or your service in general — add a short note to jog their memory if you want, and tap “Create a link.” You'll get a private link to send however you'd actually reach them: text, email, whatever.",
+      "Under “What should they confirm?” you will see “My service in general,” then every exposure and condition you have logged. Tap Ask beside the one you want. That makes a private link and, on a phone, opens your share menu so you can text or email it straight away. If the share menu does not open, tap “Share it” or “Copy the link” right under it. There is an optional box above the list to jog their memory; whatever you type there goes with the link.",
+      "Waiting on someone? Under “Your requests,” tap “Send it again,” or “Cancel this request” if you change your mind.",
       "They open it, write what they themselves remember in their own words, and it's done. No login, no app for them to install.",
     ],
     warn: {
@@ -231,9 +234,9 @@ const MORE_STEPS: Step[] = [
     ],
     points: [
       "“Where your record actually is” — two questions, your branch and the year you separated (or “I'm still serving”), and it tells you which office actually holds your shot record. milConnect gets you your DD-214, not this — it's a different file in a different building.",
-      "“＋ Add a shot” — search for it or pick from a short list grouped by when you'd have gotten it. Say when (year, or “I'm not sure”), and how you know — “I remember it,” “It's in my record,” or “I have the document.” That last part matters: remembered isn't worse than documented, it's just different, and whoever reads this later needs to know which is which.",
-      "“Shot library” — every one has the actual FDA label, word for word, plus what the government said about it and when. Open any shot and tap how you know (“I remember it,” “It’s in my record,” or “I have the document”) to put it on your shot record in one step; the year can be added through “＋ Add a shot” if you know it.",
-      "“What the rules said, and when →” — the timeline of military vaccine policy, and a section headed “What we could and could not confirm” that says plainly where the record has real gaps.",
+      "“Add a shot” — search for it or open a group grouped by when you'd have gotten it, and tap the shot. Three buttons open right under it: “I remember it,” “It's in my record,” and “I have the document.” Tap the one that is true and it is saved. That answer matters: remembered isn't worse than documented, it's just different, and whoever reads this later needs to know which is which. Know the year? Tap “Know the year? Add it with the date instead” under the buttons.",
+      "“Shot library” — every one has the actual FDA label, word for word, plus what the government said about it and when. The same three buttons sit at the top of each shot's page, so you can add it from there in one tap.",
+      "“What the rules said, and when” — the timeline of military vaccine policy, and a section headed “What we could and could not confirm” that says plainly where the record has real gaps.",
     ],
     warn: {
       label: "If it says the feature isn't switched on yet",
@@ -245,7 +248,8 @@ const MORE_STEPS: Step[] = [
     body: [
       "In the menu, its own line below “Your shot record” — “Injuries & events.”",
       "This isn't about the place, it's about what happened there: a blast, a fall, hearing damage, a burn, an assault, and more — one bad day, or something that happened over and over.",
-      "Tap “Log an injury or event →”. First, “What happened?” — tap a chip. It's a long list on purpose, built to match how VA actually recognizes these things.",
+      "There are two ways to log one. The quickest: open “What VA looks for, by injury type” and pick an injury. At the top of its page, under “Log this on your record,” tap what happened, pick about what year, then tap how you know. That last tap saves it, with no typing.",
+      "For the full entry (the place, the month, a repeated pattern, your own words) tap “Log an injury or event,” or “Add the place, month and details instead” on that same card. First, “What happened?” — tap a chip. It's a long list on purpose, built to match how VA actually recognizes these things.",
     ],
     points: [
       "Wasn't one day? Tick “This happened repeatedly, not on one day — not a single event, but a pattern over time.” That swaps in your role or unit, a from/to year, and roughly how often — for breachers, EOD, artillery, anyone whose injury came from hundreds of smaller ones, not a single date that never existed.",
@@ -258,7 +262,7 @@ const MORE_STEPS: Step[] = [
       label: "If Save looks dead",
       text: "It stays grey until you've tapped what happened and one of the “How do you know?” answers — and if you ticked the repeated-event box, until you've filled in a role or unit too.",
     },
-    tip: "Once it's saved, tap “Open” on any entry to find “What you've noticed since” — a dated log, in your own words, of what's shown up since. Add to it any time; that's what an examiner actually looks at to judge whether something's been consistent. And “What VA looks for, by injury type — the library →” on the main page lays out the real exam and diagnostic code behind TBI, amputation, hearing damage, and burns. Whatever you log here also shows up connected under “Your conditions,” the same way an exposure does.",
+    tip: "Once it's saved, tap “Open” on any entry to find “What you've noticed since” — a dated log, in your own words, of what's shown up since. Add to it any time; that's what an examiner actually looks at to judge whether something's been consistent. And “What VA looks for, by injury type” on the main page lays out the real exam and diagnostic code behind TBI, amputation, hearing damage, burns, and cold injury, and lets you log any of them in three taps. Whatever you log here also shows up connected under “Your conditions,” the same way an exposure does.",
   },
   {
     title: "Served aboard a ship? It has its own page now",
@@ -279,11 +283,11 @@ const MORE_STEPS: Step[] = [
     body: [
       "In the menu, below “Injuries & events” — “Your medications.”",
       "This one is about what you take, and it exists for a specific legal reason most veterans are never told: under 38 CFR §3.310, a condition that was caused or made worse by TREATMENT for something already connected to your service can sometimes be claimed on its own. Long-term anti-inflammatories for a service-connected back, for example, are a well-recognized route to a separate stomach claim.",
-      "Tap “Add a medication.” Type the name — generic or brand, whichever you know it by. It doesn't matter if it isn't in the suggestion list; the FDA's own database covers far more than we could ever list, so type it anyway.",
+      "Tap “Add a medication.” Every common medicine is listed A to Z, each with an Add button: tap it and it is on your list. Search by generic or brand name at the top. Not listed? Type it anyway and tap Add beside what you typed; the FDA's own database covers far more than we could ever list.",
     ],
     points: [
-      "The question that matters most is “What were you taking it for?” — that's the part that decides whether the §3.310 route is even relevant to you. Answer it in your own words: “my back,” “sleep,” “PTSD.”",
-      "Then whether you're still on it, and roughly when you started and stopped. Rough is fine, as everywhere else in this app.",
+      "Right after you tap Add, one optional box asks “What do you take it for?” — that's the part that decides whether the §3.310 route is even relevant to you. Answer it in your own words: “my back,” “sleep,” “PTSD.”",
+      "Want to record whether you're still on it, and roughly when you started and stopped? Tap “Add one with start and stop years instead” at the bottom of the list. Rough is fine, as everywhere else in this app.",
       "Open it afterward and you'll see the FDA's own label for that drug — the adverse reactions and warnings, quoted word for word, not rewritten by us and not written by AI. Alongside it, the real VA diagnostic code for any condition the label actually names.",
     ],
     warn: {
@@ -331,15 +335,15 @@ const MORE_STEPS: Step[] = [
     body: ["A few places to read rather than build:"],
     points: [
       "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required. One straight thing about it, printed at the bottom of every page in there: it is drawn from the government's and science's own record and every page cites its sources, but it has not yet been reviewed by a named clinician or toxicologist. Read it as a good first pass to take to your doctor and your VSO, not as the last word.",
-      "Your locations and your exposures — on your Dashboard, tap the tile marked “Locations” or the one marked “Exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
+      "Your locations and your exposures — on your Dashboard, under “Also in your record,” tap “Your locations” or “Your exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
       "“Whole health” (under Learn & live well) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
       "“What VA presumes” — two dropdowns, “When did you serve?” and “Where did you serve?”, and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation, and cold injury for former prisoners of war. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
-      "“Your C&P exam, demystified” — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up. It is in the menu under “When you're ready to file,” and again as a card at the very bottom of the Exposure library, past all the grids.",
-      "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It is the card next to the C&P one at the bottom of the Exposure library. It carries no personal information, so it's safe to print once and keep on hand.",
-      "“Women veterans & service” — also in the exposure library, further down past the grids. Deployment roles and how exposure patterns differ, how military sexual trauma is claimed, and the VA women's health resources most women veterans are never told exist.",
-      "“Korea: the cold and the DMZ” — also in the exposure library, past the grids. For Korean War and DMZ veterans and their families: asking for cold injury residuals by name, the DMZ herbicide dates, where that presumption stops, burned records, and what survivors and children can claim. Choosing Korea on “What VA presumes” links to it too.",
+      "“Your C&P exam, demystified” — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up. It is in the menu under “When you're ready to file,” and again under “Guides” at the bottom of the Exposure library.",
+      "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It is under “Guides” at the bottom of the Exposure library, next to the C&P one. It carries no personal information, so it's safe to print once and keep on hand.",
+      "“Women veterans & service” — also under “Guides” in the Exposure library. Deployment roles and how exposure patterns differ, how military sexual trauma is claimed, and the VA women's health resources most women veterans are never told exist.",
+      "“Korea: the cold and the DMZ” — also under “Guides” in the Exposure library. For Korean War and DMZ veterans and their families: asking for cold injury residuals by name, the DMZ herbicide dates, where that presumption stops, burned records, and what survivors and children can claim. Choosing Korea on “What VA presumes” links to it too.",
       "“Building your exposure timeline” — in the same place. The service records that prove where you were and when, called by their real names, who holds each one, and how to ask for them. This is the unglamorous paperwork that wins claims.",
-      "“How your conditions connect” — a page for each condition you have added: why it's connected, the exposures commonly studied with it, and what to track. You reach it from “See the full breakdown and what to track →” on Connect the dots. It is the reasoning behind your own conditions — not where you add them, which is still 2 “Your conditions.”",
+      "“How your conditions connect” — a page for each condition you have added: why it's connected, the exposures commonly studied with it, and what to track. You reach it from “See the full breakdown and what to track” on Connect the dots. It is the reasoning behind your own conditions — not where you add them, which is still 2 “Your conditions.”",
       "One thing worth knowing if your claims are things like tinnitus, a bad back, knees or PTSD: you do not need a toxic exposure for this app to work for you. Log what happened to you on Injuries & events instead, and pick your condition off the list on 2 “Your conditions.” The app connects those the same way it connects an exposure, and your record counts as complete. For a long time it did not, and that was our mistake, not yours.",
       "“What this is” — in the small grey print at the very bottom of the menu, beside Privacy and Terms. Worth two minutes if you are weighing up whether to type something personal into a stranger's app: it says in plain words what the app is not, how the science is graded, what happens to your record if this organisation ever closes, and that you would be told directly if your data were ever exposed.",
     ],
@@ -362,20 +366,20 @@ function StepList({ steps, start }: { steps: Step[]; start: number }) {
           key={i}
           className="relative flex gap-4 card px-5 py-4"
         >
-          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand text-[13px] font-semibold text-brand-foreground">
+          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-brand text-[0.8125rem] font-semibold text-brand-foreground">
             {start + i}
           </span>
           <div className="min-w-0">
-            <div className="text-[17px] font-semibold text-ink">{step.title}</div>
+            <div className="text-[1.0625rem] font-semibold text-ink">{step.title}</div>
 
             {step.caution && (
-              <div className="mt-2 rounded-lg border border-scarlet/30 bg-scarlet/5 px-3.5 py-2.5 text-[15px] leading-relaxed text-ink">
+              <div className="mt-2 rounded-lg border border-scarlet/30 bg-scarlet/5 px-3.5 py-2.5 text-[0.9375rem] leading-relaxed text-ink">
                 {step.caution}
               </div>
             )}
 
             {step.body.map((p, j) => (
-              <p key={j} className="mt-2 text-[15px] leading-relaxed text-muted">
+              <p key={j} className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
                 {p}
               </p>
             ))}
@@ -383,7 +387,7 @@ function StepList({ steps, start }: { steps: Step[]; start: number }) {
             {step.points && (
               <ul className="mt-2 space-y-2">
                 {step.points.map((p, j) => (
-                  <li key={j} className="flex gap-2.5 text-[15px] leading-relaxed text-muted">
+                  <li key={j} className="flex gap-2.5 text-[0.9375rem] leading-relaxed text-muted">
                     <span className="mt-[9px] h-1.5 w-1.5 flex-none rounded-full bg-brand/40" />
                     <span>{p}</span>
                   </li>
@@ -392,14 +396,14 @@ function StepList({ steps, start }: { steps: Step[]; start: number }) {
             )}
 
             {step.warn && (
-              <div className="mt-3 rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-[15px] leading-relaxed text-ink">
+              <div className="mt-3 rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-[0.9375rem] leading-relaxed text-ink">
                 <span className="font-semibold">{step.warn.label}: </span>
                 {step.warn.text}
               </div>
             )}
 
             {step.tip && (
-              <div className="mt-2.5 text-[13px] leading-relaxed italic text-brand">{step.tip}</div>
+              <div className="mt-2.5 text-[0.8125rem] leading-relaxed italic text-brand">{step.tip}</div>
             )}
           </div>
         </li>
@@ -422,7 +426,7 @@ export default function HelpPage() {
             How to use Connecting the Dots
           </h2>
           
-          <p className="mt-3 text-[15px] leading-relaxed text-muted">
+          <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
             A simple, step-by-step guide. No tech experience needed.
           </p>
           <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-2">
@@ -432,7 +436,7 @@ export default function HelpPage() {
           </nav>
         </div>
 
-        <div className="mb-4 card px-5 py-4 text-[15px] leading-relaxed text-ink">
+        <div className="mb-4 card px-5 py-4 text-[0.9375rem] leading-relaxed text-ink">
           <span className="font-semibold">What this is, in one breath:</span> this app helps you
           write down where you served, what you were around, and what you live with now — and then
           hands it all back to you as one organized packet you can give to a Veterans Service
@@ -447,7 +451,7 @@ export default function HelpPage() {
           <p className="mt-2.5">Take your time. You cannot break this.</p>
         </div>
 
-        <div className="mb-6 rounded-xl border-2 border-brand bg-brand/5 px-5 py-4 text-[15px] leading-relaxed text-ink">
+        <div className="mb-6 rounded-xl border-2 border-brand bg-brand/5 px-5 py-4 text-[0.9375rem] leading-relaxed text-ink">
           <span className="font-semibold text-brand">Before anything else.</span> If today is a hard
           day, you do not have to be in crisis to call. Veterans Crisis Line — dial{" "}
           <strong>988</strong>, then press <strong>1</strong>. Or text <strong>838255</strong>.
@@ -459,7 +463,7 @@ export default function HelpPage() {
           <h3 className="text-xl font-semibold tracking-tight text-ink">
             Part one: the five steps that matter
           </h3>
-          <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+          <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">
             Do these five. When you&apos;re done you&apos;ll have a packet in your hand. Everything
             after step 5 is optional and can wait for another day.
           </p>
@@ -469,7 +473,7 @@ export default function HelpPage() {
 
         <div className="mt-5 rounded-xl border-2 border-brand bg-brand/5 px-5 py-4">
           <div className="font-semibold text-brand">That&apos;s the whole job.</div>
-          <p className="mt-1 text-[15px] leading-relaxed text-ink">
+          <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">
             Five steps. If you stop right here, you&apos;ve done it — you have a documented record
             and a packet, which is more than most veterans walk in with. Everything below is extra.
             Come back to it when you feel like it, or never.
@@ -480,7 +484,7 @@ export default function HelpPage() {
           <h3 className="text-xl font-semibold tracking-tight text-ink">
             Part two: when you have time
           </h3>
-          <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+          <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">
             None of this is required. Pick what interests you and ignore the rest.
           </p>
         </div>
@@ -488,16 +492,16 @@ export default function HelpPage() {
         <StepList steps={MORE_STEPS} start={6} />
 
         <h3 id="worth-knowing" className="mt-10 scroll-mt-20 border-t border-line pt-6 text-xl font-semibold tracking-tight text-ink">A few things worth knowing</h3>
-        <div className="mt-2 space-y-3 text-[15px] leading-relaxed text-muted">
+        <div className="mt-2 space-y-3 text-[0.9375rem] leading-relaxed text-muted">
           <p>
             <strong className="text-ink">Finding your way around.</strong> On a phone the menu hides
             behind the small button in the top-left corner with three short lines stacked on top of
             each other. On a computer it is always down the left-hand side. It reads top to bottom in
             the order you would actually work: your Dashboard and Medic Mike at the top;{" "}
             <strong>&ldquo;Build your record&rdquo;</strong> — the six numbered steps, ending at your
-            packet; then, with no heading and no numbers, the five things you can add whenever you
-            like — your shot record, injuries &amp; events, ships you served aboard, your medications,
-            and what VA presumes;
+            packet; then, under <strong>&ldquo;Also in your record&rdquo;</strong> and with no numbers, the
+            things you can add whenever you like — your shot record, injuries &amp; events, ships you
+            served aboard, your medications, your First Page, and what VA presumes;
             then <strong>&ldquo;When you&rsquo;re ready to file&rdquo;</strong> — the VSO finder and
             the C&amp;P exam page; then <strong>&ldquo;Learn &amp; live well,&rdquo;</strong> your
             private <strong>&ldquo;Exposure insights,&rdquo;</strong> your Account, and this guide.
@@ -505,30 +509,27 @@ export default function HelpPage() {
             numbered steps are done, you are done.
           </p>
           <p>
-            <strong className="text-ink">Your Dashboard.</strong> It is home — the tiles across the
-            top open their own pages, and{" "}
-            <strong>&ldquo;Jump back in&rdquo;</strong> at the bottom is a fixed set of eleven
-            shortcuts to the main screens. It is the same eleven every time; it is a menu, not a
-            history, so don&apos;t go looking there for the last thing you were doing. If you served
-            in the Navy, the Marine Corps or the Coast Guard — or once you add a ship — a{" "}
-            <strong>&ldquo;Ships&rdquo;</strong> tile appears in the grid above it. It is the one
-            tile that is conditional, because an infantryman will never have a ship and a permanent
-            &ldquo;Not yet&rdquo; would be telling him his record is missing something that cannot
-            exist.
+            <strong className="text-ink">Your Dashboard.</strong> It is home. The six steps are
+            listed in order under <strong>&ldquo;Your record,&rdquo;</strong> each marked Done, Next or
+            Not yet; tap any one to open it. Under <strong>&ldquo;Also in your record&rdquo;</strong> are
+            your locations, exposures, shot record, injuries, medications and First Page, and, if you
+            served in the Navy, the Marine Corps or the Coast Guard (or once you add a ship), your
+            ships. That ships line is the one that is conditional, because an infantryman will never
+            have a ship and a permanent &ldquo;Not yet&rdquo; would be telling him his record is
+            missing something that cannot exist. <strong>&ldquo;More&rdquo;</strong> at the bottom has
+            Medic Mike, voice guided intake, the Exposure library and Whole health.
           </p>
           <p>
-            <strong className="text-ink">The card at the top of your Dashboard.</strong> The one
-            raised box near the top — headed <strong>&ldquo;Start here&rdquo;</strong> the first
-            time and <strong>&ldquo;Next step&rdquo;</strong> after that — is the app&apos;s answer
-            to &ldquo;what do I do now.&rdquo; It shows something like{" "}
-            <strong>&ldquo;3 of 8&rdquo;</strong> with a percentage, and one button that takes you
-            to whatever is next. That is <em>this app&apos;s</em> checklist of eight things, not the
-            VA&apos;s, and the percentage is not a score on you or a prediction about your claim —
-            filing is one of the eight, so nobody reaches the end of it sitting at home. If it says{" "}
-            <strong>&ldquo;Your record is claim-ready,&rdquo;</strong> that means this app has what
-            it needs to build you a packet. It does not mean the VA will agree, and only a VSO can
-            tell you that. This card is also the thing that genuinely remembers where you were: when
-            you come back it reads <strong>&ldquo;Pick up where you left off.&rdquo;</strong>
+            <strong className="text-ink">The card at the top of your Dashboard.</strong> The dark
+            blue card near the top, headed <strong>&ldquo;Start here&rdquo;</strong> the first time
+            and <strong>&ldquo;Next step&rdquo;</strong> after that, is the app&apos;s answer to
+            &ldquo;what do I do now,&rdquo; with one big button that takes you there. When you come
+            back it reads <strong>&ldquo;Pick up where you left off&rdquo;</strong> and tells you how
+            many steps you are from a claim-ready record. That is <em>this app&apos;s</em> checklist,
+            not the VA&apos;s, and it is not a score on you or a prediction about your claim. If it
+            says <strong>&ldquo;Your record is claim-ready,&rdquo;</strong> that means this app has
+            what it needs to build you a packet. It does not mean the VA will agree, and only a VSO
+            can tell you that.
           </p>
           <p>
             <strong className="text-ink">
@@ -539,18 +540,17 @@ export default function HelpPage() {
             not tidying a summary — it deletes the check-in itself, along with every exposure you
             ticked at that place. Tap it and it asks first, telling you exactly what will go; the
             safe answer is <strong>&ldquo;Keep it&rdquo;</strong> and the one that deletes says{" "}
-            <strong>Delete</strong>. If you only want a shorter list, leave it alone and use <strong>&ldquo;Open map →&rdquo;</strong> or{" "}
-            <strong>&ldquo;Manage all … locations →&rdquo;</strong> instead. Deleting a place there
+            <strong>Delete</strong>. If you only want a shorter list, leave it alone and use <strong>&ldquo;Open map&rdquo;</strong> or{" "}
+            <strong>&ldquo;Manage all … locations&rdquo;</strong> instead. Deleting a place there
             is the same delete, just somewhere you meant to be.
           </p>
           <p>
             <strong className="text-ink">Making the text bigger.</strong> In the top-right corner
-            there is a small round circle with one letter in it — the first letter of your email
+            there is a small round circle with one letter in it, the first letter of your email
             address. Tap that, then pick one of the three <strong>&ldquo;A&rdquo;</strong> buttons
-            under <strong>&ldquo;Text size.&rdquo;</strong> Straight answer: this makes the main text
-            somewhat larger, but not everything — a fair amount of the small grey print will not
-            budge. For that, use your phone&apos;s own text size setting, or pinch to zoom. It&apos;s
-            on our list to fix properly.
+            under <strong>&ldquo;Text size.&rdquo;</strong> It makes the text larger on every screen,
+            small print included, and it remembers your choice next time. Your phone&apos;s own text
+            size setting and pinch to zoom work too.
           </p>
           <p>
             <strong className="text-ink">Want it on your home screen like a real app?</strong> You
@@ -583,7 +583,7 @@ export default function HelpPage() {
           <div className="font-semibold text-brand">
             If you&apos;re struggling, you are not alone.
           </div>
-          <div className="mt-1 space-y-2 text-[15px] leading-relaxed text-ink">
+          <div className="mt-1 space-y-2 text-[0.9375rem] leading-relaxed text-ink">
             <p>
               You do not have to be in crisis to call. You don&apos;t have to be enrolled in VA
               care, and you don&apos;t have to explain yourself.
@@ -608,7 +608,7 @@ export default function HelpPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-[13px] leading-relaxed text-faint">
+        <p className="mt-6 text-[0.8125rem] leading-relaxed text-faint">
           Operation Whole Health is a Patriot-founded 501(c)(3) nonprofit. This app is free and sells
           nothing. It assembles your own information with documented sources to assist an accredited
           VSO — whose help is always free — and a clinician. It is a record — not a diagnosis, not

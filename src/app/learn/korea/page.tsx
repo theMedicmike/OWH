@@ -4,9 +4,9 @@ import { BOOK_SITE } from "@/lib/bookVisibility";
 
 const card = "card p-5";
 const h2 = "text-sm font-semibold text-ink";
-const body = "mt-2 text-[15px] leading-relaxed text-ink";
-const list = "mt-2 list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-ink";
-const cta = "mt-3 inline-block text-[13px] font-semibold text-brand hover:underline";
+const body = "mt-2 text-[0.9375rem] leading-relaxed text-ink";
+const list = "mt-2 list-disc space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-ink";
+const cta = "mt-3 inline-block text-[0.8125rem] font-semibold text-brand hover:underline";
 
 export const metadata = {
   title: "Korea: the cold and the DMZ",
@@ -34,7 +34,7 @@ export default function KoreaPage() {
   return (
     <AppShell title="Korea: the cold and the DMZ" publicPage>
       <div className="mx-auto max-w-2xl space-y-5">
-        <p className="text-[15px] leading-relaxed text-muted">
+        <p className="text-[0.9375rem] leading-relaxed text-muted">
           Korea left two different records in the body. One came from the winter of 1950. The other came from
           the ground along the DMZ in the late 1960s. The rules for each are different, so start with the one
           that matches the service you are tracing, whether it was yours or a parent&apos;s.
@@ -43,11 +43,11 @@ export default function KoreaPage() {
         <nav aria-label="On this page" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <a href="#cold" className="block rounded-xl border border-brand/30 bg-brand/5 p-4 transition hover:border-brand/50">
             <div className="text-sm font-semibold text-ink">The cold</div>
-            <div className="mt-1 text-[13px] text-muted">Frostbite and what it left behind, Chosin and every other winter.</div>
+            <div className="mt-1 text-[0.8125rem] text-muted">Frostbite and what it left behind, Chosin and every other winter.</div>
           </a>
           <a href="#dmz" className="block rounded-xl border border-brand/30 bg-brand/5 p-4 transition hover:border-brand/50">
             <div className="text-sm font-semibold text-ink">The DMZ</div>
-            <div className="mt-1 text-[13px] text-muted">Herbicide service between September 1967 and August 1971.</div>
+            <div className="mt-1 text-[0.8125rem] text-muted">Herbicide service between September 1967 and August 1971.</div>
           </a>
         </nav>
 
@@ -135,7 +135,7 @@ export default function KoreaPage() {
 
         <section className={card}>
           <h2 className={h2}>What to do this week</h2>
-          <ol className="mt-2 list-decimal space-y-2 pl-5 text-[15px] leading-relaxed text-ink">
+          <ol className="mt-2 list-decimal space-y-2 pl-5 text-[0.9375rem] leading-relaxed text-ink">
             <li>
               <strong>Write the timeline.</strong> Your unit, the months and years, where the unit was positioned,
               and your diagnoses in the order they arrived. For the cold, add how long your boots stayed on, what
@@ -173,7 +173,7 @@ export default function KoreaPage() {
             and I want them evaluated as cold injury residuals, not as old age. I also want to schedule my Agent
             Orange Registry health exam through the Environmental Health Coordinator.&rdquo;
           </p>
-          <p className="mt-2 text-[13px] text-muted">Say only the parts that are true for you.</p>
+          <p className="mt-2 text-[0.8125rem] text-muted">Say only the parts that are true for you.</p>
         </section>
 
         <section className={card}>
@@ -219,7 +219,7 @@ export default function KoreaPage() {
 
         <section className={card}>
           <h2 className={h2}>Numbers to keep</h2>
-          <ul className="mt-2 space-y-1.5 text-[15px] leading-relaxed text-ink">
+          <ul className="mt-2 space-y-1.5 text-[0.9375rem] leading-relaxed text-ink">
             <li><strong>MyVA411:</strong> <a href="tel:18006982411" className="font-semibold text-brand hover:underline">1-800-698-2411</a>, day or night, for veterans, families and survivors</li>
             <li><strong>VET-HOME:</strong> <a href="tel:18336338846" className="font-semibold text-brand hover:underline">833-633-8846</a>, the registry exam by telehealth</li>
             <li><strong>Veterans Crisis Line:</strong> dial <a href="tel:988" className="font-semibold text-brand hover:underline">988</a>, then press 1, or text <a href="sms:838255" className="font-semibold text-brand hover:underline">838255</a></li>
@@ -236,8 +236,8 @@ export default function KoreaPage() {
         </a>
 
         <section className="px-1">
-          <h2 className="text-[13px] font-medium text-muted">Sources</h2>
-          <ul className="mt-2 space-y-1 text-[13px] leading-relaxed">
+          <h2 className="text-[0.8125rem] font-medium text-muted">Sources</h2>
+          <ul className="mt-2 space-y-1 text-[0.8125rem] leading-relaxed">
             {SOURCES.map((s) => (
               <li key={s.href + s.label}>
                 <a href={s.href} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">{s.label}</a>
@@ -246,7 +246,7 @@ export default function KoreaPage() {
           </ul>
         </section>
 
-        <p className="px-1 text-[13px] leading-relaxed text-faint">
+        <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
           This page explains what the law covers. It isn&apos;t medical or legal advice, and it can&apos;t tell you
           whether a benefit applies to you. Only VA decides that, and an accredited VSO can check your record
           against VA&apos;s current lists.

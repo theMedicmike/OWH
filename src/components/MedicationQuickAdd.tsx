@@ -73,9 +73,9 @@ export default function MedicationQuickAdd() {
   const followUp = (name: string) =>
     justAdded && justAdded.name === name ? (
       <div className="border-t border-line bg-canvas px-4 pb-4 pt-3" aria-live="polite">
-        <p className="text-[15px] font-semibold text-success">{name} is on your medications.</p>
+        <p className="text-[0.9375rem] font-semibold text-success">{name} is on your medications.</p>
         {forSaved ? (
-          <p className="mt-1 text-[15px] text-muted">Saved: you take it for {takenFor.trim()}.</p>
+          <p className="mt-1 text-[0.9375rem] text-muted">Saved: you take it for {takenFor.trim()}.</p>
         ) : (
           <>
             <label htmlFor="taken-for" className="field-label mt-3">What do you take it for? (optional)</label>
@@ -99,7 +99,7 @@ export default function MedicationQuickAdd() {
     const has = onList.has(name.toLowerCase());
     if (has) {
       return (
-        <span className="flex min-h-11 flex-none items-center gap-1.5 px-2 text-[15px] font-semibold text-success">
+        <span className="flex min-h-11 flex-none items-center gap-1.5 px-2 text-[0.9375rem] font-semibold text-success">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
             <path d="m5 12 4 4L19 7" />
           </svg>
@@ -124,7 +124,7 @@ export default function MedicationQuickAdd() {
     <div className="space-y-5">
       <div>
         <h2 className="display text-[1.75rem] text-ink sm:text-[2rem]">Tap a medicine to add it.</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">
           One tap puts it on your list. Search by generic or brand name, or scroll. Nothing is sent anywhere, and
           nothing you write is touched by AI.
         </p>
@@ -142,7 +142,7 @@ export default function MedicationQuickAdd() {
         />
       </div>
 
-      {err && <p role="alert" className="text-[15px] font-medium text-scarlet">{err}</p>}
+      {err && <p role="alert" className="text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
       <div className="card overflow-hidden">
         {/* Typed a name that is not on the list: add it exactly as typed. The
@@ -151,7 +151,7 @@ export default function MedicationQuickAdd() {
           <div>
             <div className="row">
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold leading-snug">&ldquo;{q}&rdquo;</span>
+                <span className="block text-[0.9375rem] font-semibold leading-snug">&ldquo;{q}&rdquo;</span>
                 <span className="mt-0.5 block text-sm leading-snug text-muted">Add it exactly as you typed it</span>
               </span>
               {addButton(q, null)}
@@ -163,7 +163,7 @@ export default function MedicationQuickAdd() {
           <div key={m.generic} className="border-t border-line first:border-t-0">
             <div className="row">
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold leading-snug">
+                <span className="block text-[0.9375rem] font-semibold leading-snug">
                   {m.generic}
                   {m.brands.length > 0 && <span className="font-normal text-muted"> ({m.brands.join(", ")})</span>}
                 </span>
@@ -175,13 +175,13 @@ export default function MedicationQuickAdd() {
           </div>
         ))}
         {rows.length === 0 && q.length <= 1 && (
-          <p className="p-4 text-[15px] text-muted">Type at least two letters.</p>
+          <p className="p-4 text-[0.9375rem] text-muted">Type at least two letters.</p>
         )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link href="/medications" className="btn btn-primary">See your medications</Link>
-        <Link href="/medications/add?full=1" className="text-[15px] font-semibold text-brand hover:underline">
+        <Link href="/medications/add?full=1" className="text-[0.9375rem] font-semibold text-brand hover:underline">
           Add one with start and stop years instead
         </Link>
       </div>

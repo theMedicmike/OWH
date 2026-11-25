@@ -69,7 +69,7 @@ export default function InjuryAddToRecord({ name, classes }: { name: string; cla
           </span>
           <div className="min-w-0">
             <h2 className="text-lg font-semibold tracking-tight text-ink">{saved} is on your record</h2>
-            <p className="mt-1 text-[15px] leading-relaxed text-muted">
+            <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
               Logged for around {year}. It is connected to any matching conditions on Your conditions. You can pin
               the place on your map whenever you like.
             </p>
@@ -86,7 +86,7 @@ export default function InjuryAddToRecord({ name, classes }: { name: string; cla
   return (
     <section className="card card-raise p-5 sm:p-6">
       <h2 className="text-lg font-semibold tracking-tight text-ink">Log this on your record</h2>
-      <p className="mt-1 text-[15px] leading-relaxed text-muted">
+      <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">
         Three taps, no typing. Nothing is saved until the last one, and nothing is sent anywhere.
       </p>
 
@@ -143,11 +143,11 @@ export default function InjuryAddToRecord({ name, classes }: { name: string; cla
         )}
       </fieldset>
 
-      {err && <p role="alert" className="mt-3 text-[15px] font-medium text-scarlet">{err}</p>}
+      {err && <p role="alert" className="mt-3 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
       <Link
         href={what ? `/injuries/add?class=${what}` : "/injuries/add"}
-        className="mt-4 inline-block text-[15px] font-semibold text-brand hover:underline"
+        className="mt-4 inline-block text-[0.9375rem] font-semibold text-brand hover:underline"
       >
         Add the place, month and details instead
       </Link>

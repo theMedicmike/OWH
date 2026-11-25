@@ -21,7 +21,7 @@ export default function ShotsPage() {
           className="block rounded-xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50"
         >
           <div className="text-sm font-semibold text-ink">Where your record actually is</div>
-          <p className="mt-1 text-[13px] leading-relaxed text-muted">
+          <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
             milConnect won&apos;t get you your shot record. Two questions tell you which office holds it.
           </p>
         </Link>
@@ -30,11 +30,11 @@ export default function ShotsPage() {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Link href="/shots/library" className="card block p-4 transition hover:border-brand/40">
-            <span className="block text-[15px] font-semibold text-ink">Shot library</span>
+            <span className="block text-[0.9375rem] font-semibold text-ink">Shot library</span>
             <span className="mt-0.5 block text-sm text-muted">Every shot, its FDA label word for word. Add any one to your record in one tap.</span>
           </Link>
           <Link href="/shots/history" className="card block p-4 transition hover:border-brand/40">
-            <span className="block text-[15px] font-semibold text-ink">What the rules said, and when</span>
+            <span className="block text-[0.9375rem] font-semibold text-ink">What the rules said, and when</span>
             <span className="mt-0.5 block text-sm text-muted">The timeline of military vaccine policy, and where the record has gaps.</span>
           </Link>
         </div>
@@ -46,9 +46,9 @@ export default function ShotsPage() {
             nobody read to them, and four free doors they're already owed. */}
         <div className="card p-5">
           <div className="text-sm font-semibold text-ink">What would warrant getting looked at</div>
-          <p className="mt-3 text-[15px] leading-relaxed text-ink">{INTERRUPT_SPINE}</p>
-          <p className="mt-3 text-[15px] leading-relaxed text-ink">{INTERRUPT_SYMPTOM_LINE}</p>
-          <p className="mt-3 text-[15px] leading-relaxed text-muted">{INTERRUPT_SAFETY_VALVE}</p>
+          <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink">{INTERRUPT_SPINE}</p>
+          <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink">{INTERRUPT_SYMPTOM_LINE}</p>
+          <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">{INTERRUPT_SAFETY_VALVE}</p>
           <div className="mt-4 space-y-2 border-t border-line pt-4">
             {INTERRUPT_FREE_DOORS.map((d) => (
               <div key={d.name} className="text-sm">
@@ -58,7 +58,7 @@ export default function ShotsPage() {
           </div>
         </div>
 
-        <p className="px-1 text-[13px] leading-relaxed text-faint">
+        <p className="px-1 text-[0.8125rem] leading-relaxed text-faint">
           This section documents. It does not diagnose, does not advise you, does not file for you, and is not
           your representative (38 CFR 14.629). If you or someone you know is struggling, the Veterans Crisis Line
           is here 24/7 — dial 988, then press 1. Text 838255.

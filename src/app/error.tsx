@@ -14,7 +14,7 @@ export default function Error({ reset }: { error: Error & { digest?: string }; r
       >
         Try again
       </button>
-      <p className="mt-6 text-[13px] text-faint">
+      <p className="mt-6 text-[0.8125rem] text-faint">
         If things feel heavy, the Veterans Crisis Line is here 24/7 — dial 988, then press 1.
       </p>
     </div>

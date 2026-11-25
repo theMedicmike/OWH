@@ -31,7 +31,7 @@ export default async function IntakePage() {
   return (
     <AppShell title="Your service">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[15px] leading-relaxed text-muted">
+        <p className="text-[0.9375rem] leading-relaxed text-muted">
           Everything saves to your private record and feeds into your claim packet.
         </p>
         <Link href="/intake/ai" className="btn btn-secondary flex-none">

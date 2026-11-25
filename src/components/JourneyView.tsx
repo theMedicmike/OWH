@@ -357,14 +357,14 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                     <div className="flex flex-wrap items-baseline gap-2">
                       <span className="text-sm font-bold text-ink">{f.name}</span>
                       {touched && (
-                        <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[13px] font-medium text-muted">
+                        <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[0.8125rem] font-medium text-muted">
                           on your record
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-[13px] leading-relaxed text-muted">{f.line}</p>
+                    <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">{f.line}</p>
                     {f.key === "family" && (
-                      <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
+                      <p className="mt-1.5 text-[0.75rem] leading-relaxed text-muted">
                         A spouse or family member can build a record here too — set the account type in{" "}
                         <Link href="/account" className="font-semibold text-brand hover:underline">Account</Link>.
                       </p>
@@ -372,7 +372,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                     {BOOK_PUBLIC && f.chapterSlug && (
                       <Link
                         href={`/book/${f.chapterSlug}`}
-                        className="mt-1.5 inline-block text-[12px] font-semibold text-brand hover:underline"
+                        className="mt-1.5 inline-block text-[0.75rem] font-semibold text-brand hover:underline"
                       >
                         Read &ldquo;{f.chapterTitle}&rdquo;
                       </Link>
@@ -382,7 +382,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                         href={`${BOOK_SITE}/#${f.chapterSlug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-1.5 inline-block text-[12px] font-semibold text-brand hover:underline"
+                        className="mt-1.5 inline-block text-[0.75rem] font-semibold text-brand hover:underline"
                       >
                         Read &ldquo;{f.chapterTitle}&rdquo; in the book
                       </a>
@@ -392,7 +392,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
               );
             })}
           </div>
-          <p className="border-t border-line px-5 py-3 text-[13px] leading-relaxed text-faint">
+          <p className="border-t border-line px-5 py-3 text-[0.8125rem] leading-relaxed text-faint">
             The floors are a way of understanding what service costs — not a diagnosis, and not a
             checklist you have to complete. Everything you document here belongs to the first floor and
             the last: what happened to your body, and the burden of having to prove it.
@@ -408,7 +408,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
       <section className="card p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-base font-bold text-ink">Your service timeline</h2>
-          <span className="text-[13px] text-muted">Where you were, what was there, when your health changed</span>
+          <span className="text-[0.8125rem] text-muted">Where you were, what was there, when your health changed</span>
         </div>
         <div className="mt-4">
           <ServiceTimeline data={timeline} />
@@ -417,13 +417,13 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
         {/* Onset years — the half of the record that makes latency visible */}
         {conditions.length > 0 && (
           <div className="mt-5 border-t border-line pt-4 print:hidden">
-            <div className="text-[13px] font-semibold text-ink">When did each condition begin?</div>
-            <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
+            <div className="text-[0.8125rem] font-semibold text-ink">When did each condition begin?</div>
+            <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
               Roughly is fine — the year you first noticed it or were diagnosed. This is what puts the
               gap between your service and your symptoms on the record.
             </p>
             {onsetErr && (
-              <div role="status" className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700">
+              <div role="status" className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[0.8125rem] font-medium text-red-700">
                 {onsetErr}
               </div>
             )}
@@ -433,7 +433,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                 const editing = onsetEdit === c.label;
                 return editing ? (
                   <span key={c.label} className="inline-flex items-center gap-1 rounded-full border border-brand bg-white px-2 py-1">
-                    <span className="text-[13px] font-medium text-ink">{c.label}</span>
+                    <span className="text-[0.8125rem] font-medium text-ink">{c.label}</span>
                     {/* A full spin wheel doesn't fit this inline chip — same
                         "cannot mistype" benefit via a native select instead.
                         The full wheel lives on Your conditions if this feels
@@ -443,7 +443,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                       defaultValue={y ?? ""}
                       onChange={(e) => saveOnset(c.label, parseInt(e.target.value) || null)}
                       onKeyDown={(e) => { if (e.key === "Escape") setOnsetEdit(null); }}
-                      className="w-20 rounded border border-line px-1 py-0.5 text-[13px] tabular-nums text-ink focus:border-brand focus:outline-none"
+                      className="w-20 rounded border border-line px-1 py-0.5 text-[0.8125rem] tabular-nums text-ink focus:border-brand focus:outline-none"
                     >
                       <option value="">Year</option>
                       {ONSET_YEAR_OPTIONS.map((yr) => <option key={yr} value={yr}>{yr}</option>)}
@@ -453,7 +453,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                   <button
                     key={c.label}
                     onClick={() => setOnsetEdit(c.label)}
-                    className={`rounded-full border px-2.5 py-1 text-[13px] transition ${
+                    className={`rounded-full border px-2.5 py-1 text-[0.8125rem] transition ${
                       y ? "border-accent/40 bg-accent/5 font-medium text-ink" : "border-dashed border-line text-muted hover:border-brand/40 hover:text-brand"
                     }`}
                   >
@@ -492,14 +492,14 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
       {/* The map */}
       <div className="card p-5">
         <div className="text-sm font-bold text-ink">How your service connects to your health</div>
-        <p className="mt-1 text-[13px] text-muted">
+        <p className="mt-1 text-[0.8125rem] text-muted">
           Every line is a link the VA already recognizes. Tap any dot to see the connection and its citation.
         </p>
         {/* Tinnitus, PTSD, TBI, backs, knees — most VA claims connect to WHAT
             HAPPENED, not to bad air or bad water, so this map (built from
             exposures) will never draw a line for them. That's not a rejection
             — it's this graph's honest limit. */}
-        <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[13px] leading-relaxed text-muted">
+        <p className="mt-2 rounded-lg border border-line bg-canvas px-3 py-2 text-[0.8125rem] leading-relaxed text-muted">
           This map only draws lines for exposures — bad air, bad water, chemicals. If what you&apos;re dealing with
           traces back to something that <em>happened</em> to you instead — a blast, a fall, an assault, hearing
           damage — log it on <Link href="/injuries" className="font-semibold text-brand hover:underline">Injuries &amp; events</Link>, and it will get
@@ -518,7 +518,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
           </div>
         ) : (
           <>
-            <div className="mt-4 flex items-center justify-between text-[13px] font-medium text-muted">
+            <div className="mt-4 flex items-center justify-between text-[0.8125rem] font-medium text-muted">
               <span>What you were exposed to</span>
               <span>What it&apos;s linked to</span>
             </div>
@@ -549,7 +549,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                   <button
                     key={ec}
                     onClick={() => toggle("exp", ec)}
-                    className={`absolute left-0 flex items-center rounded-lg border px-2.5 text-left text-[13px] font-medium leading-tight transition ${
+                    className={`absolute left-0 flex items-center rounded-lg border px-2.5 text-left text-[0.8125rem] font-medium leading-tight transition ${
                       on ? "border-accent bg-accent/10 text-accent" : "border-line bg-white text-ink hover:border-brand/40"
                     } ${dim ? "opacity-30" : ""}`}
                     style={{ top: i * ROW_H + 6, height: ROW_H - 12, width: "40%" }}
@@ -567,7 +567,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                   <button
                     key={cond.label}
                     onClick={() => toggle("cond", cond.label)}
-                    className={`absolute right-0 flex items-center justify-end rounded-lg border px-2.5 text-right text-[13px] font-medium leading-tight transition ${
+                    className={`absolute right-0 flex items-center justify-end rounded-lg border px-2.5 text-right text-[0.8125rem] font-medium leading-tight transition ${
                       on ? "border-accent bg-accent/10 text-accent" : linked ? "border-success/40 bg-success-soft text-ink" : "border-line bg-white text-ink hover:border-brand/40"
                     } ${dim ? "opacity-30" : ""}`}
                     style={{ top: i * ROW_H + 6, height: ROW_H - 12, width: "40%" }}
@@ -588,7 +588,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
       {conditions.length > 0 && (
         <div className="card p-5">
           <div className="text-sm font-bold text-ink">Where each claim stands</div>
-          <p className="mt-1 text-[13px] text-muted">From documented here, to recognized by the VA, to filed, to rated. Update each as your claim moves.</p>
+          <p className="mt-1 text-[0.8125rem] text-muted">From documented here, to recognized by the VA, to filed, to rated. Update each as your claim moves.</p>
           <div className="mt-3 space-y-3">
             {conditions.map((cond) => {
               const basis = CONDITION_BASIS[cond.label];
@@ -600,7 +600,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                 <div key={cond.label} className="rounded-lg border border-line p-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-ink">{cond.label}</span>
-                    <select value={status} onChange={(e) => setStatus(cond.label, e.target.value)} className="rounded-md border border-line bg-canvas px-2 py-1 text-[13px] text-ink print:hidden">
+                    <select value={status} onChange={(e) => setStatus(cond.label, e.target.value)} className="rounded-md border border-line bg-canvas px-2 py-1 text-[0.8125rem] text-ink print:hidden">
                       <option value="none">Not filed</option>
                       <option value="filed">Filed</option>
                       <option value="granted">Granted</option>
@@ -611,24 +611,24 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
 
                   {/* What to do next for this claim */}
                   <div className="mt-3 rounded-lg border-l-2 border-accent bg-accent/5 p-3">
-                    <div className="text-[13px] font-bold text-ink">{na.headline}</div>
-                    <p className="mt-1 text-[13px] leading-relaxed text-muted">{na.detail}</p>
+                    <div className="text-[0.8125rem] font-bold text-ink">{na.headline}</div>
+                    <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">{na.detail}</p>
 
                     {/* Filed date control */}
                     {status === "filed" && (
                       <>
-                        <label className="mt-2 flex items-center gap-2 text-[13px] font-medium text-ink print:hidden">
+                        <label className="mt-2 flex items-center gap-2 text-[0.8125rem] font-medium text-ink print:hidden">
                           Filed on
                           <input
                             type="date"
                             value={filedOn ?? ""}
                             max={new Date().toISOString().slice(0, 10)}
                             onChange={(e) => setFiled(cond.label, e.target.value)}
-                            className="rounded-md border border-line bg-canvas px-2 py-1 text-[13px] text-ink"
+                            className="rounded-md border border-line bg-canvas px-2 py-1 text-[0.8125rem] text-ink"
                           />
                         </label>
                         {filedOn && (
-                          <div className="mt-1 hidden text-[13px] text-muted print:block">
+                          <div className="mt-1 hidden text-[0.8125rem] text-muted print:block">
                             Filed on {new Date(filedOn + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.
                           </div>
                         )}
@@ -640,24 +640,24 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                       {status === "none" && (
                         <>
                           <FormLink form={VA_FORMS.intent} lead="Start with" />
-                          <label className="flex items-center gap-2 text-[13px] font-medium text-ink">
+                          <label className="flex items-center gap-2 text-[0.8125rem] font-medium text-ink">
                             Filed an Intent to File? On
                             <input
                               type="date"
                               value={itfOn ?? ""}
                               max={new Date().toISOString().slice(0, 10)}
                               onChange={(e) => saveItf(e.target.value)}
-                              className="rounded-md border border-line bg-canvas px-2 py-1 text-[13px] text-ink"
+                              className="rounded-md border border-line bg-canvas px-2 py-1 text-[0.8125rem] text-ink"
                             />
                           </label>
                           {itfOn && (
-                            <p className="text-[13px] leading-relaxed text-muted">
+                            <p className="text-[0.8125rem] leading-relaxed text-muted">
                               {isPastOneYear(itfOn)
                                 ? "That Intent to File may have lapsed — a new one can be filed today, and it's free. Ask your VSO whether the earlier date can still help you."
                                 : `Intent to File on record — ${new Date(itfOn + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} (as you reported it). That's the date your back pay can count from. The VA gives one year from that date to complete the full claim — around ${plusOneYear(itfOn)}. Confirm the exact date on VA.gov or with your VSO.`}
                             </p>
                           )}
-                          <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-[13px] font-semibold text-brand hover:underline">
+                          <a href={FILE_ONLINE_URL} target="_blank" rel="noreferrer" className="text-[0.8125rem] font-semibold text-brand hover:underline">
                             Then file the claim (VA Form 21-526EZ) online at VA.gov
                           </a>
                         </>
@@ -667,18 +667,18 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                           <FormLink form={VA_FORMS.supplemental} lead="Option 1 —" />
                           <FormLink form={VA_FORMS.hlr} lead="Option 2 —" />
                           <FormLink form={VA_FORMS.board} lead="Option 3 —" />
-                          <label className="mt-1 flex items-center gap-2 text-[13px] font-medium text-ink">
+                          <label className="mt-1 flex items-center gap-2 text-[0.8125rem] font-medium text-ink">
                             Decision letter dated
                             <input
                               type="date"
                               value={condDecision[cond.label] ?? ""}
                               max={new Date().toISOString().slice(0, 10)}
                               onChange={(e) => saveDecision(cond.label, e.target.value)}
-                              className="rounded-md border border-line bg-canvas px-2 py-1 text-[13px] text-ink"
+                              className="rounded-md border border-line bg-canvas px-2 py-1 text-[0.8125rem] text-ink"
                             />
                           </label>
                           {condDecision[cond.label] && (
-                            <p className="text-[13px] leading-relaxed text-muted">
+                            <p className="text-[0.8125rem] leading-relaxed text-muted">
                               {isPastOneYear(condDecision[cond.label])
                                 ? "That one-year window looks like it has passed. That doesn't close every door — a Supplemental Claim with new and relevant evidence can still be filed; what usually changes is the effective date. Ask a VSO what's still open for you."
                                 : `The VA's review forms run on a one-year clock from the date on the decision letter — that window ends around ${plusOneYear(condDecision[cond.label])}. After a year some options close, and a Supplemental Claim with new and relevant evidence generally stays open. The exact date is printed on your letter — a VSO can tell you what's still open.`}
@@ -687,7 +687,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                         </>
                       )}
                       {status !== "granted" && (
-                        <Link href="/vso" className="text-[13px] font-semibold text-brand hover:underline">
+                        <Link href="/vso" className="text-[0.8125rem] font-semibold text-brand hover:underline">
                           Find an accredited VSO near you (free help filing)
                         </Link>
                       )}
@@ -709,14 +709,14 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
             </svg>
             <div className="text-sm font-bold text-ink">Benefits you may be leaving on the table</div>
           </div>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+          <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted">
             The VA already recognizes a link between exposures you&apos;ve documented and the conditions below —
             and they&apos;re not in your record yet. If you live with any of them, even mildly, add it: you may be
             able to claim it. This is a prompt to consider with your clinician, not a diagnosis.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {unclaimedRecognized.map((c) => (
-              <span key={c} className="inline-flex items-center rounded-md border border-accent/30 bg-white px-2.5 py-1 text-[13px] font-medium text-ink">
+              <span key={c} className="inline-flex items-center rounded-md border border-accent/30 bg-white px-2.5 py-1 text-[0.8125rem] font-medium text-ink">
                 {c}
               </span>
             ))}
@@ -730,7 +730,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
       {/* Next dot */}
       {next.length > 0 && (
         <div className="rounded-xl border border-accent/30 bg-accent/5 p-5 print:hidden">
-          <div className="text-[13px] font-medium text-muted">Connect your next dot</div>
+          <div className="text-[0.8125rem] font-medium text-muted">Connect your next dot</div>
           <p className="mt-1 text-sm text-ink">Each one makes your record — and your claim — stronger.</p>
           <div className="mt-3 space-y-2">
             {next.slice(0, 3).map((s) => (
@@ -746,7 +746,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
         Open your claim packet
       </Link>
 
-      <p className="border-t border-line pt-4 text-[13px] leading-relaxed text-faint">
+      <p className="border-t border-line pt-4 text-[0.8125rem] leading-relaxed text-faint">
         Every connection here is drawn from what the VA already recognizes. This is your private record — an
         estimate and a record, not a diagnosis or a determination of service connection. Bring it to an
         accredited VSO and your clinician. If anything feels heavy, the Veterans Crisis Line is one tap away: dial 988, then press 1.
@@ -757,7 +757,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
 
 function FormLink({ form, lead }: { form: { number: string; name: string; url: string }; lead: string }) {
   return (
-    <a href={form.url} target="_blank" rel="noreferrer" className="text-[13px] font-semibold text-brand hover:underline">
+    <a href={form.url} target="_blank" rel="noreferrer" className="text-[0.8125rem] font-semibold text-brand hover:underline">
       {lead} VA Form {form.number} ({form.name})
     </a>
   );
@@ -781,10 +781,10 @@ function StatusStrip({ recognized, filed, rated, denied }: { recognized: boolean
                   {s.bad ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M20 6 9 17l-5-5" />}
                 </svg>
               ) : (
-                <span className="text-[12px] font-bold">{i + 1}</span>
+                <span className="text-[0.75rem] font-bold">{i + 1}</span>
               )}
             </span>
-            <span className={`mt-1 text-[12px] leading-none ${s.done || s.bad ? "font-medium text-ink" : "text-faint"}`}>{s.label}</span>
+            <span className={`mt-1 text-[0.75rem] leading-none ${s.done || s.bad ? "font-medium text-ink" : "text-faint"}`}>{s.label}</span>
           </div>
           {i < steps.length - 1 && <div className={`mx-1 mb-3.5 h-0.5 flex-1 ${steps[i + 1].done ? "bg-success" : "bg-line"}`} />}
         </div>
@@ -800,10 +800,10 @@ function Detail({ sel, places }: { sel: { type: "exp" | "cond"; key: string }; p
     return (
       <div className="mt-4 rounded-lg border-l-2 border-accent bg-accent/5 p-4">
         <div className="text-sm font-bold text-ink">{EXPOSURE_LABEL[sel.key] ?? sel.key}</div>
-        {(places[sel.key]?.length ?? 0) > 0 && <div className="mt-1 text-[13px] text-muted">You logged this at: {places[sel.key].join(", ")}</div>}
-        <div className="mt-2 text-[13px] text-ink">Conditions the VA and science link to this exposure: {linkedConds.join(", ")}.</div>
+        {(places[sel.key]?.length ?? 0) > 0 && <div className="mt-1 text-[0.8125rem] text-muted">You logged this at: {places[sel.key].join(", ")}</div>}
+        <div className="mt-2 text-[0.8125rem] text-ink">Conditions the VA and science link to this exposure: {linkedConds.join(", ")}.</div>
         {slug && (
-          <Link href={`/learn/${slug}`} className="mt-2 inline-block text-[13px] font-semibold text-brand hover:underline">
+          <Link href={`/learn/${slug}`} className="mt-2 inline-block text-[0.8125rem] font-semibold text-brand hover:underline">
             Learn what this does to the body
           </Link>
         )}
@@ -820,14 +820,14 @@ function Detail({ sel, places }: { sel: { type: "exp" | "cond"; key: string }; p
         <span className="text-sm font-bold text-ink">{sel.key}</span>
         {/* Neutral, never warning-coloured — see the note in ReportView. */}
         {basis && (
-          <span className={`rounded px-1.5 py-0.5 text-[13px] font-medium ${basis.presumptive ? "bg-success text-white" : "bg-canvas text-muted"}`}>{basis.tag}</span>
+          <span className={`rounded px-1.5 py-0.5 text-[0.8125rem] font-medium ${basis.presumptive ? "bg-success text-white" : "bg-canvas text-muted"}`}>{basis.tag}</span>
         )}
       </div>
-      {basis && <p className="mt-1.5 text-[13px] leading-relaxed text-ink">{basis.cite}</p>}
-      <div className="mt-2 text-[13px] text-muted">
+      {basis && <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink">{basis.cite}</p>}
+      <div className="mt-2 text-[0.8125rem] text-muted">
         Linked exposures: {linked.map((e) => EXPOSURE_LABEL[e] ?? e).join(", ")}.
       </div>
-      <Link href="/conditions" className="mt-2 inline-block text-[13px] font-semibold text-brand hover:underline">
+      <Link href="/conditions" className="mt-2 inline-block text-[0.8125rem] font-semibold text-brand hover:underline">
         See the full breakdown and what to track
       </Link>
     </div>
