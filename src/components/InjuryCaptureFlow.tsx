@@ -16,10 +16,14 @@ const YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_,
 // is asked, progressive disclosure (repeated-mode fields only appear once
 // chosen), and a save-and-exit affordance that's always on screen — not
 // buried at the bottom of a long form.
-export default function InjuryCaptureFlow() {
+export default function InjuryCaptureFlow({ initialClass }: { initialClass?: string } = {}) {
   const { supabase } = useAuth();
 
-  const [incidentClass, setIncidentClass] = useState<IncidentClass | null>(null);
+  // Preselected when the veteran arrives from an injury library page's
+  // "add the place, month and details" link. Only a known class is accepted.
+  const [incidentClass, setIncidentClass] = useState<IncidentClass | null>(() =>
+    initialClass && INCIDENTS.some((x) => x.value === initialClass) ? (initialClass as IncidentClass) : null,
+  );
   const [repeated, setRepeated] = useState(false);
 
   // single-incident fields

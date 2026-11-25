@@ -14,12 +14,11 @@ export default function MedicationsPage() {
       <div className="space-y-4">
         <Link
           href="/medications/add"
-          className="block rounded-xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50"
+          className="block rounded-2xl border border-brand/30 bg-brand/5 p-5 transition hover:border-brand/50"
         >
-          <div className="text-sm font-semibold text-ink">Add a medication</div>
-          <p className="mt-1 text-[13px] leading-relaxed text-muted">
-            Generic or brand name, what you take it for, and roughly when. Open it afterward to read the FDA&apos;s
-            own label.
+          <div className="text-[17px] font-semibold text-ink">Add a medication</div>
+          <p className="mt-1 text-[15px] leading-relaxed text-muted">
+            Tap any medicine and it is on your list. Open it afterward to read the FDA&apos;s own label.
           </p>
         </Link>
 

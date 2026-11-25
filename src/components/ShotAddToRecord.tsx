@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import { createServiceEvent, listServiceEvents, type Provenance, type ServiceEventKind } from "@/lib/serviceEvents";
 
-// One tap from a shot's library page onto the veteran's own shot record.
+// One tap from a shot onto the veteran's own shot record. Used at the top of
+// each Shot library page, and inline under a row on the "Add a shot" list.
 //
 // The three "how do you know" answers ARE the add buttons. That is not a
 // shortcut around the question: migration 0019 makes provenance NOT NULL on
@@ -15,8 +16,8 @@ import { createServiceEvent, listServiceEvents, type Provenance, type ServiceEve
 //
 // What it does NOT ask, and therefore does not store: the year (saved as
 // "Year not sure", never a guessed date) and whether anyone explained the
-// shot (left blank). The quiet link below goes to the full form, on this
-// shot, for anyone who knows the year.
+// shot (left blank). The quiet link below opens the full form on this shot
+// for anyone who knows the year.
 const ANSWERS: { value: Provenance; label: string }[] = [
   { value: "recalled", label: "I remember it" },
   { value: "in_record", label: "It's in my record" },
@@ -25,7 +26,21 @@ const ANSWERS: { value: Provenance; label: string }[] = [
 
 type State = "loading" | "ask" | "saving" | "saved" | "already";
 
-export default function ShotAddToRecord({ slug, name, kind }: { slug: string; name: string; kind: ServiceEventKind }) {
+export default function ShotAddToRecord({
+  slug,
+  name,
+  kind,
+  inline = false,
+  onAddWithDate,
+}: {
+  slug: string;
+  name: string;
+  kind: ServiceEventKind;
+  /** Inside a list row: no card of its own, no heading. */
+  inline?: boolean;
+  /** When set, "add it with the date" opens the full form in place instead of navigating. */
+  onAddWithDate?: () => void;
+}) {
   const { user, supabase } = useAuth();
   const [state, setState] = useState<State>("loading");
   const [err, setErr] = useState("");
@@ -64,11 +79,15 @@ export default function ShotAddToRecord({ slug, name, kind }: { slug: string; na
     setState("saved");
   }
 
-  if (!user || state === "loading") return null;
+  const wrap = inline ? "" : "card card-raise p-5 sm:p-6";
+
+  if (!user || state === "loading") {
+    return inline ? <p className="px-1 py-2 text-[15px] text-muted">One moment…</p> : null;
+  }
 
   if (state === "saved" || state === "already") {
     return (
-      <section className="card card-raise p-5 sm:p-6" aria-live="polite">
+      <section className={wrap} aria-live="polite">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-success-soft text-success" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
@@ -93,10 +112,10 @@ export default function ShotAddToRecord({ slug, name, kind }: { slug: string; na
   }
 
   return (
-    <section className="card card-raise p-5 sm:p-6">
-      <h2 className="text-lg font-semibold tracking-tight text-ink">Add {name} to your shot record</h2>
-      <p className="mt-1 text-[15px] leading-relaxed text-muted">Tap how you know. That is all it takes.</p>
-      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+    <section className={wrap}>
+      {!inline && <h2 className="text-lg font-semibold tracking-tight text-ink">Add {name} to your shot record</h2>}
+      <p className={`${inline ? "" : "mt-1"} text-[15px] leading-relaxed text-muted`}>Tap how you know, and it is saved.</p>
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {ANSWERS.map((a) => (
           <button
             key={a.value}
@@ -110,9 +129,15 @@ export default function ShotAddToRecord({ slug, name, kind }: { slug: string; na
         ))}
       </div>
       {err && <p role="alert" className="mt-3 text-[15px] font-medium text-scarlet">{err}</p>}
-      <Link href={`/shots/add?shot=${slug}`} className="mt-4 inline-block text-[15px] font-semibold text-brand hover:underline">
-        Know the year? Add it with the date instead
-      </Link>
+      {onAddWithDate ? (
+        <button type="button" onClick={onAddWithDate} className="mt-3 text-[15px] font-semibold text-brand hover:underline">
+          Know the year? Add it with the date instead
+        </button>
+      ) : (
+        <Link href={`/shots/add?shot=${slug}`} className="mt-3 inline-block text-[15px] font-semibold text-brand hover:underline">
+          Know the year? Add it with the date instead
+        </Link>
+      )}
     </section>
   );
 }

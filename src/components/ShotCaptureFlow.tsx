@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import MonthYearWheel from "./MonthYearWheel";
+import ShotAddToRecord from "./ShotAddToRecord";
 import { SHOTS, SHOT_BY_SLUG, GROUP_LABEL, type Shot, type ShotGroup } from "@/lib/shotlibrary";
 import { createServiceEvent, INFORMED_CONSENT_OPTIONS, type Provenance, type InformedConsent, type DatePrecision, type ServiceEventKind } from "@/lib/serviceEvents";
 
@@ -29,6 +30,7 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
     return s ? pickedFor(s) : null;
   });
   const [freeText, setFreeText] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -47,15 +49,39 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
 
   if (picked) return <CaptureSheet picked={picked} onCancel={() => setPicked(null)} />;
 
-  const Row = ({ s }: { s: Shot }) => (
-    <button
-      onClick={() => pickShot(s)}
-      className="flex w-full items-baseline justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-sm hover:bg-canvas"
-    >
-      <span className="font-medium text-ink">{s.name}</span>
-      <span className="text-[13px] text-muted">{s.hook}</span>
-    </button>
-  );
+  // Tap a shot and the three "how do you know" answers open right under it:
+  // one more tap saves it, without leaving the list. The full form with the
+  // date is one link away inside that same panel.
+  const renderRow = (s: Shot) => {
+    const open = expanded === s.slug;
+    return (
+      <div key={s.slug}>
+        <button
+          type="button"
+          onClick={() => setExpanded(open ? null : s.slug)}
+          aria-expanded={open}
+          className="row w-full text-left"
+        >
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-semibold leading-snug">{s.name}</span>
+            <span className="mt-0.5 block text-sm leading-snug text-muted">{s.hook}</span>
+          </span>
+          <span className={`flex-none text-[15px] font-semibold ${open ? "text-muted" : "text-brand"}`}>{open ? "Close" : "Add"}</span>
+        </button>
+        {open && (
+          <div className="border-t border-line bg-canvas px-4 pb-4 pt-3">
+            <ShotAddToRecord
+              inline
+              slug={s.slug}
+              name={s.name}
+              kind={pickedFor(s).kind}
+              onAddWithDate={() => pickShot(s)}
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -76,10 +102,10 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
             value={freeText}
             onChange={(e) => setFreeText(e.target.value)}
             placeholder="Type it in your own words"
-            className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-faint focus:border-brand focus:ring-2 focus:ring-brand/15"
+            className="field flex-1"
           />
-          <button onClick={pickFreeText} disabled={!freeText.trim()} className="btn btn-primary disabled:opacity-50">
-            ＋ Something else
+          <button onClick={pickFreeText} disabled={!freeText.trim()} className="btn btn-primary flex-none">
+            Add it
           </button>
         </div>
       </div>
@@ -89,7 +115,7 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
           {filtered.length === 0 ? (
             <p className="p-4 text-sm text-muted">Nothing matches. Type it in your own words above instead.</p>
           ) : (
-            <div className="divide-y divide-line">{filtered.map((s) => <Row key={s.slug} s={s} />)}</div>
+            <div className="divide-y divide-line overflow-hidden rounded-2xl">{filtered.map(renderRow)}</div>
           )}
         </div>
       ) : (
@@ -101,12 +127,15 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
               <div key={g} className="card">
                 <button
                   onClick={() => setOpenGroup(open ? null : g)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-ink"
+                  aria-expanded={open}
+                  className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-3 text-left text-[15px] font-semibold text-ink"
                 >
                   {GROUP_LABEL[g]}
-                  <span className="text-muted">{open ? "−" : "+"}</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={`h-5 w-5 flex-none text-muted transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
-                {open && <div className="divide-y divide-line border-t border-line">{items.map((s) => <Row key={s.slug} s={s} />)}</div>}
+                {open && <div className="divide-y divide-line overflow-hidden rounded-b-2xl border-t border-line">{items.map(renderRow)}</div>}
               </div>
             );
           })}

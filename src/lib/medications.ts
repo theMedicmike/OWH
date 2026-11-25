@@ -92,6 +92,18 @@ export async function createMedication(
   return { status: "saved", id: (data as { id: string }).id };
 }
 
+/** The one follow-up after a one-tap add: what he takes it for, in his own
+ *  words. Free text only, never chosen by the app (the 38 CFR 3.310 hinge). */
+export async function setMedicationTakenFor(
+  supabase: SupabaseClient,
+  id: string,
+  takenFor: string,
+): Promise<{ status: "saved" } | { status: "error"; message: string }> {
+  const { error } = await supabase.from("medications").update({ taken_for: takenFor.trim() || null }).eq("id", id);
+  if (error) return { status: "error", message: error.message };
+  return { status: "saved" };
+}
+
 export async function deleteMedication(supabase: SupabaseClient, id: string): Promise<void> {
   await supabase.from("medications").delete().eq("id", id);
 }
