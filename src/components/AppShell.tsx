@@ -340,14 +340,15 @@ export default function AppShell({
               Back
             </button>
           )}
-          <h1 className="min-w-0 truncate px-1 text-[17px] font-semibold tracking-tight text-ink">{title}</h1>
+          <h1 className="min-w-0 flex-1 truncate px-1 text-[17px] font-semibold tracking-tight text-ink">{title}</h1>
 
-          <Link href="/support" className="btn btn-secondary btn-sm ml-auto flex-none rounded-full">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5 text-scarlet" aria-hidden="true">
+          {/* On a phone this is the heart alone, 44px square, so the page
+              title keeps its room. The label returns at tablet width. */}
+          <Link href="/support" aria-label="Need support?" className="btn btn-secondary btn-sm flex-none rounded-full max-sm:h-11 max-sm:w-11 max-sm:px-0">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-scarlet" aria-hidden="true">
               <path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" />
             </svg>
             <span className="hidden sm:inline">Need support?</span>
-            <span className="sm:hidden">Support</span>
           </Link>
 
           {signedOut ? (
