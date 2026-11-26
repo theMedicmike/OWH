@@ -42,7 +42,7 @@ function joinPlain(xs: string[]): string {
 }
 
 function Dot({ ready }: { ready: boolean }) {
-  return <span aria-hidden="true" className={`h-2.5 w-2.5 flex-none rounded-full ${ready ? "bg-success" : "bg-brand"}`} />;
+  return <span aria-hidden="true" className={`mt-[0.4em] h-2.5 w-2.5 flex-none rounded-full ${ready ? "bg-success" : "bg-brand"}`} />;
 }
 
 function Mark({ state, n }: { state: SpineState; n: number }) {
@@ -129,7 +129,7 @@ export default function HomeDoors({ loaded, page, claim, records }: HomeDoorsPro
         <section aria-labelledby="door-page" className={DOOR}>
           <h3 id="door-page" className="display text-[1.6875rem] leading-[1.1] text-ink sm:text-[1.875rem]">Your First Page</h3>
           <p className="mt-2 text-[0.9375rem] leading-snug text-muted sm:text-[0.96875rem]">For the doctor. One sheet, two sides, the same layout every visit.</p>
-          <p className="mt-4 flex min-h-6 items-center gap-2.5 text-[0.90625rem] text-ink" role="status">
+          <p className="mt-4 flex min-h-6 items-start gap-2.5 text-[0.90625rem] leading-snug text-ink" role="status">
             {loaded && <Dot ready={ready} />}
             {pageStatus}
           </p>
@@ -166,7 +166,7 @@ export default function HomeDoors({ loaded, page, claim, records }: HomeDoorsPro
         <section aria-labelledby="door-claim" className={DOOR}>
           <h3 id="door-claim" className="display text-[1.6875rem] leading-[1.1] text-ink sm:text-[1.875rem]">Your claim</h3>
           <p className="mt-2 text-[0.9375rem] leading-snug text-muted sm:text-[0.96875rem]">For VA. Six steps that end in a packet you can file or hand to a VSO.</p>
-          <p className="mt-4 flex min-h-6 items-center gap-2.5 text-[0.90625rem] text-ink" role="status">
+          <p className="mt-4 flex min-h-6 items-start gap-2.5 text-[0.90625rem] leading-snug text-ink" role="status">
             {loaded && <Dot ready={!next} />}
             {claimStatus}
           </p>
