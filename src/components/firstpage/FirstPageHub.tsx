@@ -3,26 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../AuthProvider";
-import { buildPage, lintPage, listPages, listVisits, NOT_SET_UP, type FpPage, type FpVisit, type LintProblem, type PageData } from "@/lib/firstPage";
+import { buildPage, lintPage, listPages, listVisits, NOT_SET_UP, PAGE_PARTS as SECTIONS, type FpPage, type FpVisit, type LintProblem, type PageData } from "@/lib/firstPage";
 import { Notice, Stance } from "./Controls";
 import { SpineRow, type SpineState } from "../ui";
 
-// The ten parts of the page, in the order they are best filled in. Each one
-// knows how to tell whether it has been done, from the page data alone.
-type Section = { href: string; label: string; what: string; done: (p: PageData) => boolean };
-
-const SECTIONS: Section[] = [
-  { href: "/first-page/sources", label: "Sources", what: "Every document behind the page, numbered, with its date and where the request stands.", done: (p) => p.sources.length > 0 },
-  { href: "/first-page/profile", label: "Who you are, who comes with you", what: "Year of birth, the service lines, your care partner, how to help you in the room, the return address for the doctor's note.", done: (p) => !!p.born && !!p.carePartner && !!p.returnNoteTo },
-  { href: "/first-page/allergies", label: "Allergies", what: 'Even "No known drug allergies." The box on the front is never blank.', done: (p) => p.allergies.some((a) => a.show) },
-  { href: "/first-page/rows", label: "Your problems, medicines, postings, exposures and shots", what: "Already in your record. Here you pick what prints, attach a source to each row, and copy medication directions word for word.", done: (p) => p.problems.some((r) => r.show && r.sourceNumber != null) && p.medications.some((r) => r.show && r.sourceNumber != null) },
-  { href: "/first-page/studies", label: "Key studies", what: "The MRI, the sleep study, the audiogram: type, date, and whether the report is in the folder.", done: (p) => p.studies.some((r) => r.show) },
-  { href: "/first-page/tried", label: "What has been tried", what: "Medicines and therapies tried before, with the year and why each stopped.", done: (p) => p.tried.some((r) => r.show) },
-  { href: "/first-page/results", label: "Results that changed", what: "Two values, two dates, two sources. Copied as written. No arrows.", done: (p) => p.results.some((r) => r.show) },
-  { href: "/first-page/record", label: "Your story, recorded", what: "Ten minutes in your own words, on a good day. You pick the three lines the doctor reads first.", done: () => true },
-  { href: "/first-page/chain", label: "The line between them", what: "The words you set in a chain on the front of the page, in your order. Yours, never the app's.", done: (p) => p.chain.length > 0 },
-  { href: "/first-page/visit", label: "This visit", what: "Who you are seeing, what is open today, your two questions, since last visit, and the three lines.", done: (p) => !!p.visit && p.readFirst.length === 3 && p.questions.length === 2 },
-];
+// The ten parts live in lib/firstPage.ts (PAGE_PARTS) so Home's First Page
+// door reads the same "done" tests as this hub and the two never disagree.
 
 export default function FirstPageHub() {
   const { supabase, user } = useAuth();

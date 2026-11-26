@@ -8,21 +8,36 @@ import { TextSizeControl } from "./TextSize";
 import OpsecGate from "./OpsecGate";
 import { BOOK_PUBLIC } from "@/lib/bookVisibility";
 
-type NavItem = { href: string; label: string; d: string; step?: number };
-type NavSection = { title?: string; tag?: string; items: NavItem[] };
+type NavItem = { href: string; label: string; d: string; step?: number; exact?: boolean };
+type NavSection = { title?: string; tag?: string; items: NavItem[]; more?: NavItem[] };
 
-// The nav IS the pipeline. A veteran should be able to read the sidebar and
-// know exactly what building a record takes, and where they are in it: six
-// steps, in order, ending at the packet, drawn as dots on one line. Everything
-// that isn't a step sits below so it can't be mistaken for one.
+const PAGE_ICON = "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM8 12h8M8 16h5";
+
+// The nav matches Home's two doors. One record, two outputs: "Your First
+// Page" (for the doctor) and "Your claim" (for VA, six steps drawn as dots on
+// one line, ending at the packet). The records both doors share sit under
+// "Your records". The claim's coaching pages live ONLY in the claim group, so
+// nothing on the First Page side ever routes toward the claim.
 const SECTIONS: NavSection[] = [
   {
     items: [
-      { href: "/dashboard", label: "Dashboard", d: "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" },
+      { href: "/dashboard", label: "Home", d: "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" },
     ],
   },
   {
-    title: "Build your record",
+    // The First Page (decided 2026-11-24): the one two-sided sheet a veteran
+    // hands a specialist. It faces the clinic, not the claim.
+    title: "Your First Page",
+    items: [
+      { href: "/first-page", label: "Build your page", d: PAGE_ICON, exact: true },
+      { href: "/first-page/record", label: "Your story, recorded", d: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" },
+      { href: "/first-page/chain", label: "The line between them", d: "M12 3v18M12 5.5a1.5 1.5 0 1 0 0 .01M12 12a1.5 1.5 0 1 0 0 .01M12 18.5a1.5 1.5 0 1 0 0 .01" },
+      { href: "/first-page/visit", label: "This visit", d: "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" },
+      { href: "/first-page/print", label: "Print your page", d: "M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z" },
+    ],
+  },
+  {
+    title: "Your claim",
     items: [
       // ORDER = THE SOP. Service, then health, then the map. If these move
       // again, the landing page's POINTS list, the Dashboard's start-here
@@ -35,40 +50,35 @@ const SECTIONS: NavSection[] = [
       { step: 5, href: "/buddies", label: "Battle buddies",   d: "" },
       { step: 6, href: "/report",  label: "Claim packet",     d: "" },
     ],
-  },
-  {
-    // Its own section, deliberately NOT nested inside "Learn & live well":
-    // council ruling 2026-08-07/2026-08-09. Discoverable ALONGSIDE the Exposure
-    // Library and Whole Health, never visually equated as a sibling under the
-    // same heading. No step numbers: renumbering breaks the help page, which
-    // hardcodes step numbers in prose in six places.
-    title: "Also in your record",
-    items: [
-      { href: "/shots", label: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
-      { href: "/injuries", label: "Injuries & events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
-      { href: "/vessels", label: "Ships you served aboard", d: "M12 2v6M9 5h6M3 13h18l-2.2 6.2a2 2 0 0 1-1.9 1.3H7.1a2 2 0 0 1-1.9-1.3zM5.5 13V9h13v4" },
-      { href: "/medications", label: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
-      // The First Page (decided 2026-11-24): the one two-sided sheet a veteran
-      // hands a specialist. Not a numbered step, because it faces the clinic,
-      // not the claim.
-      { href: "/first-page", label: "Your First Page", d: "M14 3v5h5M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5zM8 12h8M8 16h5" },
+    // After the packet. Deliberately NOT numbered: step 6 hands you a packet
+    // and the record is finished. A seventh number would tell a veteran who
+    // stopped at the packet that he is not done. He is.
+    more: [
       // Council ruling 2026-08-14: dropdown-only lookup of the PUBLISHED
       // presumptive lists. Never a question about the veteran's health.
       { href: "/presumptives", label: "What VA presumes", d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
-    ],
-  },
-  {
-    // What happens after the packet. Deliberately NOT numbered: step 6 hands
-    // you a packet and the record is finished. A seventh number would tell a
-    // veteran who stopped at the packet that he is not done. He is.
-    title: "When you're ready to file",
-    items: [
-      { href: "/vso",     label: "Find a VSO",    d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
       { href: "/cp-exam", label: "Your C&P exam", d: "M9 11l2 2 4-4M5 4h14a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" },
+      { href: "/vso",     label: "Find a VSO",    d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
+      { href: "/clinician", label: "For your clinician", d: "M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4M20 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" },
+      { href: "/denied",  label: "After a denial", d: "M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" },
+      { href: "/bdd",     label: "Filing before you separate", d: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2" },
     ],
   },
   {
-    title: "Learn & live well",
+    // No step numbers: renumbering breaks the help page, which hardcodes step
+    // numbers in prose. Shared by both doors: add once, use on either side.
+    title: "Your records",
+    items: [
+      { href: "/shots", label: "Your shot record", d: "M9 2h6M12 2v6M7 8h10l1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L7 8zM9 13h6M9 17h4" },
+      { href: "/injuries", label: "Injuries and events", d: "M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5zM12 8v5M12 16h.01" },
+      { href: "/vessels", label: "Ships you served aboard", d: "M12 2v6M9 5h6M3 13h18l-2.2 6.2a2 2 0 0 1-1.9 1.3H7.1a2 2 0 0 1-1.9-1.3zM5.5 13V9h13v4" },
+      { href: "/medications", label: "Your medications", d: "M10.5 20.5a4.95 4.95 0 0 1-7-7l6-6a4.95 4.95 0 0 1 7 7l-6 6zM8.5 8.5l7 7" },
+    ],
+  },
+  {
+    // Council ruling 2026-08-07/2026-08-09: the Exposure Library is its own
+    // section, never a sibling of the records.
+    title: "Library",
     items: [
       { href: "/learn",     label: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
       ...(BOOK_PUBLIC ? [{ href: "/book",      label: "Read the book",    d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" }] : []),
@@ -239,11 +249,23 @@ export default function AppShell({
                   <NavLink
                     key={item.href}
                     item={item}
-                    active={pathname === item.href || pathname.startsWith(item.href + "/")}
+                    active={pathname === item.href || (!item.exact && pathname.startsWith(item.href + "/"))}
                     onClick={() => setOpen(false)}
                   />
                 ))}
               </div>
+              {section.more && (
+                <div className="mt-1.5 space-y-0.5">
+                  {section.more.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      item={item}
+                      active={pathname === item.href || pathname.startsWith(item.href + "/")}
+                      onClick={() => setOpen(false)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
@@ -340,6 +362,14 @@ export default function AppShell({
             </button>
           )}
           <h1 className="min-w-0 flex-1 truncate px-1 text-[1.0625rem] font-semibold tracking-tight text-ink">{title}</h1>
+
+          {/* Home only: the guide, one tap away. "Help" on a phone. */}
+          {isDashboard && (
+            <Link href="/help" className="btn btn-ghost btn-sm flex-none max-sm:min-h-11">
+              <span className="hidden sm:inline">How to use this</span>
+              <span className="sm:hidden">Help</span>
+            </Link>
+          )}
 
           {/* On a phone this is the heart alone, 44px square, so the page
               title keeps its room. The label returns at tablet width. */}

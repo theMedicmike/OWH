@@ -646,6 +646,25 @@ export async function buildPage(supabase: SupabaseClient, visitId: string | null
   };
 }
 
+// ── the ten parts of the page ───────────────────────────────────────────────
+// In the order they are best filled in. Each knows from the page data alone
+// whether it has been done. The hub draws them as its spine; Home's First Page
+// door names the ones not done yet, in plain words (`short`).
+export type PagePart = { href: string; label: string; short: string; what: string; done: (p: PageData) => boolean };
+
+export const PAGE_PARTS: PagePart[] = [
+  { href: "/first-page/sources", label: "Sources", short: "your sources", what: "Every document behind the page, numbered, with its date and where the request stands.", done: (p) => p.sources.length > 0 },
+  { href: "/first-page/profile", label: "Who you are, who comes with you", short: "who you are", what: "Year of birth, the service lines, your care partner, how to help you in the room, the return address for the doctor's note.", done: (p) => !!p.born && !!p.carePartner && !!p.returnNoteTo },
+  { href: "/first-page/allergies", label: "Allergies", short: "allergies", what: 'Even "No known drug allergies." The box on the front is never blank.', done: (p) => p.allergies.some((a) => a.show) },
+  { href: "/first-page/rows", label: "Your problems, medicines, postings, exposures and shots", short: "which rows print", what: "Already in your record. Here you pick what prints, attach a source to each row, and copy medication directions word for word.", done: (p) => p.problems.some((r) => r.show && r.sourceNumber != null) && p.medications.some((r) => r.show && r.sourceNumber != null) },
+  { href: "/first-page/studies", label: "Key studies", short: "key studies", what: "The MRI, the sleep study, the audiogram: type, date, and whether the report is in the folder.", done: (p) => p.studies.some((r) => r.show) },
+  { href: "/first-page/tried", label: "What has been tried", short: "what has been tried", what: "Medicines and therapies tried before, with the year and why each stopped.", done: (p) => p.tried.some((r) => r.show) },
+  { href: "/first-page/results", label: "Results that changed", short: "results that changed", what: "Two values, two dates, two sources. Copied as written. No arrows.", done: (p) => p.results.some((r) => r.show) },
+  { href: "/first-page/record", label: "Your story, recorded", short: "your story", what: "Ten minutes in your own words, on a good day. You pick the three lines the doctor reads first.", done: () => true },
+  { href: "/first-page/chain", label: "The line between them", short: "the line between them", what: "The words you set in a chain on the front of the page, in your order. Yours, never the app's.", done: (p) => p.chain.length > 0 },
+  { href: "/first-page/visit", label: "This visit", short: "this visit", what: "Who you are seeing, what is open today, your two questions, since last visit, and the three lines.", done: (p) => !!p.visit && p.readFirst.length === 3 && p.questions.length === 2 },
+];
+
 // ── the sheet: the page as the app shows it ─────────────────────────────────
 // The one-page face of the record, on sign-in and on Home. It is drawn from
 // the same assembled page the print uses (buildPage), so it shows only rows the
@@ -705,7 +724,7 @@ export function sheetDate(d: Date = new Date()): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-const firstYear = (s: string) => (s.match(/(19|20)d{2}/) ?? [""])[0];
+const firstYear = (s: string) => (s.match(/\b(19|20)\d{2}\b/) ?? [""])[0];
 const sentence = (s: string) => (s && !/[.!?]$/.test(s) ? s + "." : s);
 
 export function sheetFromPage(p: PageData): SheetData {
@@ -720,7 +739,7 @@ export function sheetFromPage(p: PageData): SheetData {
     .sort((a, b) => (a.year || "9999").localeCompare(b.year || "9999"));
   const named = p.name && p.name !== "Name not set" ? p.name : "";
   return {
-    who: [named, p.line1].filter(Boolean).join(". ").replace(/../g, "."),
+    who: [named, p.line1].filter(Boolean).join(". ").replace(/\.\.+/g, "."),
     updated: sheetDate(),
     ownWords: p.readFirst.slice(0, 3),
     served,

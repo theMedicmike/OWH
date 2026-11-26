@@ -176,7 +176,8 @@ export default function LocationsView() {
     <div className="space-y-4">
       <p className="text-[0.9375rem] leading-relaxed text-muted">
         Every place you&apos;ve logged. Tap a location to learn its background, review the documented
-        exposures tied to it, or remove it from your record.
+        exposures tied to it, or remove it from your record.{" "}
+        <Link href="/exposures" className="font-semibold text-brand hover:underline">See every exposure you ticked</Link>.
       </p>
 
       {rows.length > 0 && (

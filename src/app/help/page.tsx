@@ -41,7 +41,8 @@ const CORE_STEPS: Step[] = [
       "When you tap the link in that email, a screen comes up headed “Set a new password.” There are two boxes: type your new password in the first, then the same thing again in the second. It has to be at least 8 characters, and a phrase you will actually remember beats something short and clever. Tap “Save my new password,” then “Go to your record.” Nothing you built has changed.",
       "If that screen says “That link has expired,” tap “Send me a new link.” That takes you back to the sign-in screen — it does not email you on its own. From there tap “Forgot your password?” again, put your email in, and tap “Send me a reset link.” If it keeps failing no matter what you do, that is on our end and not on you: email michael@operationwholehealth.org and we will get you back in.",
       "The first screen after you sign in is a full screen titled “Before you begin — keep it unclassified.” It is asking you not to type anything classified, secret, or covered by a non-disclosure agreement. Broad strokes are all this needs — a general place, a rough year, the kind of exposure. You will only ever see it once.",
-      "Then you land on your home page, headed “Your First Page.” At the top is your own page, mostly empty the first time, with a red “Print for your next visit” button and an outlined “Add to your page” button beside it. It is the first item in the menu (the app sometimes calls it your Dashboard) if you ever need to get back to it. Further down is a box headed “Verify your service.” That is the heading, not the button. The button is the long blue bar underneath reading “I affirm I am a U.S. veteran or service member.” Tap that.",
+      "Then you land on Home, headed “Your record.” It has two doors, side by side on a computer and one above the other on a phone. “Your First Page” is for your doctor: your own page, empty the first time, with a red “Start your page” button. “Your claim” is for VA: the six steps, each marked Done, Next or Not yet, with a “Continue” button for the next one. Home is the first item in the menu if you ever need to get back to it.",
+      "To mark yourself as a veteran, open Account and find the box headed “Verify your service.” That is the heading, not the button. The button is the long blue bar underneath reading “I affirm I am a U.S. veteran or service member.” Tap that.",
       "Honest note: that is as far as verification goes today. The little tag will read “Self-attested.” The “Verify with ID.me” button says “Coming soon” and does not work yet, and uploading your DD-214 does not change that tag either. It does not affect your packet one bit.",
     ],
     warn: {
@@ -52,7 +53,7 @@ const CORE_STEPS: Step[] = [
   {
     title: "Tell it about your service",
     body: [
-      "In the menu, under “Build your record,” tap 1 “Your service.”",
+      "In the menu, under “Your claim,” tap 1 “Your service.” Or on Home, tap it in the “Your claim” door.",
       "On a phone the menu is hidden. In the top-left corner of the screen there is a small square button with three short lines stacked on top of each other. Tap it and the menu slides out from the left; tap anywhere else to close it again. On a computer the menu is already down the left-hand side — nothing to tap.",
       "The very first time you tap that — and only the first time — you get a screen headed “Before you start — three things worth knowing.” It is a short orientation, with a “Sample record” you can look at to see where this ends up. Read it or don't; tap “Let's build your record →” at the bottom and you are into the questions. You will never see it again.",
       "Then it is one screen, and most of it is taps. Tap your branch, then:",
@@ -63,7 +64,7 @@ const CORE_STEPS: Step[] = [
       "Your VA disability rating, if you have one (tap “Not yet” if you don't), and whether you get health care from VA. Your name is last, and it is optional.",
       "Tap “Save and continue” and you land on 2 “Your conditions,” the next step.",
     ],
-    tip: "Tap “Save and continue” at the bottom. About the button at the top of the page reading “Prefer to talk? Voice guided intake”: fair warning, because the label is wrong. That screen is a typed conversation — there is no microphone on it. You type your answers into a box and tap “Send.” And it does not save for you: when it works out a place it shows you a box headed “Proposed check-in,” and nothing goes on your record until you read it and tap “Save to my timeline.” If you want to actually talk to something, that is “Talk to Medic Mike” — step 6.",
+    tip: "Tap “Save and continue” at the bottom. About the button at the top of the page reading “Prefer to talk? Voice guided intake”: fair warning, because the label is wrong. That screen is a typed conversation — there is no microphone on it. You type your answers into a box and tap “Send.” And it does not save for you: when it works out a place it shows you a box headed “Proposed check-in,” and nothing goes on your record until you read it and tap “Save to my timeline.” If you want to actually talk to something, that is “Ask Medic Mike,” under “Help and Support” in the menu.",
   },
   {
     title: "Add what you live with",
@@ -128,7 +129,7 @@ const CORE_STEPS: Step[] = [
 
 const MORE_STEPS: Step[] = [
   {
-    title: "Talk to Medic Mike — the one you can actually talk to",
+    title: "Ask Medic Mike: the one you can actually talk to",
     body: [
       "In the menu under “Help and Support”: “Ask Medic Mike.” It is also at the bottom of Home.",
       "Mike is a guide — not a doctor, not a lawyer, not the VA. Ask him anything about the app, or about what you are reading.",
@@ -171,7 +172,7 @@ const MORE_STEPS: Step[] = [
     points: [
       "“Let others who served where I did confirm my exposures” — this is the one that strengthens your record. It shares only the place, the time and the type of exposure. Never your name, never your health.",
       "“I am open to reconnecting with battle buddies” — this is the social one. Nobody gets your contact details unless you both agree. The next point is where that agreeing actually happens.",
-      "When another veteran asks to connect with you, a card headed “A battle buddy asked to connect” shows up on your Dashboard, with roughly where and when you overlapped and two buttons, “Accept” and “Decline.” That card is the agreeing. Accept and you are connected; Decline turns it down and the card goes for good rather than coming back later, so treat it as no rather than not yet. The same requests also wait for you at the top of this page under “Someone wants to reconnect,” with the same two buttons.",
+      "When another veteran asks to connect with you, a card headed “A battle buddy asked to connect” shows up at the top of Home, with roughly where and when you overlapped and two buttons, “Accept” and “Decline.” That card is the agreeing. Accept and you are connected; Decline turns it down and the card goes for good rather than coming back later, so treat it as no rather than not yet. The same requests also wait for you at the top of this page under “Someone wants to reconnect,” with the same two buttons.",
     ],
     warn: {
       label: "If the list is empty",
@@ -299,7 +300,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "Your First Page — one sheet for a specialist",
     body: [
-      "It is the page at the top of your home screen. Tap “Add to your page” to fill it in. It is a single two-sided sheet you hand a specialist at check-in, so you do not start from zero every visit. It faces the clinic, not your claim: it reads from your record and never writes anything back into it.",
+      "It is the left door on Home, “Your First Page.” Tap “Add to your page” to fill it in (on a new account the button reads “Start your page”). It is a single two-sided sheet you hand a specialist at check-in, so you do not start from zero every visit. It faces the clinic, not your claim: it reads from your record and never writes anything back into it.",
       "The page lists ten short parts in order, each marked Done, Next or Not yet. Tap the one marked Next. Most of them are taps: how you know something and where a records request stands are big buttons, and the common answers are buttons too: “No known drug allergies,” study types like MRI or sleep study, the medicines already on your list. A quick pick only starts the line; you still add the date and the source yourself.",
       "Under “What prints from your record,” tap “Print this row” on anything you want on the sheet and it saves on the tap. Mental-health conditions, sexual trauma and assault start switched off and stay off unless you turn them on.",
       "“The line between them” is the column of words on the right of the page, joined by one red line: what you were around, then what changed, in the order you lived it. Tap a word from your own record to add it, or write your own, and use Up and Down to set the order. The words are yours. The app never adds one, never moves one, and never says what leads to what, and the page says under it: This is my record, not a diagnosis.",
@@ -313,7 +314,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "If your claim gets denied",
     body: [
-      "If one of your conditions on “Connect the dots” is marked Denied, your Dashboard shows a card: “A denial isn't the end — see your next steps →.” Tap it any time, or find it by going to that condition directly.",
+      "If one of your conditions on “Connect the dots” is marked Denied, the “Your claim” door on Home shows a line: “A denial is not the end. See your next steps.” It is also in the menu under “Your claim”: “After a denial.”",
       "That page explains why claims usually get denied, lays out your three real lanes — Supplemental Claim, Higher-Level Review, or Board Appeal — in plain language, and links straight to the parts of this app that build a stronger case: checking your documented links, asking someone to corroborate, and rebuilding your packet.",
       "It also names one thing most veterans are never told about: Individual Unemployability, usually written TDIU. It is for a veteran whose service-connected conditions stop him holding down steady work, even when his combined rating is under 100 percent. The page names the form and tells you to ask a VSO — it does not work out whether it fits you, because that depends on rating thresholds this app deliberately does not calculate. Ask about it out loud at your next appointment anyway.",
       "It also has “How to read your decision letter” — what each section of a real VA decision letter means, and which one (“Reasons for Decision”) actually tells you what evidence was missing.",
@@ -323,7 +324,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "Still serving? File before you separate",
     body: [
-      "If your Account says you're still serving, your Dashboard shows a card: “File before you separate — see the BDD timeline →.”",
+      "If your Account says you're still serving, the “Your claim” door on Home shows a line: “Still serving? You can file before you separate.” It is also in the menu under “Your claim”: “Filing before you separate.”",
       "Benefits Delivery at Discharge lets you file your VA claim while you're still in — between 180 and 90 days before you separate — instead of waiting until you're already out. That page lays out the window and what VA requires before you leave.",
     ],
     tip: "Missed the window? Nothing here is worse for having waited — you just file the standard way once you're out.",
@@ -348,8 +349,8 @@ const MORE_STEPS: Step[] = [
     title: "Look things up",
     body: ["A few places to read rather than build:"],
     points: [
-      "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required. One straight thing about it, printed at the bottom of every page in there: it is drawn from the government's and science's own record and every page cites its sources, but it has not yet been reviewed by a named clinician or toxicologist. Read it as a good first pass to take to your doctor and your VSO, not as the last word.",
-      "Your locations and your exposures — on your Dashboard, under “Also in your record,” tap “Your locations” or “Your exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
+      "“Exposure library” (under Library) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required. One straight thing about it, printed at the bottom of every page in there: it is drawn from the government's and science's own record and every page cites its sources, but it has not yet been reviewed by a named clinician or toxicologist. Read it as a good first pass to take to your doctor and your VSO, not as the last word.",
+      "Your locations and your exposures: on 3 “Where you served,” after you add a place, tap “see all your places.” At the top of that list, “See every exposure you ticked” opens your exposures. On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
       "“Whole health” (in the small print at the very bottom of the menu) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
       "“What VA presumes” — two rows of big buttons, “When did you serve?” and “Where did you serve?” Tap one of each and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation, and cold injury for former prisoners of war. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
       "“Your C&P exam, demystified” — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up. It is in the menu under “When you're ready to file,” and again under “Guides” at the bottom of the Exposure library.",
@@ -502,52 +503,42 @@ export default function HelpPage() {
           <p>
             <strong className="text-ink">Finding your way around.</strong> On a phone the menu hides
             behind the small button in the top-left corner with three short lines stacked on top of
-            each other. On a computer it is always down the left-hand side. It reads top to bottom in
-            the order you would actually work: your Dashboard at the top;{" "}
-            <strong>&ldquo;Build your record&rdquo;</strong> — the six numbered steps, ending at your
-            packet; then, under <strong>&ldquo;Also in your record&rdquo;</strong> and with no numbers, the
-            things you can add whenever you like — your shot record, injuries &amp; events, ships you
-            served aboard, your medications, your First Page, and what VA presumes;
-            then <strong>&ldquo;When you&rsquo;re ready to file&rdquo;</strong> — the VSO finder and
-            the C&amp;P exam page; then <strong>&ldquo;Learn &amp; live well,&rdquo;</strong> your Account, and, under <strong>&ldquo;Help and Support,&rdquo;</strong> this guide and Medic Mike.
-            Anything without a number beside it is optional, and that is the whole rule: if the six
-            numbered steps are done, you are done.
+            each other. On a computer it is always down the left-hand side. It is grouped the way Home
+            is: <strong>&ldquo;Home&rdquo;</strong> at the top; then{" "}
+            <strong>&ldquo;Your First Page,&rdquo;</strong> the parts of the page you hand your doctor;
+            then <strong>&ldquo;Your claim,&rdquo;</strong> the six numbered steps ending at your packet,
+            and under them, with no numbers, what VA presumes, your C&amp;P exam, the VSO finder, a
+            page for your clinician, what to do after a denial, and filing before you separate; then{" "}
+            <strong>&ldquo;Your records,&rdquo;</strong> the things both sides share: your shot record,
+            injuries and events, ships you served aboard and your medications; then{" "}
+            <strong>&ldquo;Library,&rdquo;</strong> your Account, and{" "}
+            <strong>&ldquo;Help and Support,&rdquo;</strong> with this guide, why we built this, and
+            Medic Mike. Anything without a number beside it is optional, and that is the whole rule for
+            the claim: if the six numbered steps are done, you are done.
           </p>
           <p>
-            <strong className="text-ink">Your Dashboard.</strong> It is home, and it opens on your
-            First Page. Below the page, the six steps are listed in order under{" "}
-            <strong>&ldquo;The six steps that feed your page,&rdquo;</strong> each marked Done, Next or
-            Not yet; tap any one to open it. Under <strong>&ldquo;Also in your record&rdquo;</strong> are
-            your locations, exposures, shot record, injuries and medications, and, if you
-            served in the Navy, the Marine Corps or the Coast Guard (or once you add a ship), your
-            ships. That ships line is the one that is conditional, because an infantryman will never
+            <strong className="text-ink">Home.</strong> One record, two outputs. The left door,{" "}
+            <strong>&ldquo;Your First Page,&rdquo;</strong> is for your doctor. It shows the top of your
+            own page, drawn only from what you have put in, and a line that says either that it is ready
+            to print or which parts are still missing. The red{" "}
+            <strong>&ldquo;Print for your next visit&rdquo;</strong> button opens the print preview, and{" "}
+            <strong>&ldquo;Add to your page&rdquo;</strong> opens the parts you fill in. On a new account
+            the red button reads <strong>&ldquo;Start your page&rdquo;</strong> instead. The right door,{" "}
+            <strong>&ldquo;Your claim,&rdquo;</strong> is for VA. It lists the six steps, each marked
+            Done, Next or Not yet, and its button continues with the next one. You add things once;
+            nothing from the claim prints on your page.
+          </p>
+          <p>
+            <strong className="text-ink">Under the doors.</strong>{" "}
+            <strong>&ldquo;Your records&rdquo;</strong> has four tiles, shot record, injuries and
+            events, medications and ships, each reading Added or Not yet. The ships tile reads{" "}
+            <strong>&ldquo;If you served aboard&rdquo;</strong> unless you served in the Navy, the
+            Marine Corps or the Coast Guard (or have added a ship), because an infantryman will never
             have a ship and a permanent &ldquo;Not yet&rdquo; would be telling him his record is
-            missing something that cannot exist. <strong>&ldquo;More&rdquo;</strong> at the bottom has
-            Medic Mike, voice guided intake, the Exposure library and Whole health.
-          </p>
-          <p>
-            <strong className="text-ink">The page at the top of your Dashboard.</strong> It is your
-            First Page as it stands today, drawn only from what you have put in. Tap it to see it full
-            size. The red <strong>&ldquo;Print for your next visit&rdquo;</strong> button opens the print
-            preview; <strong>&ldquo;Add to your page&rdquo;</strong> opens the parts you fill in. Under
-            <strong> &ldquo;What feeds your page&rdquo;</strong> each line says where a part of the page
-            comes from and whether it is there yet. The claim packet step reads{" "}
-            <strong>&ldquo;Ready&rdquo;</strong> once this app has what it needs to build you a packet.
-            That is <em>this app&apos;s</em> checklist, not the VA&apos;s. It does not mean the VA will
-            agree, and only a VSO can tell you that.
-          </p>
-          <p>
-            <strong className="text-ink">
-              Careful with &ldquo;Remove&rdquo; on your Dashboard.
-            </strong>{" "}
-            Further down, the card headed <strong>&ldquo;Your timeline&rdquo;</strong> lists your
-            most recent places, and each line has a faint <strong>Remove</strong> beside it. That is
-            not tidying a summary — it deletes the check-in itself, along with every exposure you
-            ticked at that place. Tap it and it asks first, telling you exactly what will go; the
-            safe answer is <strong>&ldquo;Keep it&rdquo;</strong> and the one that deletes says{" "}
-            <strong>Delete</strong>. If you only want a shorter list, leave it alone and use <strong>&ldquo;Open map&rdquo;</strong> or{" "}
-            <strong>&ldquo;Manage all … locations&rdquo;</strong> instead. Deleting a place there
-            is the same delete, just somewhere you meant to be.
+            missing something that cannot exist. At the very bottom are the VSO finder, the Exposure
+            library, Medic Mike and the crisis line. The claim packet step reads Done once this app has
+            what it needs to build you a packet. That is <em>this app&apos;s</em> checklist, not the
+            VA&apos;s. It does not mean the VA will agree, and only a VSO can tell you that.
           </p>
           <p>
             <strong className="text-ink">Making the text bigger.</strong> In the top-right corner
