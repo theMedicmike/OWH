@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useAuth } from "../AuthProvider";
 import { buildPage, lintPage, listPages, listVisits, NOT_SET_UP, PAGE_PARTS as SECTIONS, type FpPage, type FpVisit, type LintProblem, type PageData } from "@/lib/firstPage";
 import { Notice, Stance } from "./Controls";
+import SavePdfButton from "./SavePdfButton";
+import ReadAloud from "./ReadAloud";
 import { SpineRow, type SpineState } from "../ui";
 
 // The ten parts live in lib/firstPage.ts (PAGE_PARTS) so Home's First Page
@@ -94,7 +96,13 @@ export default function FirstPageHub() {
                 </ul>
               </>
             )}
+            {/* No printer: the same page on the phone screen, as a PDF, or read aloud. */}
             <div className="mt-4 flex flex-wrap gap-2">
+              {lint.length === 0 && <Link href="/first-page/phone" className="btn btn-outline min-h-11">Show on my phone</Link>}
+              {lint.length === 0 && <SavePdfButton page={page} className="btn btn-outline min-h-11" />}
+              <ReadAloud page={page} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
               {visits.length === 0 ? (
                 <Link href="/first-page/visit" className="btn btn-primary">Set up a visit first</Link>
               ) : (

@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { buildPage, createPageVersion, lintPage, NOT_SET_UP, TIER_LABEL, type LintProblem, type PageData, type PageRow } from "@/lib/firstPage";
+import SavePdfButton from "./SavePdfButton";
+import ReadAloud from "./ReadAloud";
 
 // The print route. Side 1 and side 2 of the Service Health Summary v1, in the
 // fixed order, on US Letter. The page prints only when the lint passes. Each
@@ -261,16 +263,22 @@ export default function FirstPagePrint() {
       <div className="no-print sticky top-0 z-10 border-b border-line bg-white/95 px-5 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3">
           <div>
-            <Link href="/first-page" className="text-xs font-medium text-brand hover:underline">Back to your First Page</Link>
-            <div className="text-sm font-semibold text-ink">Preview and print{page?.visit?.specialist ? `: ${page.visit.specialist}` : ""}</div>
+            <Link href="/first-page" className="inline-flex min-h-11 items-center text-[0.875rem] font-medium text-brand hover:underline">Back to your First Page</Link>
+            <div className="text-[0.9375rem] font-semibold text-ink">Preview and print{page?.visit?.specialist ? `: ${page.visit.specialist}` : ""}</div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <label className="text-xs text-ink"><span className="mr-1 font-semibold">Assembled by</span><input value={assembledBy} onChange={(e) => setAssembledBy(e.target.value)} className="rounded border border-line px-2 py-1 text-xs" placeholder="name" /></label>
-            <label className="inline-flex items-center gap-2 text-xs text-ink"><input type="checkbox" checked={signed} onChange={(e) => setSigned(e.target.checked)} className="h-4 w-4 accent-brand" />Every row was read back to the veteran and he signs this page</label>
-            <button type="button" onClick={print} disabled={!ok || saving} className="btn btn-flag">{saving ? "Saving…" : "Print or save as PDF"}</button>
+            <label className="inline-flex items-center gap-2 text-[0.875rem] text-ink"><span className="font-semibold">Assembled by</span><input value={assembledBy} onChange={(e) => setAssembledBy(e.target.value)} className="min-h-11 rounded-lg border border-line px-3 text-[0.9375rem]" placeholder="name" /></label>
+            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-[0.875rem] text-ink"><input type="checkbox" checked={signed} onChange={(e) => setSigned(e.target.checked)} className="h-6 w-6 flex-none accent-brand" />Every row was read back to the veteran and he signs this page</label>
+            <button type="button" onClick={print} disabled={!ok || saving} className="btn btn-flag min-h-11">{saving ? "Saving…" : "Print"}</button>
           </div>
         </div>
-        {savedVersion && <p className="mx-auto mt-1 max-w-4xl text-xs text-success">Saved as version {savedVersion}. Print two-sided at full size, no scaling, no browser headers or footers.</p>}
+        {/* No printer: the same page as a PDF, on the phone screen, or read aloud. Same gate as the print. */}
+        <div className="mx-auto mt-2 flex max-w-4xl flex-wrap items-center gap-2">
+          {ok && <SavePdfButton page={page} className="btn btn-outline min-h-11" />}
+          {ok && <Link href={`/first-page/phone${visitId ? `?visit=${visitId}` : ""}`} className="btn btn-outline min-h-11">Show on my phone</Link>}
+          <ReadAloud page={page} />
+        </div>
+        {savedVersion && <p className="mx-auto mt-1 max-w-4xl text-[0.875rem] text-success">Saved as version {savedVersion}. Print two-sided at full size, no scaling, no browser headers or footers.</p>}
       </div>
 
       <div className="mx-auto max-w-4xl px-5 py-4">
@@ -279,15 +287,15 @@ export default function FirstPagePrint() {
         {error && error !== NOT_SET_UP && <p className="rounded-xl border border-scarlet/40 bg-scarlet/5 p-4 text-sm text-scarlet">{error}</p>}
         {page && lint.length > 0 && (
           <div className="no-print mb-4 rounded-xl border border-warn/40 bg-warn-soft p-4">
-            <div className="text-sm font-semibold text-ink">Not ready to print. Fix these first:</div>
-            <ul className="mt-2 space-y-1">{lint.map((l, i) => <li key={i} className="text-xs leading-relaxed text-ink"><span className="font-semibold">{l.where}</span> {l.what}</li>)}</ul>
-            <div className="mt-2 flex flex-wrap gap-2 text-xs">
-              <Link href="/first-page/rows" className="text-brand hover:underline">Rows</Link>
-              <Link href="/first-page/sources" className="text-brand hover:underline">Sources</Link>
-              <Link href="/first-page/profile" className="text-brand hover:underline">Profile</Link>
-              <Link href="/first-page/visit" className="text-brand hover:underline">Visit</Link>
+            <div className="text-[0.9375rem] font-semibold text-ink">Not ready to print. Fix these first:</div>
+            <ul className="mt-2 space-y-1">{lint.map((l, i) => <li key={i} className="text-[0.875rem] leading-relaxed text-ink"><span className="font-semibold">{l.where}</span> {l.what}</li>)}</ul>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Link href="/first-page/rows" className="btn btn-secondary btn-sm min-h-11">Rows</Link>
+              <Link href="/first-page/sources" className="btn btn-secondary btn-sm min-h-11">Sources</Link>
+              <Link href="/first-page/profile" className="btn btn-secondary btn-sm min-h-11">Profile</Link>
+              <Link href="/first-page/visit" className="btn btn-secondary btn-sm min-h-11">Visit</Link>
             </div>
-            <p className="mt-2 text-xs text-muted">The preview below shows the page as it stands, with the gaps.</p>
+            <p className="mt-2 text-[0.875rem] text-muted">The preview below shows the page as it stands, with the gaps.</p>
           </div>
         )}
       </div>

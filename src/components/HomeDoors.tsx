@@ -29,6 +29,8 @@ export type HomeDoorsProps = {
     missing: string[];
     /** All parts done, but a row still needs a source or a year. */
     lintOnly: boolean;
+    /** Show on my phone, Save the PDF, Send me the PDF: shown once the page passes the print check. */
+    extras?: ReactNode;
   };
   claim: { steps: DoorStep[]; notes?: ReactNode };
   records: { shots: RecordState; injuries: RecordState; meds: RecordState; ships: RecordState };
@@ -160,6 +162,8 @@ export default function HomeDoors({ loaded, page, claim, records }: HomeDoorsPro
             )}
             {!fresh && <Link href="/first-page" className={QUIET}>Add to your page</Link>}
           </div>
+          {/* Most veterans do not own a printer: the page leaves the phone too. */}
+          {page.extras && <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-line pt-3">{page.extras}</div>}
         </section>
 
         {/* Door 2: the claim */}

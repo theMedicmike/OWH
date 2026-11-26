@@ -11,7 +11,8 @@ import { listMedications } from "@/lib/medications";
 import { listVessels } from "@/lib/vessels";
 import { Card, Chevron, type SpineState } from "./ui";
 import HomeDoors, { type DoorStep, type HomeDoorsProps, type RecordState } from "./HomeDoors";
-import { buildPage, lintPage, listVisits, PAGE_PARTS, sheetDate, sheetFromPage, type SheetData } from "@/lib/firstPage";
+import { buildPage, lintPage, listVisits, PAGE_PARTS, sheetDate, sheetFromPage, type PageData, type SheetData } from "@/lib/firstPage";
+import SavePdfButton from "./firstpage/SavePdfButton";
 
 type Conn = { id: string; direction: "sent" | "received"; status: string; other_name: string | null; place: string | null; ev_year: number | null };
 
@@ -45,6 +46,9 @@ export default function DashboardView() {
   const [has, setHas] = useState({ shots: false, injuries: false, meds: false, vessels: false });
   const [page, setPage] = useState<HomeDoorsProps["page"]>({ sheet: null, ready: false, fresh: true, missing: [], lintOnly: false });
   const [reqErr, setReqErr] = useState<string | null>(null);
+  // The assembled page, kept only when it passes the print check, for the
+  // phone view, the PDF and the email.
+  const [shareable, setShareable] = useState<PageData | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -116,6 +120,7 @@ export default function DashboardView() {
         const touched = PAGE_PARTS.some((part, i) => flags[i] && part.href !== "/first-page/record");
         const missing = PAGE_PARTS.filter((part, i) => !flags[i] && !(part.href === "/first-page/visit" && hasVisit)).map((part) => part.short);
         const lintClean = lintPage(p.data).length === 0;
+        setShareable(touched && lintClean ? p.data : null);
         setPage({
           sheet: sheetFromPage(p.data),
           fresh: !touched && !hasVisit,
@@ -226,7 +231,20 @@ export default function DashboardView() {
         </Card>
       )}
 
-      <HomeDoors loaded={loaded} page={page} claim={{ steps, notes }} records={records} />
+      <HomeDoors
+        loaded={loaded}
+        page={{
+          ...page,
+          extras: shareable ? (
+            <>
+              <Link href="/first-page/phone" className="btn btn-outline min-h-11">Show on my phone</Link>
+              <SavePdfButton page={shareable} className="btn btn-outline min-h-11" />
+            </>
+          ) : undefined,
+        }}
+        claim={{ steps, notes }}
+        records={records}
+      />
     </div>
   );
 }
