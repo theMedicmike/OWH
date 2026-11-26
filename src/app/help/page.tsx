@@ -33,8 +33,8 @@ const CORE_STEPS: Step[] = [
     body: [
       "Open the internet app you normally use — Safari on an iPhone, Chrome on most Android phones and computers. At the very top of the screen there is a long blank strip where web addresses go. Tap it, type tracethecascade.com exactly as it looks, and press Go.",
       BOOK_PUBLIC
-        ? "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows six things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam,” “Read the book” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife a chapter, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record."
-        : "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows five things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife the page about what you were exposed to, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record.",
+        ? "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows five things (“Exposure library,” “What VA presumes,” “Your C&P exam,” “Read the book” and “Find a VSO”), plus “Whole health” in the small print at the bottom, and all of them open with no sign-in. So you can text your wife a chapter, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record."
+        : "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows four things (“Exposure library,” “What VA presumes,” “Your C&P exam” and “Find a VSO”), plus “Whole health” in the small print at the bottom, and all of them open with no sign-in. So you can text your wife the page about what you were exposed to, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record.",
       "When you are ready for that, tap “Start your page, free” in the white box beside the example page (on a phone it sits under the top of the page). Put in your email and a password. If you cannot see what you are typing, tap “Show” next to the password box. (Signed out, that button sits in the menu reading “Start your free record,” and there is a “Sign in” button in the bar across the top.)",
       "Now watch what the screen does. If it says “Check your email,” you are not signed in yet — open the email, tap the link inside, then come back and tap “Sign in.” If instead it takes you straight into the app, you are already in and there is nothing to check. Next time, you only need “Sign in.”",
       "If you forget your password: tap the red “Sign in” button, and under the form there is a small link, “Forgot your password?”. Tap it, put in your email, tap “Send me a reset link,” then check your email. One thing to know: that link is only good for one hour, and it only works once. If you check your email once a day it will be expired by the time you get there, so ask for a fresh one right before you sit down to do it.",
@@ -130,7 +130,7 @@ const MORE_STEPS: Step[] = [
   {
     title: "Talk to Medic Mike — the one you can actually talk to",
     body: [
-      "Top of the menu: “Talk to Medic Mike.”",
+      "In the menu under “Help and Support”: “Ask Medic Mike.” It is also at the bottom of Home.",
       "Mike is a guide — not a doctor, not a lawyer, not the VA. Ask him anything about the app, or about what you are reading.",
       "He also knows how VA claims actually work, and this is worth using. Ask him what “at least as likely as not” means, what the three elements of a claim are, the difference between a direct claim, a secondary one and aggravation, what an Intent to File buys you, what happens at a C&P exam, or what the difference is between a Supplemental Claim, a Higher-Level Review and a Board Appeal. He will explain any of it in plain English, at two in the morning, without you having to ask a human to slow down and repeat it.",
       "Ask him practical things too — “what do I have to bring to my VSO appointment,” “what do I do next.” Those are the most common questions veterans ask him and he answers them straight.",
@@ -350,7 +350,7 @@ const MORE_STEPS: Step[] = [
     points: [
       "“Exposure library” (under Learn & live well) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required. One straight thing about it, printed at the bottom of every page in there: it is drawn from the government's and science's own record and every page cites its sources, but it has not yet been reviewed by a named clinician or toxicologist. Read it as a good first pass to take to your doctor and your VSO, not as the last word.",
       "Your locations and your exposures — on your Dashboard, under “Also in your record,” tap “Your locations” or “Your exposures.” On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
-      "“Whole health” (under Learn & live well) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
+      "“Whole health” (in the small print at the very bottom of the menu) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
       "“What VA presumes” — two rows of big buttons, “When did you serve?” and “Where did you serve?” Tap one of each and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation, and cold injury for former prisoners of war. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
       "“Your C&P exam, demystified” — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up. It is in the menu under “When you're ready to file,” and again under “Guides” at the bottom of the Exposure library.",
       "“A primer for your clinician” — a printable, one-page explainer for a doctor who's never filled out VA paperwork before. It is under “Guides” at the bottom of the Exposure library, next to the C&P one. It carries no personal information, so it's safe to print once and keep on hand.",
@@ -360,14 +360,6 @@ const MORE_STEPS: Step[] = [
       "“How your conditions connect” — a page for each condition you have added: why it's connected, the exposures commonly studied with it, and what to track. You reach it from “See the full breakdown and what to track” on Connect the dots. It is the reasoning behind your own conditions — not where you add them, which is still 2 “Your conditions.”",
       "One thing worth knowing if your claims are things like tinnitus, a bad back, knees or PTSD: you do not need a toxic exposure for this app to work for you. Log what happened to you on Injuries & events instead, and pick your condition off the list on 2 “Your conditions.” The app connects those the same way it connects an exposure, and your record counts as complete. For a long time it did not, and that was our mistake, not yours.",
       "“What this is” — in the small grey print at the very bottom of the menu, beside Privacy and Terms. Worth two minutes if you are weighing up whether to type something personal into a stranger's app: it says in plain words what the app is not, how the science is graded, what happens to your record if this organisation ever closes, and that you would be told directly if your data were ever exposed.",
-    ],
-  },
-  {
-    title: "Exposure insights — private, and never in your claim",
-    body: [
-      "Menu → “Just for you” (it carries a small tag reading private) → “Exposure insights.”",
-      "You set your role and your years, rate roughly what you were around, and it gives you a picture of what your service likely exposed you to — plus which kinds of testing exist, and which ones are not reliable.",
-      "Two things it says about itself, and both are true: it is an estimate, not a measurement — it cannot tell you what is in your body — and it is never part of your VA claim. Take it to your own doctor before you pay anyone for a test. The page explains why some of the tests sold online do not tell you what they claim to.",
     ],
   },
 ];
@@ -511,14 +503,13 @@ export default function HelpPage() {
             <strong className="text-ink">Finding your way around.</strong> On a phone the menu hides
             behind the small button in the top-left corner with three short lines stacked on top of
             each other. On a computer it is always down the left-hand side. It reads top to bottom in
-            the order you would actually work: your Dashboard and Medic Mike at the top;{" "}
+            the order you would actually work: your Dashboard at the top;{" "}
             <strong>&ldquo;Build your record&rdquo;</strong> — the six numbered steps, ending at your
             packet; then, under <strong>&ldquo;Also in your record&rdquo;</strong> and with no numbers, the
             things you can add whenever you like — your shot record, injuries &amp; events, ships you
             served aboard, your medications, your First Page, and what VA presumes;
             then <strong>&ldquo;When you&rsquo;re ready to file&rdquo;</strong> — the VSO finder and
-            the C&amp;P exam page; then <strong>&ldquo;Learn &amp; live well,&rdquo;</strong> your
-            private <strong>&ldquo;Exposure insights,&rdquo;</strong> your Account, and this guide.
+            the C&amp;P exam page; then <strong>&ldquo;Learn &amp; live well,&rdquo;</strong> your Account, and, under <strong>&ldquo;Help and Support,&rdquo;</strong> this guide and Medic Mike.
             Anything without a number beside it is optional, and that is the whole rule: if the six
             numbered steps are done, you are done.
           </p>

@@ -88,7 +88,6 @@ export default function FirstPageHome({ sheet, feeds }: { sheet: SheetData | nul
               tone={feeds.buddies ? "success" : "ink"}
             />
             <LinkRow href="/first-page/chain" label="The line between them" status={sheet && sheet.chain.length > 0 ? "Set" : "Not yet"} tone={sheet && sheet.chain.length > 0 ? "success" : "faint"} />
-            <LinkRow href="/mike" label="Talk to Medic Mike" />
           </Card>
         </div>
       </div>

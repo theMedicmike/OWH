@@ -19,7 +19,6 @@ const SECTIONS: NavSection[] = [
   {
     items: [
       { href: "/dashboard", label: "Dashboard", d: "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" },
-      { href: "/mike",      label: "Talk to Medic Mike", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
     ],
   },
   {
@@ -72,14 +71,8 @@ const SECTIONS: NavSection[] = [
     title: "Learn & live well",
     items: [
       { href: "/learn",     label: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
-      { href: "/solutions", label: "Whole health",     d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
       ...(BOOK_PUBLIC ? [{ href: "/book",      label: "Read the book",    d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" }] : []),
     ],
-  },
-  {
-    title: "Just for you",
-    tag: "Private",
-    items: [{ href: "/estimator", label: "Exposure insights", d: "M3 12h4l3 8 4-16 3 8h4" }],
   },
   {
     items: [{ href: "/account", label: "Account", d: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" }],
@@ -89,6 +82,9 @@ const SECTIONS: NavSection[] = [
 const BOTTOM_LINKS: NavItem[] = [
   { href: "/help",  label: "How to use this",   d: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01" },
   { href: "/about", label: "Why we built this",  d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
+  // Signed in only (the route needs an account). Its crisis gate lives in the
+  // route itself and is untouched by where the link sits.
+  { href: "/mike", label: "Ask Medic Mike", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
 ];
 
 function Icon({ d }: { d: string }) {
@@ -134,7 +130,6 @@ const PUBLIC_SECTIONS: NavSection[] = [
     items: [
       { href: "/learn", label: "Exposure library", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
       { href: "/presumptives", label: "What VA presumes", d: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
-      { href: "/solutions", label: "Whole health", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
       { href: "/cp-exam", label: "Your C&P exam", d: "M9 11l2 2 4-4M5 4h14a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" },
       ...(BOOK_PUBLIC ? [{ href: "/book", label: "Read the book", d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 0 3-3h7z" }] : []),
       { href: "/vso", label: "Find a VSO", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" },
@@ -255,10 +250,10 @@ export default function AppShell({
 
         <div>
           <div className="px-3 pb-1.5">
-            <span className="text-[0.8125rem] font-medium text-white/50">The mission</span>
+            <span className="text-[0.8125rem] font-medium text-white/50">Help and Support</span>
           </div>
           <div className="space-y-0.5">
-            {BOTTOM_LINKS.map((item) => (
+            {BOTTOM_LINKS.filter((item) => !signedOut || item.href !== "/mike").map((item) => (
               <NavLink key={item.href} item={item} active={pathname === item.href} onClick={() => setOpen(false)} />
             ))}
           </div>
@@ -298,6 +293,7 @@ export default function AppShell({
         </a>
         <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-1 text-[0.8125rem] text-white/45">
           <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-white/80">Send feedback</a>
+          <Link href="/solutions" className="hover:text-white/80">Whole health</Link>
           <Link href="/trust" className="hover:text-white/80">What this is</Link>
           <Link href="/privacy" className="hover:text-white/80">Privacy</Link>
           <Link href="/terms" className="hover:text-white/80">Terms</Link>

@@ -122,7 +122,6 @@ const LEARN_FILES = [
     "src/lib/toxlibrary.ts",
     "src/lib/medicMike.ts",
     "src/components/SolutionsView.tsx",
-    "src/components/EstimatorView.tsx",
     "src/app/learn/[slug]/page.tsx",
     ...SHOTS_FILES,
   ];

@@ -40,7 +40,6 @@ export default function robots(): MetadataRoute.Robots {
           "/locations",
           "/exposures",
           "/conditions",
-          "/estimator",
           "/intake",
           "/welcome",
           "/reset",

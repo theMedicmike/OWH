@@ -30,10 +30,8 @@ function IconPath({ d }: { d: string }) {
 // invisible from Home. These are menus, not scorecards: nothing here implies
 // anything is owed.
 const MORE = [
-  { href: "/mike", title: "Talk to Medic Mike", detail: "Ask anything, in your own words.", d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" },
   { href: "/intake/ai", title: "Voice guided intake", detail: "Talk through your service instead of typing it.", d: "M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" },
   { href: "/learn", title: "Exposure library", detail: "What the government documents, by place and substance.", d: "M9 2h6M10 2v5.5L5.2 16A2 2 0 0 0 7 19h10a2 2 0 0 0 1.8-3L14 7.5V2" },
-  { href: "/solutions", title: "Whole health", detail: "Ways to live well with what you carry.", d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" },
 ];
 
 export default function DashboardView() {

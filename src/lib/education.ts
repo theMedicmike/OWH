@@ -11,7 +11,7 @@ import { CONDITIONS as CONDITION_CATALOG } from "./conditions";
 // THE RECORD'S ONE BRAIN.
 // Exposure classes, their labels, and the condition↔exposure mapping live HERE
 // and nowhere else. Every view (map, intake, journey, health, dashboard,
-// buddies, estimator) and the claim packet must import from this file — copies
+// buddies) and the claim packet must import from this file — copies
 // silently drift, and when they do, the screen the veteran trusts and the packet
 // they file disagree. That is disqualifying for a quasi-legal document.
 //

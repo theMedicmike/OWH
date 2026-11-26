@@ -598,24 +598,6 @@ export function prettySlug(slug: string): string {
 }
 export const ORGAN_BY_SLUG = Object.fromEntries(ORGANS.map((o) => [o.slug, o]));
 
-// Map the estimator's internal keys + display strings to library slugs so chips
-// can link straight into the encyclopedia.
-export const METAL_KEY_TO_SLUG: Record<string, string> = {
-  pb: "lead", cd: "cadmium", hg: "mercury", as: "arsenic", u: "depleted-uranium",
-  w: "tungsten", co: "cobalt", cr: "hexavalent-chromium", mn: "manganese", ni: "nickel",
-  al: "aluminum", sb: "antimony", be: "beryllium", v: "vanadium", tl: "thallium", ba: "barium",
-};
-export const CONTAMINANT_KEY_TO_SLUG: Record<string, string> = {
-  solv: "solvents-and-fuels", diox: "dioxins", pfas: "pfas", pm: "particulate-and-silica",
-  asb: "asbestos", rad: "ionizing-radiation", op: "nerve-agents",
-};
-export const ORGAN_NAME_TO_SLUG: Record<string, string> = {
-  bone: "bone", "bone marrow": "bone-marrow", brain: "brain", "brain (basal ganglia)": "brain",
-  kidney: "kidney", liver: "liver", lungs: "lungs", "lung lining": "lungs", sinuses: "lungs",
-  "nervous system": "nervous-system", "peripheral nerves": "nervous-system", "nerves": "nervous-system",
-  heart: "heart", thyroid: "thyroid", skin: "skin",
-};
-
 // The reviewer-status sentence is REQUIRED and load-bearing. The council let
 // this content ship without a named clinical reviewer on the express condition
 // that it ship "marked first-pass/unreviewed" — but that marking existed only
