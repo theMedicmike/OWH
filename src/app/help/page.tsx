@@ -35,13 +35,13 @@ const CORE_STEPS: Step[] = [
       BOOK_PUBLIC
         ? "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows six things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam,” “Read the book” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife a chapter, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record."
         : "Before you make an account at all: a good part of this is free to read without one, and you can send any of it to somebody else. Signed out, the menu shows five things — “Exposure library,” “What VA presumes,” “Whole health,” “Your C&P exam” and “Find a VSO” — and all of them open with no sign-in. So you can text your wife the page about what you were exposed to, send your doctor the C&P page, or send a buddy the VSO finder, and they can read it without signing up for anything. This page and “Why we built this” are open too. Making an account is only for the part where you build your own record.",
-      "When you are ready for that, tap “Create account” at the top of the white box in the middle of the screen. Put in your email and a password. If you cannot see what you are typing, tap “Show” next to the password box. (Signed out, that button sits in the menu reading “Start your free record,” and there is a “Sign in” button in the bar across the top.)",
+      "When you are ready for that, tap “Start your page, free” in the white box beside the example page (on a phone it sits under the top of the page). Put in your email and a password. If you cannot see what you are typing, tap “Show” next to the password box. (Signed out, that button sits in the menu reading “Start your free record,” and there is a “Sign in” button in the bar across the top.)",
       "Now watch what the screen does. If it says “Check your email,” you are not signed in yet — open the email, tap the link inside, then come back and tap “Sign in.” If instead it takes you straight into the app, you are already in and there is nothing to check. Next time, you only need “Sign in.”",
-      "If you forget your password: on the “Sign in” tab there is a small link, “Forgot your password?”. Tap it, put in your email, tap “Send me a reset link,” then check your email. One thing to know — that link is only good for one hour, and it only works once. If you check your email once a day it will be expired by the time you get there, so ask for a fresh one right before you sit down to do it.",
+      "If you forget your password: tap the red “Sign in” button, and under the form there is a small link, “Forgot your password?”. Tap it, put in your email, tap “Send me a reset link,” then check your email. One thing to know: that link is only good for one hour, and it only works once. If you check your email once a day it will be expired by the time you get there, so ask for a fresh one right before you sit down to do it.",
       "When you tap the link in that email, a screen comes up headed “Set a new password.” There are two boxes: type your new password in the first, then the same thing again in the second. It has to be at least 8 characters, and a phrase you will actually remember beats something short and clever. Tap “Save my new password,” then “Go to your record.” Nothing you built has changed.",
       "If that screen says “That link has expired,” tap “Send me a new link.” That takes you back to the sign-in screen — it does not email you on its own. From there tap “Forgot your password?” again, put your email in, and tap “Send me a reset link.” If it keeps failing no matter what you do, that is on our end and not on you: email michael@operationwholehealth.org and we will get you back in.",
       "The first screen after you sign in is a full screen titled “Before you begin — keep it unclassified.” It is asking you not to type anything classified, secret, or covered by a non-disclosure agreement. Broad strokes are all this needs — a general place, a rough year, the kind of exposure. You will only ever see it once.",
-      "Then you land on your home page. The app calls it your Dashboard, and it is the first item in the menu if you ever need to get back to it. Near the top is a box headed “Verify your service.” That is the heading, not the button — the button is the long blue bar underneath reading “I affirm I am a U.S. veteran or service member.” Tap that.",
+      "Then you land on your home page, headed “Your First Page.” At the top is your own page, mostly empty the first time, with a red “Print for your next visit” button and an outlined “Add to your page” button beside it. It is the first item in the menu (the app sometimes calls it your Dashboard) if you ever need to get back to it. Further down is a box headed “Verify your service.” That is the heading, not the button. The button is the long blue bar underneath reading “I affirm I am a U.S. veteran or service member.” Tap that.",
       "Honest note: that is as far as verification goes today. The little tag will read “Self-attested.” The “Verify with ID.me” button says “Coming soon” and does not work yet, and uploading your DD-214 does not change that tag either. It does not affect your packet one bit.",
     ],
     warn: {
@@ -299,9 +299,10 @@ const MORE_STEPS: Step[] = [
   {
     title: "Your First Page — one sheet for a specialist",
     body: [
-      "In the menu, under “Also in your record” — “Your First Page.” It is a single two-sided sheet you hand a specialist at check-in, so you do not start from zero every visit. It faces the clinic, not your claim: it reads from your record and never writes anything back into it.",
-      "The page lists nine short parts in order, each marked Done, Next or Not yet. Tap the one marked Next. Most of them are taps: how you know something and where a records request stands are big buttons, and the common answers are buttons too: “No known drug allergies,” study types like MRI or sleep study, the medicines already on your list. A quick pick only starts the line; you still add the date and the source yourself.",
+      "It is the page at the top of your home screen. Tap “Add to your page” to fill it in. It is a single two-sided sheet you hand a specialist at check-in, so you do not start from zero every visit. It faces the clinic, not your claim: it reads from your record and never writes anything back into it.",
+      "The page lists ten short parts in order, each marked Done, Next or Not yet. Tap the one marked Next. Most of them are taps: how you know something and where a records request stands are big buttons, and the common answers are buttons too: “No known drug allergies,” study types like MRI or sleep study, the medicines already on your list. A quick pick only starts the line; you still add the date and the source yourself.",
       "Under “What prints from your record,” tap “Print this row” on anything you want on the sheet and it saves on the tap. Mental-health conditions, sexual trauma and assault start switched off and stay off unless you turn them on.",
+      "“The line between them” is the column of words on the right of the page, joined by one red line: what you were around, then what changed, in the order you lived it. Tap a word from your own record to add it, or write your own, and use Up and Down to set the order. The words are yours. The app never adds one, never moves one, and never says what leads to what, and the page says under it: This is my record, not a diagnosis.",
     ],
     warn: {
       label: "If it will not print",
@@ -522,10 +523,11 @@ export default function HelpPage() {
             numbered steps are done, you are done.
           </p>
           <p>
-            <strong className="text-ink">Your Dashboard.</strong> It is home. The six steps are
-            listed in order under <strong>&ldquo;Your record,&rdquo;</strong> each marked Done, Next or
+            <strong className="text-ink">Your Dashboard.</strong> It is home, and it opens on your
+            First Page. Below the page, the six steps are listed in order under{" "}
+            <strong>&ldquo;The six steps that feed your page,&rdquo;</strong> each marked Done, Next or
             Not yet; tap any one to open it. Under <strong>&ldquo;Also in your record&rdquo;</strong> are
-            your locations, exposures, shot record, injuries, medications and First Page, and, if you
+            your locations, exposures, shot record, injuries and medications, and, if you
             served in the Navy, the Marine Corps or the Coast Guard (or once you add a ship), your
             ships. That ships line is the one that is conditional, because an infantryman will never
             have a ship and a permanent &ldquo;Not yet&rdquo; would be telling him his record is
@@ -533,16 +535,15 @@ export default function HelpPage() {
             Medic Mike, voice guided intake, the Exposure library and Whole health.
           </p>
           <p>
-            <strong className="text-ink">The card at the top of your Dashboard.</strong> The dark
-            blue card near the top, headed <strong>&ldquo;Start here&rdquo;</strong> the first time
-            and <strong>&ldquo;Next step&rdquo;</strong> after that, is the app&apos;s answer to
-            &ldquo;what do I do now,&rdquo; with one big button that takes you there. When you come
-            back it reads <strong>&ldquo;Pick up where you left off&rdquo;</strong> and tells you how
-            many steps you are from a claim-ready record. That is <em>this app&apos;s</em> checklist,
-            not the VA&apos;s, and it is not a score on you or a prediction about your claim. If it
-            says <strong>&ldquo;Your record is claim-ready,&rdquo;</strong> that means this app has
-            what it needs to build you a packet. It does not mean the VA will agree, and only a VSO
-            can tell you that.
+            <strong className="text-ink">The page at the top of your Dashboard.</strong> It is your
+            First Page as it stands today, drawn only from what you have put in. Tap it to see it full
+            size. The red <strong>&ldquo;Print for your next visit&rdquo;</strong> button opens the print
+            preview; <strong>&ldquo;Add to your page&rdquo;</strong> opens the parts you fill in. Under
+            <strong> &ldquo;What feeds your page&rdquo;</strong> each line says where a part of the page
+            comes from and whether it is there yet. The claim packet step reads{" "}
+            <strong>&ldquo;Ready&rdquo;</strong> once this app has what it needs to build you a packet.
+            That is <em>this app&apos;s</em> checklist, not the VA&apos;s. It does not mean the VA will
+            agree, and only a VSO can tell you that.
           </p>
           <p>
             <strong className="text-ink">
