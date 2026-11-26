@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import CrisisSupport from "@/components/CrisisSupport";
 import { AuthProvider } from "@/components/AuthProvider";
+import { UndoProvider } from "@/components/Keep";
 import { TextSizeApplier } from "@/components/TextSize";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -172,7 +173,9 @@ export default function RootLayout({
           }}
         />
         <AuthProvider>
-          {children}
+          <UndoProvider>
+            {children}
+          </UndoProvider>
           <CrisisSupport />
         </AuthProvider>
         <TextSizeApplier />
