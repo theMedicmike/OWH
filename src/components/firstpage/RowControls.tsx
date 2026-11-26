@@ -6,7 +6,8 @@ import { defaultShowFor, listRowMeta, listSources, upsertRowMeta, TIER_LABEL, ty
 import { listMedications } from "@/lib/medications";
 import { listServiceEvents } from "@/lib/serviceEvents";
 import { EXPOSURE_LABEL, INCIDENT_LABEL } from "@/lib/education";
-import { BackToHub, CardTitle, Input, Notice, PrimaryButton, SourceSelect, Stance, TextField, TierSelect, Toggle } from "./Controls";
+import { SavedMark, useAutosave } from "../Keep";
+import { BackToHub, CardTitle, Input, Notice, SourceSelect, Stance, TextField, TierSelect, Toggle } from "./Controls";
 
 // The rows that already live in the record: problems, medicines, postings,
 // exposures and events, shots. Here the veteran decides what prints, attaches
@@ -15,7 +16,8 @@ import { BackToHub, CardTitle, Input, Notice, PrimaryButton, SourceSelect, Stanc
 // word for word, the unit for a posting. Nothing here changes the record itself.
 //
 // "Print this row" saves on the tap: choosing what prints is one tap. The
-// source, tier and extra fields still save with the row's own button.
+// source, tier and extra fields save themselves as he types or taps (the
+// cognitive pass), with a quiet "Saved" mark under them.
 
 type Item = { key: RowTableKey; id: string; title: string; sub: string; defaultShow: boolean; defaultTier: Tier };
 
@@ -27,27 +29,24 @@ function RowCard({ item, meta, sources, onSave }: { item: Item; meta: FpRowMeta 
   const [directions, setDirections] = useState(meta?.directions ?? "");
   const [since, setSince] = useState(meta?.since_year ? String(meta.since_year) : "");
   const [unit, setUnit] = useState(meta?.unit ?? "");
-  const [busy, setBusy] = useState(false);
-  const [saved, setSaved] = useState(false);
   const withheld = status === "withheld";
 
-  async function save() {
-    setBusy(true);
+  const fields = { sourceId, tier, status, directions, since, unit };
+  const { status: saveStatus } = useAutosave(fields, async (f) => {
     await onSave({
-      show, source_id: sourceId, tier,
-      status: item.key === "check_ins" ? (withheld ? "withheld" : null) : status.trim() || null,
-      directions: item.key === "medications" ? directions.trim() || null : null,
-      since_year: item.key === "medications" && /^\d{4}$/.test(since) ? parseInt(since, 10) : null,
-      unit: item.key === "check_ins" ? unit.trim() || null : null,
+      source_id: f.sourceId, tier: f.tier,
+      status: item.key === "check_ins" ? (f.status === "withheld" ? "withheld" : null) : f.status.trim() || null,
+      directions: item.key === "medications" ? f.directions.trim() || null : null,
+      since_year: item.key === "medications" && /^\d{4}$/.test(f.since) ? parseInt(f.since, 10) : null,
+      unit: item.key === "check_ins" ? f.unit.trim() || null : null,
     });
-    setBusy(false);
-    setSaved(true);
-  }
+    return true;
+  });
   async function setPrint(v: boolean) {
     setShow(v);
     await onSave({ show: v });
   }
-  const touch = () => setSaved(false);
+  const touch = () => {};
 
   return (
     <li className="space-y-4 py-5">
@@ -81,10 +80,7 @@ function RowCard({ item, meta, sources, onSave }: { item: Item; meta: FpRowMeta 
               <Toggle checked={withheld} onChange={(v) => { setStatus(v ? "withheld" : ""); touch(); }} label="Print 'Location withheld' instead of the place" />
             </>
           )}
-          <div className="flex flex-wrap items-center gap-3">
-            <PrimaryButton onClick={save} disabled={busy}>{busy ? "Saving…" : "Save this row"}</PrimaryButton>
-            {saved && <span role="status" className="text-[0.9375rem] font-semibold text-success">Saved.</span>}
-          </div>
+          <SavedMark status={saveStatus} />
         </div>
       )}
       {meta?.tier && <p className="text-sm text-muted">Now: {TIER_LABEL[meta.tier]}{meta.source_id ? ", source attached" : ""}</p>}

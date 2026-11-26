@@ -7,6 +7,7 @@ import {
   type FpSource, type SimpleTable, type Tier,
 } from "@/lib/firstPage";
 import { listMedications } from "@/lib/medications";
+import { KeptNotice, useDraft, useUndo } from "../Keep";
 import { BackToHub, CardTitle, Input, Notice, PrimaryButton, QuickPicks, QuietButton, SourceSelect, Stance, TextField, TierSelect, Toggle } from "./Controls";
 
 // One editor for the three single-line tables: allergies, key studies, what
@@ -77,6 +78,11 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
+  const { offer } = useUndo();
+  const [hidden, setHidden] = useState<string[]>([]);
+  const [kept, setKept] = useState(false);
+  const draft = useDraft<{ text: string; date: string; tier: Tier; sourceId: string | null }>(`fp-${kind}-add`);
+  const restoredRef = useRef(false);
 
   const refresh = useCallback(async () => {
     const [r, s] = await Promise.all([listSimple<Row>(supabase, cfg.table), listSources(supabase)]);
@@ -136,6 +142,31 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
     refresh();
   }
 
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(r: Row) {
+    setHidden((h) => [...h, r.id]);
+    offer({
+      message: `Removed: ${r.text.length > 40 ? `${r.text.slice(0, 40)}…` : r.text}`,
+      commit: async () => { await deleteSimple(supabase, cfg.table, r.id); setHidden((h) => h.filter((x) => x !== r.id)); refresh(); },
+      undo: () => setHidden((h) => h.filter((x) => x !== r.id)),
+    });
+  }
+
+  // The add form keeps a copy on this device until the line is added.
+  useEffect(() => {
+    if (!draft.ready || restoredRef.current) return;
+    restoredRef.current = true;
+    const local = draft.read();
+    if (local && (local.text || local.date)) {
+      queueMicrotask(() => { setText(local.text); setDate(local.date); setTier(local.tier); setSourceId(local.sourceId); setKept(true); });
+    }
+  }, [draft]);
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    if (text || date) draft.write({ text, date, tier, sourceId });
+    else draft.clear();
+  }, [text, date, tier, sourceId, draft]);
+
   if (!user) return <Notice>Sign in to build your First Page.</Notice>;
   const canAdd = text.trim().length > 1 && (!cfg.dateField || date.trim().length >= 4);
   const picks = kind === "tried" ? [...medNames, ...cfg.picks] : cfg.picks;
@@ -145,6 +176,7 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
       <BackToHub />
       <Stance />
       <Notice error={error} />
+      <KeptNotice show={kept} />
 
       {kind === "allergies" && rows.length === 0 && (
         <section className="card card-raise p-5 sm:p-6">
@@ -198,16 +230,24 @@ export default function SimpleRowsEditor({ kind }: { kind: Kind }) {
           <p className="mt-2 text-[0.9375rem] text-muted">Nothing yet.</p>
         ) : (
           <ul className="mt-3 divide-y divide-line">
-            {rows.map((r) => (
+            {rows.filter((r) => !hidden.includes(r.id)).map((r) => (
               <li key={r.id} className="space-y-3 py-4">
                 <p className="text-[0.9375rem] leading-relaxed text-ink">
                   {r.text}{r.study_date ? ` (${r.study_date})` : ""}
                   <span className="ml-2 inline-block rounded-md border border-line px-2 py-0.5 text-sm text-muted">{TIER_LABEL[r.tier]}</span>
                 </p>
-                <SourceSelect sources={sources} value={r.source_id} onChange={(id) => patch(r.id, { source_id: id, tier: id ? "record" : r.tier })} />
+                <SourceSelect
+                  sources={sources}
+                  value={r.source_id}
+                  onChange={(id) => {
+                    const before = { source_id: r.source_id, tier: r.tier };
+                    patch(r.id, { source_id: id, tier: id ? "record" : r.tier });
+                    offer({ message: "Source changed.", commit: () => {}, undo: () => patch(r.id, before) });
+                  }}
+                />
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Toggle checked={r.show} onChange={(v) => patch(r.id, { show: v })} label="Print this line" />
-                  <QuietButton danger onClick={async () => { await deleteSimple(supabase, cfg.table, r.id); refresh(); }}>Remove</QuietButton>
+                  <QuietButton danger onClick={() => remove(r)}>Remove</QuietButton>
                 </div>
               </li>
             ))}

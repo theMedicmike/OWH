@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import { deleteSimple, insertSimple, listSimple, listSources, updateSimple, type FpResult, type FpSource, type Tier } from "@/lib/firstPage";
+import { KeptNotice, useDraft, useUndo } from "../Keep";
 import { BackToHub, CardTitle, Input, Notice, PrimaryButton, QuickPicks, QuietButton, SourceSelect, Stance, TierSelect, Toggle } from "./Controls";
 
 // Results that changed: two values, two dates, two sources. Copied as written.
@@ -23,6 +24,12 @@ export default function ResultsEditor() {
   const [tier, setTier] = useState<Tier>("record");
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState(false);
+  const { offer } = useUndo();
+  const [hidden, setHidden] = useState<string[]>([]);
+  const [kept, setKept] = useState(false);
+  type ResultDraft = { measure: string; ev: string; ed: string; es: string | null; lv: string; ld: string; ls: string | null; tier: Tier };
+  const draft = useDraft<ResultDraft>("fp-results-add");
+  const restoredRef = useRef(false);
 
   const refresh = useCallback(async () => {
     const [r, s] = await Promise.all([listSimple<FpResult>(supabase, "fp_results"), listSources(supabase)]);
@@ -48,6 +55,31 @@ export default function ResultsEditor() {
     refresh();
   }
 
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(r: FpResult) {
+    setHidden((h) => [...h, r.id]);
+    offer({
+      message: `Removed: ${r.measure}.`,
+      commit: async () => { await deleteSimple(supabase, "fp_results", r.id); setHidden((h) => h.filter((x) => x !== r.id)); refresh(); },
+      undo: () => setHidden((h) => h.filter((x) => x !== r.id)),
+    });
+  }
+
+  // The add form keeps a copy on this device until the result is added.
+  useEffect(() => {
+    if (!draft.ready || restoredRef.current) return;
+    restoredRef.current = true;
+    const l = draft.read();
+    if (l && (l.measure || l.ev || l.lv)) {
+      queueMicrotask(() => { setMeasure(l.measure); setEv(l.ev); setEd(l.ed); setEs(l.es); setLv(l.lv); setLd(l.ld); setLs(l.ls); setTier(l.tier); setKept(true); });
+    }
+  }, [draft]);
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    if (measure || ev || ed || lv || ld) draft.write({ measure, ev, ed, es, lv, ld, ls, tier });
+    else draft.clear();
+  }, [measure, ev, ed, es, lv, ld, ls, tier, draft]);
+
   if (!user) return <Notice>Sign in to build your First Page.</Notice>;
   const canAdd = measure.trim() && ev.trim() && ed.trim() && lv.trim() && ld.trim();
 
@@ -56,6 +88,7 @@ export default function ResultsEditor() {
       <BackToHub />
       <Stance />
       <Notice error={error} />
+      <KeptNotice show={kept} />
 
       <section className="card p-5 sm:p-6">
         <CardTitle lede="Copy the value exactly as the lab report writes it, with its unit, and the date on the report. Earlier first, then later. Which source each came from. Nothing on the page will say whether the change matters.">
@@ -92,14 +125,14 @@ export default function ResultsEditor() {
         <CardTitle>On the page</CardTitle>
         {rows.length === 0 ? <p className="mt-2 text-[0.9375rem] text-muted">Nothing yet.</p> : (
           <ul className="mt-3 divide-y divide-line">
-            {rows.map((r) => (
+            {rows.filter((r) => !hidden.includes(r.id)).map((r) => (
               <li key={r.id} className="space-y-2 py-4">
                 <p className="text-[0.9375rem] leading-relaxed text-ink">
                   <span className="font-semibold">{r.measure}:</span> {r.earlier_value}, {r.earlier_date}, then {r.later_value}, {r.later_date}
                 </p>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Toggle checked={r.show} onChange={async (v) => { await updateSimple(supabase, "fp_results", r.id, { show: v }); refresh(); }} label="Print this result" />
-                  <QuietButton danger onClick={async () => { await deleteSimple(supabase, "fp_results", r.id); refresh(); }}>Remove</QuietButton>
+                  <QuietButton danger onClick={() => remove(r)}>Remove</QuietButton>
                 </div>
               </li>
             ))}

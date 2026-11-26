@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import { createSource, deleteSource, listSources, updateSource, SOURCE_STATUS_LABEL, type FpSource, type SourceStatus } from "@/lib/firstPage";
+import { KeptNotice, useDraft, useUndo } from "../Keep";
 import { BackToHub, CardTitle, Input, Notice, PrimaryButton, QuietButton, Stance, StatusSelect } from "./Controls";
 
 // The source registry: one numbered line per document behind the page.
@@ -32,6 +33,11 @@ export default function SourcesEditor() {
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState(false);
   const [changing, setChanging] = useState<string | null>(null);
+  const { offer } = useUndo();
+  const [hidden, setHidden] = useState<string[]>([]);
+  const [kept, setKept] = useState(false);
+  const draft = useDraft<{ label: string; date: string; author: string; status: SourceStatus }>("fp-sources-add");
+  const restoredRef = useRef(false);
 
   const refresh = useCallback(async () => {
     const r = await listSources(supabase);
@@ -63,10 +69,39 @@ export default function SourcesEditor() {
   }
 
   async function setRowStatus(s: FpSource, st: SourceStatus) {
+    const before = s.status;
     await updateSource(supabase, s.id, { status: st });
     setChanging(null);
     refresh();
+    if (before !== st) {
+      offer({ message: `Source ${s.number} now reads ${SOURCE_STATUS_LABEL[st]}.`, commit: () => {}, undo: async () => { await updateSource(supabase, s.id, { status: before }); refresh(); } });
+    }
   }
+
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(s: FpSource) {
+    setHidden((h) => [...h, s.id]);
+    offer({
+      message: `Removed source ${s.number}.`,
+      commit: async () => { await deleteSource(supabase, s.id); setHidden((h) => h.filter((x) => x !== s.id)); refresh(); },
+      undo: () => setHidden((h) => h.filter((x) => x !== s.id)),
+    });
+  }
+
+  // The add form keeps a copy on this device until the document is added.
+  useEffect(() => {
+    if (!draft.ready || restoredRef.current) return;
+    restoredRef.current = true;
+    const local = draft.read();
+    if (local && (local.label || local.date || local.author)) {
+      queueMicrotask(() => { setLabel(local.label); setDate(local.date); setAuthor(local.author); setStatus(local.status); setKept(true); });
+    }
+  }, [draft]);
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    if (label || date || author) draft.write({ label, date, author, status });
+    else draft.clear();
+  }, [label, date, author, status, draft]);
 
   if (!user) return <Notice>Sign in to build your First Page.</Notice>;
 
@@ -75,6 +110,7 @@ export default function SourcesEditor() {
       <BackToHub />
       <Stance />
       <Notice error={error} />
+      <KeptNotice show={kept} />
 
       <section className="card p-5 sm:p-6">
         <CardTitle lede="Each one gets a number. Rows on the page point at that number. Write the date as it appears on the document, and say where the request stands if it has not arrived.">
@@ -131,7 +167,7 @@ export default function SourcesEditor() {
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-muted">Nothing yet. The DD-214, the VA download and the pharmacy printout are the usual first three.</p>
         ) : (
           <ul className="mt-3 divide-y divide-line">
-            {rows.map((s) => (
+            {rows.filter((s) => !hidden.includes(s.id)).map((s) => (
               <li key={s.id} className="space-y-3 py-4">
                 <p className="text-[0.9375rem] leading-relaxed text-ink">
                   <span className="tnum font-semibold">{s.number}.</span> {s.label}{s.source_date ? `, ${s.source_date}` : ""}{s.author ? `. ${s.author}.` : ""}
@@ -148,7 +184,7 @@ export default function SourcesEditor() {
                 ) : (
                   <div className="flex flex-wrap items-center gap-2">
                     <QuietButton onClick={() => setChanging(s.id)}>Change where it stands</QuietButton>
-                    <QuietButton danger onClick={async () => { await deleteSource(supabase, s.id); refresh(); }}>Remove</QuietButton>
+                    <QuietButton danger onClick={() => remove(s)}>Remove</QuietButton>
                   </div>
                 )}
               </li>

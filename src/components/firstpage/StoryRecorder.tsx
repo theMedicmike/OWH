@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../AuthProvider";
+import { SavedMark, useAutosave, useUndo } from "../Keep";
 import { createRecording, deleteRecording, listRecordings, updateRecording, type FpRecording } from "@/lib/firstPage";
 import { BackToHub, CardTitle, Notice, PrimaryButton, QuietButton, Stance, Toggle, useDictation } from "./Controls";
 
@@ -19,6 +20,8 @@ const PROMPTS = [
 export default function StoryRecorder() {
   const { supabase, user } = useAuth();
   const [items, setItems] = useState<FpRecording[]>([]);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
   const [error, setError] = useState("");
   const [consent, setConsent] = useState(false);
   const [keepAudio, setKeepAudio] = useState(true);
@@ -147,7 +150,24 @@ export default function StoryRecorder() {
         <CardTitle>Your recordings</CardTitle>
         {items.length === 0 ? <p className="mt-2 text-[0.9375rem] text-muted">None yet.</p> : (
           <ul className="mt-3 divide-y divide-line">
-            {items.map((r) => <RecordingRow key={r.id} r={r} onPlay={() => play(r)} onSave={async (t) => { await updateRecording(supabase, r.id, { transcript: t }); refresh(); }} onDelete={async () => { await deleteRecording(supabase, r); refresh(); }} />)}
+            {items.filter((r) => !hidden.includes(r.id)).map((r) => (
+              <RecordingRow
+                key={r.id}
+                r={r}
+                onPlay={() => play(r)}
+                onSave={async (t) => { const res = await updateRecording(supabase, r.id, { transcript: t }); return res.ok; }}
+                onDelete={() => {
+                  // Held behind the Undo bar: the audio and the words are removed
+                  // only when the bar closes.
+                  setHidden((h) => [...h, r.id]);
+                  offer({
+                    message: `Deleted the recording from ${r.recorded_on}.`,
+                    commit: async () => { await deleteRecording(supabase, r); setHidden((h) => h.filter((x) => x !== r.id)); refresh(); },
+                    undo: () => setHidden((h) => h.filter((x) => x !== r.id)),
+                  });
+                }}
+              />
+            ))}
           </ul>
         )}
         <p className="mt-4 text-sm leading-relaxed text-muted">Pick your three lines on the Visit page. You can delete a recording at any time; it is gone from our storage when you do.</p>
@@ -156,9 +176,10 @@ export default function StoryRecorder() {
   );
 }
 
-function RecordingRow({ r, onPlay, onSave, onDelete }: { r: FpRecording; onPlay: () => void; onSave: (t: string) => Promise<void>; onDelete: () => Promise<void> }) {
+function RecordingRow({ r, onPlay, onSave, onDelete }: { r: FpRecording; onPlay: () => void; onSave: (t: string) => Promise<boolean>; onDelete: () => void }) {
   const [t, setT] = useState(r.transcript ?? "");
-  const [saved, setSaved] = useState(false);
+  // The words save themselves as he fixes them.
+  const { status } = useAutosave(t, onSave);
   return (
     <li className="space-y-3 py-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -169,11 +190,8 @@ function RecordingRow({ r, onPlay, onSave, onDelete }: { r: FpRecording; onPlay:
         </span>
       </div>
       <label htmlFor={`words-${r.id}`} className="field-label">The words, as your browser heard them</label>
-      <textarea id={`words-${r.id}`} value={t} onChange={(e) => { setT(e.target.value); setSaved(false); }} rows={5} className="field" placeholder="Fix anything it got wrong." />
-      <div className="flex flex-wrap items-center gap-3">
-        <PrimaryButton onClick={async () => { await onSave(t); setSaved(true); }}>Save the words</PrimaryButton>
-        {saved && <span role="status" className="text-[0.9375rem] font-semibold text-success">Saved.</span>}
-      </div>
+      <textarea id={`words-${r.id}`} value={t} onChange={(e) => setT(e.target.value)} rows={5} className="field" placeholder="Fix anything it got wrong." />
+      <SavedMark status={status} />
     </li>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { SavedMark, useAutosave, useUndo } from "../Keep";
 import { useAuth } from "../AuthProvider";
 import { deleteSimple, insertSimple, listSimple, updateSimple, type FpChainLink } from "@/lib/firstPage";
 import { EXPOSURE_LABEL, INCIDENT_LABEL } from "@/lib/education";
@@ -15,18 +16,41 @@ import { BackToHub, CardTitle, Input, Notice, PrimaryButton, QuickPicks } from "
 // never moves one, and never proposes which word follows which.
 
 const MAX = 9;
+const DETAIL_MAX = 80;
+
+// The line under a word saves itself as he types. The page holds 80
+// characters; the box says so instead of cutting words off without a word.
+function LinkDetail({ link, onError }: { link: FpChainLink; onError: (e: string) => void }) {
+  const { supabase } = useAuth();
+  const [v, setV] = useState(link.detail ?? "");
+  const { status } = useAutosave(v, async (val) => {
+    const r = await updateSimple(supabase, "fp_chain", link.id, { detail: val.trim() || null });
+    if (!r.ok) { onError(r.error); return false; }
+    return true;
+  });
+  return (
+    <div className="mt-2">
+      <Input label="One line under it (optional)" id={`detail-${link.id}`} value={v} onChange={(x) => setV(x.slice(0, DETAIL_MAX))} placeholder="e.g. Since 2010" />
+      <div className="mt-1 flex items-center justify-between gap-3">
+        <SavedMark status={status} />
+        {v.length > DETAIL_MAX - 20 && <span className="text-[0.8125rem] text-muted">{v.length} of {DETAIL_MAX}</span>}
+      </div>
+    </div>
+  );
+}
 
 export default function ChainEditor() {
   const { supabase, user } = useAuth();
-  const [links, setLinks] = useState<FpChainLink[]>([]);
+  const [allLinks, setLinks] = useState<FpChainLink[]>([]);
   const [around, setAround] = useState<string[]>([]);
   const [changed, setChanged] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [word, setWord] = useState("");
   const [detail, setDetail] = useState("");
   const [busy, setBusy] = useState(false);
-  const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
+  const links = allLinks.filter((l) => !hidden.includes(l.id));
 
   const refresh = useCallback(async () => {
     const r = await listSimple<FpChainLink>(supabase, "fp_chain");
@@ -75,18 +99,14 @@ export default function ChainEditor() {
     refresh();
   }
 
-  async function saveDetail(l: FpChainLink) {
-    const v = (drafts[l.id] ?? l.detail ?? "").trim().slice(0, 80);
-    const r = await updateSimple(supabase, "fp_chain", l.id, { detail: v || null });
-    if (!r.ok) setError(r.error);
-    setDrafts((d) => { const n = { ...d }; delete n[l.id]; return n; });
-    refresh();
-  }
-
-  async function remove(id: string) {
-    await deleteSimple(supabase, "fp_chain", id);
-    setConfirmId(null);
-    refresh();
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(l: FpChainLink) {
+    setHidden((h) => [...h, l.id]);
+    offer({
+      message: `Took "${l.word}" off the chain.`,
+      commit: async () => { await deleteSimple(supabase, "fp_chain", l.id); setHidden((h) => h.filter((x) => x !== l.id)); refresh(); },
+      undo: () => setHidden((h) => h.filter((x) => x !== l.id)),
+    });
   }
 
   if (!user) return <Notice>Sign in to build your First Page.</Notice>;
@@ -116,34 +136,14 @@ export default function ChainEditor() {
                   <span aria-hidden="true" className="mt-1.5 h-3 w-3 flex-none rounded-full border-[2.5px] border-flag bg-white" />
                   <div className="min-w-0 flex-1">
                     <p className="display text-[1.375rem] leading-tight text-ink">{l.word}</p>
-                    <div className="mt-2 flex flex-wrap items-end gap-2">
-                      <div className="min-w-[12rem] flex-1">
-                        <Input
-                          label="One line under it (optional)"
-                          id={`detail-${l.id}`}
-                          value={drafts[l.id] ?? l.detail ?? ""}
-                          onChange={(v) => setDrafts((d) => ({ ...d, [l.id]: v }))}
-                          placeholder="e.g. Since 2010"
-                        />
-                      </div>
-                      {drafts[l.id] !== undefined && drafts[l.id] !== (l.detail ?? "") && (
-                        <button type="button" onClick={() => saveDetail(l)} className="btn btn-primary">Save line</button>
-                      )}
-                    </div>
+                    <LinkDetail link={l} onError={setError} />
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="btn btn-secondary btn-sm min-h-11" aria-label={`Move ${l.word} up`}>Up</button>
                   <button type="button" onClick={() => move(i, 1)} disabled={i === links.length - 1} className="btn btn-secondary btn-sm min-h-11" aria-label={`Move ${l.word} down`}>Down</button>
                   <span className="flex-1" />
-                  {confirmId === l.id ? (
-                    <>
-                      <button type="button" onClick={() => remove(l.id)} className="btn btn-ghost min-h-11 text-scarlet">Take it off</button>
-                      <button type="button" onClick={() => setConfirmId(null)} className="btn btn-secondary btn-sm min-h-11">Keep it</button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={() => setConfirmId(l.id)} className="btn btn-ghost min-h-11 text-muted hover:text-scarlet">Remove</button>
-                  )}
+                  <button type="button" onClick={() => remove(l)} className="btn btn-ghost min-h-11 text-muted hover:text-scarlet">Remove</button>
                 </div>
               </li>
             ))}
