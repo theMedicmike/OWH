@@ -7,7 +7,7 @@ import { buildPage, lintPage, listPages, listVisits, NOT_SET_UP, type FpPage, ty
 import { Notice, Stance } from "./Controls";
 import { SpineRow, type SpineState } from "../ui";
 
-// The nine parts of the page, in the order they are best filled in. Each one
+// The ten parts of the page, in the order they are best filled in. Each one
 // knows how to tell whether it has been done, from the page data alone.
 type Section = { href: string; label: string; what: string; done: (p: PageData) => boolean };
 
@@ -20,6 +20,7 @@ const SECTIONS: Section[] = [
   { href: "/first-page/tried", label: "What has been tried", what: "Medicines and therapies tried before, with the year and why each stopped.", done: (p) => p.tried.some((r) => r.show) },
   { href: "/first-page/results", label: "Results that changed", what: "Two values, two dates, two sources. Copied as written. No arrows.", done: (p) => p.results.some((r) => r.show) },
   { href: "/first-page/record", label: "Your story, recorded", what: "Ten minutes in your own words, on a good day. You pick the three lines the doctor reads first.", done: () => true },
+  { href: "/first-page/chain", label: "The line between them", what: "The words you set in a chain on the front of the page, in your order. Yours, never the app's.", done: (p) => p.chain.length > 0 },
   { href: "/first-page/visit", label: "This visit", what: "Who you are seeing, what is open today, your two questions, since last visit, and the three lines.", done: (p) => !!p.visit && p.readFirst.length === 3 && p.questions.length === 2 },
 ];
 

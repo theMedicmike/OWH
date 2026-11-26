@@ -146,12 +146,15 @@ export default function AppShell({
   title,
   children,
   publicPage = false,
+  wide = false,
 }: {
   title: string;
   children: React.ReactNode;
   /** Renders for signed-out visitors too. Only ever set on pages that read
    *  no personal record. See PUBLIC_SECTIONS above. */
   publicPage?: boolean;
+  /** Home only: the First Page needs room to be read. */
+  wide?: boolean;
 }) {
   const { user, ready, signOut } = useAuth();
   const pathname = usePathname();
@@ -407,7 +410,7 @@ export default function AppShell({
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-7 sm:py-8 lg:px-10">
-          <div className="mx-auto w-full max-w-3xl">
+          <div className={`mx-auto w-full ${wide ? "max-w-5xl" : "max-w-3xl"}`}>
             {/* OpsecGate is the one-time "keep it unclassified" screen a
                 veteran confirms before entering anything into their own
                 record. A signed-out reader has nothing to enter. */}

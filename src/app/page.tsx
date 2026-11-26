@@ -4,9 +4,9 @@ import Landing from "@/components/Landing";
 // only. See the note in src/app/layout.tsx.
 export const metadata = {
   // The layout template appends the product name, so this stays a phrase.
-  title: "Document what your service cost you",
+  title: "What happened to you, on one page",
   description:
-    "A free, private record of where you served, what you were exposed to, and the conditions that followed — assembled into a cited packet you hand to an accredited Veterans Service Officer. Not the VA. Nothing sold.",
+    "A free, private First Page for veterans: where you served, what you were around, what changed, and the line between them. Print it and hand it over at every visit. Not the VA. Nothing sold.",
   alternates: { canonical: "/" },
 };
 

@@ -24,13 +24,23 @@ function MailIcon() {
   );
 }
 
-export default function AuthCard() {
+// `bare` drops the card chrome when the sign-in page already wraps the form in
+// its own card; `onBack` returns that card to its opening words.
+export default function AuthCard({
+  initialMode = "in",
+  bare = false,
+  onBack,
+}: {
+  initialMode?: "in" | "up";
+  bare?: boolean;
+  onBack?: () => void;
+} = {}) {
   const { supabase } = useAuth();
   // 🔴 "forgot" exists because until 2026-08-06 this app had NO password recovery
   // of any kind. A veteran who forgot his password was permanently locked out of
   // a record he may have spent hours building. Do not remove this path without
   // replacing it.
-  const [mode, setMode] = useState<"in" | "up" | "forgot">("in");
+  const [mode, setMode] = useState<"in" | "up" | "forgot">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -85,7 +95,7 @@ export default function AuthCard() {
 
   if (resetSent || confirmed) {
     return (
-      <div className="card p-6 text-center sm:p-7">
+      <div className={bare ? "text-center" : "card p-6 text-center sm:p-7"}>
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success-soft">
           <MailIcon />
         </div>
@@ -121,7 +131,7 @@ export default function AuthCard() {
   }
 
   return (
-    <div className="card p-6 sm:p-7">
+    <div className={bare ? "" : "card p-6 sm:p-7"}>
       <h2 className="text-xl font-semibold tracking-tight text-ink">{TITLE[mode]}</h2>
       <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">{LEDE[mode]}</p>
 
@@ -133,6 +143,7 @@ export default function AuthCard() {
             type="email"
             required
             autoComplete="email"
+            autoFocus={bare}
             placeholder="you@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -170,7 +181,7 @@ export default function AuthCard() {
           </p>
         )}
 
-        <button type="submit" disabled={busy} className="btn btn-primary btn-lg w-full">
+        <button type="submit" disabled={busy} className={`btn btn-lg w-full ${mode === "in" ? "btn-flag" : "btn-primary"}`}>
           {busy
             ? "One moment…"
             : mode === "in"
@@ -206,6 +217,11 @@ export default function AuthCard() {
         {mode === "forgot" && (
           <button type="button" onClick={backToSignIn} className="btn btn-ghost">
             Back to sign in
+          </button>
+        )}
+        {onBack && mode !== "forgot" && (
+          <button type="button" onClick={onBack} className="btn btn-ghost text-muted">
+            Back
           </button>
         )}
       </div>

@@ -78,6 +78,12 @@ export type FpResult = {
   show: boolean;
   sort: number;
 };
+// The line between them: the words the veteran chose to set in a chain on
+// the front of his page, in his order. Free text he typed or a label he picked
+// from his own record. The app never adds, orders or suggests a link on its
+// own; a chain is something he states, not something it concludes.
+export type FpChainLink = { id: string; word: string; detail: string | null; sort: number };
+
 export type FpVisit = {
   id: string;
   specialist: string | null;
@@ -195,7 +201,7 @@ export async function deleteSource(supabase: SupabaseClient, id: string): Promis
 }
 
 // ── simple row tables (allergies, studies, tried, results) ──────────────────
-export type SimpleTable = "fp_allergies" | "fp_studies" | "fp_tried" | "fp_results";
+export type SimpleTable = "fp_allergies" | "fp_studies" | "fp_tried" | "fp_results" | "fp_chain";
 export async function listSimple<T>(supabase: SupabaseClient, table: SimpleTable): Promise<Res<T[]>> {
   const { data, error } = await supabase.from(table).select("*").order("sort").order("created_at");
   if (error) return { ok: false, error: errOf(error) };
@@ -334,6 +340,8 @@ export type PageRow = {
   yearIn: number;
   // the veteran's own words are exempt from the inference lint
   ownWords?: boolean;
+  // exposures and incidents: the posting they belong to
+  parentId?: string;
 };
 
 export type PageData = {
@@ -367,6 +375,7 @@ export type PageData = {
   versionDate: string;
   assembledBy: string;
   correctionsTo: string;
+  chain: { word: string; detail: string }[];
 };
 
 const MENTAL_HEALTH = new Set(CONDITIONS.filter((c) => c.system === "Mental health").map((c) => c.label.toLowerCase()));
@@ -446,13 +455,14 @@ export async function buildPage(supabase: SupabaseClient, visitId: string | null
   ).data as { display_name: string | null; branch: string | null; service_start: string | null; service_end: string | null; mos: string | null } | null;
 
   // The record, read through the modules the firewall allows.
-  const [allergiesRes, studiesRes, triedRes, resultsRes, medsRes, shotsRes] = await Promise.all([
+  const [allergiesRes, studiesRes, triedRes, resultsRes, medsRes, shotsRes, chainRes] = await Promise.all([
     listSimple<FpAllergy>(supabase, "fp_allergies"),
     listSimple<FpStudy>(supabase, "fp_studies"),
     listSimple<FpTried>(supabase, "fp_tried"),
     listSimple<FpResult>(supabase, "fp_results"),
     listMedications(supabase),
     listServiceEvents(supabase),
+    listSimple<FpChainLink>(supabase, "fp_chain"),
   ]);
   for (const r of [allergiesRes, studiesRes, triedRes, resultsRes]) if (!r.ok) return r;
 
@@ -550,14 +560,14 @@ export async function buildPage(supabase: SupabaseClient, visitId: string | null
       const meta = metaFor("exposures", e.id);
       const sn = sourceNumberOf(sources, meta?.source_id);
       const label = [EXPOSURE_LABEL[e.exposure_class] ?? e.exposure_class, veteranWords(e.detail)].filter(Boolean).join(": ");
-      exposures.push({ id: e.id, kind: "exposures", show: meta?.show ?? e.confirmed !== false, defaultOff: false, tier: tierFor(meta, sn, "recalled"), sourceNumber: sn, cells: [label, whereWhen, str(ciMeta?.unit)], yearIn: 1 });
+      exposures.push({ parentId: ci.id, id: e.id, kind: "exposures", show: meta?.show ?? e.confirmed !== false, defaultOff: false, tier: tierFor(meta, sn, "recalled"), sourceNumber: sn, cells: [label, whereWhen, str(ciMeta?.unit)], yearIn: 1 });
     }
     for (const inc of ci.incidents ?? []) {
       const meta = metaFor("incidents", inc.id);
       const sn = sourceNumberOf(sources, meta?.source_id);
       const defaultOff = SENSITIVE_INCIDENTS.has(inc.incident_class);
       const label = [INCIDENT_LABEL[inc.incident_class] ?? inc.incident_class, veteranWords(inc.detail)].filter(Boolean).join(": ");
-      exposures.push({ id: inc.id, kind: "incidents", show: meta?.show ?? !defaultOff, defaultOff, tier: meta?.tier ?? (sn != null ? "record" : provenanceTier(inc.provenance)), sourceNumber: sn, cells: [label, whereWhen, str(ciMeta?.unit)], yearIn: 1 });
+      exposures.push({ parentId: ci.id, id: inc.id, kind: "incidents", show: meta?.show ?? !defaultOff, defaultOff, tier: meta?.tier ?? (sn != null ? "record" : provenanceTier(inc.provenance)), sourceNumber: sn, cells: [label, whereWhen, str(ciMeta?.unit)], yearIn: 1 });
     }
   }
   if (profile?.tes_date) {
@@ -630,8 +640,99 @@ export async function buildPage(supabase: SupabaseClient, visitId: string | null
       versionDate: new Date().toISOString().slice(0, 10),
       assembledBy: str(profile?.assembled_by),
       correctionsTo: str(profile?.corrections_to) || str(profile?.assembled_by),
+      // fp_chain is migration 0040; until it runs the chain is simply empty.
+      chain: chainRes.ok ? chainRes.data.map((c) => ({ word: str(c.word), detail: str(c.detail) })).filter((c) => c.word) : [],
     },
   };
+}
+
+// ── the sheet: the page as the app shows it ─────────────────────────────────
+// The one-page face of the record, on sign-in and on Home. It is drawn from
+// the same assembled page the print uses (buildPage), so it shows only rows the
+// veteran left switched on, in his words and his order. Nothing is added,
+// ranked or concluded here either.
+export type SheetRow = { year: string; text: string; aside?: string };
+export type SheetData = {
+  who: string;
+  updated: string;
+  ownWords: string[];
+  served: SheetRow[];
+  changed: SheetRow[];
+  chain: { word: string; detail: string }[];
+  example: boolean;
+};
+
+// Invented for the sign-in page and marked as such everywhere it appears.
+// Not a real veteran. Never shown to a signed-in veteran as his own page.
+export const EXAMPLE_SHEET: SheetData = {
+  who: "Example page. Not a real veteran.",
+  updated: "20 Nov 2026",
+  ownWords: [
+    "Headaches most days since the 2010 breaching work. Worse this past year.",
+    "I sleep two to three hours a night. It has been like that since 2012.",
+    "Nobody has checked my pituitary or my testosterone since the blasts. I am asking.",
+  ],
+  served: [
+    { year: "2003", text: "Fort Benning. Infantry." },
+    { year: "2005", text: "Ramadi, Iraq. 12 months.", aside: "Burn pit 300 m from housing." },
+    { year: "2008", text: "Fort Bragg. Special Forces." },
+    { year: "2010", text: "Kandahar. Breacher.", aside: "Repeated close blasts." },
+    { year: "2012", text: "Kandahar.", aside: "IED. Left leg lost below the knee." },
+    { year: "2017", text: "Syria. 7 months." },
+    { year: "2019", text: "Retired. 16 years." },
+  ],
+  changed: [
+    { year: "2010", text: "Tinnitus, both ears. Constant." },
+    { year: "2011", text: "TBI, diagnosed after breaching." },
+    { year: "2012", text: "Left leg amputated below the knee." },
+    { year: "2014", text: "Headaches, most days." },
+    { year: "2016", text: "Low testosterone on one lab, no follow-up." },
+    { year: "2017", text: "Sleep down to two or three hours." },
+  ],
+  chain: [
+    { word: "Blast overpressure", detail: "Breaching, 2010 to 2012" },
+    { word: "Brain injury", detail: "Diagnosed 2011" },
+    { word: "Tinnitus", detail: "Since 2010" },
+    { word: "Pituitary", detail: "Never checked" },
+    { word: "Testosterone", detail: "Low, 2016, no follow-up" },
+    { word: "Sleep", detail: "2 to 3 hours since 2017" },
+    { word: "Headaches, mood", detail: "Most days" },
+  ],
+  example: true,
+};
+
+export function sheetDate(d: Date = new Date()): string {
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+const firstYear = (s: string) => (s.match(/(19|20)d{2}/) ?? [""])[0];
+const sentence = (s: string) => (s && !/[.!?]$/.test(s) ? s + "." : s);
+
+export function sheetFromPage(p: PageData): SheetData {
+  const on = (rows: PageRow[]) => rows.filter((r) => r.show);
+  const around = on(p.exposures);
+  const served: SheetRow[] = on(p.service).map((r) => {
+    const aside = around.filter((e) => e.parentId === r.id).map((e) => sentence(e.cells[0])).join(" ");
+    return { year: firstYear(r.cells[0]), text: sentence([r.cells[1], r.cells[2]].filter(Boolean).join(". ")), aside: aside || undefined };
+  });
+  const changed: SheetRow[] = on(p.problems)
+    .map((r) => ({ year: r.cells[1] || "", text: sentence(r.cells[0]) }))
+    .sort((a, b) => (a.year || "9999").localeCompare(b.year || "9999"));
+  const named = p.name && p.name !== "Name not set" ? p.name : "";
+  return {
+    who: [named, p.line1].filter(Boolean).join(". ").replace(/../g, "."),
+    updated: sheetDate(),
+    ownWords: p.readFirst.slice(0, 3),
+    served,
+    changed,
+    chain: p.chain.slice(0, 9),
+    example: false,
+  };
+}
+
+export async function buildSheet(supabase: SupabaseClient): Promise<Res<SheetData>> {
+  const r = await buildPage(supabase, null);
+  return r.ok ? { ok: true, data: sheetFromPage(r.data) } : r;
 }
 
 // ── the lint: the format's rules, enforced before anything prints ───────────

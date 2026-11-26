@@ -5,7 +5,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-canvas: #f4f6f9;
+  --color-canvas: #f7f8fa;
   --color-surface: #ffffff;
   --color-ink: #15212e;
   --color-muted: #5c6b7a;
@@ -15,7 +15,12 @@
   --color-brand-600: #234c73;
   --color-brand-700: #102438;
   --color-brand-foreground: #ffffff;
-  --color-accent: #c1873d;
+  /* The single accent: flag red. It marks the one primary action on a screen,
+     the "next" dot on the spine, and the chain on the First Page. Nothing else. */
+  --color-accent: #b22234;
+  --color-flag: #b22234;
+  --color-flag-700: #951c2b;
+  --color-paper: #f7f8fa;
   --color-scarlet: #9e2a2b;
   --color-cream: #f3ead6;
   --color-flagblue: #3a6ea5;
@@ -146,7 +151,7 @@
   user-select: none;
   transition: transform .14s var(--ease-out), background-color .14s var(--ease-out), border-color .14s var(--ease-out), color .14s var(--ease-out);
 }
-.btn:active { transform: scale(.98); }
+.btn:active { transform: scale(.97); }
 .btn:disabled, .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; }
 .btn-primary { background: var(--color-brand); color: var(--color-brand-foreground); }
 .btn-primary:hover { background: var(--color-brand-600); }
@@ -156,6 +161,10 @@
 .btn-light:hover { background: #eef2f7; }
 .btn-ghost { color: var(--color-brand); padding-inline: 0.5rem; }
 .btn-ghost:hover { text-decoration: underline; text-underline-offset: 3px; }
+.btn-flag { background: var(--color-flag); color: #ffffff; }
+.btn-flag:hover { background: var(--color-flag-700); }
+.btn-outline { background: var(--color-surface); color: var(--color-brand); border: 1.5px solid color-mix(in srgb, var(--color-brand) 28%, transparent); }
+.btn-outline:hover { background: var(--color-paper); border-color: color-mix(in srgb, var(--color-brand) 45%, transparent); }
 .btn-danger { background: var(--color-scarlet); color: #ffffff; }
 .btn-danger:hover { filter: brightness(1.08); }
 .btn-lg { min-height: 3.25rem; padding-inline: 1.5rem; font-size: 1.0625rem; border-radius: 0.875rem; }
@@ -234,7 +243,48 @@ a.row:hover, button.row:hover { background: var(--color-canvas); }
 .spine-dot[data-state="done"] { background: var(--color-brand); border-color: var(--color-brand); }
 .spine-dot[data-state="next"] { border-color: var(--color-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 22%, transparent); }
 
-} /* end @layer components */
+} 
+/* ═══════════════════════════════════════════════════════════════════════
+   THE FIRST PAGE SHEET. A typeset Letter page, drawn at one fixed size
+   (480 by 621, the 8.5 by 11 ratio) and scaled as a picture by SheetFrame.
+   Every size inside is in em of the sheet itself, so the whole page scales
+   as one object. The readable, full-size version is the print route.
+   ═══════════════════════════════════════════════════════════════════════ */
+.fp-sheet { width: 480px; height: 621px; background: #fff; padding: 28px 32px 0; position: relative; overflow: hidden; color: var(--color-ink);
+  font: 400 10px/1.38 var(--font-geist-sans), system-ui, sans-serif; text-align: left;
+  box-shadow: 0 0 0 1px rgba(21,33,46,.06), 0 2px 4px rgba(21,33,46,.08), 0 50px 70px -36px rgba(21,33,46,.5); }
+.fp-sheet a { color: inherit; }
+.fp-hd { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--color-brand); padding-bottom: 1em; margin-bottom: 1.4em; }
+.fp-title { font: 600 2.4em/1 var(--font-source-serif), Georgia, serif; margin: 0; letter-spacing: -.01em; }
+.fp-who { font-size: 1em; color: var(--color-muted); margin-top: .6em; }
+.fp-meta { text-align: right; font-size: .95em; color: var(--color-muted); line-height: 1.5; }
+.fp-meta b { display: block; color: var(--color-flag); font-weight: 700; font-size: 1.05em; }
+.fp-cols { display: grid; grid-template-columns: 1fr 168px; gap: 0 22px; }
+.fp-h { font-weight: 600; font-size: 1em; line-height: 1.2; color: var(--color-brand); margin: 0 0 .5em; padding-bottom: .4em; border-bottom: 1px solid var(--color-line); }
+.fp-say { font: italic 400 1.15em/1.35 var(--font-source-serif), Georgia, serif; margin: 0 0 .55em; padding-left: .8em; border-left: 2px solid var(--color-brand); }
+.fp-block { margin-bottom: 1.1em; }
+.fp-rows > div { display: grid; grid-template-columns: 3.4em 1fr; gap: .8em; padding: .2em 0; border-bottom: 1px solid #f0f2f5; }
+.fp-rows b { font-weight: 600; color: var(--color-brand); font-variant-numeric: tabular-nums; }
+.fp-rows i { font-style: normal; color: var(--color-muted); }
+.fp-more { color: var(--color-muted); padding-top: .3em; }
+.fp-add { display: block; color: var(--color-faint); padding: .35em 0 .2em; }
+a.fp-add:hover { color: var(--color-brand); text-decoration: underline; text-underline-offset: 2px; }
+.fp-chain { padding-top: .4em; }
+.fp-c { position: relative; padding: 0 0 1.5em 1.8em; }
+.fp-c::before { content: ""; position: absolute; left: 4px; top: 9px; bottom: -9px; width: 2px; background: var(--color-flag); }
+.fp-c:last-child::before { display: none; }
+.fp-c::after { content: ""; position: absolute; left: 0; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2.5px solid var(--color-flag); box-sizing: border-box; }
+.fp-c strong { display: block; font: 600 1.7em/1.1 var(--font-source-serif), Georgia, serif; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.fp-c small { display: block; font-size: .95em; color: var(--color-muted); margin-top: .2em; }
+.fp-ft { position: absolute; left: 32px; right: 32px; bottom: 18px; display: flex; justify-content: space-between; gap: 1em; font-size: .85em; color: var(--color-faint); border-top: 1px solid var(--color-line); padding-top: .7em; background: #fff; }
+
+/* The desk the sheet rests on (sign-in). One motion on the whole screen: the
+   page settles in as the screen loads. */
+.fp-desk { background: radial-gradient(800px 560px at 32% 55%, #ffffff 0%, var(--color-paper) 55%, #e9ecf1 100%); }
+@keyframes fp-settle { from { opacity: 0; transform: rotate(-1.6deg) translateY(22px); } to { opacity: 1; transform: rotate(-1.6deg) translateY(0); } }
+.fp-settle { transform: rotate(-1.6deg); animation: fp-settle 1000ms cubic-bezier(0.23, 1, 0.32, 1) 80ms both; }
+
+/* end @layer components */
 
 /* ═══════════════════════════════════════════════════════════════════════
    MOTION: few, short, and all opacity/transform/clip. No parallax, no scroll
@@ -264,7 +314,7 @@ a.row:hover, button.row:hover { background: var(--color-canvas); }
 
 /* PRESS: the control pushes back under the thumb. */
 .press { transition: transform .14s var(--ease-out), background-color .14s var(--ease-out), box-shadow .14s var(--ease-out); }
-.press:active { transform: scale(.972); }
+.press:active { transform: scale(.97); }
 
 /* LIFT: a card acknowledges the cursor. */
 .lift { transition: transform .18s var(--ease-out), box-shadow .18s var(--ease-out), border-color .18s var(--ease-out); }
@@ -285,6 +335,7 @@ a.row:hover, button.row:hover { background: var(--color-canvas); }
 .metal { background-image: var(--grad-metal); }
 
 @media (prefers-reduced-motion: reduce) {
+  .fp-settle { animation: none; opacity: 1; transform: rotate(-1.6deg); }
   .rise, .reveal { animation: none; opacity: 1; transform: none; clip-path: none; }
   .press, .lift, .btn { transition: none; }
   .press:active, .lift:hover, .lift:active, .btn:active { transform: none; }

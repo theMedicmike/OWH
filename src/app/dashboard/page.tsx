@@ -3,7 +3,7 @@ import DashboardView from "@/components/DashboardView";
 
 export default function DashboardPage() {
   return (
-    <AppShell title="Dashboard">
+    <AppShell title="Home" wide>
       <DashboardView />
     </AppShell>
   );

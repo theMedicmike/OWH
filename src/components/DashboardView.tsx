@@ -12,6 +12,8 @@ import { listMemberIncidents } from "@/lib/incidents";
 import { listMedications } from "@/lib/medications";
 import { listVessels } from "@/lib/vessels";
 import { Card, SectionTitle, LinkRow, SpineRow, Chevron, type SpineState } from "./ui";
+import FirstPageHome from "./FirstPageHome";
+import { buildSheet, listRecordings, sheetDate, type SheetData } from "@/lib/firstPage";
 
 type CheckRow = { id: string; place_name: string | null; date_start: string | null; exposures: { exposure_class: string }[] | null };
 type Conn = { id: string; direction: "sent" | "received"; status: string; other_name: string | null; place: string | null; ev_year: number | null };
@@ -36,7 +38,6 @@ const MORE = [
 
 export default function DashboardView() {
   const { user, supabase } = useAuth();
-  const [name, setName] = useState<string | null>(null);
   const [branch, setBranch] = useState<string | null>(null);
   const [years, setYears] = useState<string | null>(null);
   const [rows, setRows] = useState<CheckRow[]>([]);
@@ -59,6 +60,8 @@ export default function DashboardView() {
   const [incidentClasses, setIncidentClasses] = useState<string[]>([]);
   const [hasMeds, setHasMeds] = useState(false);
   const [hasVessels, setHasVessels] = useState(false);
+  const [sheet, setSheet] = useState<SheetData | null>(null);
+  const [hasStory, setHasStory] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -67,7 +70,6 @@ export default function DashboardView() {
       let m = await supabase.from("members").select("display_name, branch, service_start, service_end, still_serving").eq("auth_id", user.id).maybeSingle();
       if (m.error) m = await supabase.from("members").select("display_name, branch, service_start, service_end").eq("auth_id", user.id).maybeSingle();
       if (!m.data) await supabase.from("members").insert({ auth_id: user.id });
-      setName((m.data?.display_name as string) ?? null);
       setBranch((m.data?.branch as string) ?? null);
       const ss = m.data?.service_start ? new Date(m.data.service_start as string).getUTCFullYear() : null;
       const se = m.data?.service_end ? new Date(m.data.service_end as string).getUTCFullYear() : null;
@@ -120,11 +122,20 @@ export default function DashboardView() {
       setIncidentClasses("incidents" in inc ? Array.from(new Set(inc.incidents.map((i) => i.incidentClass))) : []);
       setHasMeds("medications" in meds && meds.medications.length > 0);
 
+      // The First Page, assembled the same way the print assembles it. If the
+      // First Page tables are not there yet, Home still shows the empty page.
+      const [sh, rec] = await Promise.all([buildSheet(supabase), listRecordings(supabase)]);
+      setSheet(
+        sh.ok
+          ? sh.data
+          : { who: (m.data?.display_name as string) ?? "", updated: sheetDate(), ownWords: [], served: [], changed: [], chain: [], example: false },
+      );
+      setHasStory(rec.ok ? rec.data.length > 0 : false);
+
       setLoaded(true);
     })();
   }, [user, supabase]);
 
-  const greeting = name || user?.email?.split("@")[0] || "there";
   const checkins = rows.length;
 
   async function removeCheckin(id: string) {
@@ -148,32 +159,10 @@ export default function DashboardView() {
     filedConditions: filedCount,
   });
 
-  // The SOP, in order: who you are, what you live with, where you served.
-  // The map comes third on purpose. A pin dropped before the app knows the
-  // veteran and their conditions has nothing to connect itself to.
-  const hasServiceInfo = !!(branch || years);
-  const startStep = !hasServiceInfo
-    ? {
-        href: "/intake",
-        cta: "Start with your service",
-        blurb: "Branch, years, and your job. It is short, and everything else in your record builds on it.",
-      }
-    : counts.conditions === 0
-    ? {
-        href: "/health",
-        cta: "Add what you live with",
-        blurb: "The conditions you carry, and roughly when each one started. That is what the rest of your record gets connected to.",
-      }
-    : {
-        href: "/map",
-        cta: "Map where you served",
-        blurb: "Drop a pin where you served and we show you the exposures the government already documents there, connected to what you have told us.",
-      };
-
   // The six steps, as the sidebar lists them, each with its state in plain
   // words. The first one not done is the lit one.
   const steps: { href: string; label: string; detail: string; done: boolean; word?: string }[] = [
-    { href: "/intake", label: "Your service", detail: "Branch, years, and your job.", done: hasServiceInfo },
+    { href: "/intake", label: "Your service", detail: "Branch, years, and your job.", done: !!(branch || years) },
     { href: "/health", label: "Your conditions", detail: "What you live with, and when it started.", done: counts.conditions > 0 },
     { href: "/map", label: "Where you served", detail: "Every base and deployment, on the map.", done: checkins > 0 },
     { href: "/journey", label: "Connect the dots", detail: "What in your service links to what in your health.", done: connectedCount > 0 },
@@ -204,65 +193,21 @@ export default function DashboardView() {
     if (data === "accepted" && req) setBuddies((prev) => [...prev, { ...req, status: "accepted" }]);
   }
 
-  const returning = loaded && hasServiceInfo && counts.conditions > 0 && checkins > 0;
-  const doorLabel = !loaded
-    ? "Your record"
-    : !returning
-      ? (!hasServiceInfo ? "Start here" : "Next step")
-      : prog.claimReady
-        ? "Your record is claim-ready"
-        : "Pick up where you left off";
-  const doorTitle = !loaded
-    ? "Loading your record…"
-    : !returning
-      ? startStep.cta
-      : prog.next
-        ? prog.next.cta
-        : "Open your claim packet";
-  const doorHref = !returning ? startStep.href : prog.next ? prog.next.href : "/report";
-  const doorBlurb = !loaded
-    ? ""
-    : !returning
-      ? startStep.blurb
-      : prog.next
-        ? prog.claimReady
-          ? `Your record is claim-ready. Make it stronger. Next: ${prog.next.label.toLowerCase()}.`
-          : `You are ${prog.remaining.length} step${prog.remaining.length === 1 ? "" : "s"} from a claim-ready record. Next: ${prog.next.label.toLowerCase()}.`
-        : "Every dot is connected. Assemble your claim packet and bring it to an accredited VSO (Veterans Service Officer, free help) to file.";
-
   return (
     <div className="space-y-8">
-      {/* Greeting: the one place the serif speaks on this screen */}
-      <div>
-        <h2 className="display text-[1.85rem] text-ink sm:text-[2.125rem]">Welcome back, {greeting}.</h2>
-        <p className="mt-1.5 text-[0.9375rem] text-muted">{[branch, years].filter(Boolean).join(", ") || "Let's build your record."}</p>
-      </div>
+      {/* Home is the veteran's First Page. The six steps below feed it. */}
+      <FirstPageHome
+        sheet={sheet}
+        feeds={{
+          story: hasStory,
+          places: loaded ? checkins : null,
+          changed: loaded ? counts.conditions > 0 : null,
+          buddies: loaded ? buddies.length : null,
+        }}
+      />
 
-      {/* The one lit door. The only navy surface on the screen, and the only
-          raised one: the contrast is what says "this is next" without a
-          label that says so. */}
-      <section className="on-navy card-raise rounded-2xl bg-brand p-6 text-white sm:p-7" aria-live="polite">
-        <p className="text-[0.9375rem] font-medium text-white/65">{doorLabel}</p>
-        <h3 className="mt-1 text-[1.375rem] font-semibold leading-tight tracking-tight sm:text-2xl">{doorTitle}</h3>
-        {doorBlurb && <p className="mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-white/80">{doorBlurb}</p>}
-        {loaded && (
-          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <Link href={doorHref} className="btn btn-light btn-lg">
-              {doorTitle}
-            </Link>
-            {!returning && !hasServiceInfo && (
-              <Link href="/intake/ai" className="text-[0.9375rem] font-semibold text-white/85 underline-offset-4 hover:underline">
-                Or answer a few questions instead
-              </Link>
-            )}
-            {returning && prog.claimReady && prog.next && (
-              <Link href="/report" className="text-[0.9375rem] font-semibold text-white/85 underline-offset-4 hover:underline">
-                Or open your claim packet
-              </Link>
-            )}
-          </div>
-        )}
-      </section>
+      {/* Everything below reads at the normal measure; only the page is wide. */}
+      <div className="mx-auto max-w-3xl space-y-8">
 
       {/* A veteran reached out: the human moment outranks everything below it */}
       {pendingReqs.length > 0 && (
@@ -316,7 +261,7 @@ export default function DashboardView() {
 
       {/* The spine: six steps, in order, each with its state in plain words */}
       <section>
-        <SectionTitle title="Your record" lede="Six steps, in order. Tap any one to open it." />
+        <SectionTitle title="The six steps that feed your page" lede="In order. Tap any one to open it." />
         <Card className="mt-3 overflow-hidden">
           <ol className="spine p-2">
             {steps.map((s, i) => (
@@ -347,7 +292,6 @@ export default function DashboardView() {
           {(seaGoing || hasVessels) && (
             <LinkRow href="/vessels" label="Ships you served aboard" status={loaded ? (hasVessels ? "On file" : "Not yet") : " "} tone={hasVessels ? "success" : "faint"} />
           )}
-          <LinkRow href="/first-page" label="Your First Page" detail="The one sheet you hand a specialist." />
         </Card>
       </section>
 
@@ -441,6 +385,7 @@ export default function DashboardView() {
           ))}
         </Card>
       </section>
+      </div>
     </div>
   );
 }
