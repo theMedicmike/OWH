@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft, useUndo } from "./Keep";
 import { listVessels, createVessel, deleteVessel, vesselWhen, vesselTitle, type Vessel } from "@/lib/vessels";
+
+type VesselDraft = { name: string; hull: string; fromYear: string; fromMonth: string; toYear: string; toMonth: string; role: string; note: string };
 
 const MONTH_OPTS = [
   "", "January", "February", "March", "April", "May", "June",
@@ -27,7 +30,8 @@ export default function VesselsListCard() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
 
   const [name, setName] = useState("");
   const [hull, setHull] = useState("");
@@ -37,6 +41,31 @@ export default function VesselsListCard() {
   const [toMonth, setToMonth] = useState("");
   const [role, setRole] = useState("");
   const [note, setNote] = useState("");
+
+  // The add form keeps a copy on this device until the ship is saved, so a
+  // refresh or Cancel never throws typed words away.
+  const draft = useDraft<VesselDraft>("vessel-add");
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    if (d && Object.values(d).some((x) => x)) {
+      // Applied from the device copy (an outside store), just after this effect.
+      queueMicrotask(() => {
+        setName(d.name); setHull(d.hull); setFromYear(d.fromYear); setFromMonth(d.fromMonth);
+        setToYear(d.toYear); setToMonth(d.toMonth); setRole(d.role); setNote(d.note);
+        setOpen(true); setKept(true);
+      });
+    }
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current) return;
+    const d: VesselDraft = { name, hull, fromYear, fromMonth, toYear, toMonth, role, note };
+    if (Object.values(d).some((x) => x)) draft.write(d);
+    else draft.clear();
+  }, [name, hull, fromYear, fromMonth, toYear, toMonth, role, note, draft]);
 
   const load = useCallback(async () => {
     const res = await listVessels(supabase);
@@ -70,15 +99,22 @@ export default function VesselsListCard() {
     setBusy(false);
     if (res.status === "error") { setErr(res.message); return; }
     reset();
+    draft.clear();
+    setKept(false);
     setOpen(false);
     await load();
   }
 
-  async function remove(id: string) {
-    await deleteVessel(supabase, id);
-    setConfirmDel(null);
-    await load();
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(v: Vessel) {
+    setHidden((h) => [...h, v.id]);
+    offer({
+      message: `Removed: ${vesselTitle(v)}.`,
+      commit: async () => { await deleteVessel(supabase, v.id); await load(); setHidden((h) => h.filter((x) => x !== v.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== v.id)),
+    });
   }
+  const shown = vessels.filter((v) => !hidden.includes(v.id));
 
   if (!ready) return null;
 
@@ -107,6 +143,7 @@ export default function VesselsListCard() {
 
       {open && (
         <div className="mt-4 space-y-5 rounded-xl border border-line bg-canvas p-4">
+          <KeptNotice show={kept} />
           <div>
             <label htmlFor="vessel-name" className="field-label">Ship&apos;s name</label>
             {/* The only required field, on purpose. A man who remembers the ship
@@ -180,20 +217,21 @@ export default function VesselsListCard() {
             >
               {busy ? "Saving…" : name.trim() ? "Save this ship" : "Add the ship's name"}
             </button>
-            <button type="button" onClick={() => { reset(); setOpen(false); }} className="btn btn-secondary btn-lg">
-              Cancel
+            {/* Closing keeps what was typed; it is here when the form opens again. */}
+            <button type="button" onClick={() => setOpen(false)} className="btn btn-secondary btn-lg">
+              Close for now
             </button>
           </div>
         </div>
       )}
 
-      {!vessels.length ? (
+      {!shown.length ? (
         <p className="mt-4 text-[0.9375rem] text-muted">
           Nothing added yet. Start with the one you were on longest. The name alone is enough to begin.
         </p>
       ) : (
         <ul className="mt-4 space-y-2">
-          {vessels.map((v) => {
+          {shown.map((v) => {
             const when = vesselWhen(v);
             return (
               <li key={v.id} className="rounded-xl border border-line p-4">
@@ -204,21 +242,14 @@ export default function VesselsListCard() {
                       {[when || "dates not noted yet", v.role].filter(Boolean).join(", ")}
                     </div>
                   </div>
-                  {confirmDel === v.id ? (
-                    <div className="flex flex-none flex-wrap gap-2">
-                      <button type="button" onClick={() => setConfirmDel(null)} className="btn btn-secondary">Keep it</button>
-                      <button type="button" onClick={() => remove(v.id)} className="btn btn-danger">Delete</button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDel(v.id)}
-                      aria-label={`Remove ${vesselTitle(v)}`}
-                      className="btn btn-ghost flex-none text-muted"
-                    >
-                      Remove
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => remove(v)}
+                    aria-label={`Remove ${vesselTitle(v)}`}
+                    className="btn btn-ghost flex-none text-muted"
+                  >
+                    Remove
+                  </button>
                 </div>
                 {v.note && <p className="mt-2 whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-ink">{v.note}</p>}
               </li>
@@ -227,7 +258,7 @@ export default function VesselsListCard() {
         </ul>
       )}
 
-      {vessels.length > 0 && (
+      {shown.length > 0 && (
         <p className="mt-4 border-t border-line pt-3 text-sm leading-relaxed text-muted">
           These print in your claim packet, under your service details. Ask your VSO to request the deck logs for
           the dates above. That is the document that shows where the ship actually was.

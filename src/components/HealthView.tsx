@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { EXPOSURE_LABEL, INCIDENT_LABEL } from "@/lib/education";
+import { EXPOSURE_LABEL } from "@/lib/education";
 import { conditionsBySystem, searchConditions, defFor, CONDITION_BY_LABEL, COMMON_STARTERS } from "@/lib/conditions";
 import ServiceTimeline, { type TimelineData } from "./ServiceTimeline";
 import { CONDITION_EXPOSURES } from "@/lib/education";
@@ -14,6 +14,7 @@ import { asthmaPostServiceNote } from "@/lib/presumptive";
 import WheelPicker from "./WheelPicker";
 import ConditionImpactJournal from "./ConditionImpactJournal";
 import SymptomNotesCard from "./SymptomNotesCard";
+import { useUndo } from "./Keep";
 
 const ONSET_YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => String(1940 + i));
 
@@ -86,7 +87,6 @@ export default function HealthView() {
   const [supabase] = useState(() => createClient());
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
-  const [conditions, setConditions] = useState<Condition[]>([]);
   const [tours, setTours] = useState<TourLite[]>([]);
   const [memberMos, setMemberMos] = useState<string | null>(null);
   const [memberBranch, setMemberBranch] = useState<string | null>(null);
@@ -100,6 +100,11 @@ export default function HealthView() {
   // optional follow-up (when did it start) right where his thumb is.
   const [justAdded, setJustAdded] = useState<{ id: string; label: string } | null>(null);
   const [onsetSaved, setOnsetSaved] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
+  const [allConditions, setConditions] = useState<Condition[]>([]);
+  // A condition waiting behind the Undo bar is out of sight everywhere.
+  const conditions = useMemo(() => allConditions.filter((c) => !hidden.includes(c.id)), [allConditions, hidden]);
 
   const chosen = useMemo(() => new Set(conditions.map((c) => c.label)), [conditions]);
 
@@ -239,12 +244,36 @@ export default function HealthView() {
     setOnsetSaved(PRECISION.find((p) => p.v === v)?.label ?? v);
   }
 
-  async function remove(id: string) {
-    setBusy(true);
-    await supabase.from("conditions").delete().eq("id", id);
-    await load();
-    setBusy(false);
-    if (detailFor === id) setDetailFor(null);
+  // Remove is held behind the Undo bar: the condition hides at once and is
+  // only deleted when the bar closes, is replaced, or the screen is left.
+  function remove(c: Condition) {
+    setHidden((h) => [...h, c.id]);
+    if (detailFor === c.id) setDetailFor(null);
+    if (justAdded?.id === c.id) setJustAdded(null);
+    offer({
+      message: `Removed: ${c.label}.`,
+      commit: async () => {
+        await supabase.from("conditions").delete().eq("id", c.id);
+        await load();
+        setHidden((h) => h.filter((x) => x !== c.id));
+      },
+      undo: () => setHidden((h) => h.filter((x) => x !== c.id)),
+    });
+  }
+
+  // A single tap that replaces an answer: apply it, then offer Undo that puts
+  // the old answer back. Tapping the answer already chosen changes nothing.
+  function choose(c: Condition, fields: Partial<Condition>, label: string) {
+    const keys = Object.keys(fields) as (keyof Condition)[];
+    if (keys.every((k) => c[k] === fields[k])) return;
+    const before: Record<string, unknown> = {};
+    for (const k of keys) before[k] = c[k];
+    void patch(c.id, fields);
+    offer({
+      message: `${c.label}: changed to ${label}.`,
+      commit: () => {},
+      undo: () => { void patch(c.id, before); },
+    });
   }
 
   // Patch one condition. Unknown columns (pre-migration) fail loudly rather
@@ -275,7 +304,7 @@ export default function HealthView() {
     return (
       <div className="card p-6">
         <p className="text-sm text-muted">Sign in to build your health record.</p>
-        <Link href="/" className="mt-3 inline-block text-sm font-semibold text-brand hover:underline">Go to sign in</Link>
+        <Link href="/" className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-brand hover:underline">Go to sign in</Link>
       </div>
     );
   }
@@ -485,8 +514,8 @@ export default function HealthView() {
                       {!def && <span className="text-faint">your words</span>}
                     </div>
                   </div>
-                  <button onClick={() => remove(c.id)} aria-label={`Remove ${c.label}`}
-                    className="flex-none text-[0.8125rem] text-faint transition hover:text-red-600">remove</button>
+                  <button type="button" onClick={() => remove(c)} aria-label={`Remove ${c.label}`}
+                    className="btn btn-ghost -mr-2 -mt-2 min-h-11 flex-none text-muted">Remove</button>
                 </div>
 
                 {/* The connection — a sentence, never a badge */}
@@ -494,16 +523,16 @@ export default function HealthView() {
                   {m.kind === "place" && (
                     <div className="rounded-r-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
                       {m.quote && (
-                        <p className="mb-1.5 text-[0.75rem] italic leading-relaxed text-muted">
+                        <p className="mb-1.5 text-[0.8125rem] italic leading-relaxed text-muted">
                           You wrote: &ldquo;{m.quote}&rdquo;
                         </p>
                       )}
                       <p className="text-[0.8125rem] leading-relaxed text-ink">{m.sentence}</p>
-                      {m.ask && <p className="mt-2 whitespace-pre-line text-[0.75rem] font-semibold leading-relaxed text-accent">→ {m.ask}</p>}
+                      {m.ask && <p className="mt-2 whitespace-pre-line text-[0.8125rem] font-semibold leading-relaxed text-accent">→ {m.ask}</p>}
                       {/* §1120(b)(1): the presumptive is asthma DIAGNOSED AFTER
                           SERVICE — honor the qualifier we have the data for. */}
                       {c.label === "Asthma" && asthmaPostServiceNote(c.onset_precision) && (
-                        <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[0.75rem] leading-relaxed text-ink">
+                        <p className="mt-2 rounded-md border border-warn/30 bg-warn-soft px-2.5 py-2 text-[0.8125rem] leading-relaxed text-ink">
                           {asthmaPostServiceNote(c.onset_precision)}
                         </p>
                       )}
@@ -512,7 +541,7 @@ export default function HealthView() {
                   {m.kind === "incident" && (
                     <div className="rounded-r-lg border-l-2 border-accent bg-accent/5 px-3 py-2.5">
                       {m.quote && (
-                        <p className="mb-1.5 text-[0.75rem] italic leading-relaxed text-muted">
+                        <p className="mb-1.5 text-[0.8125rem] italic leading-relaxed text-muted">
                           You wrote: &ldquo;{m.quote}&rdquo;
                         </p>
                       )}
@@ -552,7 +581,7 @@ export default function HealthView() {
                     return (
                       <div className="rounded-r-lg border-l-2 border-line bg-canvas px-3 py-2.5">
                         <p className="text-[0.8125rem] leading-relaxed text-muted">{m.sentence}</p>
-                        <p className="mt-1.5 text-[0.75rem] leading-relaxed text-muted">
+                        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted">
                           {memberMos
                             ? "Your job code isn't in the part of the VA's noise listing this app carries — which says nothing about the full listing or your claim. Ask your VSO to look it up by name: the Duty MOS Noise Exposure Listing."
                             : <>Have a job code (MOS / Rate / AFSC)? Add it in <Link href="/account" className="font-semibold text-brand hover:underline">Account</Link> — the VA keeps a noise-exposure listing by job code that matters for hearing claims.</>}
@@ -570,14 +599,14 @@ export default function HealthView() {
                       <p className="text-[0.8125rem] leading-relaxed text-ink">
                         Where were you when this started? Putting it on the map is what draws the connection.
                       </p>
-                      <Link href="/map" className="mt-2 inline-block text-[0.75rem] font-semibold text-brand hover:underline">
+                      <Link href="/map" className="mt-1 inline-flex min-h-11 items-center text-[0.875rem] font-semibold text-brand hover:underline">
                         → Add where you served
                       </Link>
                     </div>
                   )}
 
-                  <button onClick={() => setDetailFor(open ? null : c.id)} aria-expanded={open}
-                    className="mt-2.5 text-[0.8125rem] font-semibold text-brand hover:underline">
+                  <button type="button" onClick={() => setDetailFor(open ? null : c.id)} aria-expanded={open}
+                    className="mt-1.5 inline-flex min-h-11 items-center text-[0.9375rem] font-semibold text-brand hover:underline">
                     {open ? "Hide details" : c.onset_year || c.evidence_status ? "Edit details" : "Add details (optional)"}
                   </button>
                 </div>
@@ -594,8 +623,8 @@ export default function HealthView() {
                       <div className="mt-2 flex flex-wrap gap-2">
                         {DIAGNOSIS.map((d) => (
                           <button key={d.v} type="button" aria-pressed={c.diagnosed_by === d.v}
-                            onClick={() => patch(c.id, { diagnosed_by: d.v })}
-                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.diagnosed_by === d.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            onClick={() => choose(c, { diagnosed_by: d.v }, d.label)}
+                            className={`min-h-11 rounded-full border px-4 py-2 text-[0.875rem] transition ${c.diagnosed_by === d.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {d.label}
                           </button>
                         ))}
@@ -610,14 +639,14 @@ export default function HealthView() {
                           <WheelPicker
                             options={ONSET_YEARS}
                             index={c.onset_year ? c.onset_year - 1940 : ONSET_YEARS.length - 1}
-                            onChange={(i) => patch(c.id, { onset_year: 1940 + i, onset_precision: "year" })}
+                            onChange={(i) => choose(c, { onset_year: 1940 + i, onset_precision: "year" }, `started ${1940 + i}`)}
                             ariaLabel="Year it started"
                           />
                         </div>
                         {PRECISION.map((p) => (
                           <button key={p.v} type="button" aria-pressed={c.onset_precision === p.v}
-                            onClick={() => patch(c.id, { onset_precision: p.v, onset_year: null })}
-                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.onset_precision === p.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            onClick={() => choose(c, { onset_precision: p.v, onset_year: null }, p.label)}
+                            className={`min-h-11 rounded-full border px-4 py-2 text-[0.875rem] transition ${c.onset_precision === p.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {p.label}
                           </button>
                         ))}
@@ -630,8 +659,8 @@ export default function HealthView() {
                       <div className="mt-2 flex flex-wrap gap-2">
                         {EVIDENCE.map((e) => (
                           <button key={e.v} type="button" aria-pressed={c.evidence_status === e.v}
-                            onClick={() => patch(c.id, { evidence_status: e.v })}
-                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.evidence_status === e.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            onClick={() => choose(c, { evidence_status: e.v }, e.label)}
+                            className={`min-h-11 rounded-full border px-4 py-2 text-[0.875rem] transition ${c.evidence_status === e.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {e.label}
                           </button>
                         ))}
@@ -643,8 +672,8 @@ export default function HealthView() {
                       <div className="mt-2 flex flex-wrap gap-2">
                         {CLAIMS.map((s) => (
                           <button key={s.v} type="button" aria-pressed={c.claim_status === s.v}
-                            onClick={() => patch(c.id, { claim_status: s.v })}
-                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.claim_status === s.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            onClick={() => choose(c, { claim_status: s.v }, s.label)}
+                            className={`min-h-11 rounded-full border px-4 py-2 text-[0.875rem] transition ${c.claim_status === s.v ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             {s.label}
                           </button>
                         ))}
@@ -662,14 +691,14 @@ export default function HealthView() {
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <button type="button" aria-pressed={!c.secondary_to}
-                            onClick={() => patch(c.id, { secondary_to: null })}
-                            className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${!c.secondary_to ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                            onClick={() => choose(c, { secondary_to: null }, "On its own")}
+                            className={`min-h-11 rounded-full border px-4 py-2 text-[0.875rem] transition ${!c.secondary_to ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                             On its own
                           </button>
                           {others.map((o) => (
                             <button key={o.id} type="button" aria-pressed={c.secondary_to === o.id}
-                              onClick={() => patch(c.id, { secondary_to: o.id })}
-                              className={`rounded-full border px-3 py-1.5 text-[0.8125rem] transition ${c.secondary_to === o.id ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
+                              onClick={() => choose(c, { secondary_to: o.id }, `came from ${o.label}`)}
+                              className={`min-h-11 rounded-full border px-4 py-2 text-[0.875rem] transition ${c.secondary_to === o.id ? "border-brand bg-brand/10 font-semibold text-brand" : "border-line text-muted hover:bg-surface"}`}>
                               came from {o.label}
                             </button>
                           ))}

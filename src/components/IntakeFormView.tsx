@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft } from "./Keep";
 import { useRouter } from "next/navigation";
 import { searchGazetteer, bootCampsFor } from "@/lib/gazetteer";
 import { saveBootCampCheckIn } from "@/lib/bootCamp";
@@ -59,6 +60,15 @@ type LocationEntry = {
   confirmed: string[];      // documented exposure classes for the matched site
   matchedSite: string | null;
   other: string;            // free-text exposure not on the standard list
+};
+
+type ServiceDraft = {
+  displayName: string; branch: string;
+  startYear: string; startMonth: number; startDay: number; startApprox: boolean;
+  endYear: string; endMonth: number; endDay: number; endApprox: boolean;
+  currentlyServing: boolean; mos: string;
+  bootCamp: string; bootCampYear: string; bootCampMonth: number; bootCampDay: number; bootCampApprox: boolean;
+  vaRating: string; vaCare: boolean | null;
 };
 
 function makeLocation(): LocationEntry {
@@ -202,6 +212,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
   // Guards against save-as-wipe: never write over a record we failed to read.
   const [prefillOk, setPrefillOk] = useState(false);
   const [condsLoaded, setCondsLoaded] = useState(false);
+  const [prefillDone, setPrefillDone] = useState(false);
 
   // Step 1 state
   const [displayName, setDisplayName] = useState("");
@@ -263,6 +274,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
       // No row (brand-new member) is a SUCCESSFUL prefill of nothing; only a
       // failed read blocks saving, because saving over an unread record wipes it.
       setPrefillOk(ok);
+      setPrefillDone(true);
       if (!data) return;
       if (data.display_name) setDisplayName(data.display_name);
       if (data.branch) setBranch(data.branch);
@@ -282,6 +294,42 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         if (data?.length) setSelectedConditions(data.map((r) => r.label));
       });
   }, [user, supabase]);
+
+  // ── Step 1 keeps a copy on this device ────────────────────────────────────
+  // Until Save and continue lands, what he typed or tapped on Your service is
+  // kept locally, so a refresh or a dropped connection gives it back. The copy
+  // is only written when it differs from what was loaded from his record.
+  const serviceSnap: ServiceDraft = {
+    displayName, branch, startYear, startMonth, startDay, startApprox, endYear, endMonth, endDay, endApprox,
+    currentlyServing, mos, bootCamp, bootCampYear, bootCampMonth, bootCampDay, bootCampApprox, vaRating, vaCare,
+  };
+  const serviceKey = JSON.stringify(serviceSnap);
+  const serviceDraft = useDraft<ServiceDraft>("intake-service");
+  const serviceBaseline = useRef<string | null>(null);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (!prefillDone || !serviceDraft.ready || serviceBaseline.current !== null) return;
+    serviceBaseline.current = serviceKey;
+    const d = serviceDraft.read();
+    if (!d || JSON.stringify({ ...serviceSnap, ...d }) === serviceKey) return;
+    // Applied from the device copy (an outside store), just after this effect.
+    queueMicrotask(() => {
+      setDisplayName(d.displayName ?? displayName); setBranch(d.branch ?? branch);
+      setStartYear(d.startYear ?? startYear); setStartMonth(d.startMonth ?? startMonth); setStartDay(d.startDay ?? startDay); setStartApprox(d.startApprox ?? startApprox);
+      setEndYear(d.endYear ?? endYear); setEndMonth(d.endMonth ?? endMonth); setEndDay(d.endDay ?? endDay); setEndApprox(d.endApprox ?? endApprox);
+      setCurrentlyServing(d.currentlyServing ?? currentlyServing); setMos(d.mos ?? mos);
+      setBootCamp(d.bootCamp ?? bootCamp); setBootCampYear(d.bootCampYear ?? bootCampYear); setBootCampMonth(d.bootCampMonth ?? bootCampMonth);
+      setBootCampDay(d.bootCampDay ?? bootCampDay); setBootCampApprox(d.bootCampApprox ?? bootCampApprox);
+      setVaRating(d.vaRating ?? vaRating); setVaCare(d.vaCare === undefined ? vaCare : d.vaCare);
+      setKept(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillDone, serviceDraft, serviceKey]);
+  useEffect(() => {
+    if (serviceBaseline.current === null) return;
+    if (serviceKey === serviceBaseline.current) serviceDraft.clear();
+    else serviceDraft.write(JSON.parse(serviceKey) as ServiceDraft);
+  }, [serviceKey, serviceDraft]);
 
   // ── Save helpers ──────────────────────────────────────────────────────────
 
@@ -363,6 +411,9 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
         }
       }
       await saveBootCamp();
+      // Saved to the record: the copy on this device is no longer needed.
+      serviceDraft.clear();
+      serviceBaseline.current = serviceKey;
       // The SOP order is service, then conditions, then the map, and each of
       // those now has its own tap-first screen. Save hands him straight to
       // step 2 instead of this wizard's older location and health steps
@@ -620,6 +671,7 @@ export default function IntakeFormView({ sites = [] }: { sites?: SiteOption[] })
           subtitle="Mostly taps. Everything here is private and stays in your record."
         >
           <div className="space-y-7">
+            <KeptNotice show={kept} />
             <Field label="Which branch?">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {BRANCHES.map((b) => (

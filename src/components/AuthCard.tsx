@@ -166,7 +166,7 @@ export default function AuthCard({
               <button
                 type="button"
                 onClick={() => setShow((s) => !s)}
-                className="btn btn-ghost btn-sm absolute right-1.5 top-1/2 -translate-y-1/2"
+                className="btn btn-ghost btn-sm absolute right-0.5 top-1/2 min-h-11 -translate-y-1/2"
                 aria-pressed={show}
               >
                 {show ? "Hide" : "Show"}
@@ -200,7 +200,7 @@ export default function AuthCard({
             </button>
             <p className="text-muted">
               New here?{" "}
-              <button type="button" onClick={() => go("up")} className="font-semibold text-brand hover:underline">
+              <button type="button" onClick={() => go("up")} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">
                 Create your free account
               </button>
             </p>
@@ -209,7 +209,7 @@ export default function AuthCard({
         {mode === "up" && (
           <p className="text-muted">
             Already have an account?{" "}
-            <button type="button" onClick={() => go("in")} className="font-semibold text-brand hover:underline">
+            <button type="button" onClick={() => go("in")} className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">
               Sign in
             </button>
           </p>

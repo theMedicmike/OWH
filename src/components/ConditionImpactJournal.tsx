@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft, useUndo } from "./Keep";
 import { listConditionNotes, createConditionNote, deleteConditionNote, type ConditionNote } from "@/lib/conditionNotes";
 import WheelPicker from "./WheelPicker";
 
@@ -47,6 +48,8 @@ function JournalYearPicker({ year, minYear, onChange }: { year: number | null; m
 // entries produces a record that reads manufactured rather than lived — which
 // is worse for them than a sparser honest one.
 function JournalTimeline({ notes, onsetYear }: { notes: ConditionNote[]; onsetYear: number | null }) {
+  // Read the clock once, when the timeline first shows, not on every render.
+  const [now] = useState(() => Date.now());
   const nowYear = new Date().getUTCFullYear();
   const entryYears = new Set(
     notes.map((n) => n.noticed_year ?? new Date(n.created_at).getUTCFullYear()),
@@ -61,7 +64,7 @@ function JournalTimeline({ notes, onsetYear }: { notes: ConditionNote[]; onsetYe
     (max, n) => Math.max(max, new Date(n.created_at).getTime()),
     0,
   );
-  const daysSince = lastLogged ? Math.floor((Date.now() - lastLogged) / 86_400_000) : null;
+  const daysSince = lastLogged ? Math.floor((now - lastLogged) / 86_400_000) : null;
 
   return (
     <div className="mt-3 rounded-xl border border-line bg-canvas p-3">
@@ -107,13 +110,33 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
+
+  // The entry being written keeps a copy on this device (by condition) until
+  // Save, so a refresh or Close never loses it.
+  const draft = useDraft<{ text: string; year: number | null }>(`condition-impact-${conditionId}`);
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    // Applied from the device copy (an outside store), just after this effect.
+    if (d && d.text) queueMicrotask(() => { setText(d.text); setYear(d.year); setAdding(true); setKept(true); });
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current) return;
+    if (text) draft.write({ text, year });
+    else draft.clear();
+  }, [text, year, draft]);
 
   const load = useCallback(async () => {
     const res = await listConditionNotes(supabase, conditionId);
     setNotes("notes" in res ? res.notes : []);
   }, [supabase, conditionId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void (async () => { await load(); })(); }, [load]);
 
   async function save() {
     setErr("");
@@ -123,16 +146,24 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
     if (res.status === "error") { setErr(res.message); return; }
     setText("");
     setYear(null);
+    draft.clear();
+    setKept(false);
     setAdding(false);
     await load();
   }
 
-  async function remove(id: string) {
-    await deleteConditionNote(supabase, id);
-    await load();
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(n: ConditionNote) {
+    setHidden((h) => [...h, n.id]);
+    offer({
+      message: `Removed: ${n.note.length > 40 ? `${n.note.slice(0, 40)}…` : n.note}`,
+      commit: async () => { await deleteConditionNote(supabase, n.id); await load(); setHidden((h) => h.filter((x) => x !== n.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== n.id)),
+    });
   }
 
   if (notes === null) return null;
+  const shown = notes.filter((n) => !hidden.includes(n.id));
 
   return (
     <div className="border-t border-line pt-4">
@@ -142,16 +173,16 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
         Dated entries in your own words are what shows this has been consistent over time, not a one-time
         complaint. Add to it any time.
       </p>
-      <JournalTimeline notes={notes} onsetYear={onsetYear} />
-      {notes.length > 0 && (
+      <JournalTimeline notes={shown} onsetYear={onsetYear} />
+      {shown.length > 0 && (
         <ul className="mt-3 space-y-2">
-          {notes.map((n) => (
+          {shown.map((n) => (
             <li key={n.id} className="rounded-xl border border-line bg-canvas p-3">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-semibold text-muted">
                   {n.noticed_year ? `Around ${n.noticed_year}` : "No date given"}
                 </span>
-                <button type="button" onClick={() => remove(n.id)} className="btn btn-ghost text-muted">Remove</button>
+                <button type="button" onClick={() => remove(n)} className="btn btn-ghost text-muted">Remove</button>
               </div>
               <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">{n.note}</p>
               <span className="mt-1 block text-sm text-muted">
@@ -163,6 +194,7 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
       )}
       {adding ? (
         <div className="mt-3 rounded-xl border border-brand/30 bg-brand/5 p-4">
+          {kept && <div className="mb-3"><KeptNotice show /></div>}
           <span className="field-label">About when?</span>
           <div className="w-36">
             <JournalYearPicker year={year} minYear={onsetYear ?? 1940} onChange={setYear} />
@@ -181,12 +213,12 @@ export default function ConditionImpactJournal({ conditionId, onsetYear }: { con
             <button type="button" onClick={save} disabled={busy || !text.trim()} className="btn btn-primary">
               {busy ? "Saving…" : "Save"}
             </button>
-            <button type="button" onClick={() => setAdding(false)} className="btn btn-secondary">Cancel</button>
+            <button type="button" onClick={() => setAdding(false)} className="btn btn-secondary">Close for now</button>
           </div>
         </div>
       ) : (
         <button type="button" onClick={() => setAdding(true)} className="btn btn-secondary mt-3">
-          Add how this has affected you
+          {text ? "Finish what you were writing" : "Add how this has affected you"}
         </button>
       )}
     </div>

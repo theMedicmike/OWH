@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft } from "./Keep";
 import MonthYearWheel from "./MonthYearWheel";
 import WheelPicker from "./WheelPicker";
 import { INCIDENTS, type IncidentClass } from "@/lib/education";
 import { evidentiaryNoteFor } from "@/lib/incidentCopy";
 import { createIncidentEntry, PROVENANCE_OPTIONS, type Provenance } from "@/lib/incidents";
+
+type InjuryDraft = {
+  incidentClass: IncidentClass; repeated: boolean; placeName: string; year: number; month: number; day: number; approximate: boolean;
+  roleOrUnit: string; rangeStart: number; rangeEnd: number; frequency: string; provenance: Provenance | null; detail: string;
+};
 
 const YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => String(1940 + i));
 
@@ -47,6 +53,37 @@ export default function InjuryCaptureFlow({ initialClass }: { initialClass?: str
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState(false);
 
+  // The form keeps a copy on this device (never sent anywhere) until Save
+  // lands, so stepping away or a refresh never loses what was typed.
+  const draft = useDraft<InjuryDraft>("injury-add");
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    if (!d || !d.incidentClass) return;
+    if (initialClass && d.incidentClass !== initialClass) return; // he came for a different one
+    // Applied from the device copy (an outside store), just after this effect.
+    queueMicrotask(() => {
+      setIncidentClass(d.incidentClass); setRepeated(!!d.repeated); setPlaceName(d.placeName ?? "");
+      if (d.year) setYear(d.year);
+      setMonth(d.month ?? 0); setDay(d.day ?? 0); setApproximate(d.approximate ?? true);
+      setRoleOrUnit(d.roleOrUnit ?? "");
+      if (d.rangeStart) setRangeStart(d.rangeStart);
+      if (d.rangeEnd) setRangeEnd(d.rangeEnd);
+      setFrequency(d.frequency ?? ""); setProvenance(d.provenance ?? null); setDetail(d.detail ?? "");
+      setKept(true);
+    });
+  }, [draft, initialClass]);
+  useEffect(() => {
+    if (!restored.current || saved) return;
+    const typed = placeName || roleOrUnit || frequency || detail || provenance || month || day || repeated;
+    if (incidentClass && typed) {
+      draft.write({ incidentClass, repeated, placeName, year, month, day, approximate, roleOrUnit, rangeStart, rangeEnd, frequency, provenance, detail });
+    } else draft.clear();
+  }, [incidentClass, repeated, placeName, year, month, day, approximate, roleOrUnit, rangeStart, rangeEnd, frequency, provenance, detail, saved, draft]);
+
   const note = incidentClass ? evidentiaryNoteFor(incidentClass) : null;
   const isMst = incidentClass === "military_sexual_trauma";
 
@@ -83,6 +120,8 @@ export default function InjuryCaptureFlow({ initialClass }: { initialClass?: str
         });
     setBusy(false);
     if (res.status === "error") { setErr(res.message); return; }
+    draft.clear();
+    setKept(false);
     setSaved(true);
   }
 
@@ -136,9 +175,10 @@ export default function InjuryCaptureFlow({ initialClass }: { initialClass?: str
           not boilerplate. */}
       <div className="rounded-xl border border-line bg-canvas p-4 text-[0.9375rem] leading-relaxed text-muted">
         Nothing here is submitted automatically. It stays in your own record until you choose to bring it to a
-        VSO. Nothing you type is saved until you tap Save, so if you need to step away, it&apos;s safe to close
-        this and come back whenever you&apos;re ready. Nothing you write is touched by AI.
+        VSO. Until you tap Save, what you type is kept only on this device, so if you need to step away, it&apos;s
+        safe to close this and come back whenever you&apos;re ready. Nothing you write is touched by AI.
       </div>
+      <KeptNotice show={kept} />
 
       <fieldset>
         <legend className="text-lg font-semibold tracking-tight text-ink">What happened?</legend>

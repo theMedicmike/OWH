@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft } from "./Keep";
 import MonthYearWheel from "./MonthYearWheel";
 import ShotAddToRecord from "./ShotAddToRecord";
 import { SHOTS, SHOT_BY_SLUG, GROUP_LABEL, type Shot, type ShotGroup } from "@/lib/shotlibrary";
@@ -16,6 +17,10 @@ const PROVENANCE_OPTIONS: { value: Provenance; label: string }[] = [
 ];
 
 type Picked = { label: string; refSlug: string | null; kind: ServiceEventKind };
+type ShotDraft = {
+  year: number; month: number; day: number; unsure: boolean;
+  provenance: Provenance | null; informedConsent: InformedConsent | null; note: string;
+};
 
 const pickedFor = (s: Shot): Picked => ({ label: s.name, refSlug: s.slug, kind: s.group === "other" ? "medication" : "vaccination" });
 
@@ -32,6 +37,27 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
   const [freeText, setFreeText] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  // Which shot is open, and anything typed in the free-text box, is kept on
+  // this device so a refresh lands back in the same place.
+  const draft = useDraft<{ picked: Picked | null; freeText: string }>("shot-add");
+  const restored = useRef(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    if (!d) return;
+    // Applied from the device copy (an outside store), just after this effect.
+    queueMicrotask(() => {
+      if (d.freeText) setFreeText(d.freeText);
+      if (d.picked && !initialSlug) setPicked(d.picked);
+    });
+  }, [draft, initialSlug]);
+  useEffect(() => {
+    if (!restored.current) return;
+    if (picked || freeText) draft.write({ picked, freeText });
+    else draft.clear();
+  }, [picked, freeText, draft]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return null;
@@ -47,7 +73,7 @@ export default function ShotCaptureFlow({ initialSlug }: { initialSlug?: string 
     setPicked({ label, refSlug: null, kind: "other" });
   }
 
-  if (picked) return <CaptureSheet picked={picked} onCancel={() => setPicked(null)} />;
+  if (picked) return <CaptureSheet picked={picked} onCancel={() => { setPicked(null); setFreeText(""); }} />;
 
   // Tap a shot and the three "how do you know" answers open right under it:
   // one more tap saves it, without leaving the list. The full form with the
@@ -158,6 +184,30 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState(false);
 
+  // This shot's answers are kept on this device until Save lands. Back does
+  // not throw them away: picking the same shot again brings them back.
+  const draft = useDraft<ShotDraft>(`shot-sheet-${picked.refSlug ?? picked.label}`);
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    if (!d) return;
+    // Applied from the device copy (an outside store), just after this effect.
+    queueMicrotask(() => {
+      if (d.year) setYear(d.year);
+      setMonth(d.month ?? 0); setDay(d.day ?? 0); setUnsure(!!d.unsure);
+      setProvenance(d.provenance ?? null); setInformedConsent(d.informedConsent ?? null); setNote(d.note ?? "");
+      setKept(true);
+    });
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current || saved) return;
+    if (provenance || informedConsent || note || month || day || unsure) draft.write({ year, month, day, unsure, provenance, informedConsent, note });
+    else draft.clear();
+  }, [year, month, day, unsure, provenance, informedConsent, note, saved, draft]);
+
   const canSave = provenance !== null && informedConsent !== null;
 
   async function save() {
@@ -179,6 +229,7 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
     });
     setBusy(false);
     if (res.status === "error") { setErr(res.message === "not-set-up" ? "This feature isn't switched on yet. Nothing was saved." : res.message); return; }
+    draft.clear();
     setSaved(true);
   }
 
@@ -209,6 +260,7 @@ function CaptureSheet({ picked, onCancel }: { picked: Picked; onCancel: () => vo
       <div className="mx-auto w-full max-w-lg flex-1 p-5">
         <button type="button" onClick={onCancel} className="btn btn-ghost -ml-2 mb-3">Back</button>
         <h2 className="text-xl font-semibold tracking-tight text-ink">{picked.label}</h2>
+        {kept && <div className="mt-3"><KeptNotice show /></div>}
 
         <fieldset className="mt-6">
           <legend className="field-label">When?</legend>

@@ -57,7 +57,7 @@ export function Anniversary250({ className = "" }: { className?: string }) {
         <Star className="h-2 w-2" />
         <span>2026</span>
       </div>
-      <div className="mt-0.5 text-[0.75rem] uppercase tracking-[0.14em] text-white/45">250 years of service</div>
+      <div className="mt-0.5 text-[0.8125rem] uppercase tracking-[0.08em] text-white/60">250 years of service</div>
     </div>
   );
 }
@@ -67,7 +67,9 @@ export function Seal250({ className = "" }: { className?: string }) {
   return (
     <div className={`flex h-16 w-16 flex-none flex-col items-center justify-center rounded-full border-2 border-accent text-center ${className}`}>
       <div className="text-lg font-bold leading-none text-accent">250</div>
-      <div className="mt-0.5 text-[0.5rem] tracking-wide text-white/55">1776–2026</div>
+      {/* "1776–2026" cannot fit this circle at a readable 13px, so the seal
+          says "years" and the dates live on the Anniversary250 chip. */}
+      <div className="mt-0.5 text-[0.8125rem] leading-none text-white/70">years</div>
     </div>
   );
 }

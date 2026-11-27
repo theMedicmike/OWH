@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { useUndo } from "./Keep";
 import { EXPOSURE_LABEL } from "@/lib/education";
 import { EXPOSURE_BASIS } from "@/lib/citations";
 import MonthYearWheel from "./MonthYearWheel";
@@ -60,7 +61,8 @@ export default function LocationsView() {
   const [loaded, setLoaded] = useState(false);
   const [info, setInfo] = useState<Record<string, string>>({});
   const [infoBusy, setInfoBusy] = useState<string | null>(null);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
   const [editId, setEditId] = useState<string | null>(null);
   const [edStart, setEdStart] = useState("");
   const [edStartMonth, setEdStartMonth] = useState(0);
@@ -113,10 +115,20 @@ export default function LocationsView() {
     }
   }
 
-  async function remove(id: string) {
-    await supabase.from("check_ins").delete().eq("id", id);
-    setRows((prev) => prev.filter((x) => x.id !== id));
-    setConfirmDel(null);
+  // Remove is held behind the Undo bar: the row hides at once and the check-in
+  // is only deleted when the bar closes.
+  function remove(r: Row) {
+    setHidden((h) => [...h, r.id]);
+    if (editId === r.id) setEditId(null);
+    offer({
+      message: `Removed: ${r.place_name || "a logged location"}.`,
+      commit: async () => {
+        const { error } = await supabase.from("check_ins").delete().eq("id", r.id);
+        if (!error) setRows((prev) => prev.filter((x) => x.id !== r.id));
+        setHidden((h) => h.filter((x) => x !== r.id));
+      },
+      undo: () => setHidden((h) => h.filter((x) => x !== r.id)),
+    });
   }
 
   function startEdit(r: Row) {
@@ -188,7 +200,7 @@ export default function LocationsView() {
         </div>
       )}
 
-      {rows.length === 0 ? (
+      {rows.filter((r) => !hidden.includes(r.id)).length === 0 ? (
         <div className="card p-6 text-center">
           <p className="text-[0.9375rem] text-muted">No locations yet.</p>
           <Link href="/map" className="btn btn-primary mt-4">
@@ -196,7 +208,7 @@ export default function LocationsView() {
           </Link>
         </div>
       ) : (
-        rows.map((r) => {
+        rows.filter((r) => !hidden.includes(r.id)).map((r) => {
           const classes = Array.from(new Set((r.exposures ?? []).map((e) => e.exposure_class)));
           const confirmedSet = new Set((r.exposures ?? []).filter((e) => e.confirmed).map((e) => e.exposure_class));
           const ys = yearOf(r.date_start);
@@ -308,30 +320,16 @@ export default function LocationsView() {
 
               {/* Remove */}
               <div className="mt-4 border-t border-line pt-3">
-                {confirmDel === r.id ? (
-                  <div>
-                    <p className="text-[0.9375rem] text-ink">Remove this location? This can&apos;t be undone.</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <button type="button" onClick={() => remove(r.id)} className="btn btn-danger">
-                        Remove
-                      </button>
-                      <button type="button" onClick={() => setConfirmDel(null)} className="btn btn-secondary">
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDel(r.id)}
-                    className="btn btn-ghost -ml-2 text-scarlet"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
-                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                    Remove from my profile
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => remove(r)}
+                  className="btn btn-ghost -ml-2 text-scarlet"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                  Remove from my profile
+                </button>
               </div>
             </div>
           );

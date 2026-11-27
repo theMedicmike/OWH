@@ -45,7 +45,7 @@ export default async function OrganPage({ params }: { params: Promise<{ slug: st
           <h2 className="text-sm font-bold text-ink">What targets it — tap to learn each one</h2>
           <div className="flex flex-wrap gap-1.5">
             {o.targetedBy.map((name) => TOXICANT_NAME_TO_SLUG[name] ? (
-              <Link key={name} href={`/learn/${TOXICANT_NAME_TO_SLUG[name]}`} className="rounded-md bg-brand/5 px-2.5 py-1 text-[0.8125rem] font-medium text-brand hover:bg-brand/10">{name}</Link>
+              <Link key={name} href={`/learn/${TOXICANT_NAME_TO_SLUG[name]}`} className="inline-flex min-h-11 items-center rounded-md bg-brand/5 px-3.5 text-[0.875rem] font-medium text-brand hover:bg-brand/10">{name}</Link>
             ) : (
               <span key={name} className="rounded-md bg-canvas px-2.5 py-1 text-[0.8125rem] text-muted">{name}</span>
             ))}

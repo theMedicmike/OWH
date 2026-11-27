@@ -73,7 +73,7 @@ const CORE_STEPS: Step[] = [
       "The fourth way is the box at the bottom, “Not on the list? Type it in your own words,” and it is the last resort, not the shortcut. Look through the body-system lists properly first. A condition you type in yourself is saved exactly as you wrote it, and the app cannot draw a connection line to it, cannot attach the documented link, and cannot cite it in your packet — it will show on your record marked “your words.” The same condition picked off a list gets you all three.",
       "This comes before the map on purpose. Once the app knows what you are carrying, everything you put on the map afterwards has something to connect itself to.",
       "Scroll past the condition picker and there is a box headed “Something going on? Write it down.” It sits just above your saved conditions, not at the very top of the page — keep going past the search box and the lists and you will find it. Use it when something is happening and you do not know what it is or which condition it belongs to — that is the normal case, not a failure. Type a line, set the date if it was not today, tap “Save it,” and it is on your record. No category, no score, nothing to pick first. Later, when you know — or when a VSO helps you work it out — there is a “File under” dropdown on that note to put it with the right condition, and it keeps the date you wrote it.",
-      "Tap Add and it saves instantly. The button turns into a green “Added” and that is it. There is no Save button and you do not need one. To take one off, use the small grey “remove” link on it under “What you've told us,” further down the page.",
+      "Tap Add and it saves instantly. The button turns into a green “Added” and that is it. There is no Save button and you do not need one. To take one off, tap “Remove” on it under “What you've told us,” further down the page. A bar at the bottom of the screen says it was removed and offers Undo, and it stays until you close it.",
       "Under “What you've told us,” each condition has “Add details (optional)” — it says “Edit details” once you have answered something. It opens four short questions, and a fifth once you have added more than one condition. It says “optional,” and the first one really is not. Three are worth your attention:",
     ],
     points: [
@@ -350,7 +350,7 @@ const MORE_STEPS: Step[] = [
     body: ["A few places to read rather than build:"],
     points: [
       "“Exposure library” (under Library) — a plain-English encyclopedia. Every metal and chemical: where it came from, what it does in the body, where it settles, and what the VA already links it to. No chemistry required. One straight thing about it, printed at the bottom of every page in there: it is drawn from the government's and science's own record and every page cites its sources, but it has not yet been reviewed by a named clinician or toxicologist. Read it as a good first pass to take to your doctor and your VSO, not as the last word.",
-      "Your locations and your exposures: on 3 “Where you served,” after you add a place, tap “see all your places.” At the top of that list, “See every exposure you ticked” opens your exposures. On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake.",
+      "Your locations and your exposures: on 3 “Where you served,” after you add a place, tap “see all your places.” At the top of that list, “See every exposure you ticked” opens your exposures. On your locations you can tap “Set how long you were here” (a brief stop is weighed differently than a three-year assignment) and “Learn about this place” for the history of that ground. This is also where you remove a place you added by mistake. If you remove the wrong one, tap Undo on the bar at the bottom of the screen.",
       "“Whole health” (in the small print at the very bottom of the menu) — general education, the same for every veteran who opens it. It is not matched to your record and it is not advice about you. It is background to take to your own doctor. Nobody here is selling you anything.",
       "“What VA presumes” — two rows of big buttons, “When did you serve?” and “Where did you serve?” Tap one of each and it lists the presumptive programs that cover that service: PACT Act, Agent Orange, Camp Lejeune, Gulf War, radiation, and cold injury for former prisoners of war. It is a lookup of the government's own published lists, so you can check any service — a buddy's, or your own before you have logged anything. It never tells you that you qualify; dates and locations decide that, and only the VA decides it.",
       "“Your C&P exam, demystified” — what a Compensation & Pension exam actually is, who examines you, and how to prepare, for whenever that letter shows up. It is in the menu under “When you're ready to file,” and again under “Guides” at the bottom of the Exposure library.",
@@ -437,9 +437,9 @@ export default function HelpPage() {
             A simple, step-by-step guide. No tech experience needed.
           </p>
           <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-2">
-            <a href="#part-one" className="btn btn-secondary btn-sm">The five steps</a>
-            <a href="#part-two" className="btn btn-secondary btn-sm">When you have time</a>
-            <a href="#worth-knowing" className="btn btn-secondary btn-sm">Worth knowing</a>
+            <a href="#part-one" className="btn btn-secondary btn-sm min-h-11">The five steps</a>
+            <a href="#part-two" className="btn btn-secondary btn-sm min-h-11">When you have time</a>
+            <a href="#worth-knowing" className="btn btn-secondary btn-sm min-h-11">Worth knowing</a>
           </nav>
         </div>
 
@@ -539,6 +539,27 @@ export default function HelpPage() {
             library, Medic Mike and the crisis line. The claim packet step reads Done once this app has
             what it needs to build you a packet. That is <em>this app&apos;s</em> checklist, not the
             VA&apos;s. It does not mean the VA will agree, and only a VSO can tell you that.
+          </p>
+          <p>
+            <strong className="text-ink">Nothing you type is lost, and nothing runs out of time.</strong> Most
+            boxes save themselves a moment after you stop typing, and a small{" "}
+            <strong>&ldquo;Saved&rdquo;</strong> appears beside them. Longer forms still have a Save button,
+            but a copy of what you typed is kept on this device until it is saved, so a refresh, a dropped
+            signal or a closed tab does not lose it; when that copy comes back, the screen says{" "}
+            <strong>&ldquo;We kept what you typed.&rdquo;</strong> When you remove something, a dark bar at
+            the bottom says what went, with an <strong>Undo</strong> button. The bar stays until you close
+            it, remove something else, or leave the screen. Nothing signs you out for being slow, and no
+            message disappears on a timer. The one thing that still asks you to type DELETE is deleting
+            your whole record.
+          </p>
+          <p>
+            <strong className="text-ink">No printer?</strong> On your First Page, and on Home once the page
+            passes its check, <strong>&ldquo;Show on my phone&rdquo;</strong> puts the same page on your
+            screen in large type to hold up or hand across the desk.{" "}
+            <strong>&ldquo;Save the PDF&rdquo;</strong> makes the two printed sides as a file; on a phone it
+            opens your share sheet so you can save it, text it or email it yourself. On the First Page and the
+            print preview, <strong>&ldquo;Read my page aloud&rdquo;</strong> reads it to you in your
+            phone&apos;s own voice, with Pause and Stop.
           </p>
           <p>
             <strong className="text-ink">Making the text bigger.</strong> In the top-right corner

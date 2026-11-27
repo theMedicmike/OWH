@@ -215,7 +215,7 @@ export default function AppShell({
         {open && (
           <button
             onClick={() => setOpen(false)}
-            className="ml-auto flex h-10 w-10 flex-none items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white lg:hidden"
+            className="ml-auto flex h-11 w-11 flex-none items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white lg:hidden"
             aria-label="Close menu"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-5 w-5" aria-hidden="true">
@@ -234,7 +234,7 @@ export default function AppShell({
                 <div className="flex items-center gap-2 px-3 pb-1.5">
                   <span className="text-[0.8125rem] font-medium text-white/50">{section.title}</span>
                   {section.tag && (
-                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[0.75rem] font-medium text-white/55">{section.tag}</span>
+                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[0.8125rem] font-medium text-white/60">{section.tag}</span>
                   )}
                 </div>
               )}
@@ -295,7 +295,7 @@ export default function AppShell({
             <span className="min-w-0 flex-1 truncate text-[0.8125rem] text-white/55">{user?.email}</span>
             <button
               onClick={signOut}
-              className="flex-none rounded-lg px-2.5 py-1.5 text-[0.8125rem] font-medium text-white/70 hover:bg-white/10 hover:text-white"
+              className="flex min-h-11 flex-none items-center rounded-lg px-3 text-[0.9375rem] font-medium text-white/75 hover:bg-white/10 hover:text-white"
             >
               Sign out
             </button>
@@ -313,12 +313,12 @@ export default function AppShell({
             <span className="block text-[0.8125rem] font-medium text-white/85">988, then press 1</span>
           </span>
         </a>
-        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-1 text-[0.8125rem] text-white/45">
-          <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-white/80">Send feedback</a>
-          <Link href="/solutions" className="hover:text-white/80">Whole health</Link>
-          <Link href="/trust" className="hover:text-white/80">What this is</Link>
-          <Link href="/privacy" className="hover:text-white/80">Privacy</Link>
-          <Link href="/terms" className="hover:text-white/80">Terms</Link>
+        <div className="mt-2 flex flex-wrap gap-x-3 px-1 text-[0.8125rem] text-white/60">
+          <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="inline-flex min-h-11 items-center hover:text-white/85">Send feedback</a>
+          <Link href="/solutions" className="inline-flex min-h-11 items-center hover:text-white/85">Whole health</Link>
+          <Link href="/trust" className="inline-flex min-h-11 items-center hover:text-white/85">What this is</Link>
+          <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-white/85">Privacy</Link>
+          <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-white/85">Terms</Link>
         </div>
       </div>
     </div>
@@ -341,7 +341,7 @@ export default function AppShell({
 
       {/* Main column */}
       <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-30 flex min-h-14 items-center gap-2 border-b border-line bg-white/92 px-3 py-2 backdrop-blur sm:px-5 print:hidden">
+        <header className="sticky top-0 z-30 flex min-h-14 items-center gap-2 border-b border-line bg-white/92 px-3 py-1.5 backdrop-blur sm:px-5 print:hidden">
           <button
             onClick={() => setOpen(true)}
             className="btn btn-secondary h-11 w-11 flex-none px-0 lg:hidden"
@@ -354,7 +354,7 @@ export default function AppShell({
           {/* Back, from the shell, on every screen but Home. Labeled, not just
               an arrow, so there is never a question of what it does. */}
           {!isDashboard && (
-            <button onClick={goBack} className="btn btn-secondary btn-sm flex-none pl-2.5">
+            <button onClick={goBack} className="btn btn-secondary btn-sm min-h-11 flex-none pl-2.5">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
@@ -365,7 +365,7 @@ export default function AppShell({
 
           {/* Home only: the guide, one tap away. "Help" on a phone. */}
           {isDashboard && (
-            <Link href="/help" className="btn btn-ghost btn-sm flex-none max-sm:min-h-11">
+            <Link href="/help" className="btn btn-ghost btn-sm min-h-11 flex-none">
               <span className="hidden sm:inline">How to use this</span>
               <span className="sm:hidden">Help</span>
             </Link>
@@ -373,7 +373,7 @@ export default function AppShell({
 
           {/* On a phone this is the heart alone, 44px square, so the page
               title keeps its room. The label returns at tablet width. */}
-          <Link href="/support" aria-label="Need support?" className="btn btn-secondary btn-sm flex-none rounded-full max-sm:h-11 max-sm:w-11 max-sm:px-0">
+          <Link href="/support" aria-label="Need support?" className="btn btn-secondary btn-sm min-h-11 flex-none rounded-full max-sm:h-11 max-sm:w-11 max-sm:px-0">
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-scarlet" aria-hidden="true">
               <path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" />
             </svg>
@@ -381,14 +381,14 @@ export default function AppShell({
           </Link>
 
           {signedOut ? (
-            <Link href="/" className="btn btn-primary btn-sm flex-none">
+            <Link href="/" className="btn btn-primary btn-sm min-h-11 flex-none">
               Sign in
             </Link>
           ) : (
             <div className="relative flex-none">
               <button
                 onClick={() => setMenu((m) => !m)}
-                className="btn btn-secondary btn-sm rounded-full pl-1 pr-2.5"
+                className="btn btn-secondary btn-sm min-h-11 rounded-full pl-1.5 pr-2.5"
                 aria-label="Account menu"
                 aria-expanded={menu}
               >

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { useUndo } from "./Keep";
 import { BOOK_PUBLIC, BOOK_SITE } from "@/lib/bookVisibility";
 import { EXPOSURE_LABEL, CONDITION_EXPOSURES, connectedConditionLabels } from "@/lib/education";
 import { CONDITION_BASIS } from "@/lib/citations";
@@ -65,6 +66,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
   const [svcEnd, setSvcEnd] = useState<number | null>(null);
   const [onsetEdit, setOnsetEdit] = useState<string | null>(null);
   const [onsetErr, setOnsetErr] = useState<string | null>(null);
+  const { offer } = useUndo();
 
   useEffect(() => {
     if (!user) return;
@@ -193,6 +195,22 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
     setCondFiled((p) => ({ ...p, [label]: value }));
     // filed_on is optional (migration 0010); ignore the error if it isn't there yet.
     await supabase.from("conditions").update({ filed_on: value || null }).eq("label", label);
+  }
+  // One tap replaces where a claim stands, so the Undo bar can put the old
+  // answer back (and take away a Filed date this tap added on its own).
+  function chooseStatus(label: string, before: string, o: { value: string; label: string }) {
+    if (before === o.value) return;
+    const filedBefore = condFiled[label] ?? "";
+    void setStatus(label, o.value);
+    offer({
+      message: `${label}: changed to ${o.label}.`,
+      commit: () => {},
+      undo: () => {
+        setCondStatus((p) => ({ ...p, [label]: before }));
+        void supabase.from("conditions").update({ claim_status: before }).eq("label", label);
+        if (o.value === "filed" && !filedBefore) void setFiled(label, "");
+      },
+    });
   }
 
   // ── The timeline: the mission rendered as a screen ────────────────────────
@@ -618,7 +636,7 @@ export default function JourneyView({ floors = [] }: { floors?: CascadeFloor[] }
                           key={o.value}
                           type="button"
                           aria-pressed={status === o.value}
-                          onClick={() => { if (status !== o.value) setStatus(cond.label, o.value); }}
+                          onClick={() => chooseStatus(cond.label, status, o)}
                           className={`btn min-h-11 ${status === o.value ? "btn-primary" : "btn-secondary"}`}
                         >
                           {o.label}

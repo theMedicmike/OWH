@@ -116,9 +116,16 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
   return (
     <div className="print-exact w-full">
       {/* Year axis */}
-      <div className="relative mb-1 h-4">
-        {ticks.map((t) => (
-          <span key={t} className="absolute -translate-x-1/2 text-[0.625rem] tabular-nums text-faint" style={{ left: `${pct(t)}%` }}>
+      {/* Year labels are 13px. On a phone, when there are more than six, every
+          other label is dropped (the tick marks below all stay) so they never
+          run into each other at 375px. */}
+      <div className="relative mb-1 h-5">
+        {ticks.map((t, i) => (
+          <span
+            key={t}
+            className={`absolute -translate-x-1/2 text-[0.8125rem] leading-tight tabular-nums text-faint ${ticks.length > 6 && i % 2 === 1 ? "max-sm:hidden" : ""}`}
+            style={{ left: `${pct(t)}%` }}
+          >
             {t}
           </span>
         ))}
@@ -138,11 +145,11 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
               solid band. Calling that active duty asserts a false fact into a
               document a VA rater reads. Until service periods are captured
               properly, the label must claim only the span, never the status. */}
-          <span className="absolute left-0 top-0 text-[0.75rem] font-semibold text-brand">
+          <span className="absolute left-0 top-0 text-[0.8125rem] font-semibold leading-tight text-brand">
             In service
           </span>
           <div
-            className="absolute top-4 h-3 rounded-full bg-brand/15 ring-1 ring-brand/30 print:border print:border-ink"
+            className="absolute top-[18px] h-3 rounded-full bg-brand/15 ring-1 ring-brand/30 print:border print:border-ink"
             style={{
               left: `${pct(data.serviceStart ?? min)}%`,
               width: `${Math.max(1.5, pct(data.serviceEnd ?? max) - pct(data.serviceStart ?? min))}%`,
@@ -158,16 +165,16 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
           const right = pct(t.endYear ?? t.startYear);
           const width = Math.max(2, right - left);
           return (
-            <div key={`${t.place}-${i}`} className="relative h-9">
+            <div key={`${t.place}-${i}`} className="relative h-10">
               <div
-                className="absolute top-0 flex h-5 items-center rounded-md bg-brand px-1.5 text-[0.625rem] font-semibold text-white shadow-sm print:border print:border-ink"
+                className="absolute top-0 flex h-5 items-center rounded-md bg-brand px-1.5 text-[0.8125rem] font-semibold text-white shadow-sm print:border print:border-ink"
                 style={{ left: `${left}%`, width: `${width}%`, minWidth: 8 }}
                 title={`${t.place} — ${t.startYear}${t.endYear && t.endYear !== t.startYear ? `–${t.endYear}` : ""}`}
               />
               {/* Past the midpoint, anchor from the right so long labels can't
                   push the page into horizontal scroll (or off the printed edge). */}
               <div
-                className="absolute top-[22px] truncate text-[0.6875rem] leading-tight text-ink"
+                className="absolute top-[22px] truncate text-[0.8125rem] leading-tight text-ink"
                 style={left > 50
                   ? { right: `${100 - left}%`, maxWidth: `${Math.max(20, left)}%`, textAlign: "right" }
                   : { left: `${left}%`, maxWidth: `${Math.max(20, 100 - left)}%` }}
@@ -191,7 +198,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
       {/* Conditions — when your health changed */}
       {dated.length > 0 && (
         <>
-          <div className="mt-4 border-t border-dashed border-line pt-2 text-[0.75rem] font-semibold text-muted">
+          <div className="mt-4 border-t border-dashed border-line pt-2 text-[0.8125rem] font-semibold text-muted">
             Health changes
           </div>
           <div className="mt-1 space-y-1.5">
@@ -199,7 +206,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
               const lat = latencyFor(c, tours);
               const left = pct(c.onsetYear!);
               return (
-                <div key={`${c.label}-${i}`} className="relative h-9">
+                <div key={`${c.label}-${i}`} className="relative h-10">
                   {/* latency bridge: exposure year → onset year */}
                   {lat && (
                     <div
@@ -213,7 +220,7 @@ export default function ServiceTimeline({ data, compact = false }: { data: Timel
                     title={`${c.label} — ${c.onsetYear}`}
                   />
                   <div
-                    className="absolute top-[22px] truncate text-[0.6875rem] leading-tight text-ink"
+                    className="absolute top-[22px] truncate text-[0.8125rem] leading-tight text-ink"
                     style={left > 50
                       ? { right: `${100 - left}%`, maxWidth: `${Math.max(20, left)}%`, textAlign: "right" }
                       : { left: `${left}%`, maxWidth: `${Math.max(20, 100 - left)}%` }}

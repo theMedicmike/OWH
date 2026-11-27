@@ -14,7 +14,7 @@ export default function CrisisSupport() {
             <button
               onClick={() => setOpen(false)}
               aria-label="Close support panel"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-canvas hover:text-ink"
+              className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-canvas hover:text-ink"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-4 w-4" aria-hidden="true">
                 <path d="M6 6l12 12M18 6 6 18" />

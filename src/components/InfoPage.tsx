@@ -18,12 +18,12 @@ export default function InfoPage({
     <main className="min-h-screen bg-canvas">
       <header className="sticky top-0 z-30 border-b border-line bg-white/92 backdrop-blur print:static print:bg-white">
         <div className="mx-auto flex min-h-14 max-w-3xl items-center justify-between gap-3 px-5">
-          <Link href="/" className="flex items-center gap-3 rounded-lg">
+          <Link href="/" className="flex min-h-11 items-center gap-3 rounded-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/owh-round.png" alt="" className="h-9 w-9 object-contain" />
             <span className="text-[0.9375rem] font-semibold tracking-tight text-ink">Connecting the Dots</span>
           </Link>
-          <Link href="/" className="btn btn-secondary btn-sm print:hidden">Back to the app</Link>
+          <Link href="/" className="btn btn-secondary btn-sm min-h-11 print:hidden">Back to the app</Link>
         </div>
       </header>
       <div className="mx-auto max-w-2xl px-5 py-10 sm:py-14">
@@ -33,12 +33,12 @@ export default function InfoPage({
         <div className="mt-8 space-y-4">{children}</div>
 
         <footer className="mt-12 border-t border-line pt-6 text-sm leading-relaxed text-muted print:hidden">
-          <div className="flex flex-wrap gap-x-5 gap-y-1">
-            <Link href="/trust" className="hover:text-brand hover:underline">What this is</Link>
-            <Link href="/privacy" className="hover:text-brand hover:underline">Privacy</Link>
-            <Link href="/terms" className="hover:text-brand hover:underline">Terms</Link>
-            <Link href="/support" className="hover:text-brand hover:underline">Support</Link>
-            <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="hover:text-brand hover:underline">Send feedback</a>
+          <div className="flex flex-wrap gap-x-5">
+            <Link href="/trust" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">What this is</Link>
+            <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">Privacy</Link>
+            <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">Terms</Link>
+            <Link href="/support" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">Support</Link>
+            <a href="mailto:michael@operationwholehealth.org?subject=Connecting%20the%20Dots%20feedback" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">Send feedback</a>
           </div>
           <p className="mt-4">
             Operation Whole Health is a 501(c)(3) nonprofit. Connecting the Dots of Service is a record, not a

@@ -82,11 +82,11 @@ export default function SolutionsView() {
           <span className="font-semibold text-ink">This app is free and sells nothing.</span>
         </p>
         <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-2">
-          <a href="#this-week" className="btn btn-secondary btn-sm">Start this week</a>
+          <a href="#this-week" className="btn btn-secondary btn-sm min-h-11">Start this week</a>
           {categories.map((cat) => (
-            <a key={cat} href={`#${slug(cat)}`} className="btn btn-secondary btn-sm">{cat}</a>
+            <a key={cat} href={`#${slug(cat)}`} className="btn btn-secondary btn-sm min-h-11">{cat}</a>
           ))}
-          <a href="#choosing-help" className="btn btn-secondary btn-sm">Choosing help</a>
+          <a href="#choosing-help" className="btn btn-secondary btn-sm min-h-11">Choosing help</a>
         </nav>
       </div>
 
@@ -133,7 +133,7 @@ export default function SolutionsView() {
                 <ul className="mt-3 space-y-3">
                   {resources.map((r) => (
                     <li key={r.name} className="text-[0.9375rem] leading-relaxed">
-                      <a href={r.url} target="_blank" rel="noreferrer" className="font-semibold text-brand hover:underline">{r.name}</a>
+                      <a href={r.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">{r.name}</a>
                       {r.partner && <span className="ml-2 rounded-full bg-canvas px-2 py-0.5 text-[0.8125rem] font-medium text-muted">Partner nonprofit, not VA</span>}
                       <div className="text-muted">{r.what}</div>
                     </li>

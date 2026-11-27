@@ -120,16 +120,16 @@ export default function Landing() {
           <p className="max-w-3xl">
             Free, and always free. This is not the VA, and nothing here is sold. Run by Operation Whole Health, a
             501(c)(3) nonprofit founded by a civilian and built alongside veterans.{" "}
-            <Link href="/trust" className="font-semibold text-brand hover:underline">What this is</Link>
+            <Link href="/trust" className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">What this is</Link>
           </p>
-          <p className="mt-3 text-ink">
-            In crisis? <a href="tel:988" className="font-semibold hover:underline">Dial 988, then press 1.</a>
+          <p className="mt-1 text-ink">
+            In crisis? <a href="tel:988" className="inline-flex min-h-11 items-center font-semibold hover:underline">Dial 988, then press 1.</a>
           </p>
-          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-faint">
-            <Link href="/privacy" className="hover:text-brand hover:underline">Privacy</Link>
-            <Link href="/terms" className="hover:text-brand hover:underline">Terms</Link>
-            <Link href="/support" className="hover:text-brand hover:underline">Support</Link>
-            <Link href="/help" className="hover:text-brand hover:underline sm:hidden">How it works</Link>
+          <div className="mt-1 flex flex-wrap gap-x-5 text-muted">
+            <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">Privacy</Link>
+            <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">Terms</Link>
+            <Link href="/support" className="inline-flex min-h-11 items-center hover:text-brand hover:underline">Support</Link>
+            <Link href="/help" className="inline-flex min-h-11 items-center hover:text-brand hover:underline sm:hidden">How it works</Link>
           </div>
         </footer>
       </div>

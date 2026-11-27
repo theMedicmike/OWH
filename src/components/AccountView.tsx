@@ -16,6 +16,14 @@ import {
 } from "@/lib/serviceDates";
 import WheelPicker from "./WheelPicker";
 import MonthYearWheel from "./MonthYearWheel";
+import { KeptNotice, useDraft } from "./Keep";
+
+type AcctDraft = {
+  displayName: string; branch: string;
+  startParts: ServiceDateParts; startApprox: boolean; endParts: ServiceDateParts; endApprox: boolean;
+  stillServing: boolean; proxyRelationship: string; layer: string; mos: string; vaRating: string; vaCare: boolean | null;
+  units: string; bootCamp: string; bootCampYear: string; bootCampMonth: number; bootCampDay: number; bootCampApprox: boolean;
+};
 
 const BRANCHES = ["Army", "Marine Corps", "Navy", "Air Force", "Space Force", "Coast Guard", "National Guard", "Reserves"];
 const VA_RATINGS = ["Not rated yet", "0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"];
@@ -347,7 +355,60 @@ export default function AccountView() {
 
     setBusy(false);
     setSaved(true);
+    // What is on screen now is what is saved; the local copy can go.
+    rebase.current = true;
   }
+
+  // ── The profile keeps a copy on this device ───────────────────────────────
+  // Until Save profile lands, what he changed is kept locally, keyed by member,
+  // so a refresh or a dropped connection gives it back. The copy is only
+  // written when it differs from what was loaded (or last saved).
+  const acctSnap: AcctDraft = {
+    displayName, branch, startParts, startApprox, endParts, endApprox, stillServing, proxyRelationship, layer,
+    mos, vaRating, vaCare, units, bootCamp, bootCampYear, bootCampMonth, bootCampDay, bootCampApprox,
+  };
+  const acctKey = JSON.stringify(acctSnap);
+  const acctDraft = useDraft<AcctDraft>("account-profile");
+  const [acctBaseline, setAcctBaseline] = useState<string | null>(null);
+  const [kept, setKept] = useState(false);
+  const rebase = useRef(false);
+  const baselineTaken = useRef(false);
+  useEffect(() => {
+    if (!loaded || !acctDraft.ready || baselineTaken.current) return;
+    baselineTaken.current = true;
+    const base = acctKey;
+    const d = acctDraft.read();
+    const differs = !!d && JSON.stringify({ ...acctSnap, ...d }) !== acctKey;
+    // Applied from the device copy (an outside store), just after this effect.
+    queueMicrotask(() => {
+      setAcctBaseline(base);
+      if (!d || !differs) return;
+      setDisplayName(d.displayName ?? displayName); setBranch(d.branch ?? branch);
+      setStartParts(d.startParts ?? startParts); setStartApprox(d.startApprox ?? startApprox);
+      setEndParts(d.endParts ?? endParts); setEndApprox(d.endApprox ?? endApprox);
+      setStillServing(d.stillServing ?? stillServing); setProxyRelationship(d.proxyRelationship ?? proxyRelationship);
+      setLayer(d.layer ?? layer); setMos(d.mos ?? mos); setVaRating(d.vaRating ?? vaRating);
+      setVaCare(d.vaCare === undefined ? vaCare : d.vaCare); setUnits(d.units ?? units);
+      setBootCamp(d.bootCamp ?? bootCamp); setBootCampYear(d.bootCampYear ?? bootCampYear);
+      setBootCampMonth(d.bootCampMonth ?? bootCampMonth); setBootCampDay(d.bootCampDay ?? bootCampDay);
+      setBootCampApprox(d.bootCampApprox ?? bootCampApprox);
+      setKept(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, acctDraft, acctKey]);
+  useEffect(() => {
+    if (acctBaseline === null) return;
+    if (rebase.current) {
+      rebase.current = false;
+      const key = acctKey;
+      queueMicrotask(() => { setAcctBaseline(key); setKept(false); });
+      acctDraft.clear();
+      return;
+    }
+    if (acctKey === acctBaseline) acctDraft.clear();
+    else acctDraft.write(JSON.parse(acctKey) as AcctDraft);
+  }, [acctKey, acctBaseline, acctDraft, saved]);
+  const dirty = acctBaseline !== null && acctKey !== acctBaseline;
 
   const field =
     "field";
@@ -379,6 +440,7 @@ export default function AccountView() {
         <p className="mt-1 text-[0.9375rem] leading-relaxed text-muted">Used to personalize your timeline and your report.</p>
 
         <div className="mt-5 space-y-6">
+          <KeptNotice show={kept} />
           <div>
             <label htmlFor="acct-name" className="field-label">Name</label>
             <input id="acct-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className={field} autoComplete="name" />
@@ -554,7 +616,8 @@ export default function AccountView() {
           <button onClick={save} disabled={busy} className="btn btn-primary btn-lg">
             {busy ? "Saving…" : "Save profile"}
           </button>
-          {saved && <span role="status" className="text-[0.9375rem] font-medium text-success">Saved.</span>}
+          {saved && !dirty && <span role="status" className="text-[0.9375rem] font-medium text-success">Saved.</span>}
+          {dirty && <span className="text-[0.9375rem] text-muted">Not saved yet. Kept on this device until you tap Save profile.</span>}
           {saveErr && <span role="status" className="text-[0.9375rem] font-medium text-scarlet">{saveErr}</span>}
         </div>
       </section>

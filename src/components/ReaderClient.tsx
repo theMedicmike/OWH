@@ -173,7 +173,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
             onClick={togglePlay}
             disabled={!ready}
             aria-label={playing ? "Pause" : "Play"}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white transition hover:brightness-110 disabled:opacity-50"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white transition hover:brightness-110 disabled:opacity-50"
           >
             {playing ? (
               <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
@@ -181,14 +181,14 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
               <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M8 5v14l11-7z" /></svg>
             )}
           </button>
-          <button onClick={() => step(-1)} aria-label="Previous line" className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4"><path d="M15 18l-6-6 6-6" /></svg></button>
-          <button onClick={() => step(1)} aria-label="Next line" className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4"><path d="M9 6l6 6-6 6" /></svg></button>
-          <button onClick={stop} aria-label="Stop" className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"><svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><rect x="6" y="6" width="12" height="12" rx="1.5" /></svg></button>
+          <button onClick={() => step(-1)} aria-label="Previous line" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4"><path d="M15 18l-6-6 6-6" /></svg></button>
+          <button onClick={() => step(1)} aria-label="Next line" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4"><path d="M9 6l6 6-6 6" /></svg></button>
+          <button onClick={stop} aria-label="Stop" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"><svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><rect x="6" y="6" width="12" height="12" rx="1.5" /></svg></button>
         </div>
 
         <div className="flex items-center gap-1 rounded-full bg-white/10 p-0.5">
           {PACES.map((p) => (
-            <button key={p.label} onClick={() => setPace(p.rate)} className={`rounded-full px-2 py-0.5 text-[0.8125rem] font-medium transition ${rate === p.rate ? "bg-white text-brand" : "text-white/70 hover:text-white"}`}>{p.label}</button>
+            <button key={p.label} onClick={() => setPace(p.rate)} className={`min-h-11 rounded-full px-3 text-[0.8125rem] font-medium transition ${rate === p.rate ? "bg-white text-brand" : "text-white/70 hover:text-white"}`}>{p.label}</button>
           ))}
         </div>
 
@@ -196,7 +196,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
           {activeIdx >= 0 ? `Passage ${activeIdx + 1} of ${chunks.length}` : `${chunks.length} passages`}
         </span>
 
-        <a href="tel:988" className="flex items-center gap-1 rounded-full bg-scarlet/90 px-2 py-1 text-[0.8125rem] font-bold text-white hover:brightness-110" title="Veterans Crisis Line">
+        <a href="tel:988" className="flex min-h-11 items-center gap-1 rounded-full bg-scarlet/90 px-3 text-[0.8125rem] font-bold text-white hover:brightness-110" title="Veterans Crisis Line">
           <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3"><path d="M12 21s-6.7-4.35-9.33-8.07C1.1 10.7 1.64 7.6 4 6.1a5 5 0 0 1 8 1.4 5 5 0 0 1 8-1.4c2.36 1.5 2.9 4.6 1.33 6.83C18.7 16.65 12 21 12 21z" /></svg>
           988
         </a>
@@ -223,25 +223,25 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
           const dim = playing && activeIdx >= 0 && !active;
           const wrap = `group relative scroll-mt-28 transition ${active ? "rounded-r-md border-l-[3px] border-accent bg-accent/5 pl-3" : ""} ${dim ? "opacity-40" : ""}`;
           const controls = (
-            <span className="absolute right-0 top-0 z-[1] flex gap-1 opacity-60 transition sm:opacity-0 sm:group-hover:opacity-100 group-focus-within:opacity-100">
+            <span className="absolute right-0 top-0 z-[1] flex flex-col gap-1 opacity-60 sm:flex-row transition sm:opacity-0 sm:group-hover:opacity-100 group-focus-within:opacity-100">
               {supported && (
                 <button onClick={() => play(i)} title="Play from here" aria-label="Play from here"
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-white/80 text-brand shadow-sm ring-1 ring-line hover:bg-white">
+                  className="flex h-11 w-11 items-center justify-center rounded-md bg-white/80 text-brand shadow-sm ring-1 ring-line hover:bg-white">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><path d="M8 5v14l11-7z" /></svg>
                 </button>
               )}
               {canShare && p.type === "p" && (
                 <button onClick={() => openStudio(p.text)} title="Make a card" aria-label="Share this passage"
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-white/80 text-accent shadow-sm ring-1 ring-line hover:bg-white">
+                  className="flex h-11 w-11 items-center justify-center rounded-md bg-white/80 text-accent shadow-sm ring-1 ring-line hover:bg-white">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><path d="M6 17h3l2-4V6H5v7h3l-2 4zm8 0h3l2-4V6h-6v7h3l-2 4z" /></svg>
                 </button>
               )}
             </span>
           );
           return p.type === "h" ? (
-            <h2 key={i} ref={(el) => { paraEls.current[i] = el; }} className={`pt-3 pr-16 text-lg font-bold text-ink ${wrap}`}>{controls}{p.text}</h2>
+            <h2 key={i} ref={(el) => { paraEls.current[i] = el; }} className={`pt-3 pr-14 text-lg font-bold text-ink sm:pr-24 ${wrap}`}>{controls}{p.text}</h2>
           ) : (
-            <p key={i} ref={(el) => { paraEls.current[i] = el; }} className={`pr-16 text-[0.9375rem] leading-7 text-ink/90 ${wrap}`}>{controls}{p.text}</p>
+            <p key={i} ref={(el) => { paraEls.current[i] = el; }} className={`pr-14 text-[0.9375rem] leading-7 text-ink/90 sm:pr-24 ${wrap}`}>{controls}{p.text}</p>
           );
         })}
       </div>
@@ -258,7 +258,7 @@ export default function ReaderClient({ chapter, prevSlug, nextSlug, heavy, memor
         <button
           onClick={() => openStudio(selChip.text)}
           style={{ position: "fixed", left: selChip.x, top: selChip.y, transform: "translate(-50%, -115%)" }}
-          className="z-40 flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-[0.8125rem] font-semibold text-white shadow-lg print:hidden"
+          className="z-40 flex min-h-11 items-center gap-1.5 rounded-full bg-brand px-4 text-[0.8125rem] font-semibold text-white shadow-lg print:hidden"
         >
           <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5"><path d="M6 17h3l2-4V6H5v7h3l-2 4zm8 0h3l2-4V6h-6v7h3l-2 4z" /></svg>
           Make a card

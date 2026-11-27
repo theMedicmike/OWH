@@ -11,6 +11,7 @@ import MonthYearWheel from "./MonthYearWheel";
 import WheelPicker from "./WheelPicker";
 import { isMissingColumnError } from "@/lib/supabaseErrors";
 import { daysInMonth } from "@/lib/serviceDates";
+import { KeptNotice, useDraft, useUndo } from "./Keep";
 
 const FILTER_YEARS = Array.from({ length: 2026 - 1945 + 1 }, (_, i) => String(1945 + i));
 
@@ -30,6 +31,15 @@ type CheckIn = {
   classes: string[];
   exposures: string;
   place: string;
+};
+
+// A check-in typed on the map but not yet saved, kept on this device.
+type CheckinDraft = {
+  pos: { lng: number; lat: number };
+  pinnedSite: { name: string; classes: string[] } | null;
+  draftName: string; year: number; month: number; day: number; approxStart: boolean;
+  hasEndDate: boolean; endYear: number; endMonth: number; endDay: number; approxEnd: boolean;
+  selected: string[]; selectedIncidents: string[]; otherText: string; story: string;
 };
 
 type Row = {
@@ -147,6 +157,15 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
   const draftRef = useRef<{ lng: number; lat: number } | null>(null);
   const yearSeeded = useRef(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  // A check-in typed but not saved is kept on this device until it is saved.
+  const checkinStore = useDraft<CheckinDraft>("map-checkin");
+  const restoringRef = useRef<CheckinDraft | null>(null);
+  const restoredOnLoad = useRef(false);
+  const [keptCheckin, setKeptCheckin] = useState<CheckinDraft | null>(null);
+  const [keptShown, setKeptShown] = useState(false);
+  const { offer } = useUndo();
+  // His own input, as opposed to what the pin seeded on its own.
+  const typedSomething = !!(story.trim() || otherText.trim() || selectedIncidents.length || month || day || hasEndDate);
 
   // Known exposure sites double as gazetteer entries (search + local naming).
   const gazExtras = useMemo<GazEntry[]>(() =>
@@ -207,6 +226,47 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setPinnedSite(null);
     setPending(null);
     resetDraftFields();
+  }
+
+  // Closing the panel before Save keeps what was typed on this device; it
+  // comes back with "Pick it back up". Only a saved check-in clears it.
+  function closeForNow() {
+    if (draft && typedSomething) setKeptCheckin(snapshot());
+    closeDraft();
+  }
+
+  function snapshot(): CheckinDraft | null {
+    if (!draft) return null;
+    return {
+      pos: draft, pinnedSite, draftName, year, month, day, approxStart, hasEndDate, endYear, endMonth, endDay, approxEnd,
+      selected, selectedIncidents, otherText, story,
+    };
+  }
+
+  // Bring a kept check-in back. The pin and year go first; the name and
+  // exposure effects run on the new pin, and then the kept fields are laid
+  // over them (see the effect after those two).
+  function restoreCheckin(d: CheckinDraft) {
+    restoringRef.current = d;
+    // The year he chose wins over the one seeded from his service start.
+    yearSeeded.current = true;
+    setPending(null);
+    setPinnedSite(d.pinnedSite);
+    setYear(d.year);
+    setDraft(d.pos);
+    setKeptCheckin(null);
+    mapRef.current?.flyTo({ center: [d.pos.lng, d.pos.lat], zoom: 8 });
+  }
+
+  function letKeptGo() {
+    const d = keptCheckin;
+    if (!d) return;
+    setKeptCheckin(null);
+    offer({
+      message: `Let go: the check-in at ${d.draftName || "the place you pinned"}.`,
+      commit: () => { checkinStore.clear(); },
+      undo: () => setKeptCheckin(d),
+    });
   }
 
   // Confirm chip → open the real check-in draft at the pending pin.
@@ -350,6 +410,37 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
     setDraftName(near ? near.name : "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, pinnedSite]);
+
+  // A kept check-in being brought back: lay its fields over what the two
+  // effects above just seeded for the pin. Declared after them on purpose so
+  // it runs last in the same commit.
+  useEffect(() => {
+    const d = restoringRef.current;
+    if (!d || !draft) return;
+    restoringRef.current = null;
+    setDraftName(d.draftName); setSelected(d.selected); setSelectedIncidents(d.selectedIncidents);
+    setOtherText(d.otherText); setStory(d.story); setMonth(d.month); setDay(d.day); setApproxStart(d.approxStart);
+    setHasEndDate(d.hasEndDate); setEndYear(d.endYear); setEndMonth(d.endMonth); setEndDay(d.endDay); setApproxEnd(d.approxEnd);
+    setKeptShown(true);
+  }, [draft]);
+
+  // On load, a check-in typed but never saved comes straight back.
+  useEffect(() => {
+    if (restoredOnLoad.current || !checkinStore.ready) return;
+    restoredOnLoad.current = true;
+    const d = checkinStore.read();
+    // Applied from the device copy (an outside store), just after this effect.
+    if (d && d.pos) queueMicrotask(() => restoreCheckin(d));
+  }, [checkinStore]);
+
+  // While a check-in is open and holds his own input, keep a copy on this
+  // device. A fresh pin with nothing typed leaves any earlier copy alone.
+  useEffect(() => {
+    if (!draft || restoringRef.current || !typedSomething) return;
+    const s = snapshot();
+    if (s) checkinStore.write(s);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, draftName, pinnedSite, year, month, day, approxStart, hasEndDate, endYear, endMonth, endDay, approxEnd, selected, selectedIncidents, otherText, story, typedSomething]);
 
   // Keep the click handler's view of "is a draft open" current without
   // re-registering the map listener.
@@ -527,6 +618,9 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
       alert("Could not save: " + error.message);
       return;
     }
+    // Saved to the record: the copy on this device is done.
+    checkinStore.clear();
+    setKeptShown(false);
     closeDraft();
     setCheckins(await fetchCheckins(supabase));
   }
@@ -668,6 +762,18 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
         )}
       </div>
 
+      {keptCheckin && !draft && (
+        <div role="status" className="mb-3 rounded-xl border border-success/30 bg-success-soft px-4 py-3">
+          <p className="text-[0.9375rem] text-ink">
+            We kept what you typed for {keptCheckin.draftName || "the place you pinned"}. It is not saved to your record yet.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" onClick={() => restoreCheckin(keptCheckin)} className="btn btn-primary">Pick it back up</button>
+            <button type="button" onClick={letKeptGo} className="btn btn-secondary">Let it go</button>
+          </div>
+        </div>
+      )}
+
       {/* Field desk layout: the map and the check-in sit SIDE BY SIDE on
           desktop — the panel must never float over the map, hiding the
           veteran's own pin and fighting the zoom controls. */}
@@ -681,10 +787,10 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
             <span className="truncate text-[0.9375rem] font-medium text-ink">
               {pendingNear ? pendingNear.name : fmt(pending.lat, pending.lng)}
             </span>
-            <button onClick={beginDraft} className="btn btn-primary btn-sm flex-none rounded-full">
+            <button onClick={beginDraft} className="btn btn-primary btn-sm min-h-11 flex-none rounded-full">
               Check in here
             </button>
-            <button onClick={() => setPending(null)} aria-label="Dismiss pin" className="flex h-10 w-10 flex-none items-center justify-center rounded-full text-muted hover:bg-canvas">
+            <button onClick={() => setPending(null)} aria-label="Dismiss pin" className="flex h-11 w-11 flex-none items-center justify-center rounded-full text-muted hover:bg-canvas">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-4 w-4" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
           </div>
@@ -721,6 +827,7 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
           <div ref={panelRef} className="mt-3 w-full scroll-mt-16 card p-4 shadow-lg lg:mt-0 lg:max-h-[520px] lg:w-[340px] lg:flex-none lg:overflow-y-auto">
             
             <h2 className="text-lg font-semibold tracking-tight text-ink">New check-in</h2>
+            {keptShown && <div className="mt-3"><KeptNotice show /></div>}
 
             <label htmlFor="checkin-place" className="field-label mt-3">Place</label>
             <input
@@ -885,10 +992,13 @@ export default function MapView({ sites, user }: { sites: Site[]; user: User | n
               ) : (
                 <div className="flex-1 self-center text-[0.9375rem] text-muted">Sign in above to save this pin to your record.</div>
               )}
-              <button type="button" onClick={closeDraft} className="btn btn-secondary btn-lg">
-                Cancel
+              <button type="button" onClick={closeForNow} className="btn btn-secondary btn-lg">
+                Close for now
               </button>
             </div>
+            {typedSomething && (
+              <p className="mt-2 text-sm leading-relaxed text-muted">Closing keeps what you typed on this device until you save it.</p>
+            )}
           </div>
         )}
       </div>

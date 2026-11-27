@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { useUndo } from "./Keep";
 import { MEDICATION_SEED, searchSeed, type SeedMedication } from "@/lib/medicationSeed";
 import { createMedication, listMedications, setMedicationTakenFor } from "@/lib/medications";
 
@@ -26,6 +27,7 @@ export default function MedicationQuickAdd() {
   const [takenFor, setTakenFor] = useState("");
   const [forSaved, setForSaved] = useState(false);
   const [err, setErr] = useState("");
+  const { offer } = useUndo();
 
   useEffect(() => {
     if (!user) return;
@@ -64,9 +66,20 @@ export default function MedicationQuickAdd() {
 
   async function saveFor() {
     if (!justAdded || !takenFor.trim()) return;
-    const res = await setMedicationTakenFor(supabase, justAdded.id, takenFor);
+    const med = justAdded;
+    const res = await setMedicationTakenFor(supabase, med.id, takenFor);
     if (res.status === "error") { setErr("That did not save. Try again in a moment."); return; }
     setForSaved(true);
+    // The tap replaced an empty answer; Undo puts it back to empty and opens
+    // the box again with the words still in it.
+    offer({
+      message: `${med.name}: reason saved.`,
+      commit: () => {},
+      undo: () => {
+        void setMedicationTakenFor(supabase, med.id, "");
+        setForSaved(false);
+      },
+    });
   }
 
   // The follow-up panel shown under whichever row was just added.
@@ -181,7 +194,7 @@ export default function MedicationQuickAdd() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link href="/medications" className="btn btn-primary">See your medications</Link>
-        <Link href="/medications/add?full=1" className="text-[0.9375rem] font-semibold text-brand hover:underline">
+        <Link href="/medications/add?full=1" className="inline-flex min-h-11 items-center text-[0.9375rem] font-semibold text-brand hover:underline">
           Add one with start and stop years instead
         </Link>
       </div>

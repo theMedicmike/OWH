@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { useUndo } from "./Keep";
 import { listServiceEvents, deleteServiceEvent, PROVENANCE_LABEL, INFORMED_CONSENT_LABEL, type ServiceEvent } from "@/lib/serviceEvents";
 
 export default function ShotsListCard() {
@@ -10,7 +11,8 @@ export default function ShotsListCard() {
   const [ready, setReady] = useState(false);
   const [notSetUp, setNotSetUp] = useState(false);
   const [events, setEvents] = useState<ServiceEvent[]>([]);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
 
   const load = useCallback(async () => {
     const res = await listServiceEvents(supabase);
@@ -23,11 +25,16 @@ export default function ShotsListCard() {
     (async () => { await load(); setReady(true); })();
   }, [user, load]);
 
-  async function remove(id: string) {
-    await deleteServiceEvent(supabase, id);
-    setConfirmDel(null);
-    await load();
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(e: ServiceEvent) {
+    setHidden((h) => [...h, e.id]);
+    offer({
+      message: `Removed: ${e.label.length > 40 ? `${e.label.slice(0, 40)}…` : e.label}.`,
+      commit: async () => { await deleteServiceEvent(supabase, e.id); await load(); setHidden((h) => h.filter((x) => x !== e.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== e.id)),
+    });
   }
+  const shown = events.filter((e) => !hidden.includes(e.id));
 
   if (!ready) return null;
 
@@ -44,11 +51,11 @@ export default function ShotsListCard() {
     <div className="card p-5">
       <h2 className="text-lg font-semibold tracking-tight text-ink">Your entries</h2>
       <Link href="/shots/add" className="btn btn-primary btn-lg mt-4 w-full sm:w-auto">Add a shot</Link>
-      {!events.length ? (
+      {!shown.length ? (
         <p className="mt-4 text-[0.9375rem] text-muted">Nothing logged yet. Start with whatever you remember. The year alone is worth writing down.</p>
       ) : (
         <ul className="mt-4 space-y-2">
-          {events.map((e) => (
+          {shown.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-4">
               <div className="min-w-0 flex-1">
                 <div className="text-[0.9375rem] font-semibold text-ink">{e.label}</div>
@@ -64,21 +71,14 @@ export default function ShotsListCard() {
                   )}
                 </div>
               </div>
-              {confirmDel === e.id ? (
-                <div className="flex flex-none flex-wrap gap-2">
-                  <button type="button" onClick={() => setConfirmDel(null)} className="btn btn-secondary">Keep it</button>
-                  <button type="button" onClick={() => remove(e.id)} className="btn btn-danger">Remove</button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setConfirmDel(e.id)}
-                  aria-label={`Remove ${e.label}`}
-                  className="btn btn-ghost flex-none text-muted"
-                >
-                  Remove
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => remove(e)}
+                aria-label={`Remove ${e.label}`}
+                className="btn btn-ghost flex-none text-muted"
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>

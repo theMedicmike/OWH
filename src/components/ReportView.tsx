@@ -716,9 +716,9 @@ export default function ReportView() {
           &ldquo;Send it&rdquo; opens your phone&apos;s share menu with the PDF attached, so you can email or text it
           to your VSO. On a computer it downloads the file instead.
         </p>
-        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/15 pt-4 text-[0.9375rem]">
-          <button onClick={() => window.print()} className="font-semibold text-white underline-offset-4 hover:underline">Print it</button>
-          <Link href="/reviewer" className="font-semibold text-white underline-offset-4 hover:underline">
+        <div className="mt-4 flex flex-wrap gap-x-5 border-t border-white/15 pt-3 text-[0.9375rem]">
+          <button onClick={() => window.print()} className="inline-flex min-h-11 items-center font-semibold text-white underline-offset-4 hover:underline">Print it</button>
+          <Link href="/reviewer" className="inline-flex min-h-11 items-center font-semibold text-white underline-offset-4 hover:underline">
             Print a cover sheet for your VSO
           </Link>
         </div>

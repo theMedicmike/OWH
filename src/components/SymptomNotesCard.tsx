@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft, useUndo } from "./Keep";
 import {
   listSymptomNotes,
   createSymptomNote,
@@ -52,6 +53,25 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
   const [err, setErr] = useState("");
   const [filing, setFiling] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
+
+  // The note being written keeps a copy on this device until Save.
+  const draft = useDraft<{ text: string; when: string }>("symptom-note-add");
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    // Applied from the device copy (an outside store), just after this effect.
+    if (d && d.text) queueMicrotask(() => { setText(d.text); if (d.when) setWhen(d.when); setKept(true); });
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current) return;
+    if (text) draft.write({ text, when });
+    else draft.clear();
+  }, [text, when, draft]);
 
   const load = useCallback(async () => {
     const res = await listSymptomNotes(supabase);
@@ -65,7 +85,7 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
 
   useEffect(() => {
     if (!user) return;
-    load();
+    void (async () => { await load(); })();
   }, [user, load]);
 
   async function save() {
@@ -76,6 +96,8 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
     if (res.status === "error") { setErr(res.message); return; }
     setText("");
     setWhen(todayISO());
+    draft.clear();
+    setKept(false);
     // A persistent line, not a toast that vanishes before it can be read.
     setSaved(true);
     await load();
@@ -90,12 +112,18 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
     await load();
   }
 
-  async function remove(id: string) {
-    await deleteSymptomNote(supabase, id);
-    await load();
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(n: SymptomNote) {
+    setHidden((h) => [...h, n.id]);
+    offer({
+      message: `Removed: ${n.note.length > 40 ? `${n.note.slice(0, 40)}…` : n.note}`,
+      commit: async () => { await deleteSymptomNote(supabase, n.id); await load(); setHidden((h) => h.filter((x) => x !== n.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== n.id)),
+    });
   }
 
   if (notes === null) return null;
+  const shown = notes.filter((n) => !hidden.includes(n.id));
 
   if (notSetUp) {
     return (
@@ -115,6 +143,7 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
         work out where it goes.
       </p>
 
+      {kept && <div className="mt-4"><KeptNotice show /></div>}
       <label htmlFor="symptom-note" className="field-label mt-4">What&apos;s going on</label>
       <textarea
         id="symptom-note"
@@ -148,7 +177,7 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
       {saved && <p className="mt-3 text-[0.9375rem] font-semibold text-success" aria-live="polite">Saved. It&apos;s on your record.</p>}
       {err && <p role="alert" className="mt-3 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
-      {notes.length > 0 && (
+      {shown.length > 0 && (
         <div className="mt-6 border-t border-line pt-4">
           <h3 className="text-[0.9375rem] font-semibold text-ink">Not filed yet</h3>
           <p className="mt-0.5 text-sm leading-relaxed text-muted">
@@ -156,11 +185,11 @@ export default function SymptomNotesCard({ conditions = [] }: { conditions?: Con
             wrote it. Nothing here is lost if you leave it unfiled.
           </p>
           <ul className="mt-3 space-y-3">
-            {notes.map((n) => (
+            {shown.map((n) => (
               <li key={n.id} className="rounded-xl border border-line bg-canvas p-4">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-semibold text-muted">{pretty(n.noticed_on)}</span>
-                  <button type="button" onClick={() => remove(n.id)} className="btn btn-ghost text-muted">
+                  <button type="button" onClick={() => remove(n)} className="btn btn-ghost text-muted">
                     Remove
                   </button>
                 </div>

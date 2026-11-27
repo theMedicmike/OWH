@@ -1,11 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import WheelPicker from "./WheelPicker";
-import { searchSeed, type SeedMedication } from "@/lib/medicationSeed";
+import { KeptNotice, useDraft } from "./Keep";
+import { MEDICATION_SEED, searchSeed, type SeedMedication } from "@/lib/medicationSeed";
+
+type MedDraft = {
+  query: string; pickedGeneric: string | null; takenFor: string; stillTaking: boolean | null;
+  startedIdx: number; stoppedIdx: number; note: string;
+};
 import { createMedication } from "@/lib/medications";
 
 const YEARS = Array.from({ length: new Date().getUTCFullYear() - 1940 + 1 }, (_, i) => String(1940 + i));
@@ -25,6 +31,32 @@ export default function MedicationCaptureFlow() {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  // The form keeps a copy on this device until Save lands, so a refresh or
+  // "Not now" never loses what was typed.
+  const draft = useDraft<MedDraft>("medication-add");
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    if (!d || !(d.query || d.takenFor || d.note)) return;
+    // Applied from the device copy (an outside store), just after this effect.
+    queueMicrotask(() => {
+      setQuery(d.query ?? "");
+      setPicked(d.pickedGeneric ? MEDICATION_SEED.find((m) => m.generic === d.pickedGeneric) ?? null : null);
+      setTakenFor(d.takenFor ?? ""); setStillTaking(d.stillTaking ?? null);
+      setStartedIdx(d.startedIdx ?? 0); setStoppedIdx(d.stoppedIdx ?? 0); setNote(d.note ?? "");
+      setKept(true);
+    });
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current) return;
+    const d: MedDraft = { query, pickedGeneric: picked?.generic ?? null, takenFor, stillTaking, startedIdx, stoppedIdx, note };
+    if (query || takenFor || note) draft.write(d);
+    else draft.clear();
+  }, [query, picked, takenFor, stillTaking, startedIdx, stoppedIdx, note, draft]);
 
   const suggestions = useMemo(() => searchSeed(query), [query]);
   // Typed-in names are first-class: the seed list is an on-ramp, not a limit,
@@ -48,11 +80,14 @@ export default function MedicationCaptureFlow() {
     });
     setBusy(false);
     if (res.status === "error") { setErr(res.message); return; }
+    draft.clear();
+    restored.current = false; // nothing more to keep once it is saved
     router.push(`/medications/${res.id}`);
   }
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
+      <KeptNotice show={kept} />
       <div className="rounded-xl border border-line bg-canvas p-4 text-[0.9375rem] leading-relaxed text-muted">
         Nothing here is submitted anywhere. This is your own list of what you take, kept in your record until
         you choose to bring it to a VSO or your clinician. Nothing you write is touched by AI.

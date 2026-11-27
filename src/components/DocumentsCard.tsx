@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { useUndo } from "./Keep";
 
 type FileObj = { name: string };
 
@@ -12,8 +13,10 @@ export default function DocumentsCard() {
   const [files, setFiles] = useState<FileObj[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  // Removing a file is permanent, so it takes a second tap to confirm.
-  const [confirming, setConfirming] = useState<string | null>(null);
+  // Removing a file is held behind the Undo bar: the file is only deleted from
+  // storage once the bar is closed, replaced or the screen is left.
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
 
   async function refresh(uid: string) {
     const { data } = await supabase.storage.from("records").list(uid, {
@@ -52,11 +55,21 @@ export default function DocumentsCard() {
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   }
 
-  async function remove(name: string) {
+  function remove(name: string, label: string) {
     if (!user) return;
-    await supabase.storage.from("records").remove([`${user.id}/${name}`]);
-    refresh(user.id);
+    const uid = user.id;
+    setHidden((h) => [...h, name]);
+    offer({
+      message: `Removed: ${label.length > 40 ? `${label.slice(0, 40)}…` : label}.`,
+      commit: async () => {
+        await supabase.storage.from("records").remove([`${uid}/${name}`]);
+        await refresh(uid);
+        setHidden((h) => h.filter((x) => x !== name));
+      },
+      undo: () => setHidden((h) => h.filter((x) => x !== name)),
+    });
   }
+  const visible = files.filter((f) => !hidden.includes(f.name));
 
   if (!user) return null;
 
@@ -82,43 +95,29 @@ export default function DocumentsCard() {
 
       {err && <p role="status" className="mt-2 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
 
-      {files.length > 0 && (
+      {visible.length > 0 && (
         <ul className="mt-4 divide-y divide-line rounded-xl border border-line">
-          {files.map((f) => {
+          {visible.map((f) => {
             const shown = f.name.replace(/^\d+-/, "");
             return (
               <li key={f.name} className="px-3 py-2">
-                {confirming === f.name ? (
-                  <div className="flex min-h-12 flex-wrap items-center gap-2">
-                    <span className="min-w-0 flex-1 text-[0.9375rem] text-ink">
-                      Remove <span className="font-semibold">{shown}</span>? This cannot be undone.
-                    </span>
-                    <button type="button" onClick={() => setConfirming(null)} className="btn btn-secondary min-h-11">
-                      Keep it
-                    </button>
-                    <button type="button" onClick={() => { setConfirming(null); remove(f.name); }} className="btn btn-danger min-h-11">
-                      Yes, remove
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex min-h-12 items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => view(f.name)}
-                      className="min-h-11 min-w-0 flex-1 truncate text-left text-[0.9375rem] font-semibold text-brand hover:underline"
-                    >
-                      {shown}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirming(f.name)}
-                      aria-label={`Remove ${shown}`}
-                      className="btn btn-secondary min-h-11 flex-none"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
+                <div className="flex min-h-12 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => view(f.name)}
+                    className="min-h-11 min-w-0 flex-1 truncate text-left text-[0.9375rem] font-semibold text-brand hover:underline"
+                  >
+                    {shown}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(f.name, shown)}
+                    aria-label={`Remove ${shown}`}
+                    className="btn btn-secondary min-h-11 flex-none"
+                  >
+                    Remove
+                  </button>
+                </div>
               </li>
             );
           })}

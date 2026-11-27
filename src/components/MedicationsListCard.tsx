@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { useUndo } from "./Keep";
 import { listMedications, deleteMedication, type Medication } from "@/lib/medications";
 
 function whenLabel(m: Medication): string {
@@ -19,7 +20,8 @@ export default function MedicationsListCard() {
   const [ready, setReady] = useState(false);
   const [notSetUp, setNotSetUp] = useState(false);
   const [meds, setMeds] = useState<Medication[]>([]);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
 
   const load = useCallback(async () => {
     const res = await listMedications(supabase);
@@ -32,11 +34,16 @@ export default function MedicationsListCard() {
     (async () => { await load(); setReady(true); })();
   }, [user, load]);
 
-  async function remove(id: string) {
-    await deleteMedication(supabase, id);
-    setConfirmDel(null);
-    await load();
+  // Remove is held behind the Undo bar and carried out when the bar closes.
+  function remove(m: Medication) {
+    setHidden((h) => [...h, m.id]);
+    offer({
+      message: `Removed: ${m.name}.`,
+      commit: async () => { await deleteMedication(supabase, m.id); await load(); setHidden((h) => h.filter((x) => x !== m.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== m.id)),
+    });
   }
+  const shown = meds.filter((m) => !hidden.includes(m.id));
 
   if (!ready) return null;
 
@@ -55,13 +62,13 @@ export default function MedicationsListCard() {
       <Link href="/medications/add" className="btn btn-primary btn-lg mt-4 w-full sm:w-auto">
         Add a medication
       </Link>
-      {!meds.length ? (
+      {!shown.length ? (
         <p className="mt-4 text-[0.9375rem] text-muted">
           Nothing added yet. Start with whatever you take most days. You don&apos;t need the bottle in front of you.
         </p>
       ) : (
         <ul className="mt-4 space-y-2">
-          {meds.map((m) => {
+          {shown.map((m) => {
             const when = whenLabel(m);
             return (
               <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-4">
@@ -78,26 +85,17 @@ export default function MedicationsListCard() {
                   </div>
                 </div>
                 <div className="flex flex-none flex-wrap items-center gap-2">
-                  {confirmDel === m.id ? (
-                    <>
-                      <button type="button" onClick={() => setConfirmDel(null)} className="btn btn-secondary">Keep it</button>
-                      <button type="button" onClick={() => remove(m.id)} className="btn btn-danger">Remove</button>
-                    </>
-                  ) : (
-                    <>
-                      <Link href={`/medications/${m.id}`} className="btn btn-secondary" aria-label={`Open ${m.name}`}>
-                        Open
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setConfirmDel(m.id)}
-                        aria-label={`Remove ${m.name}`}
-                        className="btn btn-ghost text-muted"
-                      >
-                        Remove
-                      </button>
-                    </>
-                  )}
+                  <Link href={`/medications/${m.id}`} className="btn btn-secondary" aria-label={`Open ${m.name}`}>
+                    Open
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => remove(m)}
+                    aria-label={`Remove ${m.name}`}
+                    className="btn btn-ghost text-muted"
+                  >
+                    Remove
+                  </button>
                 </div>
               </li>
             );

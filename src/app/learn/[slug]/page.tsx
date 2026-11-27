@@ -61,7 +61,7 @@ export default async function ToxicantPage({ params }: { params: Promise<{ slug:
           <Section title="Where it goes — tap an organ to go deeper">
             <div className="flex flex-wrap gap-1.5">
               {t.organs.map((o) => ORGAN_BY_SLUG[o] ? (
-                <Link key={o} href={`/learn/organ/${o}`} className="rounded-md bg-brand/5 px-2.5 py-1 text-[0.8125rem] font-medium text-brand hover:bg-brand/10">{ORGAN_BY_SLUG[o].name}</Link>
+                <Link key={o} href={`/learn/organ/${o}`} className="inline-flex min-h-11 items-center rounded-md bg-brand/5 px-3.5 text-[0.875rem] font-medium text-brand hover:bg-brand/10">{ORGAN_BY_SLUG[o].name}</Link>
               ) : (
                 <span key={o} className="rounded-md bg-canvas px-2.5 py-1 text-[0.8125rem] text-muted">{prettySlug(o)}</span>
               ))}

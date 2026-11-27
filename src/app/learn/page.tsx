@@ -69,9 +69,9 @@ export default function LearnIndex() {
           </p>
           <nav aria-label="On this page" className="mt-4 flex flex-wrap gap-2">
             {GROUPS.map((g) => (
-              <a key={g.id} href={`#${g.id}`} className="btn btn-secondary btn-sm">{g.title}</a>
+              <a key={g.id} href={`#${g.id}`} className="btn btn-secondary btn-sm min-h-11">{g.title}</a>
             ))}
-            <a href="#guides" className="btn btn-secondary btn-sm">Guides</a>
+            <a href="#guides" className="btn btn-secondary btn-sm min-h-11">Guides</a>
           </nav>
         </div>
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft, useUndo } from "./Keep";
 import { listMemberIncidents, deleteIncident, PROVENANCE_LABEL, type IncidentRecord } from "@/lib/incidents";
 import { listIncidentNotes, createIncidentNote, deleteIncidentNote, type IncidentNote } from "@/lib/incidentNotes";
 import { listIncidentWitnesses, createIncidentWitness, deleteIncidentWitness, type IncidentWitness } from "@/lib/incidentWitnesses";
@@ -33,29 +34,18 @@ function dateLabel(r: IncidentRecord): string {
   return String(sy);
 }
 
-// Remove, then a second tap to confirm. Every delete in this card goes through
-// this so a shaky tap never loses an entry.
-function RemoveControl({ label, armed, onArm, onCancel, onConfirm }: {
-  label: string;
-  armed: boolean;
-  onArm: () => void;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  if (armed) {
-    return (
-      <div className="flex flex-none flex-wrap gap-2">
-        <button type="button" onClick={onCancel} className="btn btn-secondary">Keep it</button>
-        <button type="button" onClick={onConfirm} className="btn btn-danger">Remove</button>
-      </div>
-    );
-  }
+// Every delete in this card is held behind the Undo bar, so a shaky tap never
+// loses an entry: the row hides at once and is only removed when the bar
+// closes.
+function RemoveControl({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <button type="button" onClick={onArm} aria-label={label} className="btn btn-ghost flex-none text-muted">
+    <button type="button" onClick={onRemove} aria-label={label} className="btn btn-ghost flex-none text-muted">
       Remove
     </button>
   );
 }
+
+const short = (s: string) => (s.length > 40 ? `${s.slice(0, 40)}…` : s);
 
 function NoteYearPicker({ year, minYear, onChange }: { year: number | null; minYear: number; onChange: (y: number | null) => void }) {
   // Can't notice a symptom before the event happened — start the wheel at
@@ -81,14 +71,33 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
+
+  // The note being written is a new row, so it keeps a copy on this device
+  // (by incident) until Save, rather than saving half a sentence.
+  const draft = useDraft<{ text: string; noticedYear: number | null }>(`incident-note-${incidentId}`);
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    // Applied from the device copy (an outside store), just after this effect.
+    if (d && d.text) queueMicrotask(() => { setText(d.text); setNoticedYear(d.noticedYear); setAdding(true); setKept(true); });
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current) return;
+    if (text) draft.write({ text, noticedYear });
+    else draft.clear();
+  }, [text, noticedYear, draft]);
 
   const load = useCallback(async () => {
     const res = await listIncidentNotes(supabase, incidentId);
     setNotes("notes" in res ? res.notes : []);
   }, [supabase, incidentId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void (async () => { await load(); })(); }, [load]);
 
   async function save() {
     setErr("");
@@ -98,17 +107,23 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
     if (res.status === "error") { setErr(res.message); return; }
     setText("");
     setNoticedYear(null);
+    draft.clear();
+    setKept(false);
     setAdding(false);
     await load();
   }
 
-  async function remove(id: string) {
-    await deleteIncidentNote(supabase, id);
-    setConfirmDel(null);
-    await load();
+  function remove(n: IncidentNote) {
+    setHidden((h) => [...h, n.id]);
+    offer({
+      message: `Removed: ${short(n.note)}`,
+      commit: async () => { await deleteIncidentNote(supabase, n.id); await load(); setHidden((h) => h.filter((x) => x !== n.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== n.id)),
+    });
   }
 
   if (notes === null) return null;
+  const shownNotes = notes.filter((n) => !hidden.includes(n.id));
 
   return (
     <div className="mt-4 border-t border-line pt-4">
@@ -117,21 +132,15 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
         Dated, in your own words. This is what a claims examiner looks at to judge whether symptoms have been
         consistent since the event. Add to it any time.
       </p>
-      {notes.length > 0 && (
+      {shownNotes.length > 0 && (
         <ul className="mt-3 space-y-2">
-          {notes.map((n) => (
+          {shownNotes.map((n) => (
             <li key={n.id} className="rounded-xl border border-line bg-surface p-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <span className="min-w-0 flex-1 pt-2.5 text-sm font-semibold text-muted">
                   {n.noticed_year ? `Noticed around ${n.noticed_year}` : "No date given"}
                 </span>
-                <RemoveControl
-                  label="Remove this note"
-                  armed={confirmDel === n.id}
-                  onArm={() => setConfirmDel(n.id)}
-                  onCancel={() => setConfirmDel(null)}
-                  onConfirm={() => remove(n.id)}
-                />
+                <RemoveControl label="Remove this note" onRemove={() => remove(n)} />
               </div>
               <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink">{n.note}</p>
               <span className="mt-1 block text-sm text-muted">
@@ -143,6 +152,7 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
       )}
       {adding ? (
         <div className="mt-3 space-y-3 rounded-xl border border-brand/30 bg-brand/5 p-4">
+          <KeptNotice show={kept} />
           <div>
             <div className="field-label">About when did you notice this?</div>
             <div className="w-28">
@@ -165,12 +175,12 @@ function NotesSection({ incidentId, incidentYear }: { incidentId: string; incide
             <button type="button" onClick={save} disabled={busy || !text.trim()} className="btn btn-primary btn-lg">
               {busy ? "Saving…" : "Save"}
             </button>
-            <button type="button" onClick={() => setAdding(false)} className="btn btn-secondary btn-lg">Cancel</button>
+            <button type="button" onClick={() => setAdding(false)} className="btn btn-secondary btn-lg">Close for now</button>
           </div>
         </div>
       ) : (
         <button type="button" onClick={() => setAdding(true)} className="btn btn-secondary mt-3 w-full sm:w-auto">
-          Add what you&apos;ve noticed
+          {text ? "Finish what you were writing" : <>Add what you&apos;ve noticed</>}
         </button>
       )}
     </div>
@@ -193,14 +203,33 @@ function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; i
   const [contact, setContact] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
+
+  // The witness form keeps a copy on this device (by incident) until Save.
+  const draft = useDraft<{ name: string; relationship: string; contact: string }>(`incident-witness-${incidentId}`);
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    if (d && (d.name || d.relationship || d.contact)) {
+      queueMicrotask(() => { setName(d.name); setRelationship(d.relationship); setContact(d.contact); setAdding(true); setKept(true); });
+    }
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current) return;
+    if (name || relationship || contact) draft.write({ name, relationship, contact });
+    else draft.clear();
+  }, [name, relationship, contact, draft]);
 
   const load = useCallback(async () => {
     const res = await listIncidentWitnesses(supabase, incidentId);
     setWitnesses("witnesses" in res ? res.witnesses : []);
   }, [supabase, incidentId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void (async () => { await load(); })(); }, [load]);
 
   async function save() {
     setErr("");
@@ -209,18 +238,24 @@ function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; i
     setBusy(false);
     if (res.status === "error") { setErr(res.message); return; }
     setName(""); setRelationship(""); setContact("");
+    draft.clear();
+    setKept(false);
     setAdding(false);
     await load();
   }
 
-  async function remove(id: string) {
-    await deleteIncidentWitness(supabase, id);
-    setConfirmDel(null);
-    await load();
+  function remove(w: IncidentWitness) {
+    setHidden((h) => [...h, w.id]);
+    offer({
+      message: `Removed: ${short(w.name)}.`,
+      commit: async () => { await deleteIncidentWitness(supabase, w.id); await load(); setHidden((h) => h.filter((x) => x !== w.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== w.id)),
+    });
   }
 
   if (isMarkersBased(incidentClass)) return null;
   if (witnesses === null) return null;
+  const shownWitnesses = witnesses.filter((w) => !hidden.includes(w.id));
 
   return (
     <div className="mt-4 border-t border-line pt-4">
@@ -230,28 +265,23 @@ function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; i
         <Link href="/buddies" className="font-semibold text-brand underline">Battle buddies</Link> and choose
         Ask them directly.
       </p>
-      {witnesses.length > 0 && (
+      {shownWitnesses.length > 0 && (
         <ul className="mt-3 space-y-2">
-          {witnesses.map((w) => (
+          {shownWitnesses.map((w) => (
             <li key={w.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface p-3">
               <span className="min-w-0 flex-1 text-[0.9375rem] text-ink">
                 {w.name}
                 {w.relationship && <span className="text-muted">, {w.relationship}</span>}
                 {w.contact && <span className="text-muted">, {w.contact}</span>}
               </span>
-              <RemoveControl
-                label={`Remove ${w.name}`}
-                armed={confirmDel === w.id}
-                onArm={() => setConfirmDel(w.id)}
-                onCancel={() => setConfirmDel(null)}
-                onConfirm={() => remove(w.id)}
-              />
+              <RemoveControl label={`Remove ${w.name}`} onRemove={() => remove(w)} />
             </li>
           ))}
         </ul>
       )}
       {adding ? (
         <div className="mt-3 space-y-3 rounded-xl border border-brand/30 bg-brand/5 p-4">
+          <KeptNotice show={kept} />
           <div>
             <label htmlFor={`w-name-${incidentId}`} className="field-label">Their name</label>
             <input id={`w-name-${incidentId}`} value={name} onChange={(e) => setName(e.target.value)} className="field" autoComplete="off" />
@@ -269,7 +299,7 @@ function WitnessesSection({ incidentId, incidentClass }: { incidentId: string; i
             <button type="button" onClick={save} disabled={busy || !name.trim()} className="btn btn-primary btn-lg">
               {busy ? "Saving…" : "Save"}
             </button>
-            <button type="button" onClick={() => setAdding(false)} className="btn btn-secondary btn-lg">Cancel</button>
+            <button type="button" onClick={() => setAdding(false)} className="btn btn-secondary btn-lg">Close for now</button>
           </div>
         </div>
       ) : (
@@ -287,7 +317,8 @@ export default function InjuriesListCard() {
   const [notSetUp, setNotSetUp] = useState(false);
   const [incidents, setIncidents] = useState<IncidentRecord[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
 
   const load = useCallback(async () => {
     const res = await listMemberIncidents(supabase);
@@ -300,11 +331,16 @@ export default function InjuriesListCard() {
     (async () => { await load(); setReady(true); })();
   }, [user, load]);
 
-  async function remove(r: IncidentRecord) {
-    await deleteIncident(supabase, r.id, r.checkInId);
-    setConfirmDel(null);
-    await load();
+  function remove(r: IncidentRecord, label: string) {
+    setHidden((h) => [...h, r.id]);
+    if (openId === r.id) setOpenId(null);
+    offer({
+      message: `Removed: ${short(label)}.`,
+      commit: async () => { await deleteIncident(supabase, r.id, r.checkInId); await load(); setHidden((h) => h.filter((x) => x !== r.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== r.id)),
+    });
   }
+  const shown = incidents.filter((r) => !hidden.includes(r.id));
 
   if (!ready) return null;
 
@@ -321,11 +357,11 @@ export default function InjuriesListCard() {
     <div className="card p-5">
       <h2 className="text-lg font-semibold tracking-tight text-ink">Your entries</h2>
       <Link href="/injuries/add" className="btn btn-primary btn-lg mt-4 w-full sm:w-auto">Log one</Link>
-      {!incidents.length ? (
+      {!shown.length ? (
         <p className="mt-4 text-[0.9375rem] text-muted">Nothing logged yet. Start with whatever you remember. Your own account is real evidence.</p>
       ) : (
         <ul className="mt-4 space-y-2">
-          {incidents.map((r) => {
+          {shown.map((r) => {
             const open = openId === r.id;
             const note = evidentiaryNoteFor(r.incidentClass);
             const label = INCIDENT_LABEL[r.incidentClass] ?? r.incidentClass;
@@ -349,13 +385,7 @@ export default function InjuriesListCard() {
                     >
                       {open ? "Hide" : "Open"}
                     </button>
-                    <RemoveControl
-                      label={`Remove ${label}`}
-                      armed={confirmDel === r.id}
-                      onArm={() => setConfirmDel(r.id)}
-                      onCancel={() => setConfirmDel(null)}
-                      onConfirm={() => remove(r)}
-                    />
+                    <RemoveControl label={`Remove ${label}`} onRemove={() => remove(r, label)} />
                   </div>
                 </div>
                 {open && (

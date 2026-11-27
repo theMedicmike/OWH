@@ -91,15 +91,15 @@ export default function PresumptivePathwaysCard({ compact = false }: { compact?:
                   ? <span className="ml-2 rounded bg-success-soft px-1.5 py-0.5 text-[0.8125rem] font-medium text-success">may apply</span>
                   : <span className="ml-2 rounded bg-canvas px-1.5 py-0.5 text-[0.8125rem] font-medium text-muted">can&apos;t tell yet</span>}
               </div>
-              <p className="mt-1 text-[0.75rem] leading-relaxed text-muted">{x.s.scope}</p>
-              {x.s.note && <p className="mt-1 text-[0.75rem] leading-relaxed text-ink/80">{x.s.note}</p>}
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">{x.s.scope}</p>
+              {x.s.note && <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink/80">{x.s.note}</p>}
             </li>
           ))}
         </ul>
       )}
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-        <Link href="/presumptives" className="text-[0.8125rem] font-semibold text-brand hover:underline">→ Look up any era or location</Link>
-        <Link href="/vso" className="text-[0.8125rem] font-semibold text-brand hover:underline">→ Find a VSO to confirm this</Link>
+      <div className="mt-2 flex flex-wrap gap-x-4">
+        <Link href="/presumptives" className="inline-flex min-h-11 items-center text-[0.9375rem] font-semibold text-brand hover:underline">→ Look up any era or location</Link>
+        <Link href="/vso" className="inline-flex min-h-11 items-center text-[0.9375rem] font-semibold text-brand hover:underline">→ Find a VSO to confirm this</Link>
       </div>
     </div>
   );

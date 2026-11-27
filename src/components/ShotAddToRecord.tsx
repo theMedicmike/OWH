@@ -130,11 +130,11 @@ export default function ShotAddToRecord({
       </div>
       {err && <p role="alert" className="mt-3 text-[0.9375rem] font-medium text-scarlet">{err}</p>}
       {onAddWithDate ? (
-        <button type="button" onClick={onAddWithDate} className="mt-3 text-[0.9375rem] font-semibold text-brand hover:underline">
+        <button type="button" onClick={onAddWithDate} className="mt-2 inline-flex min-h-11 items-center text-left text-[0.9375rem] font-semibold text-brand hover:underline">
           Know the year? Add it with the date instead
         </button>
       ) : (
-        <Link href={`/shots/add?shot=${slug}`} className="mt-3 inline-block text-[0.9375rem] font-semibold text-brand hover:underline">
+        <Link href={`/shots/add?shot=${slug}`} className="mt-2 inline-flex min-h-11 items-center text-[0.9375rem] font-semibold text-brand hover:underline">
           Know the year? Add it with the date instead
         </Link>
       )}

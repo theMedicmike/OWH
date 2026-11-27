@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { KeptNotice, useDraft, useUndo } from "./Keep";
 import { EXPOSURE_LABEL } from "@/lib/education";
 import {
   createStatementRequest,
@@ -34,6 +35,25 @@ export default function WitnessRequestsCard() {
   const [fresh, setFresh] = useState<{ key: string; link: string } | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [err, setErr] = useState("");
+  const [hidden, setHidden] = useState<string[]>([]);
+  const { offer } = useUndo();
+
+  // The note keeps a copy on this device, so a refresh never loses it.
+  const draft = useDraft<string>("witness-request-note");
+  const restored = useRef(false);
+  const [kept, setKept] = useState(false);
+  useEffect(() => {
+    if (restored.current || !draft.ready) return;
+    restored.current = true;
+    const d = draft.read();
+    // Applied from the device copy (an outside store), just after this effect.
+    if (d) queueMicrotask(() => { setNote(d); setKept(true); });
+  }, [draft]);
+  useEffect(() => {
+    if (!restored.current) return;
+    if (note) draft.write(note);
+    else draft.clear();
+  }, [note, draft]);
 
   const load = useCallback(async () => {
     const res = await listStatementRequests(supabase);
@@ -78,8 +98,8 @@ export default function WitnessRequestsCard() {
   async function copyLink(link: string) {
     try {
       await navigator.clipboard.writeText(link);
+      // "Copied" stays put; nothing changes on a timer.
       setCopied(link);
-      setTimeout(() => setCopied(null), 2000);
     } catch {
       /* clipboard may be unavailable; the link is still shown for manual copy */
     }
@@ -116,9 +136,15 @@ export default function WitnessRequestsCard() {
     shareLink(link);
   }
 
-  async function revoke(id: string) {
-    await revokeStatementRequest(supabase, id);
-    await load();
+  // Cancelling is held behind the Undo bar: the link keeps working until the
+  // bar closes.
+  function revoke(r: StatementRequest) {
+    setHidden((h) => [...h, r.id]);
+    offer({
+      message: `Request cancelled: ${r.subject_label}.`,
+      commit: async () => { await revokeStatementRequest(supabase, r.id); await load(); setHidden((h) => h.filter((x) => x !== r.id)); },
+      undo: () => setHidden((h) => h.filter((x) => x !== r.id)),
+    });
   }
 
   if (!ready) return null;
@@ -133,7 +159,7 @@ export default function WitnessRequestsCard() {
   }
 
   const statementsFor = (requestId: string) => statements.filter((s) => s.request_id === requestId);
-  const pending = requests.filter((r) => r.status === "pending");
+  const pending = requests.filter((r) => r.status === "pending" && !hidden.includes(r.id));
   const submitted = requests.filter((r) => r.status === "submitted");
 
   return (
@@ -145,6 +171,7 @@ export default function WitnessRequestsCard() {
       </p>
 
       <div>
+        {kept && <div className="mb-3"><KeptNotice show /></div>}
         <label htmlFor="witness-note" className="field-label">Anything to jog their memory? (optional, shown to them)</label>
         <textarea
           id="witness-note"
@@ -216,7 +243,7 @@ export default function WitnessRequestsCard() {
                 <div className="text-sm text-muted">Waiting for a reply</div>
                 <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button onClick={() => shareLink(`${origin}/statement/${r.token}`)} className="btn btn-secondary w-full">Send it again</button>
-                  <button onClick={() => revoke(r.id)} className="btn btn-ghost w-full text-muted">Cancel this request</button>
+                  <button onClick={() => revoke(r)} className="btn btn-ghost w-full text-muted">Cancel this request</button>
                 </div>
               </div>
             ))}

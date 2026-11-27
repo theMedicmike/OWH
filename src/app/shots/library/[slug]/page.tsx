@@ -74,7 +74,7 @@ export default async function ShotDetailPage({ params }: { params: Promise<{ slu
           <h3 className="text-[0.9375rem] font-semibold text-ink">Where this was supposed to be written down</h3>
           <div className="mt-3 flex flex-wrap gap-2">
             {RECORD_FORMS.map((f) => (
-              <Link key={f} href="/shots/record" className="btn btn-secondary btn-sm rounded-full">
+              <Link key={f} href="/shots/record" className="btn btn-secondary btn-sm min-h-11 rounded-full">
                 {f}
               </Link>
             ))}

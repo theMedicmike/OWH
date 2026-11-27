@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { SavedMark, useAutosave } from "./Keep";
 import { EXPOSURE_LABEL } from "@/lib/education";
 
 type Candidate = { exposure_id: string; place: string | null; ev_year: number | null; exposure_class: string };
@@ -33,13 +34,26 @@ export default function BuddiesView() {
   const [discoverable, setDiscoverable] = useState(false);
   const [contactable, setContactable] = useState(false);
   const [contactNote, setContactNote] = useState("");
-  const [savingNote, setSavingNote] = useState(false);
-  const [noteSaved, setNoteSaved] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [confirmed, setConfirmed] = useState<Set<string>>(new Set());
   const [requested, setRequested] = useState<Record<string, string>>({});
   const [ready, setReady] = useState(false);
+
+  // The contact note saves itself shortly after typing stops (and on leaving
+  // the field). Only a real change is written; the loaded value is not.
+  const { status: noteStatus, flush: flushNote } = useAutosave(
+    contactNote,
+    async (v) => {
+      if (!user) return false;
+      const next = { ...consent, contact_note: v, contactable: true };
+      const { error } = await supabase.from("members").update({ consent: next }).eq("auth_id", user.id);
+      if (error) return false;
+      setConsent(next);
+      return true;
+    },
+    { enabled: ready },
+  );
 
   const loadConnections = useCallback(async () => {
     const { data } = await supabase.rpc("list_buddy_connections");
@@ -236,22 +250,15 @@ export default function BuddiesView() {
         {contactable && (
           <div className="mt-3">
             <label htmlFor="buddy-contact" className="field-label">How should a buddy reach you? Shared only when you both connect.</label>
-            <div className="flex gap-2">
-              <input
-                id="buddy-contact"
-                value={contactNote}
-                onChange={(e) => { setContactNote(e.target.value); setNoteSaved(false); }}
-                placeholder="Email, phone, or social handle"
-                className="field flex-1"
-              />
-              <button
-                onClick={async () => { setSavingNote(true); await saveConsent({ ...consent, contact_note: contactNote, contactable: true }); setSavingNote(false); setNoteSaved(true); }}
-                disabled={savingNote}
-                className="btn btn-primary flex-none"
-              >
-                {savingNote ? "Saving…" : noteSaved ? "Saved" : "Save"}
-              </button>
-            </div>
+            <input
+              id="buddy-contact"
+              value={contactNote}
+              onChange={(e) => setContactNote(e.target.value)}
+              onBlur={() => { void flushNote(); }}
+              placeholder="Email, phone, or social handle"
+              className="field"
+            />
+            <SavedMark status={noteStatus} className="mt-1.5 block" />
           </div>
         )}
       </section>
