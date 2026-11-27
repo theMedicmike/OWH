@@ -202,6 +202,11 @@ const LEARN_FILES = [
     // "Connect the dots" open it on its own site while BOOK_PUBLIC is false. The exception is this ONE
     // host (and its bills. subdomain). operationwholehealth.org stays banned below, unchanged.
     "whathappenedtoourveterans.com",
+    // api.resend.com — the email service for "Send me the PDF" (src/app/api/page-email), server side
+    // only, never rendered as a link. Michael named Resend on 2026-11-27 and told us directly to add
+    // this host. It is for the First Page PDF email only: it sends the veteran's own page to the
+    // email on his own account, and nothing else may use it without a new decision.
+    "api.resend.com",
   ];
   const walk = (dir) =>
     fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
