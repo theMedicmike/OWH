@@ -13,6 +13,7 @@ import { Card, Chevron, type SpineState } from "./ui";
 import HomeDoors, { type DoorStep, type HomeDoorsProps, type RecordState } from "./HomeDoors";
 import { buildPage, lintPage, listVisits, PAGE_PARTS, sheetDate, sheetFromPage, type PageData, type SheetData } from "@/lib/firstPage";
 import SavePdfButton from "./firstpage/SavePdfButton";
+import SendPdfEmail from "./SendPdfEmail";
 
 type Conn = { id: string; direction: "sent" | "received"; status: string; other_name: string | null; place: string | null; ev_year: number | null };
 
@@ -239,6 +240,7 @@ export default function DashboardView() {
             <>
               <Link href="/first-page/phone" className="btn btn-outline min-h-11">Show on my phone</Link>
               <SavePdfButton page={shareable} className="btn btn-outline min-h-11" />
+              <SendPdfEmail page={shareable} />
             </>
           ) : undefined,
         }}

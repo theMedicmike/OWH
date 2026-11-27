@@ -557,7 +557,9 @@ export default function HelpPage() {
             passes its check, <strong>&ldquo;Show on my phone&rdquo;</strong> puts the same page on your
             screen in large type to hold up or hand across the desk.{" "}
             <strong>&ldquo;Save the PDF&rdquo;</strong> makes the two printed sides as a file; on a phone it
-            opens your share sheet so you can save it, text it or email it yourself. On the First Page and the
+            opens your share sheet so you can save it, text it or email it yourself. On Home,{" "}
+            <strong>&ldquo;Send me the PDF&rdquo;</strong> emails it to the address you sign in with, and only
+            that address; if it says email is not set up yet, use Save the PDF. On the First Page and the
             print preview, <strong>&ldquo;Read my page aloud&rdquo;</strong> reads it to you in your
             phone&apos;s own voice, with Pause and Stop.
           </p>
