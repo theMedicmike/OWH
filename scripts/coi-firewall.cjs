@@ -203,9 +203,12 @@ const LEARN_FILES = [
     // host (and its bills. subdomain). operationwholehealth.org stays banned below, unchanged.
     "whathappenedtoourveterans.com",
     // api.resend.com — the email service for "Send me the PDF" (src/app/api/page-email), server side
-    // only, never rendered as a link. Michael named Resend on 2026-11-27 and told us directly to add
-    // this host. It is for the First Page PDF email only: it sends the veteran's own page to the
-    // email on his own account, and nothing else may use it without a new decision.
+    // only, never rendered as a link. Michael named Resend on 2026-11-27 and approved this line twice
+    // that day, in his own words: "Yes, add the line" (to the session that asked "add the Resend
+    // firewall line now so the branch builds clean, or hold it?") and "add api.resend.com to the
+    // firewall allowlist" (typed into the session that built the email). It is for the First Page PDF
+    // email only: it sends the veteran's own page to the email on his own account, and nothing else
+    // may use it without a new decision.
     "api.resend.com",
   ];
   const walk = (dir) =>
